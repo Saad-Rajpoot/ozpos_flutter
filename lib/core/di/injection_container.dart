@@ -34,23 +34,25 @@ final sl = GetIt.instance;
 
 /// Initialize dependency injection
 Future<void> init() async {
-        // External dependencies
-        final sharedPreferences = await SharedPreferences.getInstance();
-        sl.registerLazySingleton(() => sharedPreferences);
+  // External dependencies
+  final sharedPreferences = await SharedPreferences.getInstance();
+  sl.registerLazySingleton(() => sharedPreferences);
 
-        // Database - handle web compatibility
-        try {
-          final database = await DatabaseHelper.database;
-          sl.registerLazySingleton<Database>(() => database);
-        } catch (e) {
-          // For web, register a mock database or skip database operations
-          print('Database not available on web: $e');
-        }
-  
+  // Database - handle web compatibility
+  try {
+    final database = await DatabaseHelper.database;
+    sl.registerLazySingleton<Database>(() => database);
+  } catch (e) {
+    // For web, register a mock database or skip database operations
+    print('Database not available on web: $e');
+  }
+
   // Core
-  sl.registerLazySingleton<NetworkInfo>(() => NetworkInfoImpl(connectivity: Connectivity()));
+  sl.registerLazySingleton<NetworkInfo>(
+    () => NetworkInfoImpl(connectivity: Connectivity()),
+  );
   sl.registerLazySingleton(() => ApiClient(sharedPreferences: sl()));
-  
+
   // Features
   await _initMenu(sl);
   await _initCart(sl);
@@ -75,7 +77,7 @@ Future<void> _initMenu(GetIt sl) async {
       () => MockMenuLocalDataSource(),
     );
   }
-  
+
   // Repository
   sl.registerLazySingleton<MenuRepository>(
     () => MenuRepositoryImpl(
@@ -84,16 +86,15 @@ Future<void> _initMenu(GetIt sl) async {
       networkInfo: sl(),
     ),
   );
-  
+
   // Use cases
   sl.registerLazySingleton(() => GetMenuItems(repository: sl()));
   sl.registerLazySingleton(() => GetMenuCategories(repository: sl()));
-  
+
   // BLoC (Factory - new instance each time)
-  sl.registerFactory(() => MenuBloc(
-    getMenuItems: sl(),
-    getMenuCategories: sl(),
-  ));
+  sl.registerFactory(
+    () => MenuBloc(getMenuItems: sl(), getMenuCategories: sl()),
+  );
 }
 
 /// Initialize cart feature dependencies
@@ -109,26 +110,28 @@ Future<void> _initCart(GetIt sl) async {
       () => MockCartLocalDataSource(),
     );
   }
-  
+
   // Repository
   sl.registerLazySingleton<CartRepository>(
     () => CartRepositoryImpl(localDataSource: sl()),
   );
-  
+
   // Use cases
   sl.registerLazySingleton(() => AddToCart(repository: sl()));
   sl.registerLazySingleton(() => RemoveFromCart(repository: sl()));
   sl.registerLazySingleton(() => UpdateCartItem(repository: sl()));
   sl.registerLazySingleton(() => ClearCart(repository: sl()));
-  
-        // BLoC (Factory - new instance each time)
-        sl.registerFactory(() => CartBloc(
-          addToCart: sl(),
-          removeFromCart: sl(),
-          updateCartItem: sl(),
-          clearCart: sl(),
-          cartRepository: sl(),
-        ));
+
+  // BLoC (Factory - new instance each time)
+  sl.registerFactory(
+    () => CartBloc(
+      addToCart: sl(),
+      removeFromCart: sl(),
+      updateCartItem: sl(),
+      clearCart: sl(),
+      cartRepository: sl(),
+    ),
+  );
 }
 
 /// Initialize combo feature dependencies

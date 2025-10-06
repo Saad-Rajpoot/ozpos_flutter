@@ -73,7 +73,7 @@ class _MenuEditorScreenNewState extends State<MenuEditorScreenNew> {
             child: LayoutBuilder(
               builder: (context, constraints) {
                 final isCompact = constraints.maxWidth < 600;
-                
+
                 return isCompact
                     ? Column(
                         children: [
@@ -89,11 +89,15 @@ class _MenuEditorScreenNewState extends State<MenuEditorScreenNew> {
                               prefixIcon: const Icon(Icons.search),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
-                                borderSide: BorderSide(color: Colors.grey.shade300),
+                                borderSide: BorderSide(
+                                  color: Colors.grey.shade300,
+                                ),
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
-                                borderSide: BorderSide(color: Colors.grey.shade300),
+                                borderSide: BorderSide(
+                                  color: Colors.grey.shade300,
+                                ),
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
@@ -114,7 +118,10 @@ class _MenuEditorScreenNewState extends State<MenuEditorScreenNew> {
                           // Category filter
                           Container(
                             width: double.infinity,
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
                             decoration: BoxDecoration(
                               border: Border.all(color: Colors.grey.shade300),
                               borderRadius: BorderRadius.circular(8),
@@ -124,20 +131,21 @@ class _MenuEditorScreenNewState extends State<MenuEditorScreenNew> {
                               value: _selectedCategory,
                               underline: const SizedBox(),
                               isExpanded: true,
-                              items: [
-                                {'value': 'All', 'label': 'All'},
-                                {'value': 'cat-1', 'label': 'Pizza'},
-                                {'value': 'cat-2', 'label': 'Burgers'},
-                                {'value': 'cat-3', 'label': 'Pasta'},
-                                {'value': 'cat-4', 'label': 'Salads'},
-                                {'value': 'cat-5', 'label': 'Desserts'},
-                                {'value': 'cat-6', 'label': 'Beverages'},
-                              ].map((category) {
-                                return DropdownMenuItem(
-                                  value: category['value'],
-                                  child: Text(category['label']!),
-                                );
-                              }).toList(),
+                              items:
+                                  [
+                                    {'value': 'All', 'label': 'All'},
+                                    {'value': 'cat-1', 'label': 'Pizza'},
+                                    {'value': 'cat-2', 'label': 'Burgers'},
+                                    {'value': 'cat-3', 'label': 'Pasta'},
+                                    {'value': 'cat-4', 'label': 'Salads'},
+                                    {'value': 'cat-5', 'label': 'Desserts'},
+                                    {'value': 'cat-6', 'label': 'Beverages'},
+                                  ].map((category) {
+                                    return DropdownMenuItem(
+                                      value: category['value'],
+                                      child: Text(category['label']!),
+                                    );
+                                  }).toList(),
                               onChanged: (value) {
                                 setState(() {
                                   _selectedCategory = value ?? 'All';
@@ -162,11 +170,15 @@ class _MenuEditorScreenNewState extends State<MenuEditorScreenNew> {
                                 prefixIcon: const Icon(Icons.search),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(8),
-                                  borderSide: BorderSide(color: Colors.grey.shade300),
+                                  borderSide: BorderSide(
+                                    color: Colors.grey.shade300,
+                                  ),
                                 ),
                                 enabledBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(8),
-                                  borderSide: BorderSide(color: Colors.grey.shade300),
+                                  borderSide: BorderSide(
+                                    color: Colors.grey.shade300,
+                                  ),
                                 ),
                                 focusedBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(8),
@@ -196,20 +208,21 @@ class _MenuEditorScreenNewState extends State<MenuEditorScreenNew> {
                             child: DropdownButton<String>(
                               value: _selectedCategory,
                               underline: const SizedBox(),
-                              items: [
-                                {'value': 'All', 'label': 'All'},
-                                {'value': 'cat-1', 'label': 'Pizza'},
-                                {'value': 'cat-2', 'label': 'Burgers'},
-                                {'value': 'cat-3', 'label': 'Pasta'},
-                                {'value': 'cat-4', 'label': 'Salads'},
-                                {'value': 'cat-5', 'label': 'Desserts'},
-                                {'value': 'cat-6', 'label': 'Beverages'},
-                              ].map((category) {
-                                return DropdownMenuItem(
-                                  value: category['value'],
-                                  child: Text(category['label']!),
-                                );
-                              }).toList(),
+                              items:
+                                  [
+                                    {'value': 'All', 'label': 'All'},
+                                    {'value': 'cat-1', 'label': 'Pizza'},
+                                    {'value': 'cat-2', 'label': 'Burgers'},
+                                    {'value': 'cat-3', 'label': 'Pasta'},
+                                    {'value': 'cat-4', 'label': 'Salads'},
+                                    {'value': 'cat-5', 'label': 'Desserts'},
+                                    {'value': 'cat-6', 'label': 'Beverages'},
+                                  ].map((category) {
+                                    return DropdownMenuItem(
+                                      value: category['value'],
+                                      child: Text(category['label']!),
+                                    );
+                                  }).toList(),
                               onChanged: (value) {
                                 setState(() {
                                   _selectedCategory = value ?? 'All';
@@ -229,11 +242,9 @@ class _MenuEditorScreenNewState extends State<MenuEditorScreenNew> {
               builder: (context, state) {
                 // Debug logging
                 print('Menu Editor - Current state: ${state.runtimeType}');
-                
+
                 if (state is MenuLoading) {
-                  return const Center(
-                    child: CircularProgressIndicator(),
-                  );
+                  return const Center(child: CircularProgressIndicator());
                 }
 
                 if (state is MenuError) {
@@ -269,21 +280,29 @@ class _MenuEditorScreenNewState extends State<MenuEditorScreenNew> {
                 }
 
                 if (state is MenuLoaded) {
-                  print('Menu Editor - Total items loaded: ${state.items.length}');
+                  print(
+                    'Menu Editor - Total items loaded: ${state.items.length}',
+                  );
                   print('Menu Editor - Selected category: $_selectedCategory');
                   print('Menu Editor - Search query: $_searchQuery');
-                  
+
                   // Filter items based on search and category
                   var items = state.items.where((item) {
-                    final matchesSearch = _searchQuery.isEmpty ||
-                        item.name.toLowerCase().contains(_searchQuery.toLowerCase());
-                    final matchesCategory = _selectedCategory == 'All' ||
+                    final matchesSearch =
+                        _searchQuery.isEmpty ||
+                        item.name.toLowerCase().contains(
+                          _searchQuery.toLowerCase(),
+                        );
+                    final matchesCategory =
+                        _selectedCategory == 'All' ||
                         item.categoryId == _selectedCategory;
-                    
+
                     if (!matchesCategory) {
-                      print('Item "${item.name}" filtered out: categoryId=${item.categoryId}, filter=$_selectedCategory');
+                      print(
+                        'Item "${item.name}" filtered out: categoryId=${item.categoryId}, filter=$_selectedCategory',
+                      );
                     }
-                    
+
                     return matchesSearch && matchesCategory;
                   }).toList();
 
@@ -316,7 +335,7 @@ class _MenuEditorScreenNewState extends State<MenuEditorScreenNew> {
   Widget _buildMenuItemCard(BuildContext context, dynamic item) {
     // Responsive: Check if we're on mobile
     final isCompact = MediaQuery.of(context).size.width < 600;
-    
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -370,7 +389,7 @@ class _MenuEditorScreenNewState extends State<MenuEditorScreenNew> {
                         ),
                 ),
                 const SizedBox(width: 12),
-                
+
                 // Name and description
                 Expanded(
                   child: Column(
@@ -384,7 +403,8 @@ class _MenuEditorScreenNewState extends State<MenuEditorScreenNew> {
                           color: Color(0xFF1F2937),
                         ),
                       ),
-                      if (item.description != null && item.description.isNotEmpty) ...[
+                      if (item.description != null &&
+                          item.description.isNotEmpty) ...[
                         const SizedBox(height: 4),
                         Text(
                           item.description,
@@ -401,9 +421,9 @@ class _MenuEditorScreenNewState extends State<MenuEditorScreenNew> {
                 ),
               ],
             ),
-            
+
             const SizedBox(height: 12),
-            
+
             // Bottom row: Category, Price, and Actions
             Row(
               children: [
@@ -429,7 +449,7 @@ class _MenuEditorScreenNewState extends State<MenuEditorScreenNew> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                
+
                 // Price
                 Text(
                   '\$${item.basePrice.toStringAsFixed(2)}',
@@ -439,9 +459,9 @@ class _MenuEditorScreenNewState extends State<MenuEditorScreenNew> {
                     color: Color(0xFF10B981),
                   ),
                 ),
-                
+
                 const Spacer(),
-                
+
                 // Action buttons - compact on mobile
                 if (isCompact) ...[
                   // Show menu on mobile
@@ -484,9 +504,16 @@ class _MenuEditorScreenNewState extends State<MenuEditorScreenNew> {
                         value: 'delete',
                         child: Row(
                           children: [
-                            Icon(Icons.delete, size: 18, color: Color(0xFFEF4444)),
+                            Icon(
+                              Icons.delete,
+                              size: 18,
+                              color: Color(0xFFEF4444),
+                            ),
                             SizedBox(width: 8),
-                            Text('Delete', style: TextStyle(color: Color(0xFFEF4444))),
+                            Text(
+                              'Delete',
+                              style: TextStyle(color: Color(0xFFEF4444)),
+                            ),
                           ],
                         ),
                       ),
@@ -537,16 +564,10 @@ class _MenuEditorScreenNewState extends State<MenuEditorScreenNew> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.restaurant_menu,
-            size: 64,
-            color: Colors.grey.shade400,
-          ),
+          Icon(Icons.restaurant_menu, size: 64, color: Colors.grey.shade400),
           const SizedBox(height: 16),
           Text(
-            _searchQuery.isEmpty
-                ? 'No menu items yet'
-                : 'No items found',
+            _searchQuery.isEmpty ? 'No menu items yet' : 'No items found',
             style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w600,
@@ -558,10 +579,7 @@ class _MenuEditorScreenNewState extends State<MenuEditorScreenNew> {
             _searchQuery.isEmpty
                 ? 'Click "Add New Item" to get started'
                 : 'Try adjusting your search or filters',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey.shade600,
-            ),
+            style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
           ),
           if (_searchQuery.isEmpty) ...[
             const SizedBox(height: 24),
@@ -604,7 +622,7 @@ class _MenuEditorScreenNewState extends State<MenuEditorScreenNew> {
       // Item was saved, reload the menu
       if (context.mounted) {
         context.read<MenuBloc>().add(GetMenuItemsEvent());
-        
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('"${result.name}" saved successfully!'),
@@ -630,7 +648,7 @@ class _MenuEditorScreenNewState extends State<MenuEditorScreenNew> {
 
     if (result != null && context.mounted) {
       context.read<MenuBloc>().add(GetMenuItemsEvent());
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('"${result.name}" duplicated successfully!'),
@@ -658,7 +676,7 @@ class _MenuEditorScreenNewState extends State<MenuEditorScreenNew> {
             onPressed: () {
               // TODO: Implement delete
               Navigator.pop(dialogContext);
-              
+
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text('"${item.name}" deleted'),
@@ -666,7 +684,7 @@ class _MenuEditorScreenNewState extends State<MenuEditorScreenNew> {
                   behavior: SnackBarBehavior.floating,
                 ),
               );
-              
+
               // Reload menu
               context.read<MenuBloc>().add(GetMenuItemsEvent());
             },

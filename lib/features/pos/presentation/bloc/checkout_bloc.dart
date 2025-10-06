@@ -117,12 +117,15 @@ class CheckoutLoaded extends CheckoutState {
   }
 
   bool get canCompleteSplit {
-    return splitRemaining == 0 && tenders.isNotEmpty && tenders.every((t) => t.status.isSuccessful);
+    return splitRemaining == 0 &&
+        tenders.isNotEmpty &&
+        tenders.every((t) => t.status.isSuccessful);
   }
 
   // Payment validation
   bool get canPayCash {
-    return selectedMethod == PaymentMethod.cash && cashReceivedNum >= grandTotal;
+    return selectedMethod == PaymentMethod.cash &&
+        cashReceivedNum >= grandTotal;
   }
 
   bool get canPayNonCash {
@@ -166,18 +169,18 @@ class CheckoutLoaded extends CheckoutState {
 
   @override
   List<Object?> get props => [
-        isSplitMode,
-        selectedMethod,
-        cashReceived,
-        tipPercent,
-        customTipAmount,
-        discountPercent,
-        appliedVouchers,
-        loyaltyRedemption,
-        isLoyaltyRedeemed,
-        tenders,
-        items,
-      ];
+    isSplitMode,
+    selectedMethod,
+    cashReceived,
+    tipPercent,
+    customTipAmount,
+    discountPercent,
+    appliedVouchers,
+    loyaltyRedemption,
+    isLoyaltyRedeemed,
+    tenders,
+    items,
+  ];
 }
 
 class CheckoutProcessing extends CheckoutState {}
@@ -363,30 +366,40 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
     on<PayLater>(_onPayLater);
   }
 
-  void _onInitializeCheckout(InitializeCheckout event, Emitter<CheckoutState> emit) {
-    emit(CheckoutLoaded(
-      isSplitMode: false,
-      selectedMethod: PaymentMethod.cash,
-      cashReceived: '',
-      tipPercent: 0,
-      customTipAmount: '',
-      discountPercent: 0,
-      appliedVouchers: const [],
-      loyaltyRedemption: 0.0,
-      isLoyaltyRedeemed: false,
-      tenders: const [],
-      items: event.items,
-    ));
+  void _onInitializeCheckout(
+    InitializeCheckout event,
+    Emitter<CheckoutState> emit,
+  ) {
+    emit(
+      CheckoutLoaded(
+        isSplitMode: false,
+        selectedMethod: PaymentMethod.cash,
+        cashReceived: '',
+        tipPercent: 0,
+        customTipAmount: '',
+        discountPercent: 0,
+        appliedVouchers: const [],
+        loyaltyRedemption: 0.0,
+        isLoyaltyRedeemed: false,
+        tenders: const [],
+        items: event.items,
+      ),
+    );
   }
 
-  void _onSelectPaymentMethod(SelectPaymentMethod event, Emitter<CheckoutState> emit) {
+  void _onSelectPaymentMethod(
+    SelectPaymentMethod event,
+    Emitter<CheckoutState> emit,
+  ) {
     if (state is! CheckoutLoaded) return;
     final currentState = state as CheckoutLoaded;
 
-    emit(currentState.copyWith(
-      selectedMethod: event.method,
-      cashReceived: '', // Reset cash when changing method
-    ));
+    emit(
+      currentState.copyWith(
+        selectedMethod: event.method,
+        cashReceived: '', // Reset cash when changing method
+      ),
+    );
   }
 
   void _onKeypadPress(KeypadPress event, Emitter<CheckoutState> emit) {
@@ -398,7 +411,10 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
       // Backspace
       newValue = currentState.cashReceived.isEmpty
           ? ''
-          : currentState.cashReceived.substring(0, currentState.cashReceived.length - 1);
+          : currentState.cashReceived.substring(
+              0,
+              currentState.cashReceived.length - 1,
+            );
     } else {
       // Append digit
       if (currentState.cashReceived == '0' && event.key != '.') {
@@ -411,7 +427,10 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
     emit(currentState.copyWith(cashReceived: newValue));
   }
 
-  void _onQuickAmountPress(QuickAmountPress event, Emitter<CheckoutState> emit) {
+  void _onQuickAmountPress(
+    QuickAmountPress event,
+    Emitter<CheckoutState> emit,
+  ) {
     if (state is! CheckoutLoaded) return;
     final currentState = state as CheckoutLoaded;
 
@@ -422,24 +441,31 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
     emit(currentState.copyWith(cashReceived: newAmount.toString()));
   }
 
-  void _onSelectTipPercent(SelectTipPercent event, Emitter<CheckoutState> emit) {
+  void _onSelectTipPercent(
+    SelectTipPercent event,
+    Emitter<CheckoutState> emit,
+  ) {
     if (state is! CheckoutLoaded) return;
     final currentState = state as CheckoutLoaded;
 
-    emit(currentState.copyWith(
-      tipPercent: event.percent,
-      customTipAmount: '', // Clear custom tip
-    ));
+    emit(
+      currentState.copyWith(
+        tipPercent: event.percent,
+        customTipAmount: '', // Clear custom tip
+      ),
+    );
   }
 
   void _onSetCustomTip(SetCustomTip event, Emitter<CheckoutState> emit) {
     if (state is! CheckoutLoaded) return;
     final currentState = state as CheckoutLoaded;
 
-    emit(currentState.copyWith(
-      customTipAmount: event.amount,
-      tipPercent: 0, // Clear percentage tip
-    ));
+    emit(
+      currentState.copyWith(
+        customTipAmount: event.amount,
+        tipPercent: 0, // Clear percentage tip
+      ),
+    );
   }
 
   void _onApplyVoucher(ApplyVoucher event, Emitter<CheckoutState> emit) {
@@ -463,8 +489,9 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
       appliedAt: DateTime.now(),
     );
 
-    final updatedVouchers = List<VoucherEntity>.from(currentState.appliedVouchers)
-      ..add(newVoucher);
+    final updatedVouchers = List<VoucherEntity>.from(
+      currentState.appliedVouchers,
+    )..add(newVoucher);
 
     emit(currentState.copyWith(appliedVouchers: updatedVouchers));
   }
@@ -480,41 +507,53 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
     emit(currentState.copyWith(appliedVouchers: updatedVouchers));
   }
 
-  void _onSetDiscountPercent(SetDiscountPercent event, Emitter<CheckoutState> emit) {
+  void _onSetDiscountPercent(
+    SetDiscountPercent event,
+    Emitter<CheckoutState> emit,
+  ) {
     if (state is! CheckoutLoaded) return;
     final currentState = state as CheckoutLoaded;
 
     emit(currentState.copyWith(discountPercent: event.percent));
   }
 
-  void _onRedeemLoyaltyPoints(RedeemLoyaltyPoints event, Emitter<CheckoutState> emit) {
+  void _onRedeemLoyaltyPoints(
+    RedeemLoyaltyPoints event,
+    Emitter<CheckoutState> emit,
+  ) {
     if (state is! CheckoutLoaded) return;
     final currentState = state as CheckoutLoaded;
 
-    emit(currentState.copyWith(
-      loyaltyRedemption: event.amount,
-      isLoyaltyRedeemed: true,
-    ));
+    emit(
+      currentState.copyWith(
+        loyaltyRedemption: event.amount,
+        isLoyaltyRedeemed: true,
+      ),
+    );
   }
 
-  void _onUndoLoyaltyRedemption(UndoLoyaltyRedemption event, Emitter<CheckoutState> emit) {
+  void _onUndoLoyaltyRedemption(
+    UndoLoyaltyRedemption event,
+    Emitter<CheckoutState> emit,
+  ) {
     if (state is! CheckoutLoaded) return;
     final currentState = state as CheckoutLoaded;
 
-    emit(currentState.copyWith(
-      loyaltyRedemption: 0.0,
-      isLoyaltyRedeemed: false,
-    ));
+    emit(
+      currentState.copyWith(loyaltyRedemption: 0.0, isLoyaltyRedeemed: false),
+    );
   }
 
   void _onToggleSplitMode(ToggleSplitMode event, Emitter<CheckoutState> emit) {
     if (state is! CheckoutLoaded) return;
     final currentState = state as CheckoutLoaded;
 
-    emit(currentState.copyWith(
-      isSplitMode: !currentState.isSplitMode,
-      tenders: [], // Reset tenders when toggling
-    ));
+    emit(
+      currentState.copyWith(
+        isSplitMode: !currentState.isSplitMode,
+        tenders: [], // Reset tenders when toggling
+      ),
+    );
   }
 
   void _onAddTender(AddTender event, Emitter<CheckoutState> emit) {
@@ -566,7 +605,10 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
     emit(currentState.copyWith(tenders: tenders));
   }
 
-  void _onProcessPayment(ProcessPayment event, Emitter<CheckoutState> emit) async {
+  void _onProcessPayment(
+    ProcessPayment event,
+    Emitter<CheckoutState> emit,
+  ) async {
     if (state is! CheckoutLoaded) return;
     final currentState = state as CheckoutLoaded;
 
@@ -588,10 +630,9 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
 
     final orderId = 'ORD-${DateTime.now().millisecondsSinceEpoch}';
 
-    emit(CheckoutSuccess(
-      orderId: orderId,
-      paidAmount: currentState.grandTotal,
-    ));
+    emit(
+      CheckoutSuccess(orderId: orderId, paidAmount: currentState.grandTotal),
+    );
   }
 
   void _onPayLater(PayLater event, Emitter<CheckoutState> emit) async {
@@ -605,9 +646,11 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
 
     final orderId = 'ORD-${DateTime.now().millisecondsSinceEpoch}-UNPAID';
 
-    emit(CheckoutSuccess(
-      orderId: orderId,
-      paidAmount: 0.0, // Unpaid
-    ));
+    emit(
+      CheckoutSuccess(
+        orderId: orderId,
+        paidAmount: 0.0, // Unpaid
+      ),
+    );
   }
 }

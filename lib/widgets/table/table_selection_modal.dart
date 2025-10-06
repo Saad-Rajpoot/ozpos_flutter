@@ -32,7 +32,8 @@ class _TableSelectionModalState extends State<TableSelectionModal> {
     if (_searchQuery.isNotEmpty) {
       tables = tables.where((t) {
         return t.number.toString().contains(_searchQuery) ||
-            (t.serverName?.toLowerCase().contains(_searchQuery.toLowerCase()) ?? false);
+            (t.serverName?.toLowerCase().contains(_searchQuery.toLowerCase()) ??
+                false);
       }).toList();
     }
 
@@ -138,7 +139,10 @@ class _TableSelectionModalState extends State<TableSelectionModal> {
       decoration: InputDecoration(
         hintText: 'Search by table number or server...',
         prefixIcon: const Icon(Icons.search, size: 20),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 12,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
           borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
@@ -286,25 +290,13 @@ class _TableSelectionModalState extends State<TableSelectionModal> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        _LegendItem(
-          color: const Color(0xFF10B981),
-          label: 'Available',
-        ),
+        _LegendItem(color: const Color(0xFF10B981), label: 'Available'),
         const SizedBox(width: 16),
-        _LegendItem(
-          color: const Color(0xFFEF4444),
-          label: 'Occupied',
-        ),
+        _LegendItem(color: const Color(0xFFEF4444), label: 'Occupied'),
         const SizedBox(width: 16),
-        _LegendItem(
-          color: const Color(0xFF3B82F6),
-          label: 'Reserved',
-        ),
+        _LegendItem(color: const Color(0xFF3B82F6), label: 'Reserved'),
         const SizedBox(width: 16),
-        _LegendItem(
-          color: const Color(0xFFF59E0B),
-          label: 'Cleaning',
-        ),
+        _LegendItem(color: const Color(0xFFF59E0B), label: 'Cleaning'),
       ],
     );
   }
@@ -348,7 +340,9 @@ class _TableSelectionModalState extends State<TableSelectionModal> {
         ElevatedButton(
           onPressed: _selectedTable != null
               ? () {
-                  context.read<CartBloc>().add(SelectTable(table: _selectedTable!));
+                  context.read<CartBloc>().add(
+                    SelectTable(table: _selectedTable!),
+                  );
                   Navigator.pop(context);
                 }
               : null,
@@ -504,7 +498,9 @@ class _TableListCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           border: Border.all(
-            color: isSelected ? const Color(0xFF3B82F6) : const Color(0xFFE5E7EB),
+            color: isSelected
+                ? const Color(0xFF3B82F6)
+                : const Color(0xFFE5E7EB),
             width: isSelected ? 2 : 1,
           ),
           borderRadius: BorderRadius.circular(12),
@@ -563,7 +559,10 @@ class _TableListCard extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: _statusColor.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(6),
@@ -654,10 +653,7 @@ class _FloorTableNode extends StatelessWidget {
           decoration: BoxDecoration(
             color: isSelected ? _statusColor : _statusColor.withOpacity(0.1),
             shape: BoxShape.circle,
-            border: Border.all(
-              color: _statusColor,
-              width: isSelected ? 3 : 2,
-            ),
+            border: Border.all(color: _statusColor, width: isSelected ? 3 : 2),
             boxShadow: isSelected
                 ? [
                     BoxShadow(
@@ -692,10 +688,7 @@ class _LegendItem extends StatelessWidget {
   final Color color;
   final String label;
 
-  const _LegendItem({
-    required this.color,
-    required this.label,
-  });
+  const _LegendItem({required this.color, required this.label});
 
   @override
   Widget build(BuildContext context) {
@@ -705,18 +698,12 @@ class _LegendItem extends StatelessWidget {
         Container(
           width: 12,
           height: 12,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-          ),
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
         const SizedBox(width: 6),
         Text(
           label,
-          style: const TextStyle(
-            fontSize: 12,
-            color: Color(0xFF6B7280),
-          ),
+          style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
         ),
       ],
     );

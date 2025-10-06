@@ -17,10 +17,9 @@ class _ReportsScreenV2State extends State<ReportsScreenV2> {
   @override
   Widget build(BuildContext context) {
     // Clamp text scaling
-    final scaler = MediaQuery.textScalerOf(context).clamp(
-      minScaleFactor: 1.0,
-      maxScaleFactor: 1.1,
-    );
+    final scaler = MediaQuery.textScalerOf(
+      context,
+    ).clamp(minScaleFactor: 1.0, maxScaleFactor: 1.1);
     final isDesktop = MediaQuery.of(context).size.width >= 768;
 
     return MediaQuery(
@@ -122,7 +121,10 @@ class _ReportsScreenV2State extends State<ReportsScreenV2> {
               children: [
                 // Date range selector
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     border: Border.all(color: const Color(0xFFE5E7EB)),
                     borderRadius: BorderRadius.circular(8),
@@ -131,7 +133,10 @@ class _ReportsScreenV2State extends State<ReportsScreenV2> {
                     children: [
                       Text(
                         _selectedRange,
-                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                       const SizedBox(width: 4),
                       const Icon(Icons.keyboard_arrow_down, size: 16),
@@ -157,7 +162,10 @@ class _ReportsScreenV2State extends State<ReportsScreenV2> {
                     backgroundColor: const Color(0xFF3B82F6),
                     foregroundColor: Colors.white,
                     elevation: 0,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -186,12 +194,48 @@ class _ReportsScreenV2State extends State<ReportsScreenV2> {
 
   Widget _buildKPICards() {
     final kpis = [
-      {'label': 'Total Sales', 'value': '\$12,450', 'delta': '+8.5% vs yesterday', 'positive': true, 'color': const Color(0xFF3B82F6)},
-      {'label': 'Avg Order Value', 'value': '\$39.84', 'delta': '-2.1% vs last week', 'positive': false, 'color': const Color(0xFF10B981)},
-      {'label': 'Orders Completed', 'value': '312', 'delta': '+12.3% vs yesterday', 'positive': true, 'color': const Color(0xFF8B5CF6)},
-      {'label': 'Avg Turnover Time', 'value': '22m', 'delta': '-15.2% vs last week', 'positive': true, 'color': const Color(0xFFF97316)},
-      {'label': 'Gross Profit Margin', 'value': '68.5%', 'delta': '+3.4% vs last month', 'positive': true, 'color': const Color(0xFF6366F1)},
-      {'label': 'Loyalty Points Used', 'value': '2847', 'delta': '+18.7% points redeemed', 'positive': true, 'color': const Color(0xFFEC4899)},
+      {
+        'label': 'Total Sales',
+        'value': '\$12,450',
+        'delta': '+8.5% vs yesterday',
+        'positive': true,
+        'color': const Color(0xFF3B82F6),
+      },
+      {
+        'label': 'Avg Order Value',
+        'value': '\$39.84',
+        'delta': '-2.1% vs last week',
+        'positive': false,
+        'color': const Color(0xFF10B981),
+      },
+      {
+        'label': 'Orders Completed',
+        'value': '312',
+        'delta': '+12.3% vs yesterday',
+        'positive': true,
+        'color': const Color(0xFF8B5CF6),
+      },
+      {
+        'label': 'Avg Turnover Time',
+        'value': '22m',
+        'delta': '-15.2% vs last week',
+        'positive': true,
+        'color': const Color(0xFFF97316),
+      },
+      {
+        'label': 'Gross Profit Margin',
+        'value': '68.5%',
+        'delta': '+3.4% vs last month',
+        'positive': true,
+        'color': const Color(0xFF6366F1),
+      },
+      {
+        'label': 'Loyalty Points Used',
+        'value': '2847',
+        'delta': '+18.7% points redeemed',
+        'positive': true,
+        'color': const Color(0xFFEC4899),
+      },
     ];
 
     return SliverPadding(
@@ -243,24 +287,25 @@ class _ReportsScreenV2State extends State<ReportsScreenV2> {
               Icon(
                 kpi['positive'] ? Icons.trending_up : Icons.trending_down,
                 size: 16,
-                color: kpi['positive'] ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+                color: kpi['positive']
+                    ? const Color(0xFF10B981)
+                    : const Color(0xFFEF4444),
               ),
             ],
           ),
           const Spacer(),
           Text(
             kpi['value'],
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.w700,
-            ),
+            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 4),
           Text(
             kpi['delta'],
             style: TextStyle(
               fontSize: 11,
-              color: kpi['positive'] ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+              color: kpi['positive']
+                  ? const Color(0xFF10B981)
+                  : const Color(0xFFEF4444),
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -340,7 +385,10 @@ class _ReportsScreenV2State extends State<ReportsScreenV2> {
                 width: 30,
                 child: Text(
                   '$value',
-                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
                   textAlign: TextAlign.right,
                 ),
               ),
@@ -389,11 +437,17 @@ class _ReportsScreenV2State extends State<ReportsScreenV2> {
                     children: [
                       Text(
                         '22m',
-                        style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                       Text(
                         'Avg Time',
-                        style: TextStyle(fontSize: 10, color: Color(0xFF6B7280)),
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: Color(0xFF6B7280),
+                        ),
                       ),
                     ],
                   ),
@@ -407,14 +461,26 @@ class _ReportsScreenV2State extends State<ReportsScreenV2> {
             children: [
               Column(
                 children: [
-                  Text('Prep Time', style: TextStyle(fontSize: 11, color: Colors.grey[600])),
-                  const Text('8m', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                  Text(
+                    'Prep Time',
+                    style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+                  ),
+                  const Text(
+                    '8m',
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                  ),
                 ],
               ),
               Column(
                 children: [
-                  Text('Service Time', style: TextStyle(fontSize: 11, color: Colors.grey[600])),
-                  const Text('14m', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                  Text(
+                    'Service Time',
+                    style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+                  ),
+                  const Text(
+                    '14m',
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                  ),
                 ],
               ),
             ],
@@ -434,10 +500,46 @@ class _ReportsScreenV2State extends State<ReportsScreenV2> {
             child: PieChart(
               PieChartData(
                 sections: [
-                  PieChartSectionData(value: 45, color: const Color(0xFF3B82F6), title: '45%', titleStyle: const TextStyle(fontSize: 11, color: Colors.white, fontWeight: FontWeight.w600)),
-                  PieChartSectionData(value: 30, color: const Color(0xFF10B981), title: '30%', titleStyle: const TextStyle(fontSize: 11, color: Colors.white, fontWeight: FontWeight.w600)),
-                  PieChartSectionData(value: 15, color: const Color(0xFF8B5CF6), title: '15%', titleStyle: const TextStyle(fontSize: 11, color: Colors.white, fontWeight: FontWeight.w600)),
-                  PieChartSectionData(value: 10, color: const Color(0xFFF97316), title: '10%', titleStyle: const TextStyle(fontSize: 11, color: Colors.white, fontWeight: FontWeight.w600)),
+                  PieChartSectionData(
+                    value: 45,
+                    color: const Color(0xFF3B82F6),
+                    title: '45%',
+                    titleStyle: const TextStyle(
+                      fontSize: 11,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  PieChartSectionData(
+                    value: 30,
+                    color: const Color(0xFF10B981),
+                    title: '30%',
+                    titleStyle: const TextStyle(
+                      fontSize: 11,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  PieChartSectionData(
+                    value: 15,
+                    color: const Color(0xFF8B5CF6),
+                    title: '15%',
+                    titleStyle: const TextStyle(
+                      fontSize: 11,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  PieChartSectionData(
+                    value: 10,
+                    color: const Color(0xFFF97316),
+                    title: '10%',
+                    titleStyle: const TextStyle(
+                      fontSize: 11,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ],
                 sectionsSpace: 2,
                 centerSpaceRadius: 0,
@@ -469,10 +571,7 @@ class _ReportsScreenV2State extends State<ReportsScreenV2> {
         Container(
           width: 10,
           height: 10,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-          ),
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
         const SizedBox(width: 8),
         Text('$label: $value', style: const TextStyle(fontSize: 12)),
@@ -489,15 +588,57 @@ class _ReportsScreenV2State extends State<ReportsScreenV2> {
           alignment: BarChartAlignment.spaceAround,
           maxY: 250,
           barGroups: [
-            BarChartGroupData(x: 0, barRods: [BarChartRodData(toY: 238, color: const Color(0xFF3B82F6), width: 20)]),
-            BarChartGroupData(x: 1, barRods: [BarChartRodData(toY: 82, color: const Color(0xFF10B981), width: 20)]),
-            BarChartGroupData(x: 2, barRods: [BarChartRodData(toY: 45, color: const Color(0xFFF97316), width: 20)]),
-            BarChartGroupData(x: 3, barRods: [BarChartRodData(toY: 15, color: const Color(0xFF8B5CF6), width: 20)]),
+            BarChartGroupData(
+              x: 0,
+              barRods: [
+                BarChartRodData(
+                  toY: 238,
+                  color: const Color(0xFF3B82F6),
+                  width: 20,
+                ),
+              ],
+            ),
+            BarChartGroupData(
+              x: 1,
+              barRods: [
+                BarChartRodData(
+                  toY: 82,
+                  color: const Color(0xFF10B981),
+                  width: 20,
+                ),
+              ],
+            ),
+            BarChartGroupData(
+              x: 2,
+              barRods: [
+                BarChartRodData(
+                  toY: 45,
+                  color: const Color(0xFFF97316),
+                  width: 20,
+                ),
+              ],
+            ),
+            BarChartGroupData(
+              x: 3,
+              barRods: [
+                BarChartRodData(
+                  toY: 15,
+                  color: const Color(0xFF8B5CF6),
+                  width: 20,
+                ),
+              ],
+            ),
           ],
           titlesData: FlTitlesData(
-            leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-            rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-            topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            leftTitles: const AxisTitles(
+              sideTitles: SideTitles(showTitles: false),
+            ),
+            rightTitles: const AxisTitles(
+              sideTitles: SideTitles(showTitles: false),
+            ),
+            topTitles: const AxisTitles(
+              sideTitles: SideTitles(showTitles: false),
+            ),
             bottomTitles: AxisTitles(
               sideTitles: SideTitles(
                 showTitles: true,
@@ -505,7 +646,10 @@ class _ReportsScreenV2State extends State<ReportsScreenV2> {
                   const titles = ['Full', '5%', '10%', 'Voucher'];
                   return Padding(
                     padding: const EdgeInsets.only(top: 8.0),
-                    child: Text(titles[value.toInt()], style: const TextStyle(fontSize: 10)),
+                    child: Text(
+                      titles[value.toInt()],
+                      style: const TextStyle(fontSize: 10),
+                    ),
                   );
                 },
               ),
@@ -527,7 +671,8 @@ class _ReportsScreenV2State extends State<ReportsScreenV2> {
           gridData: FlGridData(
             show: true,
             drawVerticalLine: false,
-            getDrawingHorizontalLine: (value) => const FlLine(color: Color(0xFFF3F4F6), strokeWidth: 1),
+            getDrawingHorizontalLine: (value) =>
+                const FlLine(color: Color(0xFFF3F4F6), strokeWidth: 1),
           ),
           titlesData: const FlTitlesData(
             leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
@@ -539,8 +684,12 @@ class _ReportsScreenV2State extends State<ReportsScreenV2> {
           lineBarsData: [
             LineChartBarData(
               spots: [
-                const FlSpot(0, 600), const FlSpot(2, 1200), const FlSpot(4, 800),
-                const FlSpot(6, 1800), const FlSpot(8, 1400), const FlSpot(10, 2100),
+                const FlSpot(0, 600),
+                const FlSpot(2, 1200),
+                const FlSpot(4, 800),
+                const FlSpot(6, 1800),
+                const FlSpot(8, 1400),
+                const FlSpot(10, 2100),
               ],
               isCurved: true,
               color: const Color(0xFF3B82F6),
@@ -563,25 +712,46 @@ class _ReportsScreenV2State extends State<ReportsScreenV2> {
       Icons.category,
       Column(
         children: [
-          _buildCategoryItem('Burgers', '\$4200', 0.357, const Color(0xFF3B82F6)),
+          _buildCategoryItem(
+            'Burgers',
+            '\$4200',
+            0.357,
+            const Color(0xFF3B82F6),
+          ),
           const SizedBox(height: 8),
           _buildCategoryItem('Pizza', '\$3100', 0.269, const Color(0xFF10B981)),
           const SizedBox(height: 8),
-          _buildCategoryItem('Drinks', '\$2800', 0.226, const Color(0xFFF97316)),
+          _buildCategoryItem(
+            'Drinks',
+            '\$2800',
+            0.226,
+            const Color(0xFFF97316),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildCategoryItem(String label, String amount, double percentage, Color color) {
+  Widget _buildCategoryItem(
+    String label,
+    String amount,
+    double percentage,
+    Color color,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
-            Text(amount, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
+            Text(
+              label,
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+            ),
+            Text(
+              amount,
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+            ),
           ],
         ),
         const SizedBox(height: 4),
@@ -595,7 +765,10 @@ class _ReportsScreenV2State extends State<ReportsScreenV2> {
           ),
         ),
         const SizedBox(height: 2),
-        Text('${(percentage * 100).toStringAsFixed(1)}% of total', style: const TextStyle(fontSize: 10, color: Color(0xFF6B7280))),
+        Text(
+          '${(percentage * 100).toStringAsFixed(1)}% of total',
+          style: const TextStyle(fontSize: 10, color: Color(0xFF6B7280)),
+        ),
       ],
     );
   }
@@ -616,7 +789,13 @@ class _ReportsScreenV2State extends State<ReportsScreenV2> {
     );
   }
 
-  Widget _buildTopItem(String emoji, String name, String revenue, String rank, String orders) {
+  Widget _buildTopItem(
+    String emoji,
+    String name,
+    String revenue,
+    String rank,
+    String orders,
+  ) {
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
@@ -631,22 +810,48 @@ class _ReportsScreenV2State extends State<ReportsScreenV2> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(name, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
-                Text(orders, style: const TextStyle(fontSize: 11, color: Color(0xFF6B7280))),
+                Text(
+                  name,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                Text(
+                  orders,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: Color(0xFF6B7280),
+                  ),
+                ),
               ],
             ),
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(revenue, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Color(0xFF10B981))),
+              Text(
+                revenue,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF10B981),
+                ),
+              ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
                   color: const Color(0xFF10B981),
                   borderRadius: BorderRadius.circular(4),
                 ),
-                child: Text(rank, style: const TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.w600)),
+                child: Text(
+                  rank,
+                  style: const TextStyle(
+                    fontSize: 10,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
             ],
           ),
@@ -683,7 +888,12 @@ class _ReportsScreenV2State extends State<ReportsScreenV2> {
     );
   }
 
-  Widget _buildAttentionItem(String emoji, String name, String revenue, String orders) {
+  Widget _buildAttentionItem(
+    String emoji,
+    String name,
+    String revenue,
+    String orders,
+  ) {
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
@@ -698,22 +908,48 @@ class _ReportsScreenV2State extends State<ReportsScreenV2> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(name, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
-                Text(orders, style: const TextStyle(fontSize: 11, color: Color(0xFF6B7280))),
+                Text(
+                  name,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                Text(
+                  orders,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: Color(0xFF6B7280),
+                  ),
+                ),
               ],
             ),
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(revenue, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Color(0xFFF97316))),
+              Text(
+                revenue,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFFF97316),
+                ),
+              ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
                   color: const Color(0xFFF97316),
                   borderRadius: BorderRadius.circular(4),
                 ),
-                child: const Text('Review', style: TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.w600)),
+                child: const Text(
+                  'Review',
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
             ],
           ),
@@ -730,16 +966,51 @@ class _ReportsScreenV2State extends State<ReportsScreenV2> {
         spacing: 8,
         runSpacing: 8,
         children: [
-          _buildStaffCard('S', 'Sarah M.', '89', '23', '95%', const Color(0xFF3B82F6)),
-          _buildStaffCard('M', 'Mike R.', '76', '18', '88%', const Color(0xFF10B981)),
-          _buildStaffCard('L', 'Lisa K.', '82', '31', '92%', const Color(0xFF8B5CF6)),
-          _buildStaffCard('T', 'Tom W.', '65', '15', '85%', const Color(0xFFF97316)),
+          _buildStaffCard(
+            'S',
+            'Sarah M.',
+            '89',
+            '23',
+            '95%',
+            const Color(0xFF3B82F6),
+          ),
+          _buildStaffCard(
+            'M',
+            'Mike R.',
+            '76',
+            '18',
+            '88%',
+            const Color(0xFF10B981),
+          ),
+          _buildStaffCard(
+            'L',
+            'Lisa K.',
+            '82',
+            '31',
+            '92%',
+            const Color(0xFF8B5CF6),
+          ),
+          _buildStaffCard(
+            'T',
+            'Tom W.',
+            '65',
+            '15',
+            '85%',
+            const Color(0xFFF97316),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildStaffCard(String initial, String name, String orders, String upsells, String efficiency, Color color) {
+  Widget _buildStaffCard(
+    String initial,
+    String name,
+    String orders,
+    String upsells,
+    String efficiency,
+    Color color,
+  ) {
     return Container(
       width: 110,
       padding: const EdgeInsets.all(12),
@@ -752,14 +1023,33 @@ class _ReportsScreenV2State extends State<ReportsScreenV2> {
         children: [
           CircleAvatar(
             backgroundColor: color,
-            child: Text(initial, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+            child: Text(
+              initial,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
           const SizedBox(height: 8),
-          Text(name, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+          Text(
+            name,
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+          ),
           const SizedBox(height: 8),
           Text('Orders: $orders', style: const TextStyle(fontSize: 10)),
-          Text('Upsells: $upsells', style: TextStyle(fontSize: 10, color: Colors.green[700])),
-          Text('Efficiency: $efficiency', style: TextStyle(fontSize: 10, color: color, fontWeight: FontWeight.w600)),
+          Text(
+            'Upsells: $upsells',
+            style: TextStyle(fontSize: 10, color: Colors.green[700]),
+          ),
+          Text(
+            'Efficiency: $efficiency',
+            style: TextStyle(
+              fontSize: 10,
+              color: color,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ],
       ),
     );
@@ -782,7 +1072,11 @@ class _ReportsScreenV2State extends State<ReportsScreenV2> {
               children: [
                 const Text(
                   "Today's Snapshot",
-                  style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Text(

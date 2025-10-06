@@ -59,12 +59,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
             // Left Sidebar (fixed 80dp) - always show on desktop
             if (context.isDesktopOrLarger)
               const SidebarNav(activeRoute: AppRouter.dashboard),
-            
+
             // Main content area
-            Expanded(
-              child: _buildMainContent(context),
-            ),
-            
+            Expanded(child: _buildMainContent(context)),
+
             // Right panel (fixed on large/wide)
             if (_showRightPanel && context.showRightPanelFixed)
               const ActiveOrdersPanel(),
@@ -80,8 +78,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
       child: LayoutBuilder(
         builder: (context, constraints) {
           // Content with max width 1440dp on ultra-wide
-          final maxWidth = context.isWide ? AppSizes.maxContentWidth : double.infinity;
-          
+          final maxWidth = context.isWide
+              ? AppSizes.maxContentWidth
+              : double.infinity;
+
           return Center(
             child: Container(
               constraints: BoxConstraints(maxWidth: maxWidth),
@@ -89,7 +89,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 slivers: [
                   // Sticky App Bar
                   _buildSliverAppBar(context),
-                  
+
                   // Grid of tiles
                   _buildSliverGrid(context),
                 ],
@@ -151,38 +151,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ],
                 ),
               ),
-              
-              // Logo in center (desktop only)
-              if (context.isDesktopOrLarger)
-                Expanded(
-                  child: Center(
-                    child: Image.network(
-                      'https://via.placeholder.com/120x40/EF4444/FFFFFF?text=OZPOS',
-                      height: 32,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          height: 32,
-                          width: 120,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: AppColors.error,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: const Text(
-                            '@POS',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                              letterSpacing: 2,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ),
-              
+
               // Time and profile
               Expanded(
                 child: Row(
@@ -203,7 +172,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                     ),
                     const SizedBox(width: 16),
-                    
+
                     // Right panel toggle (tablet/desktop)
                     if (context.showRightPanelToggle)
                       IconButton(
@@ -217,14 +186,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           }
                         },
                         icon: Icon(
-                          context.isCompact || !_showRightPanel 
-                              ? Icons.menu 
+                          context.isCompact || !_showRightPanel
+                              ? Icons.menu
                               : Icons.close,
                           color: AppColors.textSecondary,
                         ),
                         tooltip: 'Active Orders',
                       ),
-                    
+
                     // Profile
                     const SizedBox(width: 8),
                     CircleAvatar(
@@ -256,21 +225,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
           crossAxisSpacing: AppSpacing.gridGap,
           mainAxisSpacing: AppSpacing.gridGap,
         ),
-        delegate: SliverChildBuilderDelegate(
-          (context, index) {
-            final tiles = _getDashboardTiles();
-            if (index >= tiles.length) return null;
-            final tile = tiles[index];
-            return DashboardTile(
-              title: tile.title,
-              subtitle: tile.subtitle,
-              icon: tile.icon,
-              gradient: tile.gradient,
-              onTap: () => _handleTileTap(tile.action, context),
-            );
-          },
-          childCount: _getDashboardTiles().length,
-        ),
+        delegate: SliverChildBuilderDelegate((context, index) {
+          final tiles = _getDashboardTiles();
+          if (index >= tiles.length) return null;
+          final tile = tiles[index];
+          return DashboardTile(
+            title: tile.title,
+            subtitle: tile.subtitle,
+            icon: tile.icon,
+            gradient: tile.gradient,
+            onTap: () => _handleTileTap(tile.action, context),
+          );
+        }, childCount: _getDashboardTiles().length),
       ),
     );
   }
@@ -371,13 +337,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void _handleTileTap(String action, BuildContext context) {
     switch (action) {
       case 'takeaway':
-        Navigator.pushNamed(context, AppRouter.menu);
+        Navigator.pushNamed(
+          context,
+          AppRouter.menu,
+          arguments: {'orderType': 'takeaway'},
+        );
         break;
       case 'dine-in':
-        Navigator.pushNamed(context, AppRouter.tables);
+        Navigator.pushNamed(
+          context,
+          AppRouter.menu,
+          arguments: {'orderType': 'dine-in'},
+        );
         break;
       case 'delivery':
-        Navigator.pushNamed(context, AppRouter.delivery);
+        Navigator.pushNamed(
+          context,
+          AppRouter.menu,
+          arguments: {'orderType': 'delivery'},
+        );
         break;
       case 'tables':
         Navigator.pushNamed(context, AppRouter.tables);

@@ -7,7 +7,7 @@ import '../../../domain/entities/combo_entity.dart';
 
 class AdvancedTab extends StatefulWidget {
   const AdvancedTab({super.key});
-  
+
   @override
   State<AdvancedTab> createState() => _AdvancedTabState();
 }
@@ -18,7 +18,7 @@ class _AdvancedTabState extends State<AdvancedTab> {
   bool _canStackWithDiscounts = true;
   bool _isExclusivePromo = false;
   bool _requireMembership = true;
-  
+
   @override
   @override
   Widget build(BuildContext context) {
@@ -26,7 +26,7 @@ class _AdvancedTabState extends State<AdvancedTab> {
       builder: (context, state) {
         final combo = state.editingCombo;
         if (combo == null) return const SizedBox.shrink();
-        
+
         return SingleChildScrollView(
           padding: const EdgeInsets.all(32),
           child: Column(
@@ -43,25 +43,22 @@ class _AdvancedTabState extends State<AdvancedTab> {
               const SizedBox(height: 8),
               const Text(
                 'Configure limits, stacking rules, and visibility controls',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Color(0xFF6B7280),
-                ),
+                style: TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
               ),
               const SizedBox(height: 32),
-              
+
               // Deal Status & Visibility
               _buildVisibilitySection(combo),
               const SizedBox(height: 32),
-              
+
               // Customer Limits
               _buildCustomerLimitsSection(combo),
               const SizedBox(height: 32),
-              
+
               // Stacking Rules
               _buildStackingRulesSection(combo),
               const SizedBox(height: 32),
-              
+
               // Priority & Ordering
               _buildPrioritySection(combo),
             ],
@@ -70,7 +67,7 @@ class _AdvancedTabState extends State<AdvancedTab> {
       },
     );
   }
-  
+
   Widget _buildVisibilitySection(ComboEntity combo) {
     return Container(
       padding: const EdgeInsets.all(24),
@@ -93,13 +90,10 @@ class _AdvancedTabState extends State<AdvancedTab> {
           const SizedBox(height: 8),
           const Text(
             'Control how this combo appears to customers and staff',
-            style: TextStyle(
-              fontSize: 14,
-              color: Color(0xFF6B7280),
-            ),
+            style: TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
           ),
           const SizedBox(height: 20),
-          
+
           Row(
             children: [
               Expanded(
@@ -131,7 +125,11 @@ class _AdvancedTabState extends State<AdvancedTab> {
                           value: ComboStatus.active,
                           child: Row(
                             children: [
-                              Icon(Icons.check_circle, color: Color(0xFF10B981), size: 16),
+                              Icon(
+                                Icons.check_circle,
+                                color: Color(0xFF10B981),
+                                size: 16,
+                              ),
                               SizedBox(width: 8),
                               Text('Active - Visible to customers'),
                             ],
@@ -141,7 +139,11 @@ class _AdvancedTabState extends State<AdvancedTab> {
                           value: ComboStatus.hidden,
                           child: Row(
                             children: [
-                              Icon(Icons.visibility_off, color: Color(0xFFF59E0B), size: 16),
+                              Icon(
+                                Icons.visibility_off,
+                                color: Color(0xFFF59E0B),
+                                size: 16,
+                              ),
                               SizedBox(width: 8),
                               Text('Hidden - Staff only'),
                             ],
@@ -151,7 +153,11 @@ class _AdvancedTabState extends State<AdvancedTab> {
                           value: ComboStatus.draft,
                           child: Row(
                             children: [
-                              Icon(Icons.edit, color: Color(0xFF6B7280), size: 16),
+                              Icon(
+                                Icons.edit,
+                                color: Color(0xFF6B7280),
+                                size: 16,
+                              ),
                               SizedBox(width: 8),
                               Text('Draft - Not available'),
                             ],
@@ -165,9 +171,9 @@ class _AdvancedTabState extends State<AdvancedTab> {
               ),
             ],
           ),
-          
+
           const SizedBox(height: 20),
-          
+
           // Priority/Featured toggle
           Row(
             children: [
@@ -191,10 +197,7 @@ class _AdvancedTabState extends State<AdvancedTab> {
                     ),
                     Text(
                       'Highlight this combo in menus and promotions',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Color(0xFF6B7280),
-                      ),
+                      style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
                     ),
                   ],
                 ),
@@ -205,7 +208,7 @@ class _AdvancedTabState extends State<AdvancedTab> {
       ),
     );
   }
-  
+
   Widget _buildCustomerLimitsSection(ComboEntity combo) {
     return Container(
       padding: const EdgeInsets.all(24),
@@ -228,13 +231,10 @@ class _AdvancedTabState extends State<AdvancedTab> {
           const SizedBox(height: 8),
           const Text(
             'Set limits on how customers can order this combo',
-            style: TextStyle(
-              fontSize: 14,
-              color: Color(0xFF6B7280),
-            ),
+            style: TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
           ),
           const SizedBox(height: 20),
-          
+
           Row(
             children: [
               Expanded(
@@ -262,7 +262,8 @@ class _AdvancedTabState extends State<AdvancedTab> {
                         ),
                       ),
                       keyboardType: TextInputType.number,
-                      onChanged: (value) => _updateMaxPerOrder(int.tryParse(value)),
+                      onChanged: (value) =>
+                          _updateMaxPerOrder(int.tryParse(value)),
                     ),
                   ],
                 ),
@@ -293,16 +294,17 @@ class _AdvancedTabState extends State<AdvancedTab> {
                         ),
                       ),
                       keyboardType: TextInputType.number,
-                      onChanged: (value) => _updateMaxPerDay(int.tryParse(value)),
+                      onChanged: (value) =>
+                          _updateMaxPerDay(int.tryParse(value)),
                     ),
                   ],
                 ),
               ),
             ],
           ),
-          
+
           const SizedBox(height: 20),
-          
+
           // Global daily limit
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -332,17 +334,15 @@ class _AdvancedTabState extends State<AdvancedTab> {
                         ),
                       ),
                       keyboardType: TextInputType.number,
-                      onChanged: (value) => _updateDailyLimit(int.tryParse(value)),
+                      onChanged: (value) =>
+                          _updateDailyLimit(int.tryParse(value)),
                     ),
                   ),
                   const SizedBox(width: 12),
                   const Expanded(
                     child: Text(
                       'Leave empty for unlimited. Useful for limited-time offers.',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Color(0xFF6B7280),
-                      ),
+                      style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
                     ),
                   ),
                 ],
@@ -353,7 +353,7 @@ class _AdvancedTabState extends State<AdvancedTab> {
       ),
     );
   }
-  
+
   Widget _buildStackingRulesSection(ComboEntity combo) {
     return Container(
       padding: const EdgeInsets.all(24),
@@ -376,20 +376,18 @@ class _AdvancedTabState extends State<AdvancedTab> {
           const SizedBox(height: 8),
           const Text(
             'Control how this combo interacts with other promotions',
-            style: TextStyle(
-              fontSize: 14,
-              color: Color(0xFF6B7280),
-            ),
+            style: TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
           ),
           const SizedBox(height: 20),
-          
+
           Column(
             children: [
               Row(
                 children: [
                   Checkbox(
                     value: _canStackWithDiscounts,
-                    onChanged: (value) => _updateStackWithDiscounts(value ?? false),
+                    onChanged: (value) =>
+                        _updateStackWithDiscounts(value ?? false),
                     activeColor: const Color(0xFF8B5CF6),
                   ),
                   const SizedBox(width: 8),
@@ -455,7 +453,8 @@ class _AdvancedTabState extends State<AdvancedTab> {
                 children: [
                   Checkbox(
                     value: _requireMembership,
-                    onChanged: (value) => _updateRequireMembership(value ?? false),
+                    onChanged: (value) =>
+                        _updateRequireMembership(value ?? false),
                     activeColor: const Color(0xFF8B5CF6),
                   ),
                   const SizedBox(width: 8),
@@ -489,7 +488,7 @@ class _AdvancedTabState extends State<AdvancedTab> {
       ),
     );
   }
-  
+
   Widget _buildPrioritySection(ComboEntity combo) {
     return Container(
       padding: const EdgeInsets.all(24),
@@ -512,13 +511,10 @@ class _AdvancedTabState extends State<AdvancedTab> {
           const SizedBox(height: 8),
           const Text(
             'Control where this combo appears in menus and lists',
-            style: TextStyle(
-              fontSize: 14,
-              color: Color(0xFF6B7280),
-            ),
+            style: TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
           ),
           const SizedBox(height: 20),
-          
+
           Row(
             children: [
               Expanded(
@@ -546,10 +542,22 @@ class _AdvancedTabState extends State<AdvancedTab> {
                         ),
                       ),
                       items: const [
-                        DropdownMenuItem(value: 'Low', child: Text('Low - Bottom of list')),
-                        DropdownMenuItem(value: 'Medium', child: Text('Medium - Standard order')),
-                        DropdownMenuItem(value: 'High', child: Text('High - Top of list')),
-                        DropdownMenuItem(value: 'Urgent', child: Text('Urgent - Featured prominently')),
+                        DropdownMenuItem(
+                          value: 'Low',
+                          child: Text('Low - Bottom of list'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'Medium',
+                          child: Text('Medium - Standard order'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'High',
+                          child: Text('High - Top of list'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'Urgent',
+                          child: Text('Urgent - Featured prominently'),
+                        ),
                       ],
                       onChanged: (value) => _updatePriority(value!),
                     ),
@@ -582,16 +590,17 @@ class _AdvancedTabState extends State<AdvancedTab> {
                         ),
                       ),
                       keyboardType: TextInputType.number,
-                      onChanged: (value) => _updateSortOrder(int.tryParse(value) ?? 0),
+                      onChanged: (value) =>
+                          _updateSortOrder(int.tryParse(value) ?? 0),
                     ),
                   ],
                 ),
               ),
             ],
           ),
-          
+
           const SizedBox(height: 20),
-          
+
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -600,19 +609,12 @@ class _AdvancedTabState extends State<AdvancedTab> {
             ),
             child: const Row(
               children: [
-                Icon(
-                  Icons.info_outline,
-                  color: Color(0xFF6B7280),
-                  size: 16,
-                ),
+                Icon(Icons.info_outline, color: Color(0xFF6B7280), size: 16),
                 SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     'Higher priority combos appear first in menus. Sort order provides fine-grained control within priority levels.',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Color(0xFF6B7280),
-                    ),
+                    style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
                   ),
                 ),
               ],
@@ -622,97 +624,89 @@ class _AdvancedTabState extends State<AdvancedTab> {
       ),
     );
   }
-  
+
   // Event handlers
   void _updateComboStatus(ComboStatus status) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Status updated to ${status.name}'),
-      ),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('Status updated to ${status.name}')));
   }
-  
+
   void _updateFeaturedStatus(bool featured) {
     setState(() {
       _isFeatured = featured;
     });
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Featured: ${featured ? 'Enabled' : 'Disabled'}'),
-      ),
+      SnackBar(content: Text('Featured: ${featured ? 'Enabled' : 'Disabled'}')),
     );
   }
-  
+
   void _updateMaxPerOrder(int? max) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Max per order: ${max ?? 'unlimited'}'),
-      ),
+      SnackBar(content: Text('Max per order: ${max ?? 'unlimited'}')),
     );
   }
-  
+
   void _updateMaxPerDay(int? max) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Max per day: ${max ?? 'unlimited'}'),
-      ),
+      SnackBar(content: Text('Max per day: ${max ?? 'unlimited'}')),
     );
   }
-  
+
   void _updateDailyLimit(int? limit) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Daily limit: ${limit ?? 'unlimited'}'),
-      ),
+      SnackBar(content: Text('Daily limit: ${limit ?? 'unlimited'}')),
     );
   }
-  
+
   void _updateStackWithDiscounts(bool canStack) {
     setState(() {
       _canStackWithDiscounts = canStack;
     });
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Stack with discounts: ${canStack ? 'Allowed' : 'Not allowed'}'),
+        content: Text(
+          'Stack with discounts: ${canStack ? 'Allowed' : 'Not allowed'}',
+        ),
       ),
     );
   }
-  
+
   void _updateExclusivePromo(bool exclusive) {
     setState(() {
       _isExclusivePromo = exclusive;
     });
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Exclusive promotion: ${exclusive ? 'Enabled' : 'Disabled'}'),
+        content: Text(
+          'Exclusive promotion: ${exclusive ? 'Enabled' : 'Disabled'}',
+        ),
       ),
     );
   }
-  
+
   void _updateRequireMembership(bool required) {
     setState(() {
       _requireMembership = required;
     });
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Loyalty membership: ${required ? 'Required' : 'Not required'}'),
+        content: Text(
+          'Loyalty membership: ${required ? 'Required' : 'Not required'}',
+        ),
       ),
     );
   }
-  
+
   void _updatePriority(String priority) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Priority set to $priority'),
-      ),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('Priority set to $priority')));
   }
-  
+
   void _updateSortOrder(int order) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Sort order: $order'),
-      ),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('Sort order: $order')));
   }
 }

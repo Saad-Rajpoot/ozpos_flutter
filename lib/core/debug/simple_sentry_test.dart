@@ -19,18 +19,11 @@ class SimpleSentryTest extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.bug_report,
-              size: 64,
-              color: Colors.red,
-            ),
+            const Icon(Icons.bug_report, size: 64, color: Colors.red),
             const SizedBox(height: 24),
             const Text(
               'Sentry Integration Test',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             const Text(
@@ -76,11 +69,12 @@ class SimpleSentryTest extends StatelessWidget {
     try {
       // Generate unique event ID
       final eventId = _generateEventId();
-      
+
       await _sendToSentry(
         eventId: eventId,
         level: 'error',
-        message: '🔥 FLUTTER TEST ERROR - OZPOS Sentry Integration Test from Flutter App',
+        message:
+            '🔥 FLUTTER TEST ERROR - OZPOS Sentry Integration Test from Flutter App',
         extra: {
           'source': 'flutter_app',
           'widget': 'SimpleSentryTest',
@@ -89,7 +83,7 @@ class SimpleSentryTest extends StatelessWidget {
           'timestamp': DateTime.now().toIso8601String(),
         },
       );
-      
+
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -116,11 +110,12 @@ class SimpleSentryTest extends StatelessWidget {
     try {
       // Generate unique event ID
       final eventId = _generateEventId();
-      
+
       await _sendToSentry(
         eventId: eventId,
         level: 'info',
-        message: '📧 FLUTTER TEST MESSAGE - OZPOS Sentry Integration working correctly',
+        message:
+            '📧 FLUTTER TEST MESSAGE - OZPOS Sentry Integration working correctly',
         extra: {
           'source': 'flutter_app',
           'widget': 'SimpleSentryTest',
@@ -129,11 +124,13 @@ class SimpleSentryTest extends StatelessWidget {
           'timestamp': DateTime.now().toIso8601String(),
         },
       );
-      
+
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('✅ Test message sent to Sentry! Check your dashboard.'),
+            content: Text(
+              '✅ Test message sent to Sentry! Check your dashboard.',
+            ),
             backgroundColor: Colors.blue,
             duration: Duration(seconds: 3),
           ),
@@ -158,12 +155,14 @@ class SimpleSentryTest extends StatelessWidget {
     required String message,
     Map<String, dynamic>? extra,
   }) async {
-    const sentryDsn = 'https://5043c056bceb3ca2e4a92d2e6e2b0235@o4509604948869120.ingest.us.sentry.io/4510112203341824';
+    const sentryDsn =
+        'https://5043c056bceb3ca2e4a92d2e6e2b0235@o4509604948869120.ingest.us.sentry.io/4510112203341824';
     const projectId = '4510112203341824';
     const publicKey = '5043c056bceb3ca2e4a92d2e6e2b0235';
-    
-    final url = 'https://o4509604948869120.ingest.us.sentry.io/api/$projectId/store/';
-    
+
+    final url =
+        'https://o4509604948869120.ingest.us.sentry.io/api/$projectId/store/';
+
     final event = {
       'event_id': eventId,
       'timestamp': DateTime.now().toUtc().toIso8601String(),
@@ -173,9 +172,7 @@ class SimpleSentryTest extends StatelessWidget {
       'server_name': 'ozpos-flutter',
       'release': 'ozpos-flutter@1.0.0+1',
       'environment': 'flutter-test',
-      'message': {
-        'formatted': message,
-      },
+      'message': {'formatted': message},
       'tags': {
         'app_name': 'OZPOS',
         'framework': 'flutter',
@@ -184,17 +181,18 @@ class SimpleSentryTest extends StatelessWidget {
       },
       'extra': extra ?? {},
     };
-    
+
     final response = await http.post(
       Uri.parse(url),
       headers: {
         'Content-Type': 'application/json',
-        'X-Sentry-Auth': 'Sentry sentry_version=7, sentry_key=$publicKey, sentry_client=flutter-test/1.0.0',
+        'X-Sentry-Auth':
+            'Sentry sentry_version=7, sentry_key=$publicKey, sentry_client=flutter-test/1.0.0',
         'User-Agent': 'ozpos-flutter/1.0.0',
       },
       body: json.encode(event),
     );
-    
+
     if (response.statusCode < 200 || response.statusCode >= 300) {
       throw Exception('HTTP ${response.statusCode}: ${response.body}');
     }
@@ -202,8 +200,9 @@ class SimpleSentryTest extends StatelessWidget {
 
   String _generateEventId() {
     final random = Random();
-    return List.generate(32, (index) => 
-      random.nextInt(16).toRadixString(16)
+    return List.generate(
+      32,
+      (index) => random.nextInt(16).toRadixString(16),
     ).join('');
   }
 }

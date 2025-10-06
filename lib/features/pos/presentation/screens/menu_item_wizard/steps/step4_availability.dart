@@ -93,10 +93,7 @@ class Step4Availability extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             'Choose where this item should be available for ordering',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey.shade600,
-            ),
+            style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
           ),
           const SizedBox(height: 24),
 
@@ -105,12 +102,13 @@ class Step4Availability extends StatelessWidget {
             context,
             icon: Icons.point_of_sale,
             title: 'Dine-In (POS)',
-            description: 'Available for dine-in orders at the physical location',
+            description:
+                'Available for dine-in orders at the physical location',
             value: state.item.dineInAvailable,
             onChanged: (value) {
               context.read<MenuEditBloc>().add(
-                    UpdateChannelAvailability(dineInAvailable: value),
-                  );
+                UpdateChannelAvailability(dineInAvailable: value),
+              );
             },
           ),
           const Divider(height: 32),
@@ -124,8 +122,8 @@ class Step4Availability extends StatelessWidget {
             value: state.item.takeawayAvailable,
             onChanged: (value) {
               context.read<MenuEditBloc>().add(
-                    UpdateChannelAvailability(takeawayAvailable: value),
-                  );
+                UpdateChannelAvailability(takeawayAvailable: value),
+              );
             },
           ),
           const Divider(height: 32),
@@ -139,8 +137,8 @@ class Step4Availability extends StatelessWidget {
             value: state.item.deliveryAvailable,
             onChanged: (value) {
               context.read<MenuEditBloc>().add(
-                    UpdateChannelAvailability(deliveryAvailable: value),
-                  );
+                UpdateChannelAvailability(deliveryAvailable: value),
+              );
             },
           ),
         ],
@@ -161,7 +159,9 @@ class Step4Availability extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: value ? const Color(0xFF2196F3).withOpacity(0.1) : Colors.grey.shade100,
+            color: value
+                ? const Color(0xFF2196F3).withOpacity(0.1)
+                : Colors.grey.shade100,
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(
@@ -186,10 +186,7 @@ class Step4Availability extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 description,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey.shade600,
-                ),
+                style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
               ),
             ],
           ),
@@ -238,8 +235,8 @@ class Step4Availability extends StatelessWidget {
             onChanged: (value) {
               final prepTime = int.tryParse(value) ?? 0;
               context.read<MenuEditBloc>().add(
-                    UpdateKitchenSettings(prepTimeMinutes: prepTime),
-                  );
+                UpdateKitchenSettings(prepTimeMinutes: prepTime),
+              );
             },
           ),
           const SizedBox(height: 20),
@@ -249,12 +246,26 @@ class Step4Availability extends StatelessWidget {
             label: 'Kitchen Station',
             hint: 'Select station',
             value: state.item.kitchenStation ?? '',
-            items: const ['grill', 'fryer', 'salad', 'dessert', 'bar', 'pizza-oven'],
-            itemLabels: const ['Grill', 'Fryer', 'Salad', 'Dessert', 'Bar', 'Pizza Oven'],
+            items: const [
+              'grill',
+              'fryer',
+              'salad',
+              'dessert',
+              'bar',
+              'pizza-oven',
+            ],
+            itemLabels: const [
+              'Grill',
+              'Fryer',
+              'Salad',
+              'Dessert',
+              'Bar',
+              'Pizza Oven',
+            ],
             onChanged: (value) {
               context.read<MenuEditBloc>().add(
-                    UpdateKitchenSettings(kitchenStation: value),
-                  );
+                UpdateKitchenSettings(kitchenStation: value),
+              );
             },
           ),
           const SizedBox(height: 20),
@@ -267,9 +278,7 @@ class Step4Availability extends StatelessWidget {
             items: const ['standard', 'food', 'alcohol', 'tax-free'],
             itemLabels: const ['Standard', 'Food', 'Alcohol', 'Tax-Free'],
             onChanged: (value) {
-              context.read<MenuEditBloc>().add(
-                    UpdateTaxCategory(value),
-                  );
+              context.read<MenuEditBloc>().add(UpdateTaxCategory(value));
             },
           ),
         ],
@@ -290,7 +299,11 @@ class Step4Availability extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(Icons.restaurant_menu, size: 24, color: const Color(0xFF2196F3)),
+              Icon(
+                Icons.restaurant_menu,
+                size: 24,
+                color: const Color(0xFF2196F3),
+              ),
               const SizedBox(width: 12),
               const Text(
                 'Dietary & Preferences',
@@ -314,8 +327,8 @@ class Step4Availability extends StatelessWidget {
                 value: state.item.isVegetarian,
                 onChanged: (value) {
                   context.read<MenuEditBloc>().add(
-                        UpdateDietaryPreferences(isVegetarian: value),
-                      );
+                    UpdateDietaryPreferences(isVegetarian: value),
+                  );
                 },
               ),
               _buildCheckboxChip(
@@ -323,8 +336,8 @@ class Step4Availability extends StatelessWidget {
                 value: state.item.isVegan,
                 onChanged: (value) {
                   context.read<MenuEditBloc>().add(
-                        UpdateDietaryPreferences(isVegan: value),
-                      );
+                    UpdateDietaryPreferences(isVegan: value),
+                  );
                 },
               ),
               _buildCheckboxChip(
@@ -332,8 +345,8 @@ class Step4Availability extends StatelessWidget {
                 value: state.item.isGlutenFree,
                 onChanged: (value) {
                   context.read<MenuEditBloc>().add(
-                        UpdateDietaryPreferences(isGlutenFree: value),
-                      );
+                    UpdateDietaryPreferences(isGlutenFree: value),
+                  );
                 },
               ),
               _buildCheckboxChip(
@@ -341,8 +354,8 @@ class Step4Availability extends StatelessWidget {
                 value: state.item.isDairyFree,
                 onChanged: (value) {
                   context.read<MenuEditBloc>().add(
-                        UpdateDietaryPreferences(isDairyFree: value),
-                      );
+                    UpdateDietaryPreferences(isDairyFree: value),
+                  );
                 },
               ),
               _buildCheckboxChip(
@@ -350,8 +363,8 @@ class Step4Availability extends StatelessWidget {
                 value: state.item.isNutFree,
                 onChanged: (value) {
                   context.read<MenuEditBloc>().add(
-                        UpdateDietaryPreferences(isNutFree: value),
-                      );
+                    UpdateDietaryPreferences(isNutFree: value),
+                  );
                 },
               ),
               _buildCheckboxChip(
@@ -359,8 +372,8 @@ class Step4Availability extends StatelessWidget {
                 value: state.item.isHalal,
                 onChanged: (value) {
                   context.read<MenuEditBloc>().add(
-                        UpdateDietaryPreferences(isHalal: value),
-                      );
+                    UpdateDietaryPreferences(isHalal: value),
+                  );
                 },
               ),
             ],
@@ -389,7 +402,9 @@ class Step4Availability extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         TextField(
-          controller: TextEditingController(text: value > 0 ? value.toString() : ''),
+          controller: TextEditingController(
+            text: value > 0 ? value.toString() : '',
+          ),
           keyboardType: TextInputType.number,
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
           onChanged: onChanged,
@@ -429,7 +444,7 @@ class Step4Availability extends StatelessWidget {
   }) {
     // Use provided labels or items as labels
     final labels = itemLabels ?? items;
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

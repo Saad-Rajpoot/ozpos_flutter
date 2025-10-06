@@ -33,7 +33,7 @@ class AppRouter {
   static const String docketDesigner = '/docket-designer';
   static const String sentryTest = '/sentry-test'; // Debug only
   static const String simpleSentryTest = '/simple-sentry-test'; // Debug only
-  
+
   /// Generate routes based on route settings
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -42,67 +42,67 @@ class AppRouter {
           builder: (_) => const DashboardScreen(),
           settings: settings,
         );
-      
+
       case menu:
         return MaterialPageRoute(
           builder: (_) => const MenuScreenNew(),
           settings: settings,
         );
-      
+
       case checkout:
         return MaterialPageRoute(
           builder: (_) => const CheckoutScreenV2(),
           settings: settings,
         );
-      
+
       case orders:
         return MaterialPageRoute(
           builder: (_) => const OrdersScreenV2(),
           settings: settings,
         );
-      
+
       case tables:
         return MaterialPageRoute(
           builder: (_) => const TablesScreenV2(),
           settings: settings,
         );
-      
+
       case delivery:
         return MaterialPageRoute(
           builder: (_) => const DeliveryScreen(),
           settings: settings,
         );
-      
+
       case reservations:
         return MaterialPageRoute(
           builder: (_) => const ReservationsScreenV2(),
           settings: settings,
         );
-      
+
       case reports:
         return MaterialPageRoute(
           builder: (_) => const ReportsScreenV2(),
           settings: settings,
         );
-      
+
       case AppRouter.settings:
         return MaterialPageRoute(
           builder: (_) => const SettingsScreen(),
           settings: settings,
         );
-      
+
       case menuEditor:
         return MaterialPageRoute(
           builder: (_) => const MenuEditorScreenV3(),
           settings: settings,
         );
-      
+
       case docketDesigner:
         return MaterialPageRoute(
           builder: (_) => const DocketDesignerScreen(),
           settings: settings,
         );
-      
+
       case sentryTest:
         // Only available in debug mode
         if (kDebugMode) {
@@ -115,14 +115,14 @@ class AppRouter {
           builder: (_) => const ErrorScreen(),
           settings: settings,
         );
-      
+
       case simpleSentryTest:
         // Always available - simple test
         return MaterialPageRoute(
           builder: (_) => const SimpleSentryTest(),
           settings: settings,
         );
-      
+
       default:
         return MaterialPageRoute(
           builder: (_) => const ErrorScreen(),
@@ -139,23 +139,14 @@ class ErrorScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Error'),
-      ),
+      appBar: AppBar(title: const Text('Error')),
       body: const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.error_outline,
-              size: 64,
-              color: Colors.red,
-            ),
+            Icon(Icons.error_outline, size: 64, color: Colors.red),
             SizedBox(height: 16),
-            Text(
-              'Page not found',
-              style: TextStyle(fontSize: 24),
-            ),
+            Text('Page not found', style: TextStyle(fontSize: 24)),
             SizedBox(height: 8),
             Text(
               'The requested page could not be found.',

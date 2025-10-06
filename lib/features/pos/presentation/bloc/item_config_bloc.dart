@@ -21,7 +21,7 @@ class ItemConfigBloc extends Bloc<ItemConfigEvent, ItemConfigState> {
   ) async {
     // Initialize with default selections
     final selectedOptions = <String, List<String>>{};
-    
+
     // Apply defaults for each group
     for (final group in event.item.modifierGroups) {
       final defaultOptions = group.options
@@ -33,23 +33,23 @@ class ItemConfigBloc extends Bloc<ItemConfigEvent, ItemConfigState> {
       }
     }
 
-    final initialPrice = _calculatePrice(
-      event.item,
+    final initialPrice = _calculatePrice(event.item, selectedOptions, null, 1);
+
+    final canAdd = _checkRequiredGroups(
+      event.item.modifierGroups,
       selectedOptions,
-      null,
-      1,
     );
 
-    final canAdd = _checkRequiredGroups(event.item.modifierGroups, selectedOptions);
-
-    emit(ItemConfigLoaded(
-      item: event.item,
-      selectedOptions: selectedOptions,
-      selectedComboId: null,
-      quantity: 1,
-      totalPrice: initialPrice,
-      canAddToCart: canAdd,
-    ));
+    emit(
+      ItemConfigLoaded(
+        item: event.item,
+        selectedOptions: selectedOptions,
+        selectedComboId: null,
+        quantity: 1,
+        totalPrice: initialPrice,
+        canAddToCart: canAdd,
+      ),
+    );
   }
 
   Future<void> _onSelectOption(
@@ -57,20 +57,23 @@ class ItemConfigBloc extends Bloc<ItemConfigEvent, ItemConfigState> {
     Emitter<ItemConfigState> emit,
   ) async {
     if (state is! ItemConfigLoaded) return;
-    
+
     final currentState = state as ItemConfigLoaded;
-    final selectedOptions = Map<String, List<String>>.from(currentState.selectedOptions);
-    
+    final selectedOptions = Map<String, List<String>>.from(
+      currentState.selectedOptions,
+    );
+
     // Find the group
-    final group = currentState.item.modifierGroups
-        .firstWhere((g) => g.id == event.groupId);
-    
+    final group = currentState.item.modifierGroups.firstWhere(
+      (g) => g.id == event.groupId,
+    );
+
     if (!selectedOptions.containsKey(event.groupId)) {
       selectedOptions[event.groupId] = [];
     }
-    
+
     final currentSelections = selectedOptions[event.groupId]!;
-    
+
     if (event.selected) {
       // Check if group is radio (max 1)
       if (group.maxSelection == 1) {
@@ -81,7 +84,10 @@ class ItemConfigBloc extends Bloc<ItemConfigEvent, ItemConfigState> {
           return; // Max reached, don't add
         }
         if (!currentSelections.contains(event.optionId)) {
-          selectedOptions[event.groupId] = [...currentSelections, event.optionId];
+          selectedOptions[event.groupId] = [
+            ...currentSelections,
+            event.optionId,
+          ];
         }
       }
     } else {
@@ -103,11 +109,13 @@ class ItemConfigBloc extends Bloc<ItemConfigEvent, ItemConfigState> {
       selectedOptions,
     );
 
-    emit(currentState.copyWith(
-      selectedOptions: selectedOptions,
-      totalPrice: newPrice,
-      canAddToCart: canAdd,
-    ));
+    emit(
+      currentState.copyWith(
+        selectedOptions: selectedOptions,
+        totalPrice: newPrice,
+        canAddToCart: canAdd,
+      ),
+    );
   }
 
   Future<void> _onSelectCombo(
@@ -115,9 +123,9 @@ class ItemConfigBloc extends Bloc<ItemConfigEvent, ItemConfigState> {
     Emitter<ItemConfigState> emit,
   ) async {
     if (state is! ItemConfigLoaded) return;
-    
+
     final currentState = state as ItemConfigLoaded;
-    
+
     final newPrice = _calculatePrice(
       currentState.item,
       currentState.selectedOptions,
@@ -125,10 +133,12 @@ class ItemConfigBloc extends Bloc<ItemConfigEvent, ItemConfigState> {
       currentState.quantity,
     );
 
-    emit(currentState.copyWith(
-      selectedComboId: event.comboId,
-      totalPrice: newPrice,
-    ));
+    emit(
+      currentState.copyWith(
+        selectedComboId: event.comboId,
+        totalPrice: newPrice,
+      ),
+    );
   }
 
   Future<void> _onUpdateQuantity(
@@ -136,9 +146,9 @@ class ItemConfigBloc extends Bloc<ItemConfigEvent, ItemConfigState> {
     Emitter<ItemConfigState> emit,
   ) async {
     if (state is! ItemConfigLoaded) return;
-    
+
     final currentState = state as ItemConfigLoaded;
-    
+
     if (event.quantity < 1) return;
 
     final newPrice = _calculatePrice(
@@ -148,10 +158,7 @@ class ItemConfigBloc extends Bloc<ItemConfigEvent, ItemConfigState> {
       event.quantity,
     );
 
-    emit(currentState.copyWith(
-      quantity: event.quantity,
-      totalPrice: newPrice,
-    ));
+    emit(currentState.copyWith(quantity: event.quantity, totalPrice: newPrice));
   }
 
   Future<void> _onReset(
@@ -159,9 +166,9 @@ class ItemConfigBloc extends Bloc<ItemConfigEvent, ItemConfigState> {
     Emitter<ItemConfigState> emit,
   ) async {
     if (state is! ItemConfigLoaded) return;
-    
+
     final currentState = state as ItemConfigLoaded;
-    
+
     // Re-initialize with defaults
     add(InitializeItemConfig(item: currentState.item));
   }
@@ -173,22 +180,26 @@ class ItemConfigBloc extends Bloc<ItemConfigEvent, ItemConfigState> {
     int quantity,
   ) {
     double base = item.basePrice;
-    
+
     // Add modifier prices
     for (final groupEntry in selectedOptions.entries) {
-      final group = item.modifierGroups.firstWhere((g) => g.id == groupEntry.key);
+      final group = item.modifierGroups.firstWhere(
+        (g) => g.id == groupEntry.key,
+      );
       for (final optionId in groupEntry.value) {
         final option = group.options.firstWhere((o) => o.id == optionId);
         base += option.priceDelta;
       }
     }
-    
+
     // Add combo price
     if (selectedComboId != null && item.comboOptions.isNotEmpty) {
-      final combo = item.comboOptions.firstWhere((c) => c.id == selectedComboId);
+      final combo = item.comboOptions.firstWhere(
+        (c) => c.id == selectedComboId,
+      );
       base += combo.priceDelta;
     }
-    
+
     return base * quantity;
   }
 
@@ -211,16 +222,16 @@ class ItemConfigBloc extends Bloc<ItemConfigEvent, ItemConfigState> {
 // Events
 abstract class ItemConfigEvent extends Equatable {
   const ItemConfigEvent();
-  
+
   @override
   List<Object?> get props => [];
 }
 
 class InitializeItemConfig extends ItemConfigEvent {
   final MenuItemEntity item;
-  
+
   const InitializeItemConfig({required this.item});
-  
+
   @override
   List<Object?> get props => [item];
 }
@@ -229,31 +240,31 @@ class SelectModifierOption extends ItemConfigEvent {
   final String groupId;
   final String optionId;
   final bool selected;
-  
+
   const SelectModifierOption({
     required this.groupId,
     required this.optionId,
     required this.selected,
   });
-  
+
   @override
   List<Object?> get props => [groupId, optionId, selected];
 }
 
 class SelectComboOption extends ItemConfigEvent {
   final String? comboId;
-  
+
   const SelectComboOption({this.comboId});
-  
+
   @override
   List<Object?> get props => [comboId];
 }
 
 class UpdateQuantity extends ItemConfigEvent {
   final int quantity;
-  
+
   const UpdateQuantity({required this.quantity});
-  
+
   @override
   List<Object?> get props => [quantity];
 }
@@ -265,7 +276,7 @@ class ResetConfiguration extends ItemConfigEvent {
 // States
 abstract class ItemConfigState extends Equatable {
   const ItemConfigState();
-  
+
   @override
   List<Object?> get props => [];
 }
@@ -279,7 +290,7 @@ class ItemConfigLoaded extends ItemConfigState {
   final int quantity;
   final double totalPrice;
   final bool canAddToCart;
-  
+
   const ItemConfigLoaded({
     required this.item,
     required this.selectedOptions,
@@ -288,7 +299,7 @@ class ItemConfigLoaded extends ItemConfigState {
     required this.totalPrice,
     required this.canAddToCart,
   });
-  
+
   ItemConfigLoaded copyWith({
     MenuItemEntity? item,
     Map<String, List<String>>? selectedOptions,
@@ -306,14 +317,14 @@ class ItemConfigLoaded extends ItemConfigState {
       canAddToCart: canAddToCart ?? this.canAddToCart,
     );
   }
-  
+
   @override
   List<Object?> get props => [
-        item,
-        selectedOptions,
-        selectedComboId,
-        quantity,
-        totalPrice,
-        canAddToCart,
-      ];
+    item,
+    selectedOptions,
+    selectedComboId,
+    quantity,
+    totalPrice,
+    canAddToCart,
+  ];
 }

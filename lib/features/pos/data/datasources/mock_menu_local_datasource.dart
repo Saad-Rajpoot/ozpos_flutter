@@ -46,10 +46,13 @@ class MockMenuLocalDataSource implements MenuLocalDataSource {
   @override
   Future<List<MenuItemModel>> searchMenuItems(String query) async {
     final allItems = MenuMockDataSource.getMockMenuItems();
-    return allItems.where((item) => 
-      item.name.toLowerCase().contains(query.toLowerCase()) ||
-      item.description.toLowerCase().contains(query.toLowerCase())
-    ).toList();
+    return allItems
+        .where(
+          (item) =>
+              item.name.toLowerCase().contains(query.toLowerCase()) ||
+              item.description.toLowerCase().contains(query.toLowerCase()),
+        )
+        .toList();
   }
 
   @override

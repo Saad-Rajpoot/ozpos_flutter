@@ -46,9 +46,7 @@ class _MenuScreenState extends State<MenuScreen> {
           children: [
             _buildSearchBar(),
             _buildCategoryTabs(),
-            Expanded(
-              child: _buildMenuGrid(),
-            ),
+            Expanded(child: _buildMenuGrid()),
           ],
         ),
       ),
@@ -99,7 +97,7 @@ class _MenuScreenState extends State<MenuScreen> {
         itemBuilder: (context, index) {
           final category = categories[index];
           final isSelected = _selectedCategory == category['id'];
-          
+
           return Padding(
             padding: const EdgeInsets.only(right: AppSpacing.sm),
             child: FilterChip(
@@ -129,19 +127,13 @@ class _MenuScreenState extends State<MenuScreen> {
     return BlocBuilder<MenuBloc, MenuState>(
       builder: (context, state) {
         if (state is MenuLoading) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
+          return const Center(child: CircularProgressIndicator());
         } else if (state is MenuError) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
-                  Icons.error_outline,
-                  size: 64,
-                  color: AppColors.error,
-                ),
+                Icon(Icons.error_outline, size: 64, color: AppColors.error),
                 const SizedBox(height: AppSpacing.md),
                 Text(
                   state.message,

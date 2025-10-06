@@ -34,20 +34,20 @@ class MenuItemWizardScreen extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (context) => MenuEditBloc(
-            menuRepository: GetIt.instance<MenuRepository>(),
-          )..add(InitializeMenuEdit(existingItem: existingItem)),
+          create: (context) =>
+              MenuEditBloc(menuRepository: GetIt.instance<MenuRepository>())
+                ..add(InitializeMenuEdit(existingItem: existingItem)),
         ),
         BlocProvider(
           create: (context) {
             final bloc = AddonManagementBloc()
               ..add(const LoadAddonCategoriesEvent());
-            
+
             // Load attachments if editing existing item
             if (existingItem?.id != null) {
               bloc.add(LoadItemAddonAttachmentsEvent(existingItem!.id!));
             }
-            
+
             return bloc;
           },
         ),
@@ -65,7 +65,6 @@ class _MenuItemWizardView extends StatefulWidget {
 }
 
 class _MenuItemWizardViewState extends State<_MenuItemWizardView> {
-
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<MenuEditBloc, MenuEditState>(
@@ -82,7 +81,8 @@ class _MenuItemWizardViewState extends State<_MenuItemWizardView> {
         }
 
         // Handle save error
-        if (state.status == MenuEditStatus.error && state.errorMessage != null) {
+        if (state.status == MenuEditStatus.error &&
+            state.errorMessage != null) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Error: ${state.errorMessage}'),
@@ -97,10 +97,7 @@ class _MenuItemWizardViewState extends State<_MenuItemWizardView> {
           appBar: AppBar(
             title: Text(
               state.item.id != null ? 'Edit Menu Item' : 'New Menu Item',
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-              ),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
             ),
             centerTitle: false,
             backgroundColor: Colors.white,
@@ -149,9 +146,7 @@ class _MenuItemWizardViewState extends State<_MenuItemWizardView> {
                 tooltip: 'Save as Draft',
                 onPressed: state.status == MenuEditStatus.saving
                     ? null
-                    : () => context.read<MenuEditBloc>().add(
-                          SaveDraft(),
-                        ),
+                    : () => context.read<MenuEditBloc>().add(SaveDraft()),
               ),
 
               // Close button
@@ -188,22 +183,27 @@ class _MenuItemWizardViewState extends State<_MenuItemWizardView> {
                           WizardNavBar(
                             currentStep: state.currentStep,
                             stepTitle: _getStepTitle(state.currentStep),
-                            stepDescription:
-                                _getStepDescription(state.currentStep),
+                            stepDescription: _getStepDescription(
+                              state.currentStep,
+                            ),
                             onBack: state.currentStep > 1
                                 ? () {
                                     final newStep = state.currentStep - 1;
-                                    context.read<MenuEditBloc>().add(NavigateToStep(newStep));
+                                    context.read<MenuEditBloc>().add(
+                                      NavigateToStep(newStep),
+                                    );
                                   }
                                 : null,
                             onNext: () {
                               final newStep = state.currentStep + 1;
-                              context.read<MenuEditBloc>().add(NavigateToStep(newStep));
+                              context.read<MenuEditBloc>().add(
+                                NavigateToStep(newStep),
+                              );
                             },
-                            onSave: () => context
-                                .read<MenuEditBloc>()
-                                .add(SaveItem()),
-                            canProceed: state.validation.isValid ||
+                            onSave: () =>
+                                context.read<MenuEditBloc>().add(SaveItem()),
+                            canProceed:
+                                state.validation.isValid ||
                                 state.currentStep < 5,
                             isSaving: state.status == MenuEditStatus.saving,
                           ),

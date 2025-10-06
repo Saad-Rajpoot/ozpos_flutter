@@ -28,9 +28,7 @@ class CartLineItem extends Equatable {
 
   double get lineTotal => unitPrice * quantity;
 
-  CartLineItem copyWith({
-    int? quantity,
-  }) {
+  CartLineItem copyWith({int? quantity}) {
     return CartLineItem(
       id: id,
       menuItem: menuItem,
@@ -44,14 +42,14 @@ class CartLineItem extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        menuItem.id,
-        quantity,
-        unitPrice,
-        selectedComboId,
-        selectedModifiers,
-        modifierSummary,
-      ];
+    id,
+    menuItem.id,
+    quantity,
+    unitPrice,
+    selectedComboId,
+    selectedModifiers,
+    modifierSummary,
+  ];
 }
 
 // ============================================================================
@@ -127,15 +125,15 @@ class CartLoaded extends CartState {
 
   @override
   List<Object?> get props => [
-        items,
-        orderType,
-        selectedTable,
-        customerName,
-        customerPhone,
-        subtotal,
-        gst,
-        total,
-      ];
+    items,
+    orderType,
+    selectedTable,
+    customerName,
+    customerPhone,
+    subtotal,
+    gst,
+    total,
+  ];
 }
 
 // ============================================================================
@@ -149,7 +147,14 @@ abstract class CartEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-class InitializeCart extends CartEvent {}
+class InitializeCart extends CartEvent {
+  final OrderType? initialOrderType;
+
+  const InitializeCart({this.initialOrderType});
+
+  @override
+  List<Object?> get props => [initialOrderType];
+}
 
 class AddItemToCart extends CartEvent {
   final MenuItemEntity menuItem;
@@ -170,13 +175,13 @@ class AddItemToCart extends CartEvent {
 
   @override
   List<Object?> get props => [
-        menuItem.id,
-        quantity,
-        unitPrice,
-        selectedComboId,
-        selectedModifiers,
-        modifierSummary,
-      ];
+    menuItem.id,
+    quantity,
+    unitPrice,
+    selectedComboId,
+    selectedModifiers,
+    modifierSummary,
+  ];
 }
 
 class UpdateLineItemQuantity extends CartEvent {
@@ -251,13 +256,15 @@ class CartBloc extends Bloc<CartEvent, CartState> {
   }
 
   void _onInitializeCart(InitializeCart event, Emitter<CartState> emit) {
-    emit(const CartLoaded(
-      items: [],
-      orderType: OrderType.dineIn,
-      subtotal: 0.0,
-      gst: 0.0,
-      total: 0.0,
-    ));
+    emit(
+      CartLoaded(
+        items: const [],
+        orderType: event.initialOrderType ?? OrderType.dineIn,
+        subtotal: 0.0,
+        gst: 0.0,
+        total: 0.0,
+      ),
+    );
   }
 
   void _onAddItemToCart(AddItemToCart event, Emitter<CartState> emit) {
@@ -266,7 +273,8 @@ class CartBloc extends Bloc<CartEvent, CartState> {
     final currentState = state as CartLoaded;
 
     // Generate unique line item ID
-    final lineItemId = '${event.menuItem.id}_${DateTime.now().millisecondsSinceEpoch}';
+    final lineItemId =
+        '${event.menuItem.id}_${DateTime.now().millisecondsSinceEpoch}';
 
     final newLineItem = CartLineItem(
       id: lineItemId,
@@ -278,13 +286,16 @@ class CartBloc extends Bloc<CartEvent, CartState> {
       modifierSummary: event.modifierSummary,
     );
 
-    final updatedItems = List<CartLineItem>.from(currentState.items)..add(newLineItem);
+    final updatedItems = List<CartLineItem>.from(currentState.items)
+      ..add(newLineItem);
 
     emit(currentState.copyWith(items: updatedItems));
   }
 
   void _onUpdateLineItemQuantity(
-      UpdateLineItemQuantity event, Emitter<CartState> emit) {
+    UpdateLineItemQuantity event,
+    Emitter<CartState> emit,
+  ) {
     if (state is! CartLoaded) return;
 
     final currentState = state as CartLoaded;
@@ -322,10 +333,12 @@ class CartBloc extends Bloc<CartEvent, CartState> {
 
     final currentState = state as CartLoaded;
 
-    emit(currentState.copyWith(
-      orderType: event.orderType,
-      clearTable: event.orderType != OrderType.dineIn,
-    ));
+    emit(
+      currentState.copyWith(
+        orderType: event.orderType,
+        clearTable: event.orderType != OrderType.dineIn,
+      ),
+    );
   }
 
   void _onSelectTable(SelectTable event, Emitter<CartState> emit) {
@@ -333,10 +346,12 @@ class CartBloc extends Bloc<CartEvent, CartState> {
 
     final currentState = state as CartLoaded;
 
-    emit(currentState.copyWith(
-      selectedTable: event.table,
-      orderType: OrderType.dineIn,
-    ));
+    emit(
+      currentState.copyWith(
+        selectedTable: event.table,
+        orderType: OrderType.dineIn,
+      ),
+    );
   }
 
   void _onClearTable(ClearTable event, Emitter<CartState> emit) {
@@ -352,19 +367,23 @@ class CartBloc extends Bloc<CartEvent, CartState> {
 
     final currentState = state as CartLoaded;
 
-    emit(currentState.copyWith(
-      customerName: event.name,
-      customerPhone: event.phone,
-    ));
+    emit(
+      currentState.copyWith(
+        customerName: event.name,
+        customerPhone: event.phone,
+      ),
+    );
   }
 
   void _onClearCart(ClearCart event, Emitter<CartState> emit) {
-    emit(const CartLoaded(
-      items: [],
-      orderType: OrderType.dineIn,
-      subtotal: 0.0,
-      gst: 0.0,
-      total: 0.0,
-    ));
+    emit(
+      const CartLoaded(
+        items: [],
+        orderType: OrderType.dineIn,
+        subtotal: 0.0,
+        gst: 0.0,
+        total: 0.0,
+      ),
+    );
   }
 }

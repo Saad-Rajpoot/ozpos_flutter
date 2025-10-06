@@ -57,9 +57,7 @@ class _ComboDashboardScreenState extends State<ComboDashboardScreen> {
             children: [
               _buildTopBar(context, state),
               _buildComboSection(context, state),
-              Expanded(
-                child: _buildComboGrid(context, state),
-              ),
+              Expanded(child: _buildComboGrid(context, state)),
             ],
           );
         },
@@ -72,9 +70,7 @@ class _ComboDashboardScreenState extends State<ComboDashboardScreen> {
       padding: const EdgeInsets.all(24),
       decoration: const BoxDecoration(
         color: Colors.white,
-        border: Border(
-          bottom: BorderSide(color: Color(0xFFE5E7EB), width: 1),
-        ),
+        border: Border(bottom: BorderSide(color: Color(0xFFE5E7EB), width: 1)),
       ),
       child: Row(
         children: [
@@ -156,7 +152,7 @@ class _ComboDashboardScreenState extends State<ComboDashboardScreen> {
               ],
             ),
           ),
-          
+
           // Action buttons
           const SizedBox(width: 16),
           _buildActionButton(
@@ -178,7 +174,9 @@ class _ComboDashboardScreenState extends State<ComboDashboardScreen> {
             icon: Icons.save,
             label: 'Save All',
             onPressed: state.hasUnsavedChanges
-                ? () => context.read<ComboManagementBloc>().add(const SaveAllCombos())
+                ? () => context.read<ComboManagementBloc>().add(
+                    const SaveAllCombos(),
+                  )
                 : null,
           ),
         ],
@@ -203,9 +201,7 @@ class _ComboDashboardScreenState extends State<ComboDashboardScreen> {
           foregroundColor: isPrimary ? Colors.white : const Color(0xFF374151),
           elevation: 0,
           side: isPrimary ? null : const BorderSide(color: Color(0xFFD1D5DB)),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           padding: const EdgeInsets.symmetric(horizontal: 16),
         ),
       ),
@@ -217,9 +213,7 @@ class _ComboDashboardScreenState extends State<ComboDashboardScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
       decoration: const BoxDecoration(
         color: Colors.white,
-        border: Border(
-          bottom: BorderSide(color: Color(0xFFE5E7EB), width: 1),
-        ),
+        border: Border(bottom: BorderSide(color: Color(0xFFE5E7EB), width: 1)),
       ),
       child: Row(
         children: [
@@ -230,11 +224,7 @@ class _ComboDashboardScreenState extends State<ComboDashboardScreen> {
               color: const Color(0xFF8B5CF6).withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Icon(
-              Icons.star,
-              color: Color(0xFF8B5CF6),
-              size: 20,
-            ),
+            child: const Icon(Icons.star, color: Color(0xFF8B5CF6), size: 20),
           ),
           const SizedBox(width: 12),
           const Text(
@@ -307,9 +297,7 @@ class _ComboDashboardScreenState extends State<ComboDashboardScreen> {
   Widget _buildComboGrid(BuildContext context, ComboManagementState state) {
     if (state.isLoading) {
       return const Center(
-        child: CircularProgressIndicator(
-          color: Color(0xFF8B5CF6),
-        ),
+        child: CircularProgressIndicator(color: Color(0xFF8B5CF6)),
       );
     }
 
@@ -318,11 +306,7 @@ class _ComboDashboardScreenState extends State<ComboDashboardScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.error_outline,
-              size: 48,
-              color: Colors.red[400],
-            ),
+            Icon(Icons.error_outline, size: 48, color: Colors.red[400]),
             const SizedBox(height: 16),
             Text(
               'Error loading combos',
@@ -335,10 +319,7 @@ class _ComboDashboardScreenState extends State<ComboDashboardScreen> {
             const SizedBox(height: 8),
             Text(
               state.currentErrorMessage ?? 'Something went wrong',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[600],
-              ),
+              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
@@ -411,10 +392,7 @@ class _ComboDashboardScreenState extends State<ComboDashboardScreen> {
           const SizedBox(height: 8),
           Text(
             'Create your first meal combo to boost sales',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey[600],
-            ),
+            style: TextStyle(fontSize: 16, color: Colors.grey[600]),
           ),
           const SizedBox(height: 32),
           ElevatedButton.icon(
@@ -424,10 +402,7 @@ class _ComboDashboardScreenState extends State<ComboDashboardScreen> {
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF8B5CF6),
               foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(
-                horizontal: 24,
-                vertical: 12,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             ),
           ),
         ],
@@ -445,7 +420,7 @@ class _ComboDashboardScreenState extends State<ComboDashboardScreen> {
 
   void _showComboBuilder(BuildContext context) {
     context.read<ComboManagementBloc>().add(const StartComboEdit());
-    
+
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -455,7 +430,7 @@ class _ComboDashboardScreenState extends State<ComboDashboardScreen> {
 
   void _editCombo(BuildContext context, String comboId) {
     context.read<ComboManagementBloc>().add(StartComboEdit(comboId: comboId));
-    
+
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -471,7 +446,7 @@ class _ComboDashboardScreenState extends State<ComboDashboardScreen> {
     final newStatus = combo.status == ComboStatus.active
         ? ComboStatus.hidden
         : ComboStatus.active;
-    
+
     context.read<ComboManagementBloc>().add(
       ToggleComboVisibility(comboId: combo.id, newStatus: newStatus),
     );

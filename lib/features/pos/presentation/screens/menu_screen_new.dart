@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/data/seed_data.dart';
 import '../../../../core/navigation/app_router.dart';
-import '../../../../theme/tokens.dart';
 import '../../../../utils/responsive.dart';
 import '../../../../widgets/menu/menu_item_card.dart';
 import '../../../../widgets/cart/cart_pane.dart';
@@ -34,7 +33,9 @@ class _MenuScreenNewState extends State<MenuScreenNew> {
 
     // Apply category filter
     if (_selectedCategory != 'all') {
-      items = items.where((item) => item.categoryId == _selectedCategory).toList();
+      items = items
+          .where((item) => item.categoryId == _selectedCategory)
+          .toList();
     }
 
     // Apply search filter
@@ -52,8 +53,30 @@ class _MenuScreenNewState extends State<MenuScreenNew> {
   Widget build(BuildContext context) {
     final isDesktop = MediaQuery.of(context).size.width > 1024;
 
+    // Extract orderType from navigation arguments
+    final args =
+        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    final orderTypeString = args?['orderType'] as String?;
+
+    // Convert string to OrderType enum
+    OrderType? initialOrderType;
+    if (orderTypeString != null) {
+      switch (orderTypeString.toLowerCase()) {
+        case 'takeaway':
+          initialOrderType = OrderType.takeaway;
+          break;
+        case 'dine-in':
+          initialOrderType = OrderType.dineIn;
+          break;
+        case 'delivery':
+          initialOrderType = OrderType.delivery;
+          break;
+      }
+    }
+
     return BlocProvider(
-      create: (context) => CartBloc()..add(InitializeCart()),
+      create: (context) =>
+          CartBloc()..add(InitializeCart(initialOrderType: initialOrderType)),
       child: ClampedTextScaling(
         child: Scaffold(
           backgroundColor: const Color(0xFFF9FAFB),
@@ -80,9 +103,7 @@ class _MenuScreenNewState extends State<MenuScreenNew> {
                     // Category tabs
                     _buildCategoryTabs(),
                     // Menu grid
-                    Expanded(
-                      child: _buildMenuGrid(),
-                    ),
+                    Expanded(child: _buildMenuGrid()),
                   ],
                 ),
               ),
@@ -173,7 +194,10 @@ class _MenuScreenNewState extends State<MenuScreenNew> {
         decoration: InputDecoration(
           hintText: 'Search menu items...',
           prefixIcon: const Icon(Icons.search, size: 20),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 12,
+          ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
             borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
@@ -208,8 +232,8 @@ class _MenuScreenNewState extends State<MenuScreenNew> {
         itemBuilder: (context, index) {
           final category = _categories[index];
           final isSelected = _selectedCategory == category;
-          final displayName = category == 'all' 
-              ? 'All' 
+          final displayName = category == 'all'
+              ? 'All'
               : category[0].toUpperCase() + category.substring(1);
 
           return Padding(
@@ -230,7 +254,9 @@ class _MenuScreenNewState extends State<MenuScreenNew> {
                 fontSize: 14,
               ),
               side: BorderSide(
-                color: isSelected ? const Color(0xFFEF4444) : const Color(0xFFD1D5DB),
+                color: isSelected
+                    ? const Color(0xFFEF4444)
+                    : const Color(0xFFD1D5DB),
               ),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             ),
@@ -248,11 +274,7 @@ class _MenuScreenNewState extends State<MenuScreenNew> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.restaurant_menu,
-              size: 64,
-              color: Colors.grey.shade300,
-            ),
+            Icon(Icons.restaurant_menu, size: 64, color: Colors.grey.shade300),
             const SizedBox(height: 16),
             Text(
               _searchQuery.isNotEmpty
@@ -295,7 +317,7 @@ class _MenuScreenNewState extends State<MenuScreenNew> {
       padding: EdgeInsets.all(spacing),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: crossAxisCount,
-        childAspectRatio: 0.75,
+        childAspectRatio: 0.7,
         crossAxisSpacing: spacing,
         mainAxisSpacing: spacing,
       ),
@@ -308,14 +330,14 @@ class _MenuScreenNewState extends State<MenuScreenNew> {
             // Fast add for items without required modifiers
             if (item.isFastAdd) {
               context.read<CartBloc>().add(
-                    AddItemToCart(
-                      menuItem: item,
-                      quantity: 1,
-                      unitPrice: item.basePrice,
-                      selectedModifiers: {},
-                      modifierSummary: '',
-                    ),
-                  );
+                AddItemToCart(
+                  menuItem: item,
+                  quantity: 1,
+                  unitPrice: item.basePrice,
+                  selectedModifiers: {},
+                  modifierSummary: '',
+                ),
+              );
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text('Added ${item.name} to cart'),

@@ -6,10 +6,7 @@ import '../../../bloc/menu_edit_state.dart';
 class SummarySidebar extends StatelessWidget {
   final MenuEditState state;
 
-  const SummarySidebar({
-    super.key,
-    required this.state,
-  });
+  const SummarySidebar({super.key, required this.state});
 
   @override
   Widget build(BuildContext context) {
@@ -17,9 +14,7 @@ class SummarySidebar extends StatelessWidget {
       width: 320,
       decoration: BoxDecoration(
         color: Colors.white,
-        border: Border(
-          left: BorderSide(color: Colors.grey.shade200, width: 1),
-        ),
+        border: Border(left: BorderSide(color: Colors.grey.shade200, width: 1)),
       ),
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -31,14 +26,14 @@ class SummarySidebar extends StatelessWidget {
               children: [
                 const Text(
                   'Summary',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(width: 12),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: state.item.dineInAvailable
                         ? const Color(0xFF10B981).withOpacity(0.1)
@@ -95,10 +90,7 @@ class SummarySidebar extends StatelessWidget {
               title: 'Add-on Items',
               child: Text(
                 '${state.totalAddOnItems} items configured',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey.shade600,
-                ),
+                style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
               ),
             ),
             const SizedBox(height: 24),
@@ -135,29 +127,31 @@ class SummarySidebar extends StatelessWidget {
             // Show errors if any
             if (!state.validation.isValid) ...[
               const SizedBox(height: 12),
-              ...state.validation.errors.map((error) => Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Icon(
-                          Icons.error_outline,
-                          size: 16,
-                          color: Color(0xFFEF4444),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            error,
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: Color(0xFFEF4444),
-                            ),
+              ...state.validation.errors.map(
+                (error) => Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Icon(
+                        Icons.error_outline,
+                        size: 16,
+                        color: Color(0xFFEF4444),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          error,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFFEF4444),
                           ),
                         ),
-                      ],
-                    ),
-                  )),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ],
 
             // Show warnings if any
@@ -165,35 +159,34 @@ class SummarySidebar extends StatelessWidget {
               const SizedBox(height: 16),
               const Text(
                 'Suggestions',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 8),
-              ...state.validation.warnings.map((warning) => Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Icon(
-                          Icons.info_outline,
-                          size: 16,
-                          color: Color(0xFFF59E0B),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            warning,
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: Color(0xFF92400E),
-                            ),
+              ...state.validation.warnings.map(
+                (warning) => Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Icon(
+                        Icons.info_outline,
+                        size: 16,
+                        color: Color(0xFFF59E0B),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          warning,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF92400E),
                           ),
                         ),
-                      ],
-                    ),
-                  )),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ],
           ],
         ),

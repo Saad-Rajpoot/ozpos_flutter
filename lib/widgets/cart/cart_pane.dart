@@ -62,9 +62,7 @@ class CartPane extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        border: Border(
-          bottom: BorderSide(color: Colors.grey.shade200),
-        ),
+        border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -101,8 +99,8 @@ class CartPane extends StatelessWidget {
               isSelected: state.orderType == OrderType.dineIn,
               onTap: () {
                 context.read<CartBloc>().add(
-                      const ChangeOrderType(orderType: OrderType.dineIn),
-                    );
+                  const ChangeOrderType(orderType: OrderType.dineIn),
+                );
               },
             ),
           ),
@@ -114,8 +112,8 @@ class CartPane extends StatelessWidget {
               isSelected: state.orderType == OrderType.takeaway,
               onTap: () {
                 context.read<CartBloc>().add(
-                      const ChangeOrderType(orderType: OrderType.takeaway),
-                    );
+                  const ChangeOrderType(orderType: OrderType.takeaway),
+                );
               },
             ),
           ),
@@ -127,8 +125,8 @@ class CartPane extends StatelessWidget {
               isSelected: state.orderType == OrderType.delivery,
               onTap: () {
                 context.read<CartBloc>().add(
-                      const ChangeOrderType(orderType: OrderType.delivery),
-                    );
+                  const ChangeOrderType(orderType: OrderType.delivery),
+                );
               },
             ),
           ),
@@ -163,7 +161,11 @@ class CartPane extends StatelessWidget {
               ),
             ),
             const Spacer(),
-            const Icon(Icons.arrow_drop_down, size: 20, color: Color(0xFF6B7280)),
+            const Icon(
+              Icons.arrow_drop_down,
+              size: 20,
+              color: Color(0xFF6B7280),
+            ),
           ],
         ),
       ),
@@ -177,7 +179,10 @@ class CartPane extends StatelessWidget {
           decoration: InputDecoration(
             hintText: 'Customer name',
             prefixIcon: const Icon(Icons.person_outline, size: 20),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 10,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
@@ -203,7 +208,10 @@ class CartPane extends StatelessWidget {
           decoration: InputDecoration(
             hintText: 'Phone number (optional)',
             prefixIcon: const Icon(Icons.phone_outlined, size: 20),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 10,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
@@ -260,7 +268,11 @@ class CartPane extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.shopping_cart_outlined, size: 64, color: Colors.grey.shade300),
+          Icon(
+            Icons.shopping_cart_outlined,
+            size: 64,
+            color: Colors.grey.shade300,
+          ),
           const SizedBox(height: 16),
           Text(
             'Cart is empty',
@@ -289,9 +301,7 @@ class CartPane extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: const Color(0xFFF9FAFB),
-        border: Border(
-          top: BorderSide(color: Colors.grey.shade200),
-        ),
+        border: Border(top: BorderSide(color: Colors.grey.shade200)),
       ),
       child: Column(
         children: [
@@ -411,7 +421,7 @@ class CartPane extends StatelessWidget {
 
   void _handlePayNow(BuildContext context) {
     final cartState = context.read<CartBloc>().state as CartLoaded;
-    
+
     // Navigate to checkout with cart data
     Navigator.pushNamed(
       context,
@@ -430,9 +440,9 @@ class CartPane extends StatelessWidget {
 
   void _handleSendToKitchen(BuildContext context) {
     // TODO: Send order to kitchen
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Order sent to kitchen!')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Order sent to kitchen!')));
     context.read<CartBloc>().add(ClearCart());
   }
 
@@ -452,7 +462,10 @@ class CartPane extends StatelessWidget {
               context.read<CartBloc>().add(ClearCart());
               Navigator.pop(dialogContext);
             },
-            child: const Text('Clear', style: TextStyle(color: Color(0xFFEF4444))),
+            child: const Text(
+              'Clear',
+              style: TextStyle(color: Color(0xFFEF4444)),
+            ),
           ),
         ],
       ),
@@ -561,10 +574,14 @@ class _LineItemCard extends StatelessWidget {
               InkWell(
                 onTap: () {
                   context.read<CartBloc>().add(
-                        RemoveLineItem(lineItemId: lineItem.id),
-                      );
+                    RemoveLineItem(lineItemId: lineItem.id),
+                  );
                 },
-                child: const Icon(Icons.delete_outline, size: 20, color: Color(0xFFEF4444)),
+                child: const Icon(
+                  Icons.delete_outline,
+                  size: 20,
+                  color: Color(0xFFEF4444),
+                ),
               ),
             ],
           ),
@@ -577,7 +594,10 @@ class _LineItemCard extends StatelessWidget {
               runSpacing: 6,
               children: lineItem.modifierSummary.split(', ').map((modifier) {
                 return Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFF3F4F6),
                     borderRadius: BorderRadius.circular(6),
@@ -602,10 +622,7 @@ class _LineItemCard extends StatelessWidget {
             children: [
               Text(
                 '\$${lineItem.unitPrice.toStringAsFixed(2)} each',
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: Color(0xFF9CA3AF),
-                ),
+                style: const TextStyle(fontSize: 12, color: Color(0xFF9CA3AF)),
               ),
               Text(
                 '\$${lineItem.lineTotal.toStringAsFixed(2)}',
@@ -634,15 +651,19 @@ class _LineItemCard extends StatelessWidget {
           InkWell(
             onTap: () {
               context.read<CartBloc>().add(
-                    UpdateLineItemQuantity(
-                      lineItemId: lineItem.id,
-                      newQuantity: lineItem.quantity - 1,
-                    ),
-                  );
+                UpdateLineItemQuantity(
+                  lineItemId: lineItem.id,
+                  newQuantity: lineItem.quantity - 1,
+                ),
+              );
             },
             child: Container(
               padding: const EdgeInsets.all(4),
-              child: const Icon(Icons.remove, size: 16, color: Color(0xFF6B7280)),
+              child: const Icon(
+                Icons.remove,
+                size: 16,
+                color: Color(0xFF6B7280),
+              ),
             ),
           ),
           Container(
@@ -659,11 +680,11 @@ class _LineItemCard extends StatelessWidget {
           InkWell(
             onTap: () {
               context.read<CartBloc>().add(
-                    UpdateLineItemQuantity(
-                      lineItemId: lineItem.id,
-                      newQuantity: lineItem.quantity + 1,
-                    ),
-                  );
+                UpdateLineItemQuantity(
+                  lineItemId: lineItem.id,
+                  newQuantity: lineItem.quantity + 1,
+                ),
+              );
             },
             child: Container(
               padding: const EdgeInsets.all(4),

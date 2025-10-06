@@ -53,5 +53,6 @@ class MenuCategoryModel with _$MenuCategoryModel {
       _$$MenuCategoryModelImplFromJson(json);
 
   /// Convert model to JSON
-  Map<String, dynamic> toJson() => _$$MenuCategoryModelImplToJson(this as _$MenuCategoryModelImpl);
+  Map<String, dynamic> toJson() =>
+      _$$MenuCategoryModelImplToJson(this as _$MenuCategoryModelImpl);
 }

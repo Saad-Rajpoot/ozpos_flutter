@@ -18,36 +18,35 @@ import 'features/combos/presentation/bloc/combo_management_bloc.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Initialize BLoC observer for error tracking
   Bloc.observer = SentryBlocObserver();
-  
+
   // Initialize dependency injection
   await di.init();
-  
+
   // Set up Flutter error handlers to capture ALL errors
   _setupErrorHandlers();
-  
+
   // Print environment configuration in debug mode
   EnvironmentConfig.printConfig();
-  
+
   // Initialize Sentry based on environment configuration
   if (EnvironmentConfig.enableSentry) {
-    await SentryFlutter.init(
-      (options) {
-        options.dsn = EnvironmentConfig.sentryDsn;
-        options.environment = EnvironmentConfig.environment;
-        options.release = 'ozpos-flutter@${EnvironmentConfig.appVersion}';
-        options.tracesSampleRate = EnvironmentConfig.sentrySampleRate;
-        options.profilesSampleRate = EnvironmentConfig.sentryPerformanceSampleRate;
-        options.attachScreenshot = EnvironmentConfig.attachScreenshots;
-        options.attachViewHierarchy = EnvironmentConfig.attachViewHierarchy;
-        options.debug = EnvironmentConfig.sentryDebug;
-        options.maxBreadcrumbs = EnvironmentConfig.maxBreadcrumbs;
-        options.autoSessionTrackingInterval = EnvironmentConfig.sessionTrackingInterval;
-      },
-      appRunner: () => runApp(const OzposApp()),
-    );
+    await SentryFlutter.init((options) {
+      options.dsn = EnvironmentConfig.sentryDsn;
+      options.environment = EnvironmentConfig.environment;
+      options.release = 'ozpos-flutter@${EnvironmentConfig.appVersion}';
+      options.tracesSampleRate = EnvironmentConfig.sentrySampleRate;
+      options.profilesSampleRate =
+          EnvironmentConfig.sentryPerformanceSampleRate;
+      options.attachScreenshot = EnvironmentConfig.attachScreenshots;
+      options.attachViewHierarchy = EnvironmentConfig.attachViewHierarchy;
+      options.debug = EnvironmentConfig.sentryDebug;
+      options.maxBreadcrumbs = EnvironmentConfig.maxBreadcrumbs;
+      options.autoSessionTrackingInterval =
+          EnvironmentConfig.sessionTrackingInterval;
+    }, appRunner: () => runApp(const OzposApp()));
   } else {
     // Run app without Sentry in debug mode
     runApp(const OzposApp());
@@ -61,12 +60,8 @@ class OzposApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider<MenuBloc>(
-          create: (_) => GetIt.instance<MenuBloc>(),
-        ),
-        BlocProvider<CartBloc>(
-          create: (_) => GetIt.instance<CartBloc>(),
-        ),
+        BlocProvider<MenuBloc>(create: (_) => GetIt.instance<MenuBloc>()),
+        BlocProvider<CartBloc>(create: (_) => GetIt.instance<CartBloc>()),
         BlocProvider<ComboManagementBloc>(
           create: (_) => GetIt.instance<ComboManagementBloc>(),
         ),
@@ -79,9 +74,7 @@ class OzposApp extends StatelessWidget {
         themeMode: ThemeMode.light,
         onGenerateRoute: AppRouter.generateRoute,
         initialRoute: AppRouter.dashboard,
-        navigatorObservers: [
-          SentryNavigatorObserver(),
-        ],
+        navigatorObservers: [SentryNavigatorObserver()],
       ),
     );
   }
@@ -93,13 +86,13 @@ void _setupErrorHandlers() {
   FlutterError.onError = (FlutterErrorDetails details) {
     // Let Flutter handle the error first (for debugging)
     FlutterError.presentError(details);
-    
+
     // Send to Sentry if enabled
     if (EnvironmentConfig.enableSentry) {
       _sendFlutterErrorToSentry(details);
     }
   };
-  
+
   // Capture platform/async errors that Flutter doesn't catch
   PlatformDispatcher.instance.onError = (error, stack) {
     if (EnvironmentConfig.enableSentry) {
@@ -107,14 +100,14 @@ void _setupErrorHandlers() {
     }
     return true;
   };
-  
+
   // Override debugPrint to capture important debug messages
   if (EnvironmentConfig.enableSentry) {
     final originalDebugPrint = debugPrint;
     debugPrint = (String? message, {int? wrapWidth}) {
       // Call original debugPrint first
       originalDebugPrint?.call(message, wrapWidth: wrapWidth);
-      
+
       // Check for important error-like debug messages
       if (message != null && _isImportantDebugMessage(message)) {
         _sendDebugMessageToSentry(message);
@@ -132,7 +125,7 @@ void _sendFlutterErrorToSentry(FlutterErrorDetails details) async {
     final stackTrace = details.stack?.toString() ?? 'No stack trace';
     final context = details.context?.toString() ?? 'No context';
     final library = details.library ?? 'Unknown';
-    
+
     _sendErrorToSentry(
       details.exception,
       details.stack,
@@ -159,15 +152,17 @@ void _sendErrorToSentry(
   Map<String, dynamic>? extra,
 }) async {
   try {
-    const sentryDsn = 'https://5043c056bceb3ca2e4a92d2e6e2b0235@o4509604948869120.ingest.us.sentry.io/4510112203341824';
+    const sentryDsn =
+        'https://5043c056bceb3ca2e4a92d2e6e2b0235@o4509604948869120.ingest.us.sentry.io/4510112203341824';
     const projectId = '4510112203341824';
     const publicKey = '5043c056bceb3ca2e4a92d2e6e2b0235';
-    
-    final url = 'https://o4509604948869120.ingest.us.sentry.io/api/$projectId/store/';
-    
+
+    final url =
+        'https://o4509604948869120.ingest.us.sentry.io/api/$projectId/store/';
+
     // Generate unique event ID
     final eventId = _generateEventId();
-    
+
     final event = {
       'event_id': eventId,
       'timestamp': DateTime.now().toUtc().toIso8601String(),
@@ -177,19 +172,15 @@ void _sendErrorToSentry(
       'server_name': 'ozpos-flutter',
       'release': 'ozpos-flutter@${EnvironmentConfig.appVersion}',
       'environment': EnvironmentConfig.environment,
-      'message': {
-        'formatted': '$hint: ${error.toString()}',
-      },
+      'message': {'formatted': '$hint: ${error.toString()}'},
       'exception': {
         'values': [
           {
             'type': error.runtimeType.toString(),
             'value': error.toString(),
-            'stacktrace': {
-              'frames': _parseStackTrace(stackTrace),
-            },
-          }
-        ]
+            'stacktrace': {'frames': _parseStackTrace(stackTrace)},
+          },
+        ],
       },
       'tags': {
         'app_name': 'OZPOS',
@@ -204,17 +195,18 @@ void _sendErrorToSentry(
         ...?extra,
       },
     };
-    
+
     final response = await http.post(
       Uri.parse(url),
       headers: {
         'Content-Type': 'application/json',
-        'X-Sentry-Auth': 'Sentry sentry_version=7, sentry_key=$publicKey, sentry_client=ozpos-flutter/1.0.0',
+        'X-Sentry-Auth':
+            'Sentry sentry_version=7, sentry_key=$publicKey, sentry_client=ozpos-flutter/1.0.0',
         'User-Agent': 'ozpos-flutter/1.0.0',
       },
       body: json.encode(event),
     );
-    
+
     if (response.statusCode >= 200 && response.statusCode < 300) {
       print('✅ Error sent to Sentry: ${error.runtimeType}');
     } else {
@@ -228,23 +220,27 @@ void _sendErrorToSentry(
 /// Generate a unique event ID for Sentry
 String _generateEventId() {
   final random = Random();
-  return List.generate(32, (index) => 
-    random.nextInt(16).toRadixString(16)
+  return List.generate(
+    32,
+    (index) => random.nextInt(16).toRadixString(16),
   ).join('');
 }
 
 /// Parse stack trace into Sentry format
 List<Map<String, dynamic>> _parseStackTrace(StackTrace? stackTrace) {
   if (stackTrace == null) return [];
-  
+
   final lines = stackTrace.toString().split('\n');
   final frames = <Map<String, dynamic>>[];
-  
-  for (final line in lines.take(10)) { // Limit to 10 frames
+
+  for (final line in lines.take(10)) {
+    // Limit to 10 frames
     if (line.trim().isEmpty) continue;
-    
+
     // Try to parse the stack frame
-    final match = RegExp(r'#\d+\s+(.+?)\s+\((.+?):(\d+):(\d+)\)').firstMatch(line);
+    final match = RegExp(
+      r'#\d+\s+(.+?)\s+\((.+?):(\d+):(\d+)\)',
+    ).firstMatch(line);
     if (match != null) {
       frames.add({
         'function': match.group(1) ?? 'unknown',
@@ -264,14 +260,14 @@ List<Map<String, dynamic>> _parseStackTrace(StackTrace? stackTrace) {
       });
     }
   }
-  
+
   return frames;
 }
 
 /// Check if a debug message is important enough to report to Sentry
 bool _isImportantDebugMessage(String message) {
   final lowerMessage = message.toLowerCase();
-  
+
   // Capture BLoC-related errors
   if (lowerMessage.contains('bloc not found') ||
       lowerMessage.contains('bloc error') ||
@@ -281,7 +277,7 @@ bool _isImportantDebugMessage(String message) {
       lowerMessage.contains('warning:')) {
     return true;
   }
-  
+
   // Capture specific OZPOS errors
   if (lowerMessage.contains('cartbloc not found') ||
       lowerMessage.contains('menu') && lowerMessage.contains('error') ||
@@ -289,7 +285,7 @@ bool _isImportantDebugMessage(String message) {
       lowerMessage.contains('order') && lowerMessage.contains('failed')) {
     return true;
   }
-  
+
   return false;
 }
 

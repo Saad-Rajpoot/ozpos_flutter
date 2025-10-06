@@ -40,16 +40,20 @@ class _SizeRowWidgetState extends State<SizeRowWidget> {
     super.initState();
     _nameController = TextEditingController(text: widget.size.name);
     _dineInController = TextEditingController(
-      text: widget.size.dineInPrice > 0 ? widget.size.dineInPrice.toStringAsFixed(2) : '',
+      text: widget.size.dineInPrice > 0
+          ? widget.size.dineInPrice.toStringAsFixed(2)
+          : '',
     );
     _takeawayController = TextEditingController(
-      text: (widget.size.takeawayPrice != null && widget.size.takeawayPrice! > 0) 
-          ? widget.size.takeawayPrice!.toStringAsFixed(2) 
+      text:
+          (widget.size.takeawayPrice != null && widget.size.takeawayPrice! > 0)
+          ? widget.size.takeawayPrice!.toStringAsFixed(2)
           : '',
     );
     _deliveryController = TextEditingController(
-      text: (widget.size.deliveryPrice != null && widget.size.deliveryPrice! > 0) 
-          ? widget.size.deliveryPrice!.toStringAsFixed(2) 
+      text:
+          (widget.size.deliveryPrice != null && widget.size.deliveryPrice! > 0)
+          ? widget.size.deliveryPrice!.toStringAsFixed(2)
           : '',
     );
   }
@@ -98,7 +102,9 @@ class _SizeRowWidgetState extends State<SizeRowWidget> {
                   Expanded(
                     flex: 2,
                     child: Text(
-                      widget.size.name.isEmpty ? 'Unnamed Size' : widget.size.name,
+                      widget.size.name.isEmpty
+                          ? 'Unnamed Size'
+                          : widget.size.name,
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -142,9 +148,7 @@ class _SizeRowWidgetState extends State<SizeRowWidget> {
 
                   // Expand icon
                   Icon(
-                    widget.isExpanded
-                        ? Icons.expand_less
-                        : Icons.expand_more,
+                    widget.isExpanded ? Icons.expand_less : Icons.expand_more,
                     color: Colors.grey.shade600,
                   ),
 
@@ -351,14 +355,14 @@ class _SizeRowWidgetState extends State<SizeRowWidget> {
   Widget _buildAddOnsSection() {
     // Generate or use existing size ID
     final sizeId = widget.size.id ?? const Uuid().v4();
-    
+
     // If size doesn't have an ID yet, update it
     if (widget.size.id == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         widget.onUpdate(widget.size.copyWith(id: sizeId));
       });
     }
-    
+
     return AddonRulesCompactDisplay(
       itemId: widget.itemId,
       sizeId: sizeId,
@@ -385,13 +389,18 @@ class _SizeRowWidgetState extends State<SizeRowWidget> {
               onPressed: () {
                 // TODO: Implement add-on item picker
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Add-on management coming soon')),
+                  const SnackBar(
+                    content: Text('Add-on management coming soon'),
+                  ),
                 );
               },
               icon: const Icon(Icons.add, size: 16),
               label: const Text('Manage'),
               style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
               ),
             ),
           ],
@@ -407,14 +416,15 @@ class _SizeRowWidgetState extends State<SizeRowWidget> {
             ),
             child: Row(
               children: [
-                Icon(Icons.add_circle_outline, color: Colors.grey.shade400, size: 16),
+                Icon(
+                  Icons.add_circle_outline,
+                  color: Colors.grey.shade400,
+                  size: 16,
+                ),
                 const SizedBox(width: 8),
                 Text(
                   'No add-on items assigned',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey.shade600,
-                  ),
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                 ),
               ],
             ),
@@ -431,8 +441,9 @@ class _SizeRowWidgetState extends State<SizeRowWidget> {
                 labelStyle: const TextStyle(fontSize: 12),
                 deleteIcon: const Icon(Icons.close, size: 16),
                 onDeleted: () {
-                  final updatedItems = List<AddOnItemEditEntity>.from(widget.size.addOnItems)
-                    ..removeWhere((item) => item.itemId == addOnItem.itemId);
+                  final updatedItems = List<AddOnItemEditEntity>.from(
+                    widget.size.addOnItems,
+                  )..removeWhere((item) => item.itemId == addOnItem.itemId);
                   widget.onUpdate(
                     widget.size.copyWith(addOnItems: updatedItems),
                   );
