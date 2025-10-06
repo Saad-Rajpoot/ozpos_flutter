@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/navigation/app_router.dart';
+import '../../../../core/navigation/navigation_service.dart';
 import '../bloc/menu_bloc.dart';
 import '../../domain/entities/menu_item_entity.dart';
-import 'menu_item_wizard/menu_item_wizard_screen.dart';
 import '../../domain/entities/menu_item_edit_entity.dart';
-import 'addon_management/addon_categories_screen.dart';
 import '../../../combos/presentation/bloc/combo_management_bloc.dart';
 import '../../../combos/presentation/widgets/combo_card.dart';
 import '../../../combos/presentation/widgets/combo_builder_modal.dart';
@@ -12,15 +12,15 @@ import '../../../combos/presentation/bloc/combo_management_event.dart';
 import '../../../combos/presentation/bloc/combo_management_state.dart';
 import '../../../combos/domain/entities/combo_entity.dart';
 
-/// Menu Editor Screen V3 - Matches reference UI design
-class MenuEditorScreenV3 extends StatefulWidget {
-  const MenuEditorScreenV3({super.key});
+/// Menu Editor Screen - Matches reference UI design
+class MenuEditorScreen extends StatefulWidget {
+  const MenuEditorScreen({super.key});
 
   @override
-  State<MenuEditorScreenV3> createState() => _MenuEditorScreenV3State();
+  State<MenuEditorScreen> createState() => _MenuEditorScreenState();
 }
 
-class _MenuEditorScreenV3State extends State<MenuEditorScreenV3> {
+class _MenuEditorScreenState extends State<MenuEditorScreen> {
   String _searchQuery = '';
   String? _selectedCategoryId;
   final Map<String, bool> _collapsedCategories = {};
@@ -56,15 +56,13 @@ class _MenuEditorScreenV3State extends State<MenuEditorScreenV3> {
         children: [
           // Left Sidebar
           _buildLeftSidebar(),
-          
+
           // Main Content
           Expanded(
             child: Column(
               children: [
                 _buildTopBar(),
-                Expanded(
-                  child: _buildMainContent(),
-                ),
+                Expanded(child: _buildMainContent()),
               ],
             ),
           ),
@@ -92,7 +90,7 @@ class _MenuEditorScreenV3State extends State<MenuEditorScreenV3> {
               ),
             ),
           ),
-          
+
           // New Meal Combo Button
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -110,9 +108,9 @@ class _MenuEditorScreenV3State extends State<MenuEditorScreenV3> {
               ),
             ),
           ),
-          
+
           const SizedBox(height: 12),
-          
+
           // New Category Button
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -130,9 +128,9 @@ class _MenuEditorScreenV3State extends State<MenuEditorScreenV3> {
               ),
             ),
           ),
-          
+
           const SizedBox(height: 12),
-          
+
           // Manage Add-on Sets Button
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -150,9 +148,9 @@ class _MenuEditorScreenV3State extends State<MenuEditorScreenV3> {
               ),
             ),
           ),
-          
+
           const SizedBox(height: 20),
-          
+
           // Categories List
           Expanded(
             child: BlocBuilder<MenuBloc, MenuState>(
@@ -161,9 +159,11 @@ class _MenuEditorScreenV3State extends State<MenuEditorScreenV3> {
                   // Group items by category
                   final categoryGroups = <String, List<MenuItemEntity>>{};
                   for (final item in state.items) {
-                    categoryGroups.putIfAbsent(item.categoryId, () => []).add(item);
+                    categoryGroups
+                        .putIfAbsent(item.categoryId, () => [])
+                        .add(item);
                   }
-                  
+
                   return ListView(
                     padding: EdgeInsets.zero,
                     children: categoryGroups.entries.map((entry) {
@@ -186,7 +186,7 @@ class _MenuEditorScreenV3State extends State<MenuEditorScreenV3> {
 
   Widget _buildCategoryItem(String categoryId, String name, int count) {
     final isSelected = _selectedCategoryId == categoryId;
-    
+
     return InkWell(
       onTap: () {
         setState(() {
@@ -198,11 +198,7 @@ class _MenuEditorScreenV3State extends State<MenuEditorScreenV3> {
         color: isSelected ? const Color(0xFFF3F4F6) : null,
         child: Row(
           children: [
-            Icon(
-              Icons.drag_indicator,
-              size: 16,
-              color: Colors.grey.shade400,
-            ),
+            Icon(Icons.drag_indicator, size: 16, color: Colors.grey.shade400),
             const SizedBox(width: 8),
             _getCategoryIcon(name),
             const SizedBox(width: 8),
@@ -395,9 +391,12 @@ class _MenuEditorScreenV3State extends State<MenuEditorScreenV3> {
           // Group items by category
           final categoryGroups = <String, List<MenuItemEntity>>{};
           for (final item in state.items) {
-            if (_selectedCategoryId == null || item.categoryId == _selectedCategoryId) {
-              if (_searchQuery.isEmpty || 
-                  item.name.toLowerCase().contains(_searchQuery.toLowerCase())) {
+            if (_selectedCategoryId == null ||
+                item.categoryId == _selectedCategoryId) {
+              if (_searchQuery.isEmpty ||
+                  item.name.toLowerCase().contains(
+                    _searchQuery.toLowerCase(),
+                  )) {
                 categoryGroups.putIfAbsent(item.categoryId, () => []).add(item);
               }
             }
@@ -409,7 +408,7 @@ class _MenuEditorScreenV3State extends State<MenuEditorScreenV3> {
               // Combo Deals Section
               _buildComboDealsSection(),
               const SizedBox(height: 32),
-              
+
               // Menu Items Sections
               ...categoryGroups.entries.map((entry) {
                 return _buildCategorySection(
@@ -466,7 +465,10 @@ class _MenuEditorScreenV3State extends State<MenuEditorScreenV3> {
                   ),
                   const SizedBox(width: 8),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFF8B5CF6),
                       borderRadius: BorderRadius.circular(12),
@@ -482,7 +484,10 @@ class _MenuEditorScreenV3State extends State<MenuEditorScreenV3> {
                   ),
                   const SizedBox(width: 12),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFF10B981).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(4),
@@ -502,7 +507,10 @@ class _MenuEditorScreenV3State extends State<MenuEditorScreenV3> {
                     icon: const Icon(Icons.add, size: 16),
                     label: const Text(
                       'Create Combo',
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF8B5CF6),
@@ -511,14 +519,17 @@ class _MenuEditorScreenV3State extends State<MenuEditorScreenV3> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(6),
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
                     ),
                   ),
                 ],
               ),
-              
+
               const SizedBox(height: 24),
-              
+
               // Combo Cards
               if (state.isLoading)
                 const Center(
@@ -533,7 +544,11 @@ class _MenuEditorScreenV3State extends State<MenuEditorScreenV3> {
                     padding: const EdgeInsets.all(24),
                     child: Column(
                       children: [
-                        Icon(Icons.error_outline, size: 48, color: Colors.red[400]),
+                        Icon(
+                          Icons.error_outline,
+                          size: 48,
+                          color: Colors.red[400],
+                        ),
                         const SizedBox(height: 16),
                         Text(
                           'Error loading combos',
@@ -546,7 +561,10 @@ class _MenuEditorScreenV3State extends State<MenuEditorScreenV3> {
                         const SizedBox(height: 8),
                         Text(
                           state.currentErrorMessage ?? 'Something went wrong',
-                          style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[600],
+                          ),
                           textAlign: TextAlign.center,
                         ),
                       ],
@@ -562,7 +580,9 @@ class _MenuEditorScreenV3State extends State<MenuEditorScreenV3> {
                         Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF8B5CF6).withValues(alpha: 0.1),
+                            color: const Color(
+                              0xFF8B5CF6,
+                            ).withValues(alpha: 0.1),
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(
@@ -621,7 +641,8 @@ class _MenuEditorScreenV3State extends State<MenuEditorScreenV3> {
                       combo: combo,
                       onEdit: () => _editCombo(context, combo.id),
                       onDuplicate: () => _duplicateCombo(context, combo.id),
-                      onToggleVisibility: () => _toggleComboVisibility(context, combo),
+                      onToggleVisibility: () =>
+                          _toggleComboVisibility(context, combo),
                       onDelete: () => _deleteCombo(context, combo.id),
                       onAddToCart: () => _addComboToCart(context, combo),
                     );
@@ -635,7 +656,8 @@ class _MenuEditorScreenV3State extends State<MenuEditorScreenV3> {
   }
 
   int _getComboGridCrossAxisCount(BuildContext context) {
-    final width = MediaQuery.of(context).size.width - 340; // Subtract sidebar width
+    final width =
+        MediaQuery.of(context).size.width - 340; // Subtract sidebar width
     if (width > 1200) return 3;
     if (width > 800) return 2;
     return 1;
@@ -644,7 +666,7 @@ class _MenuEditorScreenV3State extends State<MenuEditorScreenV3> {
   void _editCombo(BuildContext context, String comboId) {
     final comboBloc = context.read<ComboManagementBloc>();
     comboBloc.add(StartComboEdit(comboId: comboId));
-    
+
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -663,7 +685,7 @@ class _MenuEditorScreenV3State extends State<MenuEditorScreenV3> {
     final newStatus = combo.status == ComboStatus.active
         ? ComboStatus.hidden
         : ComboStatus.active;
-    
+
     context.read<ComboManagementBloc>().add(
       ToggleComboVisibility(comboId: combo.id, newStatus: newStatus),
     );
@@ -706,7 +728,11 @@ class _MenuEditorScreenV3State extends State<MenuEditorScreenV3> {
     );
   }
 
-  Widget _buildCategorySection(String categoryId, String categoryName, List<MenuItemEntity> items) {
+  Widget _buildCategorySection(
+    String categoryId,
+    String categoryName,
+    List<MenuItemEntity> items,
+  ) {
     final isCollapsed = _collapsedCategories[categoryId] ?? false;
 
     return Column(
@@ -728,10 +754,7 @@ class _MenuEditorScreenV3State extends State<MenuEditorScreenV3> {
               const SizedBox(width: 12),
               Text(
                 '${items.length} Items',
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: Color(0xFF6B7280),
-                ),
+                style: const TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
               ),
               const Spacer(),
               TextButton.icon(
@@ -763,8 +786,7 @@ class _MenuEditorScreenV3State extends State<MenuEditorScreenV3> {
         ),
 
         // Items
-        if (!isCollapsed)
-          ...items.map((item) => _buildMenuItem(item)),
+        if (!isCollapsed) ...items.map((item) => _buildMenuItem(item)),
 
         const SizedBox(height: 24),
       ],
@@ -865,13 +887,30 @@ class _MenuEditorScreenV3State extends State<MenuEditorScreenV3> {
                 // Actions
                 Row(
                   children: [
-                    _buildActionButton(Icons.edit_outlined, 'Edit', () => _openWizard(context, item)),
+                    _buildActionButton(
+                      Icons.edit_outlined,
+                      'Edit',
+                      () => _openWizard(context, item),
+                    ),
                     const SizedBox(width: 8),
-                    _buildActionButton(Icons.content_copy_outlined, 'Duplicate', () {}),
+                    _buildActionButton(
+                      Icons.content_copy_outlined,
+                      'Duplicate',
+                      () {},
+                    ),
                     const SizedBox(width: 8),
-                    _buildActionButton(Icons.visibility_off_outlined, 'Hide', () {}),
+                    _buildActionButton(
+                      Icons.visibility_off_outlined,
+                      'Hide',
+                      () {},
+                    ),
                     const SizedBox(width: 8),
-                    _buildActionButton(Icons.delete_outline, 'Delete', () {}, isDestructive: true),
+                    _buildActionButton(
+                      Icons.delete_outline,
+                      'Delete',
+                      () {},
+                      isDestructive: true,
+                    ),
                   ],
                 ),
               ],
@@ -931,57 +970,54 @@ class _MenuEditorScreenV3State extends State<MenuEditorScreenV3> {
     );
   }
 
-  Widget _buildActionButton(IconData icon, String label, VoidCallback onPressed, {bool isDestructive = false}) {
+  Widget _buildActionButton(
+    IconData icon,
+    String label,
+    VoidCallback onPressed, {
+    bool isDestructive = false,
+  }) {
     return OutlinedButton.icon(
       onPressed: onPressed,
       icon: Icon(icon, size: 16),
       label: Text(label),
       style: OutlinedButton.styleFrom(
-        foregroundColor: isDestructive ? const Color(0xFFEF4444) : const Color(0xFF6B7280),
-        side: BorderSide(color: isDestructive ? const Color(0xFFEF4444) : const Color(0xFFE5E7EB)),
+        foregroundColor: isDestructive
+            ? const Color(0xFFEF4444)
+            : const Color(0xFF6B7280),
+        side: BorderSide(
+          color: isDestructive
+              ? const Color(0xFFEF4444)
+              : const Color(0xFFE5E7EB),
+        ),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         minimumSize: Size.zero,
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(6),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
       ),
     );
   }
 
   void _openWizard(BuildContext context, MenuItemEntity? item) async {
-    final result = await Navigator.push<MenuItemEditEntity>(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const MenuItemWizardScreen(
-          existingItem: null,
-          isDuplicate: false,
-        ),
-      ),
+    final result = await NavigationService.pushNamed<MenuItemEditEntity>(
+      AppRouter.menuItemWizard,
+      arguments: {'existingItem': item, 'isDuplicate': false},
     );
 
     if (result != null && context.mounted) {
       context.read<MenuBloc>().add(GetMenuItemsEvent());
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('"${result.name}" saved successfully!'),
-          backgroundColor: const Color(0xFF10B981),
-        ),
-      );
+      NavigationService.showSuccess('"${result.name}" saved successfully!');
     }
   }
 
   void _openAddonManagement(BuildContext context) {
-    Navigator.of(context).push(
-      AddonCategoriesScreen.route(),
-    );
+    NavigationService.pushNamed(AppRouter.addonManagement);
   }
 
   void _openComboCreator(BuildContext context) {
     // Get or create ComboManagementBloc
     final comboBloc = context.read<ComboManagementBloc>();
     comboBloc.add(const StartComboEdit());
-    
+
     showDialog(
       context: context,
       barrierDismissible: false,

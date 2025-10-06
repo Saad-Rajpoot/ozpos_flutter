@@ -7,16 +7,13 @@ import '../../domain/entities/menu_item_entity.dart';
 import '../../domain/usecases/get_menu_items.dart';
 import '../../domain/usecases/get_menu_categories.dart';
 
-
 /// Menu BLoC
 class MenuBloc extends BaseBloc<MenuEvent, MenuState> {
   final GetMenuItems getMenuItems;
   final GetMenuCategories getMenuCategories;
 
-  MenuBloc({
-    required this.getMenuItems,
-    required this.getMenuCategories,
-  }) : super(MenuInitial()) {
+  MenuBloc({required this.getMenuItems, required this.getMenuCategories})
+    : super(MenuInitial()) {
     on<GetMenuItemsEvent>(_onGetMenuItems);
     on<GetMenuCategoriesEvent>(_onGetMenuCategories);
   }

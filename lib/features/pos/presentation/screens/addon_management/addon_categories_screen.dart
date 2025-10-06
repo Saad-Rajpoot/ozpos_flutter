@@ -9,18 +9,10 @@ import 'widgets/addon_category_editor_dialog.dart';
 
 /// Standalone screen for managing add-on categories system-wide
 /// Accessible from Menu Editor screen for creating/editing reusable addon sets
+///
+/// Note: This screen is wrapped with BlocProvider in AppRouter
 class AddonCategoriesScreen extends StatelessWidget {
   const AddonCategoriesScreen({Key? key}) : super(key: key);
-
-  static Route<void> route() {
-    return MaterialPageRoute(
-      builder: (context) => BlocProvider(
-        create: (context) => AddonManagementBloc()
-          ..add(const LoadAddonCategoriesEvent()),
-        child: const AddonCategoriesScreen(),
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,10 +21,7 @@ class AddonCategoriesScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text(
           'Add-on Categories',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-          ),
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
         ),
         backgroundColor: Colors.white,
         elevation: 0,
@@ -59,7 +48,11 @@ class AddonCategoriesScreen extends StatelessWidget {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.error_outline, size: 64, color: Colors.red.shade300),
+                        Icon(
+                          Icons.error_outline,
+                          size: 64,
+                          color: Colors.red.shade300,
+                        ),
                         const SizedBox(height: 16),
                         Text(
                           'Error: ${state.message}',
@@ -69,8 +62,8 @@ class AddonCategoriesScreen extends StatelessWidget {
                         ElevatedButton(
                           onPressed: () {
                             context.read<AddonManagementBloc>().add(
-                                  const LoadAddonCategoriesEvent(),
-                                );
+                              const LoadAddonCategoriesEvent(),
+                            );
                           },
                           child: const Text('Retry'),
                         ),
@@ -161,9 +154,17 @@ class AddonCategoriesScreen extends StatelessWidget {
 
                 return Row(
                   children: [
-                    _buildStatCard('Categories', totalCategories.toString(), Icons.folder),
+                    _buildStatCard(
+                      'Categories',
+                      totalCategories.toString(),
+                      Icons.folder,
+                    ),
                     const SizedBox(width: 12),
-                    _buildStatCard('Total Items', totalItems.toString(), Icons.fastfood),
+                    _buildStatCard(
+                      'Total Items',
+                      totalItems.toString(),
+                      Icons.fastfood,
+                    ),
                   ],
                 );
               }
@@ -201,10 +202,7 @@ class AddonCategoriesScreen extends StatelessWidget {
                 ),
                 Text(
                   label,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey.shade600,
-                  ),
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                 ),
               ],
             ),
@@ -222,7 +220,11 @@ class AddonCategoriesScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.category_outlined, size: 80, color: Colors.grey.shade300),
+            Icon(
+              Icons.category_outlined,
+              size: 80,
+              color: Colors.grey.shade300,
+            ),
             const SizedBox(height: 24),
             const Text(
               'No Add-on Categories Yet',
@@ -250,8 +252,14 @@ class AddonCategoriesScreen extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF2196F3),
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 32,
+                  vertical: 16,
+                ),
+                textStyle: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ],
@@ -298,11 +306,7 @@ class AddonCategoriesScreen extends StatelessWidget {
               ),
             ],
           ),
-          child: const Icon(
-            Icons.category,
-            color: Colors.white,
-            size: 24,
-          ),
+          child: const Icon(Icons.category, color: Colors.white, size: 24),
         ),
         title: Text(
           category.name,
@@ -316,10 +320,7 @@ class AddonCategoriesScreen extends StatelessWidget {
           padding: const EdgeInsets.only(top: 6),
           child: Text(
             category.description,
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey.shade600,
-            ),
+            style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
           ),
         ),
         trailing: Row(
@@ -388,8 +389,14 @@ class AddonCategoriesScreen extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green.shade600,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
+                textStyle: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ],
@@ -427,12 +434,18 @@ class AddonCategoriesScreen extends StatelessWidget {
             ),
           )
         else
-          ...category.items.map((item) => _buildInlineItemRow(context, category, item)).toList(),
+          ...category.items
+              .map((item) => _buildInlineItemRow(context, category, item))
+              .toList(),
       ],
     );
   }
 
-  Widget _buildInlineItemRow(BuildContext context, AddonCategory category, AddonItem item) {
+  Widget _buildInlineItemRow(
+    BuildContext context,
+    AddonCategory category,
+    AddonItem item,
+  ) {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(12),
@@ -493,10 +506,9 @@ class AddonCategoriesScreen extends StatelessWidget {
             icon: const Icon(Icons.delete_outline, size: 18),
             color: Colors.red.shade400,
             tooltip: 'Delete item',
-            style: IconButton.styleFrom(
-              backgroundColor: Colors.red.shade50,
-            ),
-            onPressed: () => _showDeleteItemConfirmation(context, category, item),
+            style: IconButton.styleFrom(backgroundColor: Colors.red.shade50),
+            onPressed: () =>
+                _showDeleteItemConfirmation(context, category, item),
           ),
         ],
       ),
@@ -504,10 +516,7 @@ class AddonCategoriesScreen extends StatelessWidget {
   }
 
   void _showCategoryEditor(BuildContext context, AddonCategory? category) {
-    AddonCategoryEditorDialog.show(
-      context: context,
-      category: category,
-    );
+    AddonCategoryEditorDialog.show(context: context, category: category);
   }
 
   void _showDeleteConfirmation(BuildContext context, AddonCategory category) {
@@ -526,8 +535,8 @@ class AddonCategoriesScreen extends StatelessWidget {
           ElevatedButton(
             onPressed: () {
               context.read<AddonManagementBloc>().add(
-                    DeleteAddonCategoryEvent(category.id),
-                  );
+                DeleteAddonCategoryEvent(category.id),
+              );
               Navigator.of(dialogContext).pop();
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -576,7 +585,9 @@ class AddonCategoriesScreen extends StatelessWidget {
                   prefixText: '\$',
                   prefixIcon: Icon(Icons.attach_money),
                 ),
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
               ),
             ],
           ),
@@ -587,24 +598,26 @@ class AddonCategoriesScreen extends StatelessWidget {
             ),
             ElevatedButton(
               onPressed: () {
-                if (nameController.text.isNotEmpty && priceController.text.isNotEmpty) {
+                if (nameController.text.isNotEmpty &&
+                    priceController.text.isNotEmpty) {
                   final newItem = AddonItem(
                     id: const Uuid().v4(),
                     name: nameController.text,
-                    basePriceDelta: double.tryParse(priceController.text) ?? 0.0,
+                    basePriceDelta:
+                        double.tryParse(priceController.text) ?? 0.0,
                     sortOrder: category.items.length,
                   );
-                  
+
                   final updatedCategory = category.copyWith(
                     items: [...category.items, newItem],
                   );
-                  
+
                   context.read<AddonManagementBloc>().add(
                     UpdateAddonCategoryEvent(updatedCategory),
                   );
-                  
+
                   Navigator.pop(dialogContext);
-                  
+
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text('${newItem.name} added'),
@@ -622,9 +635,15 @@ class AddonCategoriesScreen extends StatelessWidget {
     );
   }
 
-  void _showEditItemDialog(BuildContext context, AddonCategory category, AddonItem item) {
+  void _showEditItemDialog(
+    BuildContext context,
+    AddonCategory category,
+    AddonItem item,
+  ) {
     final nameController = TextEditingController(text: item.name);
-    final priceController = TextEditingController(text: item.basePriceDelta.toStringAsFixed(2));
+    final priceController = TextEditingController(
+      text: item.basePriceDelta.toStringAsFixed(2),
+    );
 
     showDialog(
       context: context,
@@ -652,7 +671,9 @@ class AddonCategoriesScreen extends StatelessWidget {
                   prefixText: '\$',
                   prefixIcon: Icon(Icons.attach_money),
                 ),
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
               ),
             ],
           ),
@@ -663,24 +684,28 @@ class AddonCategoriesScreen extends StatelessWidget {
             ),
             ElevatedButton(
               onPressed: () {
-                if (nameController.text.isNotEmpty && priceController.text.isNotEmpty) {
+                if (nameController.text.isNotEmpty &&
+                    priceController.text.isNotEmpty) {
                   final updatedItem = item.copyWith(
                     name: nameController.text,
-                    basePriceDelta: double.tryParse(priceController.text) ?? 0.0,
+                    basePriceDelta:
+                        double.tryParse(priceController.text) ?? 0.0,
                   );
-                  
+
                   final updatedItems = category.items.map((i) {
                     return i.id == item.id ? updatedItem : i;
                   }).toList();
-                  
-                  final updatedCategory = category.copyWith(items: updatedItems);
-                  
+
+                  final updatedCategory = category.copyWith(
+                    items: updatedItems,
+                  );
+
                   context.read<AddonManagementBloc>().add(
                     UpdateAddonCategoryEvent(updatedCategory),
                   );
-                  
+
                   Navigator.pop(dialogContext);
-                  
+
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text('${updatedItem.name} updated'),
@@ -698,7 +723,11 @@ class AddonCategoriesScreen extends StatelessWidget {
     );
   }
 
-  void _showDeleteItemConfirmation(BuildContext context, AddonCategory category, AddonItem item) {
+  void _showDeleteItemConfirmation(
+    BuildContext context,
+    AddonCategory category,
+    AddonItem item,
+  ) {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -711,15 +740,17 @@ class AddonCategoriesScreen extends StatelessWidget {
           ),
           ElevatedButton(
             onPressed: () {
-              final updatedItems = category.items.where((i) => i.id != item.id).toList();
+              final updatedItems = category.items
+                  .where((i) => i.id != item.id)
+                  .toList();
               final updatedCategory = category.copyWith(items: updatedItems);
-              
+
               context.read<AddonManagementBloc>().add(
                 UpdateAddonCategoryEvent(updatedCategory),
               );
-              
+
               Navigator.pop(dialogContext);
-              
+
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text('${item.name} removed'),
@@ -756,10 +787,22 @@ class AddonCategoriesScreen extends StatelessWidget {
                 style: TextStyle(fontSize: 15, height: 1.5),
               ),
               const SizedBox(height: 16),
-              _buildHelpItem('Create Categories', 'Group related add-ons like "Cheese Options" or "Extra Toppings"'),
-              _buildHelpItem('Add Items', 'Each category contains individual items with their base prices'),
-              _buildHelpItem('Reuse Anywhere', 'Attach categories to multiple menu items or specific sizes'),
-              _buildHelpItem('Override Prices', 'Customize pricing per item or size when attaching'),
+              _buildHelpItem(
+                'Create Categories',
+                'Group related add-ons like "Cheese Options" or "Extra Toppings"',
+              ),
+              _buildHelpItem(
+                'Add Items',
+                'Each category contains individual items with their base prices',
+              ),
+              _buildHelpItem(
+                'Reuse Anywhere',
+                'Attach categories to multiple menu items or specific sizes',
+              ),
+              _buildHelpItem(
+                'Override Prices',
+                'Customize pricing per item or size when attaching',
+              ),
             ],
           ),
         ),
@@ -802,10 +845,7 @@ class AddonCategoriesScreen extends StatelessWidget {
                 ),
                 Text(
                   description,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.grey.shade700,
-                  ),
+                  style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
                 ),
               ],
             ),

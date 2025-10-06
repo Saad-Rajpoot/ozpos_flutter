@@ -1,17 +1,10 @@
 import 'package:equatable/equatable.dart';
 
 /// Order status matching React implementation
-enum OrderStatus {
-  active,
-  completed,
-  cancelled,
-}
+enum OrderStatus { active, completed, cancelled }
 
 /// Payment status
-enum PaymentStatus {
-  paid,
-  unpaid,
-}
+enum PaymentStatus { paid, unpaid }
 
 /// Channel/Platform types
 enum OrderChannel {
@@ -26,11 +19,7 @@ enum OrderChannel {
 }
 
 /// Order type (service method)
-enum OrderType {
-  delivery,
-  takeaway,
-  dinein,
-}
+enum OrderType { delivery, takeaway, dinein }
 
 /// Order item entity
 class OrderItemEntity extends Equatable {
@@ -88,22 +77,22 @@ class OrderEntity extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        queueNumber,
-        channel,
-        orderType,
-        paymentStatus,
-        status,
-        customerName,
-        customerPhone,
-        items,
-        subtotal,
-        tax,
-        total,
-        createdAt,
-        estimatedTime,
-        specialInstructions,
-      ];
+    id,
+    queueNumber,
+    channel,
+    orderType,
+    paymentStatus,
+    status,
+    customerName,
+    customerPhone,
+    items,
+    subtotal,
+    tax,
+    total,
+    createdAt,
+    estimatedTime,
+    specialInstructions,
+  ];
 
   OrderEntity copyWith({
     String? id,

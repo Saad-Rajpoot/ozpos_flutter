@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../features/pos/domain/entities/table_entity.dart';
 import '../../features/pos/presentation/bloc/cart_bloc.dart';
-import '../../core/data/seed_data.dart';
+import '../../features/pos/data/seed_data.dart';
 
 enum TableViewMode { list, floor }
 
@@ -21,7 +21,7 @@ class _TableSelectionModalState extends State<TableSelectionModal> {
   TableEntity? _selectedTable;
 
   List<TableEntity> get _filteredTables {
-    var tables = SeedData.tables;
+    List<TableEntity> tables = SeedData.tables;
 
     // Apply status filter
     if (_filterStatus != null) {
@@ -31,9 +31,10 @@ class _TableSelectionModalState extends State<TableSelectionModal> {
     // Apply search filter
     if (_searchQuery.isNotEmpty) {
       tables = tables.where((t) {
-        return t.number.toString().contains(_searchQuery) ||
-            (t.serverName?.toLowerCase().contains(_searchQuery.toLowerCase()) ??
-                false);
+        final String tableNumber = t.number;
+        final String serverName = t.serverName ?? '';
+        return tableNumber.contains(_searchQuery) ||
+            serverName.toLowerCase().contains(_searchQuery.toLowerCase());
       }).toList();
     }
 
@@ -243,7 +244,6 @@ class _TableSelectionModalState extends State<TableSelectionModal> {
         Expanded(
           child: LayoutBuilder(
             builder: (context, constraints) {
-              final cellSize = constraints.maxWidth / 10;
               return GridView.builder(
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 10,

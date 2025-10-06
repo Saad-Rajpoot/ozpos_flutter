@@ -10,10 +10,11 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 import 'core/config/environment_config.dart';
 import 'core/di/injection_container.dart' as di;
 import 'core/navigation/app_router.dart';
+import 'core/navigation/navigation_service.dart';
 import 'core/observers/sentry_bloc_observer.dart';
 import 'theme/app_theme.dart';
 import 'features/pos/presentation/bloc/menu_bloc.dart';
-import 'features/cart/presentation/bloc/cart_bloc.dart';
+import 'features/pos/presentation/bloc/cart_bloc.dart';
 import 'features/combos/presentation/bloc/combo_management_bloc.dart';
 
 void main() async {
@@ -72,6 +73,7 @@ class OzposApp extends StatelessWidget {
         theme: AppTheme.lightTheme,
         darkTheme: AppTheme.darkTheme,
         themeMode: ThemeMode.light,
+        navigatorKey: NavigationService.navigatorKey,
         onGenerateRoute: AppRouter.generateRoute,
         initialRoute: AppRouter.dashboard,
         navigatorObservers: [SentryNavigatorObserver()],

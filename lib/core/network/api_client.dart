@@ -9,17 +9,19 @@ class ApiClient {
   final SharedPreferences _sharedPreferences;
 
   ApiClient({required SharedPreferences sharedPreferences})
-      : _sharedPreferences = sharedPreferences {
-    _dio = Dio(BaseOptions(
-      baseUrl: AppConstants.baseUrl,
-      connectTimeout: AppConstants.connectionTimeout,
-      receiveTimeout: AppConstants.receiveTimeout,
-      sendTimeout: AppConstants.sendTimeout,
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-    ));
+    : _sharedPreferences = sharedPreferences {
+    _dio = Dio(
+      BaseOptions(
+        baseUrl: AppConstants.baseUrl,
+        connectTimeout: AppConstants.connectionTimeout,
+        receiveTimeout: AppConstants.receiveTimeout,
+        sendTimeout: AppConstants.sendTimeout,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      ),
+    );
 
     _setupInterceptors();
   }

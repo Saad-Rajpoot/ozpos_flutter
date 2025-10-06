@@ -9,7 +9,9 @@ abstract class MenuRepository {
   Future<Either<Failure, List<MenuItemEntity>>> getMenuItems();
 
   /// Get menu items by category
-  Future<Either<Failure, List<MenuItemEntity>>> getMenuItemsByCategory(String categoryId);
+  Future<Either<Failure, List<MenuItemEntity>>> getMenuItemsByCategory(
+    String categoryId,
+  );
 
   /// Get menu item by ID
   Future<Either<Failure, MenuItemEntity>> getMenuItemById(String id);

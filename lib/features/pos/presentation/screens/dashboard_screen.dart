@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/navigation/app_router.dart';
+import '../../../../core/navigation/navigation_service.dart';
 import '../../../../theme/tokens.dart';
 import '../../../../utils/responsive.dart';
 import '../bloc/menu_bloc.dart';
@@ -337,40 +338,37 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void _handleTileTap(String action, BuildContext context) {
     switch (action) {
       case 'takeaway':
-        Navigator.pushNamed(
-          context,
+        NavigationService.pushNamed(
           AppRouter.menu,
           arguments: {'orderType': 'takeaway'},
         );
         break;
       case 'dine-in':
-        Navigator.pushNamed(
-          context,
+        NavigationService.pushNamed(
           AppRouter.menu,
           arguments: {'orderType': 'dine-in'},
         );
         break;
       case 'delivery':
-        Navigator.pushNamed(
-          context,
+        NavigationService.pushNamed(
           AppRouter.menu,
           arguments: {'orderType': 'delivery'},
         );
         break;
       case 'tables':
-        Navigator.pushNamed(context, AppRouter.tables);
+        NavigationService.pushNamed(AppRouter.tables);
         break;
       case 'reservations':
-        Navigator.pushNamed(context, AppRouter.reservations);
+        NavigationService.pushNamed(AppRouter.reservations);
         break;
       case 'menu-editor':
-        Navigator.pushNamed(context, AppRouter.menuEditor);
+        NavigationService.pushNamed(AppRouter.menuEditor);
         break;
       case 'reports':
-        Navigator.pushNamed(context, AppRouter.reports);
+        NavigationService.pushNamed(AppRouter.reports);
         break;
       case 'settings':
-        Navigator.pushNamed(context, AppRouter.settings);
+        NavigationService.pushNamed(AppRouter.settings);
         break;
       default:
         if (widget.onNavigate != null) {

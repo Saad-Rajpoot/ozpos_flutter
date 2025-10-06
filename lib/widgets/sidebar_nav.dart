@@ -1,30 +1,28 @@
 import 'package:flutter/material.dart';
 import '../theme/tokens.dart';
 import '../core/navigation/app_router.dart';
+import '../core/navigation/navigation_service.dart';
 
 /// Sidebar Navigation - Icon-only dark slate design from reference
 /// Fixed width 80dp
 class SidebarNav extends StatelessWidget {
   final String activeRoute;
-  
-  const SidebarNav({
-    super.key,
-    this.activeRoute = '/',
-  });
+
+  const SidebarNav({super.key, this.activeRoute = '/'});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: AppSizes.sidebarWidth,
-      decoration: const BoxDecoration(
-        color: AppColors.sidebarBg,
-      ),
+      decoration: const BoxDecoration(color: AppColors.sidebarBg),
       child: Column(
         children: [
           // Logo/Header
           Container(
             height: AppSizes.appBarHeight,
-            padding: const EdgeInsets.symmetric(vertical: AppSpacing.sidebarItemPaddingV),
+            padding: const EdgeInsets.symmetric(
+              vertical: AppSpacing.sidebarItemPaddingV,
+            ),
             child: Center(
               child: Container(
                 width: 48,
@@ -91,7 +89,7 @@ class SidebarNav extends StatelessWidget {
               ],
             ),
           ),
-          
+
           // Bottom items
           Padding(
             padding: const EdgeInsets.only(bottom: AppSpacing.lg),
@@ -130,7 +128,7 @@ class _NavItem extends StatefulWidget {
     required this.route,
     this.isActive = false,
   });
-  
+
   @override
   State<_NavItem> createState() => _NavItemState();
 }
@@ -153,21 +151,25 @@ class _NavItemState extends State<_NavItem> {
           onEnter: (_) => setState(() => _isHovered = true),
           onExit: (_) => setState(() => _isHovered = false),
           child: Material(
-            color: widget.isActive 
+            color: widget.isActive
                 ? AppColors.sidebarItemActive.withOpacity(0.12)
-                : (_isHovered ? AppColors.sidebarItemHover : Colors.transparent),
+                : (_isHovered
+                      ? AppColors.sidebarItemHover
+                      : Colors.transparent),
             borderRadius: BorderRadius.circular(AppRadius.md),
             child: InkWell(
-              onTap: () => Navigator.of(context).pushNamed(widget.route),
+              onTap: () => NavigationService.pushNamed(widget.route),
               borderRadius: BorderRadius.circular(AppRadius.md),
               child: Container(
                 height: 48,
                 alignment: Alignment.center,
                 child: Icon(
                   widget.icon,
-                  color: widget.isActive 
-                      ? AppColors.sidebarItemActive 
-                      : (_isHovered ? AppColors.sidebarText : AppColors.sidebarTextMuted),
+                  color: widget.isActive
+                      ? AppColors.sidebarItemActive
+                      : (_isHovered
+                            ? AppColors.sidebarText
+                            : AppColors.sidebarTextMuted),
                   size: 24,
                 ),
               ),

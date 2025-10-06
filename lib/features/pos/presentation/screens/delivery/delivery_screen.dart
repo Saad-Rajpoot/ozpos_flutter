@@ -17,7 +17,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
   late DeliveryKpiData _kpis;
   late List<DriverEntity> _drivers;
   late List<DeliveryOrderEntity> _orders;
-  
+
   String _selectedDateFilter = 'Today';
   String _selectedSourceFilter = 'All Sources';
   String _selectedDriverFilter = 'All Drivers';
@@ -40,17 +40,23 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
   List<DeliveryOrderEntity> get _filteredOrders {
     return _orders.where((order) {
       if (_selectedOrderTab == 'Ready' && !order.isReady) return false;
-      if (_selectedOrderTab == 'In Progress' && !order.isInProgress && !order.isDelayed) return false;
+      if (_selectedOrderTab == 'In Progress' &&
+          !order.isInProgress &&
+          !order.isDelayed)
+        return false;
       return true;
     }).toList();
   }
 
   int get _readyCount => _orders.where((o) => o.isReady).length;
-  int get _inProgressCount => _orders.where((o) => o.isInProgress || o.isDelayed).length;
+  int get _inProgressCount =>
+      _orders.where((o) => o.isInProgress || o.isDelayed).length;
 
   @override
   Widget build(BuildContext context) {
-    final scaler = MediaQuery.textScalerOf(context).clamp(minScaleFactor: 1.0, maxScaleFactor: 1.1);
+    final scaler = MediaQuery.textScalerOf(
+      context,
+    ).clamp(minScaleFactor: 1.0, maxScaleFactor: 1.1);
     final screenWidth = MediaQuery.of(context).size.width;
     final isDesktop = screenWidth >= 1280;
     final isTablet = screenWidth >= 901 && screenWidth < 1280;
@@ -61,7 +67,8 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
         backgroundColor: DeliveryTokens.background,
         body: Row(
           children: [
-            if (isDesktop || isTablet) const SidebarNav(activeRoute: AppRouter.delivery),
+            if (isDesktop || isTablet)
+              const SidebarNav(activeRoute: AppRouter.delivery),
             Expanded(
               child: Column(
                 children: [
@@ -72,8 +79,8 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                     child: isDesktop
                         ? _build3ColumnLayout()
                         : isTablet
-                            ? _build2ColumnLayout()
-                            : _build1ColumnLayout(),
+                        ? _build2ColumnLayout()
+                        : _build1ColumnLayout(),
                   ),
                 ],
               ),
@@ -100,7 +107,10 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                 children: [
                   Icon(Icons.local_shipping, size: 24),
                   SizedBox(width: 12),
-                  Text('Delivery Management', style: DeliveryTokens.headingLarge),
+                  Text(
+                    'Delivery Management',
+                    style: DeliveryTokens.headingLarge,
+                  ),
                 ],
               ),
               SizedBox(height: 4),
@@ -133,7 +143,10 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('$label - Coming soon'), behavior: SnackBarBehavior.floating),
+            SnackBar(
+              content: Text('$label - Coming soon'),
+              behavior: SnackBarBehavior.floating,
+            ),
           );
         }
       },
@@ -142,7 +155,9 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
       style: ElevatedButton.styleFrom(
         backgroundColor: isPrimary ? const Color(0xFFF97316) : Colors.white,
         foregroundColor: isPrimary ? Colors.white : DeliveryTokens.textPrimary,
-        side: isPrimary ? null : const BorderSide(color: DeliveryTokens.borderColor),
+        side: isPrimary
+            ? null
+            : const BorderSide(color: DeliveryTokens.borderColor),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         elevation: 0,
       ),
@@ -154,19 +169,57 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
       padding: const EdgeInsets.all(DeliveryTokens.spacingXl),
       child: Row(
         children: [
-          Expanded(child: _buildKpiCard('Active Drivers', '${_kpis.activeDrivers}', Icons.people, DeliveryTokens.kpiActiveDriversStart, DeliveryTokens.kpiActiveDriversEnd)),
+          Expanded(
+            child: _buildKpiCard(
+              'Active Drivers',
+              '${_kpis.activeDrivers}',
+              Icons.people,
+              DeliveryTokens.kpiActiveDriversStart,
+              DeliveryTokens.kpiActiveDriversEnd,
+            ),
+          ),
           const SizedBox(width: DeliveryTokens.spacingLg),
-          Expanded(child: _buildKpiCard('In Progress', '${_kpis.inProgress}', Icons.local_shipping, DeliveryTokens.kpiInProgressStart, DeliveryTokens.kpiInProgressEnd)),
+          Expanded(
+            child: _buildKpiCard(
+              'In Progress',
+              '${_kpis.inProgress}',
+              Icons.local_shipping,
+              DeliveryTokens.kpiInProgressStart,
+              DeliveryTokens.kpiInProgressEnd,
+            ),
+          ),
           const SizedBox(width: DeliveryTokens.spacingLg),
-          Expanded(child: _buildKpiCard('Delayed Orders', '${_kpis.delayedOrders}', Icons.access_time, DeliveryTokens.kpiDelayedStart, DeliveryTokens.kpiDelayedEnd)),
+          Expanded(
+            child: _buildKpiCard(
+              'Delayed Orders',
+              '${_kpis.delayedOrders}',
+              Icons.access_time,
+              DeliveryTokens.kpiDelayedStart,
+              DeliveryTokens.kpiDelayedEnd,
+            ),
+          ),
           const SizedBox(width: DeliveryTokens.spacingLg),
-          Expanded(child: _buildKpiCard('Avg ETA', '${_kpis.avgEtaMinutes}m', Icons.schedule, DeliveryTokens.kpiAvgEtaStart, DeliveryTokens.kpiAvgEtaEnd)),
+          Expanded(
+            child: _buildKpiCard(
+              'Avg ETA',
+              '${_kpis.avgEtaMinutes}m',
+              Icons.schedule,
+              DeliveryTokens.kpiAvgEtaStart,
+              DeliveryTokens.kpiAvgEtaEnd,
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildKpiCard(String label, String value, IconData icon, Color startColor, Color endColor) {
+  Widget _buildKpiCard(
+    String label,
+    String value,
+    IconData icon,
+    Color startColor,
+    Color endColor,
+  ) {
     return Container(
       height: DeliveryTokens.kpiHeight,
       decoration: BoxDecoration(
@@ -198,22 +251,45 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
 
   Widget _buildFiltersRow() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: DeliveryTokens.spacingXl, vertical: DeliveryTokens.spacingMd),
+      padding: const EdgeInsets.symmetric(
+        horizontal: DeliveryTokens.spacingXl,
+        vertical: DeliveryTokens.spacingMd,
+      ),
       decoration: const BoxDecoration(
         color: DeliveryTokens.cardBackground,
         border: Border(bottom: BorderSide(color: DeliveryTokens.borderColor)),
       ),
       child: Row(
         children: [
-          _buildFilterChip('Today', _selectedDateFilter == 'Today', () => setState(() => _selectedDateFilter = 'Today')),
+          _buildFilterChip(
+            'Today',
+            _selectedDateFilter == 'Today',
+            () => setState(() => _selectedDateFilter = 'Today'),
+          ),
           const SizedBox(width: 8),
-          _buildFilterChip('Last 7 days', _selectedDateFilter == 'Last 7 days', () => setState(() => _selectedDateFilter = 'Last 7 days')),
+          _buildFilterChip(
+            'Last 7 days',
+            _selectedDateFilter == 'Last 7 days',
+            () => setState(() => _selectedDateFilter = 'Last 7 days'),
+          ),
           const SizedBox(width: 8),
-          _buildFilterChip('Custom', _selectedDateFilter == 'Custom', () => setState(() => _selectedDateFilter = 'Custom')),
+          _buildFilterChip(
+            'Custom',
+            _selectedDateFilter == 'Custom',
+            () => setState(() => _selectedDateFilter = 'Custom'),
+          ),
           const SizedBox(width: 24),
-          _buildDropdownFilter(_selectedSourceFilter, ['All Sources', 'Website', 'UberEats', 'DoorDash', 'App'], (val) => setState(() => _selectedSourceFilter = val!)),
+          _buildDropdownFilter(
+            _selectedSourceFilter,
+            ['All Sources', 'Website', 'UberEats', 'DoorDash', 'App'],
+            (val) => setState(() => _selectedSourceFilter = val!),
+          ),
           const SizedBox(width: 12),
-          _buildDropdownFilter(_selectedDriverFilter, ['All Drivers', ..._drivers.map((d) => d.name)], (val) => setState(() => _selectedDriverFilter = val!)),
+          _buildDropdownFilter(
+            _selectedDriverFilter,
+            ['All Drivers', ..._drivers.map((d) => d.name)],
+            (val) => setState(() => _selectedDriverFilter = val!),
+          ),
         ],
       ),
     );
@@ -226,9 +302,15 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? DeliveryTokens.textPrimary : DeliveryTokens.cardBackground,
+          color: isSelected
+              ? DeliveryTokens.textPrimary
+              : DeliveryTokens.cardBackground,
           borderRadius: BorderRadius.circular(DeliveryTokens.radiusFull),
-          border: Border.all(color: isSelected ? DeliveryTokens.textPrimary : DeliveryTokens.borderColor),
+          border: Border.all(
+            color: isSelected
+                ? DeliveryTokens.textPrimary
+                : DeliveryTokens.borderColor,
+          ),
         ),
         child: Text(
           label,
@@ -242,7 +324,11 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
     );
   }
 
-  Widget _buildDropdownFilter(String value, List<String> options, ValueChanged<String?> onChanged) {
+  Widget _buildDropdownFilter(
+    String value,
+    List<String> options,
+    ValueChanged<String?> onChanged,
+  ) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
@@ -252,7 +338,14 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
       ),
       child: DropdownButton<String>(
         value: value,
-        items: options.map((opt) => DropdownMenuItem(value: opt, child: Text(opt, style: DeliveryTokens.bodySmall))).toList(),
+        items: options
+            .map(
+              (opt) => DropdownMenuItem(
+                value: opt,
+                child: Text(opt, style: DeliveryTokens.bodySmall),
+              ),
+            )
+            .toList(),
         onChanged: onChanged,
         underline: const SizedBox(),
         isDense: true,
@@ -303,8 +396,14 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                 const SizedBox(width: 8),
                 const Text('Live Map', style: DeliveryTokens.headingSmall),
                 const Spacer(),
-                IconButton(icon: const Icon(Icons.filter_list, size: 18), onPressed: () {}),
-                IconButton(icon: const Icon(Icons.fullscreen, size: 18), onPressed: () {}),
+                IconButton(
+                  icon: const Icon(Icons.filter_list, size: 18),
+                  onPressed: () {},
+                ),
+                IconButton(
+                  icon: const Icon(Icons.fullscreen, size: 18),
+                  onPressed: () {},
+                ),
               ],
             ),
           ),
@@ -334,10 +433,10 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                       painter: _MapGridPainter(),
                     ),
                   ),
-                  
+
                   // Driver markers
                   ..._drivers.map((driver) => _buildDriverMarker(driver)),
-                  
+
                   // Selected order route (if any)
                   if (_selectedOrder != null && _selectedOrder!.hasDriver)
                     _buildRouteIndicator(_selectedOrder!),
@@ -352,9 +451,12 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
 
   Widget _buildDriverMarker(DriverEntity driver) {
     // Calculate position based on lat/long (simplified for demo)
-    final position = _calculateMarkerPosition(driver.latitude!, driver.longitude!);
+    final position = _calculateMarkerPosition(
+      driver.latitude!,
+      driver.longitude!,
+    );
     final statusColor = _getDriverStatusColor(driver.status);
-    
+
     return Positioned(
       left: position.dx,
       top: position.dy,
@@ -408,7 +510,11 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
             const SizedBox(width: 4),
             Text(
               'Route to ${order.orderNumber}',
-              style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ],
         ),
@@ -438,13 +544,27 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
             padding: const EdgeInsets.all(DeliveryTokens.spacingLg),
             child: Row(
               children: [
-                const Icon(Icons.shopping_bag, size: 18, color: Color(0xFFF97316)),
+                const Icon(
+                  Icons.shopping_bag,
+                  size: 18,
+                  color: Color(0xFFF97316),
+                ),
                 const SizedBox(width: 8),
                 const Text('Orders', style: DeliveryTokens.headingSmall),
                 const Spacer(),
-                _buildTabChip('Ready', _readyCount, _selectedOrderTab == 'Ready', () => setState(() => _selectedOrderTab = 'Ready')),
+                _buildTabChip(
+                  'Ready',
+                  _readyCount,
+                  _selectedOrderTab == 'Ready',
+                  () => setState(() => _selectedOrderTab = 'Ready'),
+                ),
                 const SizedBox(width: 8),
-                _buildTabChip('In Progress', _inProgressCount, _selectedOrderTab == 'In Progress', () => setState(() => _selectedOrderTab = 'In Progress')),
+                _buildTabChip(
+                  'In Progress',
+                  _inProgressCount,
+                  _selectedOrderTab == 'In Progress',
+                  () => setState(() => _selectedOrderTab = 'In Progress'),
+                ),
               ],
             ),
           ),
@@ -454,7 +574,8 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
               padding: const EdgeInsets.all(DeliveryTokens.spacingLg),
               itemCount: _filteredOrders.length,
               separatorBuilder: (_, __) => const SizedBox(height: 12),
-              itemBuilder: (context, index) => _buildOrderCard(_filteredOrders[index]),
+              itemBuilder: (context, index) =>
+                  _buildOrderCard(_filteredOrders[index]),
             ),
           ),
         ],
@@ -462,14 +583,21 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
     );
   }
 
-  Widget _buildTabChip(String label, int count, bool isSelected, VoidCallback onTap) {
+  Widget _buildTabChip(
+    String label,
+    int count,
+    bool isSelected,
+    VoidCallback onTap,
+  ) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(DeliveryTokens.radiusFull),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? DeliveryTokens.statusInProgress.withValues(alpha: 0.1) : DeliveryTokens.dividerColor,
+          color: isSelected
+              ? DeliveryTokens.statusInProgress.withValues(alpha: 0.1)
+              : DeliveryTokens.dividerColor,
           borderRadius: BorderRadius.circular(DeliveryTokens.radiusFull),
         ),
         child: Text(
@@ -477,7 +605,9 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
           style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w600,
-            color: isSelected ? DeliveryTokens.statusInProgress : DeliveryTokens.textSecondary,
+            color: isSelected
+                ? DeliveryTokens.statusInProgress
+                : DeliveryTokens.textSecondary,
           ),
         ),
       ),
@@ -498,7 +628,9 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
           color: DeliveryTokens.cardBackground,
           borderRadius: BorderRadius.circular(DeliveryTokens.radiusLg),
           border: Border.all(
-            color: isSelected ? DeliveryTokens.statusInProgress : DeliveryTokens.borderColor,
+            color: isSelected
+                ? DeliveryTokens.statusInProgress
+                : DeliveryTokens.borderColor,
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -517,7 +649,11 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
             const SizedBox(height: 12),
             Row(
               children: [
-                const Icon(Icons.person, size: 16, color: DeliveryTokens.textSecondary),
+                const Icon(
+                  Icons.person,
+                  size: 16,
+                  color: DeliveryTokens.textSecondary,
+                ),
                 const SizedBox(width: 8),
                 Text(order.customerName, style: DeliveryTokens.bodyMedium),
               ],
@@ -525,9 +661,15 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
             const SizedBox(height: 6),
             Row(
               children: [
-                const Icon(Icons.location_on, size: 16, color: DeliveryTokens.textSecondary),
+                const Icon(
+                  Icons.location_on,
+                  size: 16,
+                  color: DeliveryTokens.textSecondary,
+                ),
                 const SizedBox(width: 8),
-                Expanded(child: Text(order.address, style: DeliveryTokens.bodySmall)),
+                Expanded(
+                  child: Text(order.address, style: DeliveryTokens.bodySmall),
+                ),
                 IconButton(
                   icon: const Icon(Icons.copy, size: 16),
                   padding: EdgeInsets.zero,
@@ -539,7 +681,11 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
             const SizedBox(height: 12),
             Row(
               children: [
-                const Icon(Icons.restaurant, size: 16, color: DeliveryTokens.textSecondary),
+                const Icon(
+                  Icons.restaurant,
+                  size: 16,
+                  color: DeliveryTokens.textSecondary,
+                ),
                 const SizedBox(width: 8),
                 Text(order.items.join(', '), style: DeliveryTokens.bodySmall),
               ],
@@ -547,15 +693,34 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
             const SizedBox(height: 12),
             Row(
               children: [
-                Expanded(child: _buildEtaCard('Pickup ETA', '${order.pickupEtaMinutes}m', const Color(0xFFEFF6FF))),
+                Expanded(
+                  child: _buildEtaCard(
+                    'Pickup ETA',
+                    '${order.pickupEtaMinutes}m',
+                    const Color(0xFFEFF6FF),
+                  ),
+                ),
                 const SizedBox(width: 8),
-                Expanded(child: _buildEtaCard('Delivery ETA', '${order.deliveryEtaMinutes}m', const Color(0xFFF0FDF4))),
+                Expanded(
+                  child: _buildEtaCard(
+                    'Delivery ETA',
+                    '${order.deliveryEtaMinutes}m',
+                    const Color(0xFFF0FDF4),
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 12),
             Row(
               children: [
-                Expanded(child: _buildActionButton('Assign Driver', Icons.person_add, true, () => _showAssignDriverModal(order))),
+                Expanded(
+                  child: _buildActionButton(
+                    'Assign Driver',
+                    Icons.person_add,
+                    true,
+                    () => _showAssignDriverModal(order),
+                  ),
+                ),
                 const SizedBox(width: 8),
                 _buildIconButton(Icons.bolt, () {}),
                 const SizedBox(width: 8),
@@ -591,7 +756,12 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
     );
   }
 
-  Widget _buildActionButton(String label, IconData icon, bool isPrimary, VoidCallback onTap) {
+  Widget _buildActionButton(
+    String label,
+    IconData icon,
+    bool isPrimary,
+    VoidCallback onTap,
+  ) {
     return ElevatedButton.icon(
       onPressed: onTap,
       icon: Icon(icon, size: 14),
@@ -599,7 +769,9 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
       style: ElevatedButton.styleFrom(
         backgroundColor: isPrimary ? const Color(0xFFF97316) : Colors.white,
         foregroundColor: isPrimary ? Colors.white : DeliveryTokens.textPrimary,
-        side: isPrimary ? null : const BorderSide(color: DeliveryTokens.borderColor),
+        side: isPrimary
+            ? null
+            : const BorderSide(color: DeliveryTokens.borderColor),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         elevation: 0,
       ),
@@ -635,7 +807,10 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                 const SizedBox(width: 8),
                 const Text('Drivers', style: DeliveryTokens.headingSmall),
                 const Spacer(),
-                IconButton(icon: const Icon(Icons.sort, size: 18), onPressed: () {}),
+                IconButton(
+                  icon: const Icon(Icons.sort, size: 18),
+                  onPressed: () {},
+                ),
               ],
             ),
           ),
@@ -645,7 +820,8 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
               padding: const EdgeInsets.all(DeliveryTokens.spacingLg),
               itemCount: _drivers.length,
               separatorBuilder: (_, __) => const SizedBox(height: 12),
-              itemBuilder: (context, index) => _buildDriverCard(_drivers[index]),
+              itemBuilder: (context, index) =>
+                  _buildDriverCard(_drivers[index]),
             ),
           ),
         ],
@@ -678,7 +854,13 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                 CircleAvatar(
                   radius: 20,
                   backgroundColor: statusColor.withValues(alpha: 0.1),
-                  child: Text(driver.name[0], style: TextStyle(color: statusColor, fontWeight: FontWeight.w700)),
+                  child: Text(
+                    driver.name[0],
+                    style: TextStyle(
+                      color: statusColor,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -687,7 +869,13 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                     children: [
                       Row(
                         children: [
-                          Flexible(child: Text(driver.name, style: DeliveryTokens.headingSmall, overflow: TextOverflow.ellipsis)),
+                          Flexible(
+                            child: Text(
+                              driver.name,
+                              style: DeliveryTokens.headingSmall,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
                           const SizedBox(width: 6),
                           Container(
                             width: 8,
@@ -698,14 +886,23 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                             ),
                           ),
                           const SizedBox(width: 4),
-                          Text(_getDriverStatusLabel(driver.status), style: DeliveryTokens.labelSmall.copyWith(color: statusColor)),
+                          Text(
+                            _getDriverStatusLabel(driver.status),
+                            style: DeliveryTokens.labelSmall.copyWith(
+                              color: statusColor,
+                            ),
+                          ),
                         ],
                       ),
                       Row(
                         children: [
                           _buildPill(driver.role, const Color(0xFF3B82F6)),
                           const SizedBox(width: 6),
-                          const Icon(Icons.location_on, size: 12, color: DeliveryTokens.textTertiary),
+                          const Icon(
+                            Icons.location_on,
+                            size: 12,
+                            color: DeliveryTokens.textTertiary,
+                          ),
                           const SizedBox(width: 2),
                           Text(driver.zone, style: DeliveryTokens.caption),
                         ],
@@ -725,7 +922,9 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                   children: [
                     Expanded(
                       child: ClipRRect(
-                        borderRadius: BorderRadius.circular(DeliveryTokens.radiusSm),
+                        borderRadius: BorderRadius.circular(
+                          DeliveryTokens.radiusSm,
+                        ),
                         child: LinearProgressIndicator(
                           value: driver.capacityPercentage,
                           backgroundColor: DeliveryTokens.dividerColor,
@@ -735,7 +934,10 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    Text('${driver.currentOrders}/${driver.maxCapacity}', style: DeliveryTokens.labelMedium),
+                    Text(
+                      '${driver.currentOrders}/${driver.maxCapacity}',
+                      style: DeliveryTokens.labelMedium,
+                    ),
                   ],
                 ),
               ],
@@ -748,20 +950,29 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
                       color: const Color(0xFFEFF6FF),
-                      borderRadius: BorderRadius.circular(DeliveryTokens.radiusMd),
+                      borderRadius: BorderRadius.circular(
+                        DeliveryTokens.radiusMd,
+                      ),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
                           children: [
-                            const Icon(Icons.schedule, size: 12, color: Color(0xFF3B82F6)),
+                            const Icon(
+                              Icons.schedule,
+                              size: 12,
+                              color: Color(0xFF3B82F6),
+                            ),
                             const SizedBox(width: 4),
                             Text('Avg Time', style: DeliveryTokens.labelSmall),
                           ],
                         ),
                         const SizedBox(height: 2),
-                        Text('${driver.avgTimeMinutes}m', style: DeliveryTokens.labelLarge),
+                        Text(
+                          '${driver.avgTimeMinutes}m',
+                          style: DeliveryTokens.labelLarge,
+                        ),
                       ],
                     ),
                   ),
@@ -772,20 +983,29 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
                       color: const Color(0xFFF0FDF4),
-                      borderRadius: BorderRadius.circular(DeliveryTokens.radiusMd),
+                      borderRadius: BorderRadius.circular(
+                        DeliveryTokens.radiusMd,
+                      ),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
                           children: [
-                            const Icon(Icons.attach_money, size: 12, color: Color(0xFF10B981)),
+                            const Icon(
+                              Icons.attach_money,
+                              size: 12,
+                              color: Color(0xFF10B981),
+                            ),
                             const SizedBox(width: 4),
                             Text('Today', style: DeliveryTokens.labelSmall),
                           ],
                         ),
                         const SizedBox(height: 2),
-                        Text('\$${driver.todayEarnings.toStringAsFixed(0)}', style: DeliveryTokens.labelLarge),
+                        Text(
+                          '\$${driver.todayEarnings.toStringAsFixed(0)}',
+                          style: DeliveryTokens.labelLarge,
+                        ),
                       ],
                     ),
                   ),
@@ -971,7 +1191,9 @@ class _AssignDriverModalState extends State<_AssignDriverModal> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(DeliveryTokens.radiusXl)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(DeliveryTokens.radiusXl),
+      ),
       child: Container(
         width: 500,
         padding: const EdgeInsets.all(DeliveryTokens.spacingXl),
@@ -981,7 +1203,10 @@ class _AssignDriverModalState extends State<_AssignDriverModal> {
           children: [
             Row(
               children: [
-                const Text('Assign Driver', style: DeliveryTokens.headingMedium),
+                const Text(
+                  'Assign Driver',
+                  style: DeliveryTokens.headingMedium,
+                ),
                 const Spacer(),
                 IconButton(
                   icon: const Icon(Icons.close),
@@ -990,7 +1215,10 @@ class _AssignDriverModalState extends State<_AssignDriverModal> {
               ],
             ),
             const SizedBox(height: 16),
-            Text('Order ${widget.order.orderNumber} - ${widget.order.customerName}', style: DeliveryTokens.bodySmall),
+            Text(
+              'Order ${widget.order.orderNumber} - ${widget.order.customerName}',
+              style: DeliveryTokens.bodySmall,
+            ),
             const SizedBox(height: 16),
             TextField(
               onChanged: (value) => setState(() => _searchQuery = value),
@@ -1003,7 +1231,10 @@ class _AssignDriverModalState extends State<_AssignDriverModal> {
                   borderRadius: BorderRadius.circular(DeliveryTokens.radiusMd),
                   borderSide: BorderSide.none,
                 ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
               ),
             ),
             const SizedBox(height: 16),
@@ -1018,36 +1249,79 @@ class _AssignDriverModalState extends State<_AssignDriverModal> {
                   final canAssign = driver.isAvailable;
 
                   return InkWell(
-                    onTap: canAssign ? () => setState(() => _selectedDriver = driver) : null,
-                    borderRadius: BorderRadius.circular(DeliveryTokens.radiusMd),
+                    onTap: canAssign
+                        ? () => setState(() => _selectedDriver = driver)
+                        : null,
+                    borderRadius: BorderRadius.circular(
+                      DeliveryTokens.radiusMd,
+                    ),
                     child: Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: isSelected ? DeliveryTokens.statusInProgress.withValues(alpha: 0.1) : DeliveryTokens.dividerColor,
-                        borderRadius: BorderRadius.circular(DeliveryTokens.radiusMd),
-                        border: isSelected ? Border.all(color: DeliveryTokens.statusInProgress, width: 2) : null,
+                        color: isSelected
+                            ? DeliveryTokens.statusInProgress.withValues(
+                                alpha: 0.1,
+                              )
+                            : DeliveryTokens.dividerColor,
+                        borderRadius: BorderRadius.circular(
+                          DeliveryTokens.radiusMd,
+                        ),
+                        border: isSelected
+                            ? Border.all(
+                                color: DeliveryTokens.statusInProgress,
+                                width: 2,
+                              )
+                            : null,
                       ),
                       child: Row(
                         children: [
                           CircleAvatar(
                             radius: 16,
-                            backgroundColor: _getDriverStatusColor(driver.status).withValues(alpha: 0.1),
-                            child: Text(driver.name[0], style: TextStyle(color: _getDriverStatusColor(driver.status), fontSize: 14, fontWeight: FontWeight.w700)),
+                            backgroundColor: _getDriverStatusColor(
+                              driver.status,
+                            ).withValues(alpha: 0.1),
+                            child: Text(
+                              driver.name[0],
+                              style: TextStyle(
+                                color: _getDriverStatusColor(driver.status),
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(driver.name, style: DeliveryTokens.labelLarge),
-                                Text('${driver.zone} • ${driver.currentOrders}/${driver.maxCapacity} orders', style: DeliveryTokens.caption),
+                                Text(
+                                  driver.name,
+                                  style: DeliveryTokens.labelLarge,
+                                ),
+                                Text(
+                                  '${driver.zone} • ${driver.currentOrders}/${driver.maxCapacity} orders',
+                                  style: DeliveryTokens.caption,
+                                ),
                               ],
                             ),
                           ),
                           if (canAssign)
-                            Icon(isSelected ? Icons.check_circle : Icons.circle_outlined, color: DeliveryTokens.statusInProgress, size: 20)
+                            Icon(
+                              isSelected
+                                  ? Icons.check_circle
+                                  : Icons.circle_outlined,
+                              color: DeliveryTokens.statusInProgress,
+                              size: 20,
+                            )
                           else
-                            const Text('Full', style: TextStyle(color: DeliveryTokens.statusDelayed, fontSize: 12, fontWeight: FontWeight.w600)),
+                            const Text(
+                              'Full',
+                              style: TextStyle(
+                                color: DeliveryTokens.statusDelayed,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                         ],
                       ),
                     ),
@@ -1065,10 +1339,15 @@ class _AssignDriverModalState extends State<_AssignDriverModal> {
                 ),
                 const SizedBox(width: 12),
                 ElevatedButton(
-                  onPressed: _selectedDriver != null ? () => widget.onAssign(_selectedDriver!) : null,
+                  onPressed: _selectedDriver != null
+                      ? () => widget.onAssign(_selectedDriver!)
+                      : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFF97316),
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 12,
+                    ),
                   ),
                   child: const Text('Assign Driver'),
                 ),
@@ -1103,30 +1382,30 @@ class _MapGridPainter extends CustomPainter {
 
     // Draw grid lines
     final gridSize = 40.0;
-    
+
     // Vertical lines
     for (double x = 0; x < size.width; x += gridSize) {
       canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
     }
-    
+
     // Horizontal lines
     for (double y = 0; y < size.height; y += gridSize) {
       canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
     }
-    
+
     // Draw some mock roads/paths
     final roadPaint = Paint()
       ..color = Colors.white.withValues(alpha: 0.5)
       ..strokeWidth = 3.0
       ..style = PaintingStyle.stroke;
-    
+
     // Diagonal road
     canvas.drawLine(
       Offset(0, size.height * 0.3),
       Offset(size.width, size.height * 0.7),
       roadPaint,
     );
-    
+
     // Vertical road
     canvas.drawLine(
       Offset(size.width * 0.5, 0),

@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../data/seed_data.dart';
+import '../../domain/entities/menu_item_entity.dart';
 import '../../../../core/navigation/app_router.dart';
-import '../../../../theme/tokens.dart';
 import '../../../../utils/responsive.dart';
-import '../bloc/menu_bloc.dart';
 import '../../../../widgets/menu/menu_item_card.dart';
+import '../../../../widgets/cart/cart_pane.dart';
+import '../../../../widgets/sidebar_nav.dart';
+import '../bloc/cart_bloc.dart';
 
+/// Menu Screen with Seed Data and Cart Integration
 class MenuScreen extends StatefulWidget {
-  const MenuScreen({super.key});
+  final String? orderType;
+
+  const MenuScreen({super.key, this.orderType});
 
   @override
   State<MenuScreen> createState() => _MenuScreenState();
@@ -17,105 +23,252 @@ class _MenuScreenState extends State<MenuScreen> {
   String _selectedCategory = 'all';
   String _searchQuery = '';
 
-  @override
-  void initState() {
-    super.initState();
-    // Load menu data when screen initializes
-    context.read<MenuBloc>().add(GetMenuItemsEvent());
+  List<String> get _categories {
+    final Set<String> allCategories = {};
+    for (final item in SeedData.menuItems) {
+      if (item.categoryId.isNotEmpty) {
+        allCategories.add(item.categoryId);
+      }
+    }
+    return ['all', ...allCategories.toList()];
+  }
+
+  List<MenuItemEntity> get _filteredItems {
+    List<MenuItemEntity> items = SeedData.menuItems;
+
+    // Apply category filter
+    if (_selectedCategory != 'all') {
+      items = items
+          .where((item) => item.categoryId == _selectedCategory)
+          .toList();
+    }
+
+    // Apply search filter
+    if (_searchQuery.isNotEmpty) {
+      items = items.where((item) {
+        final name = item.name;
+        final description = item.description;
+        return name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+            description.toLowerCase().contains(_searchQuery.toLowerCase());
+      }).toList();
+    }
+
+    return items;
   }
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop = MediaQuery.of(context).size.width > 1024;
+
+    // Extract orderType from navigation arguments
+    final args =
+        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    final orderTypeString = args?['orderType'] as String?;
+
+    // Convert string to OrderType enum and update cart order type
+    if (orderTypeString != null) {
+      OrderType? orderType;
+      switch (orderTypeString.toLowerCase()) {
+        case 'takeaway':
+          orderType = OrderType.takeaway;
+          break;
+        case 'dine-in':
+          orderType = OrderType.dineIn;
+          break;
+        case 'delivery':
+          orderType = OrderType.delivery;
+          break;
+      }
+
+      // Update the shared CartBloc's order type if specified
+      if (orderType != null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          context.read<CartBloc>().add(ChangeOrderType(orderType: orderType!));
+        });
+      }
+    }
+
     return ClampedTextScaling(
       child: Scaffold(
-        backgroundColor: AppColors.bgPrimary,
-        appBar: AppBar(
-          title: const Text('Menu'),
-          backgroundColor: Colors.white,
-          elevation: 0,
-          actions: [
-            IconButton(
-              onPressed: () {
-                Navigator.pushNamed(context, AppRouter.checkout);
-              },
-              icon: const Icon(Icons.shopping_cart),
-            ),
-          ],
-        ),
-        body: Column(
+        backgroundColor: const Color(0xFFF9FAFB),
+        endDrawer: !isDesktop
+            ? Drawer(
+                width: MediaQuery.of(context).size.width * 0.85,
+                child: const CartPane(),
+              )
+            : null,
+        body: Row(
           children: [
-            _buildSearchBar(),
-            _buildCategoryTabs(),
-            Expanded(child: _buildMenuGrid()),
+            // Left Sidebar (fixed 80dp) - always show on desktop
+            if (context.isDesktopOrLarger)
+              const SidebarNav(activeRoute: AppRouter.menu),
+
+            // Main content (menu grid)
+            Expanded(
+              child: Column(
+                children: [
+                  // Header
+                  _buildHeader(context),
+                  // Search bar
+                  _buildSearchBar(),
+                  // Category tabs
+                  _buildCategoryTabs(),
+                  // Menu grid
+                  Expanded(child: _buildMenuGrid()),
+                ],
+              ),
+            ),
+
+            // Cart pane (desktop only)
+            if (isDesktop) const CartPane(),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          const Text(
+            'Menu',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF111827),
+            ),
+          ),
+          const Spacer(),
+          // Cart icon with badge (mobile/tablet)
+          if (MediaQuery.of(context).size.width <= 1024)
+            BlocBuilder<CartBloc, CartState>(
+              builder: (context, state) {
+                final itemCount = state is CartLoaded ? state.itemCount : 0;
+                return Stack(
+                  children: [
+                    IconButton(
+                      onPressed: () => _showCartDrawer(context),
+                      icon: const Icon(Icons.shopping_cart_outlined, size: 28),
+                      color: const Color(0xFF111827),
+                    ),
+                    if (itemCount > 0)
+                      Positioned(
+                        right: 4,
+                        top: 4,
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: const BoxDecoration(
+                            color: Color(0xFFEF4444),
+                            shape: BoxShape.circle,
+                          ),
+                          constraints: const BoxConstraints(
+                            minWidth: 20,
+                            minHeight: 20,
+                          ),
+                          child: Text(
+                            '$itemCount',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                  ],
+                );
+              },
+            ),
+        ],
       ),
     );
   }
 
   Widget _buildSearchBar() {
     return Padding(
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: const EdgeInsets.all(16),
       child: TextField(
         decoration: InputDecoration(
           hintText: 'Search menu items...',
-          prefixIcon: const Icon(Icons.search),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(AppRadius.md),
+          prefixIcon: const Icon(Icons.search, size: 20),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 12,
           ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: const BorderSide(color: Color(0xFF3B82F6), width: 2),
+          ),
+          filled: true,
+          fillColor: Colors.white,
         ),
         onChanged: (value) {
           setState(() {
             _searchQuery = value;
           });
-          if (value.isNotEmpty) {
-            // TODO: Implement search functionality
-            // context.read<MenuBloc>().add(SearchMenuItems(query: value));
-          } else {
-            context.read<MenuBloc>().add(GetMenuItemsEvent());
-          }
         },
       ),
     );
   }
 
   Widget _buildCategoryTabs() {
-    final categories = [
-      {'id': 'all', 'name': 'All'},
-      {'id': 'burgers', 'name': 'Burgers'},
-      {'id': 'pizza', 'name': 'Pizza'},
-      {'id': 'drinks', 'name': 'Drinks'},
-      {'id': 'desserts', 'name': 'Desserts'},
-    ];
-
     return Container(
       height: 50,
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        itemCount: categories.length,
+        itemCount: _categories.length,
         itemBuilder: (context, index) {
-          final category = categories[index];
-          final isSelected = _selectedCategory == category['id'];
+          final category = _categories[index];
+          final isSelected = _selectedCategory == category;
+          final displayName = category == 'all'
+              ? 'All'
+              : category[0].toUpperCase() + category.substring(1);
 
           return Padding(
-            padding: const EdgeInsets.only(right: AppSpacing.sm),
-            child: FilterChip(
-              label: Text(category['name']!),
+            padding: const EdgeInsets.only(right: 8),
+            child: ChoiceChip(
+              label: Text(displayName),
               selected: isSelected,
               onSelected: (selected) {
                 setState(() {
-                  _selectedCategory = category['id']!;
+                  _selectedCategory = category;
                 });
-                if (category['id'] == 'all') {
-                  context.read<MenuBloc>().add(GetMenuItemsEvent());
-                } else {
-                  // TODO: Implement category filtering
-                  // context.read<MenuBloc>().add(LoadMenuItemsByCategory(categoryId: category['id']!));
-                }
               },
-              selectedColor: AppColors.primary,
-              checkmarkColor: Colors.white,
+              backgroundColor: Colors.white,
+              selectedColor: const Color(0xFFEF4444),
+              labelStyle: TextStyle(
+                color: isSelected ? Colors.white : const Color(0xFF374151),
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                fontSize: 14,
+              ),
+              side: BorderSide(
+                color: isSelected
+                    ? const Color(0xFFEF4444)
+                    : const Color(0xFFD1D5DB),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             ),
           );
         },
@@ -124,88 +277,105 @@ class _MenuScreenState extends State<MenuScreen> {
   }
 
   Widget _buildMenuGrid() {
-    return BlocBuilder<MenuBloc, MenuState>(
-      builder: (context, state) {
-        if (state is MenuLoading) {
-          return const Center(child: CircularProgressIndicator());
-        } else if (state is MenuError) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.error_outline, size: 64, color: AppColors.error),
-                const SizedBox(height: AppSpacing.md),
-                Text(
-                  state.message,
-                  style: AppTypography.body1.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.md),
-                ElevatedButton(
-                  onPressed: () {
-                    context.read<MenuBloc>().add(GetMenuItemsEvent());
-                  },
-                  child: const Text('Retry'),
-                ),
-              ],
-            ),
-          );
-        } else if (state is MenuLoaded) {
-          if (state.items.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.restaurant_menu,
-                    size: 64,
-                    color: AppColors.textSecondary,
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  Text(
-                    'No menu items found',
-                    style: AppTypography.heading3.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                ],
+    final items = _filteredItems;
+
+    if (items.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.restaurant_menu, size: 64, color: Colors.grey.shade300),
+            const SizedBox(height: 16),
+            Text(
+              _searchQuery.isNotEmpty
+                  ? 'No items found for "$_searchQuery"'
+                  : 'No menu items available',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey.shade600,
+                fontWeight: FontWeight.w500,
               ),
-            );
-          }
-
-          return GridView.builder(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: context.isCompact ? 2 : 3,
-              childAspectRatio: context.isCompact
-                  ? 0.75
-                  : 0.7, // Better aspect ratio to prevent overflow
-              crossAxisSpacing: AppSpacing.md,
-              mainAxisSpacing: AppSpacing.md,
             ),
-            itemCount: state.items.length,
-            itemBuilder: (context, index) {
-              final item = state.items[index];
-              return MenuItemCard(
-                item: item,
-                maxLines: context.isCompact ? 1 : 2,
-                onTap: () {
-                  // Handle item tap - could show details or add to cart
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Tapped on ${item.name}'),
-                      duration: const Duration(seconds: 1),
-                    ),
-                  );
-                },
-              );
-            },
-          );
-        }
+          ],
+        ),
+      );
+    }
 
-        return const SizedBox.shrink();
+    final screenWidth = MediaQuery.of(context).size.width;
+    int crossAxisCount;
+    double spacing;
+    double childAspectRatio;
+    int maxLines;
+
+    // Responsive grid columns with proper aspect ratios to prevent overflow
+    if (screenWidth > 1400) {
+      crossAxisCount = 5;
+      spacing = 20;
+      childAspectRatio = 0.8; // Taller cards for more content
+      maxLines = 3;
+    } else if (screenWidth > 1024) {
+      crossAxisCount = 4;
+      spacing = 16;
+      childAspectRatio = 0.8;
+      maxLines = 3;
+    } else if (screenWidth > 768) {
+      crossAxisCount = 3;
+      spacing = 16;
+      maxLines = 2;
+      childAspectRatio = 1.0;
+    } else if (screenWidth > 600) {
+      crossAxisCount = 2;
+      spacing = 12;
+      maxLines = 2;
+      childAspectRatio = 1.1;
+    } else {
+      crossAxisCount = 2;
+      spacing = 12;
+      maxLines = 1;
+      childAspectRatio = 1.1; // More height for mobile
+    }
+
+    return GridView.builder(
+      padding: EdgeInsets.all(spacing),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: crossAxisCount,
+        childAspectRatio: childAspectRatio,
+        crossAxisSpacing: spacing,
+        mainAxisSpacing: spacing,
+      ),
+      itemCount: items.length,
+      itemBuilder: (context, index) {
+        final item = items[index];
+        return MenuItemCard(
+          maxLines: maxLines,
+          item: item,
+          onTap: () {
+            // Fast add for items without required modifiers
+            if (item.isFastAdd) {
+              context.read<CartBloc>().add(
+                AddItemToCart(
+                  menuItem: item,
+                  quantity: 1,
+                  unitPrice: item.basePrice,
+                  selectedModifiers: {},
+                  modifierSummary: '',
+                ),
+              );
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Added ${item.name} to cart'),
+                  duration: const Duration(seconds: 2),
+                  backgroundColor: const Color(0xFF10B981),
+                ),
+              );
+            }
+          },
+        );
       },
     );
+  }
+
+  void _showCartDrawer(BuildContext context) {
+    Scaffold.of(context).openEndDrawer();
   }
 }

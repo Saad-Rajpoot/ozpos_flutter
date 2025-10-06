@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../core/navigation/app_router.dart';
+import '../../core/navigation/navigation_service.dart';
 import '../../features/pos/presentation/bloc/cart_bloc.dart';
 import '../table/table_selection_modal.dart';
 
@@ -422,20 +423,15 @@ class CartPane extends StatelessWidget {
   void _handlePayNow(BuildContext context) {
     final cartState = context.read<CartBloc>().state as CartLoaded;
 
-    // Navigate to checkout with cart data
-    Navigator.pushNamed(
-      context,
-      AppRouter.checkout,
-      arguments: {
-        'cartItems': cartState.items,
-        'orderType': cartState.orderType.toString(),
-        'tableNumber': cartState.selectedTable?.number,
-        'customerDetails': {
-          'name': cartState.customerName,
-          'phone': cartState.customerPhone,
-        },
-      },
+    debugPrint(
+      '💳 Cart: Navigating to checkout with ${cartState.items.length} items',
     );
+    for (var item in cartState.items) {
+      debugPrint('  - ${item.menuItem.name} x${item.quantity}');
+    }
+
+    // Navigate to checkout - CartBloc is already in widget tree
+    NavigationService.pushNamed(AppRouter.checkout);
   }
 
   void _handleSendToKitchen(BuildContext context) {

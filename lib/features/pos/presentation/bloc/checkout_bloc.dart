@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import '../../domain/entities/payment_method.dart';
@@ -370,6 +371,15 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
     InitializeCheckout event,
     Emitter<CheckoutState> emit,
   ) {
+    debugPrint(
+      '🛒 CheckoutBloc: Initializing with ${event.items.length} items',
+    );
+    for (var item in event.items) {
+      debugPrint(
+        '  - ${item.menuItem.name} x${item.quantity} = \$${item.lineTotal}',
+      );
+    }
+
     emit(
       CheckoutLoaded(
         isSplitMode: false,

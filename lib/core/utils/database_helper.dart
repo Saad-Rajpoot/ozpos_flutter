@@ -11,12 +11,12 @@ class DatabaseHelper {
   /// Get database instance
   static Future<Database> get database async {
     if (_database != null) return _database!;
-    
+
     // For web, use a mock database or skip database operations
     if (kIsWeb) {
       throw UnsupportedError('Database operations not supported on web');
     }
-    
+
     _database = await _initDatabase();
     return _database!;
   }
@@ -212,14 +212,26 @@ class DatabaseHelper {
     ''');
 
     // Create indexes
-    await db.execute('CREATE INDEX idx_menu_items_category ON menu_items(category_id)');
-    await db.execute('CREATE INDEX idx_order_items_order ON order_items(order_id)');
-    await db.execute('CREATE INDEX idx_sync_queue_table ON sync_queue(table_name)');
-    await db.execute('CREATE INDEX idx_sync_queue_synced ON sync_queue(synced_at)');
+    await db.execute(
+      'CREATE INDEX idx_menu_items_category ON menu_items(category_id)',
+    );
+    await db.execute(
+      'CREATE INDEX idx_order_items_order ON order_items(order_id)',
+    );
+    await db.execute(
+      'CREATE INDEX idx_sync_queue_table ON sync_queue(table_name)',
+    );
+    await db.execute(
+      'CREATE INDEX idx_sync_queue_synced ON sync_queue(synced_at)',
+    );
   }
 
   /// Upgrade database
-  static Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+  static Future<void> _onUpgrade(
+    Database db,
+    int oldVersion,
+    int newVersion,
+  ) async {
     // Handle database upgrades here
     // For now, we'll just recreate the database
     if (oldVersion < newVersion) {

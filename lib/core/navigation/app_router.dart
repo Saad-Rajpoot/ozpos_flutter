@@ -1,25 +1,32 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import '../debug/sentry_test_screen.dart';
-import '../debug/simple_sentry_test.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../features/pos/presentation/screens/dashboard_screen.dart';
 import '../../features/pos/presentation/screens/menu_screen.dart';
-import '../../features/pos/presentation/screens/menu_screen_new.dart';
-import '../../features/pos/presentation/screens/checkout/checkout_screen_v2.dart';
-import '../../features/pos/presentation/screens/orders/orders_screen_v2.dart';
-import '../../features/pos/presentation/screens/tables/tables_screen_v2.dart';
+import '../../features/pos/presentation/screens/checkout/checkout_screen.dart';
+import '../../features/pos/presentation/screens/orders/orders_screen.dart';
+import '../../features/pos/presentation/screens/tables/tables_screen.dart';
 import '../../features/pos/presentation/screens/delivery/delivery_screen.dart';
-import '../../features/pos/presentation/screens/reservations/reservations_screen_v2.dart';
-import '../../features/pos/presentation/screens/reports/reports_screen_v2.dart';
+import '../../features/pos/presentation/screens/reservations/reservations_screen.dart';
+import '../../features/pos/presentation/screens/reports/reports_screen.dart';
 import '../../features/pos/presentation/screens/settings_screen.dart';
 import '../../features/pos/presentation/screens/menu_editor_screen.dart';
-import '../../features/pos/presentation/screens/menu_editor_screen_new.dart';
-import '../../features/pos/presentation/screens/menu_editor_screen_v3.dart';
 import '../../features/pos/presentation/screens/docket_designer_screen.dart';
+import '../../features/pos/presentation/screens/menu_item_wizard/menu_item_wizard_screen.dart';
+import '../../features/pos/presentation/screens/tables/move_table_screen.dart';
+import '../../features/pos/presentation/screens/addon_management/addon_categories_screen.dart';
+import '../../features/pos/presentation/bloc/addon_management/addon_management_bloc.dart';
+import '../../features/pos/presentation/bloc/addon_management/addon_management_event.dart';
+import '../../features/pos/domain/entities/menu_item_edit_entity.dart';
 
 /// Centralized route management
+///
+/// All navigation should go through AppRouter for consistency
+/// Use NavigationService for context-free navigation
 class AppRouter {
-  // Route names - ALL routes must be defined here
+  // ========================================================================
+  // ROUTE NAMES - ALL routes must be defined here
+  // ========================================================================
+
   static const String dashboard = '/';
   static const String menu = '/menu';
   static const String checkout = '/checkout';
@@ -31,11 +38,22 @@ class AppRouter {
   static const String settings = '/settings';
   static const String menuEditor = '/menu-editor';
   static const String docketDesigner = '/docket-designer';
-  static const String sentryTest = '/sentry-test'; // Debug only
-  static const String simpleSentryTest = '/simple-sentry-test'; // Debug only
+  static const String menuItemWizard = '/menu-item-wizard';
+  static const String moveTable = '/move-table';
+  static const String addonManagement = '/addon-management';
+
+  // ========================================================================
+  // ROUTE GENERATOR
+  // ========================================================================
 
   /// Generate routes based on route settings
+  ///
+  /// Arguments can be passed via settings.arguments
+  /// Example: NavigationService.pushNamed(AppRouter.menu, arguments: {'orderType': 'takeaway'})
   static Route<dynamic> generateRoute(RouteSettings settings) {
+    // Extract arguments if any
+    final args = settings.arguments as Map<String, dynamic>?;
+
     switch (settings.name) {
       case dashboard:
         return MaterialPageRoute(
@@ -45,25 +63,25 @@ class AppRouter {
 
       case menu:
         return MaterialPageRoute(
-          builder: (_) => const MenuScreenNew(),
+          builder: (_) => MenuScreen(orderType: args?['orderType'] as String?),
           settings: settings,
         );
 
       case checkout:
         return MaterialPageRoute(
-          builder: (_) => const CheckoutScreenV2(),
+          builder: (_) => const CheckoutScreen(),
           settings: settings,
         );
 
       case orders:
         return MaterialPageRoute(
-          builder: (_) => const OrdersScreenV2(),
+          builder: (_) => const OrdersScreen(),
           settings: settings,
         );
 
       case tables:
         return MaterialPageRoute(
-          builder: (_) => const TablesScreenV2(),
+          builder: (_) => const TablesScreen(),
           settings: settings,
         );
 
@@ -75,13 +93,13 @@ class AppRouter {
 
       case reservations:
         return MaterialPageRoute(
-          builder: (_) => const ReservationsScreenV2(),
+          builder: (_) => const ReservationsScreen(),
           settings: settings,
         );
 
       case reports:
         return MaterialPageRoute(
-          builder: (_) => const ReportsScreenV2(),
+          builder: (_) => const ReportsScreen(),
           settings: settings,
         );
 
@@ -93,7 +111,7 @@ class AppRouter {
 
       case menuEditor:
         return MaterialPageRoute(
-          builder: (_) => const MenuEditorScreenV3(),
+          builder: (_) => const MenuEditorScreen(),
           settings: settings,
         );
 
@@ -103,23 +121,28 @@ class AppRouter {
           settings: settings,
         );
 
-      case sentryTest:
-        // Only available in debug mode
-        if (kDebugMode) {
-          return MaterialPageRoute(
-            builder: (_) => const SentryTestScreen(),
-            settings: settings,
-          );
-        }
+      case menuItemWizard:
         return MaterialPageRoute(
-          builder: (_) => const ErrorScreen(),
+          builder: (_) => MenuItemWizardScreen(
+            existingItem: args?['existingItem'] as MenuItemEditEntity?,
+            isDuplicate: args?['isDuplicate'] as bool? ?? false,
+          ),
           settings: settings,
         );
 
-      case simpleSentryTest:
-        // Always available - simple test
+      case moveTable:
         return MaterialPageRoute(
-          builder: (_) => const SimpleSentryTest(),
+          builder: (_) => MoveTableScreen(sourceTable: args?['sourceTable']),
+          settings: settings,
+        );
+
+      case addonManagement:
+        return MaterialPageRoute(
+          builder: (_) => BlocProvider(
+            create: (context) =>
+                AddonManagementBloc()..add(const LoadAddonCategoriesEvent()),
+            child: const AddonCategoriesScreen(),
+          ),
           settings: settings,
         );
 

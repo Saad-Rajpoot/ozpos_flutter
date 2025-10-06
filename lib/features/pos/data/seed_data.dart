@@ -1,8 +1,8 @@
-import '../../features/pos/domain/entities/menu_item_entity.dart';
-import '../../features/pos/domain/entities/modifier_group_entity.dart';
-import '../../features/pos/domain/entities/modifier_option_entity.dart';
-import '../../features/pos/domain/entities/combo_option_entity.dart';
-import '../../features/pos/domain/entities/table_entity.dart';
+import '../domain/entities/menu_item_entity.dart';
+import '../domain/entities/modifier_group_entity.dart';
+import '../domain/entities/modifier_option_entity.dart';
+import '../domain/entities/combo_option_entity.dart';
+import '../domain/entities/table_entity.dart';
 
 /// Seed data for development and testing
 class SeedData {
@@ -16,8 +16,10 @@ class SeedData {
       id: 'item-1',
       categoryId: 'burgers',
       name: 'Classic Burger',
-      description: 'Juicy beef patty with fresh lettuce, tomato, and signature sauce.',
-      image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400',
+      description:
+          'Juicy beef patty with fresh lettuce, tomato, and signature sauce.',
+      image:
+          'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400',
       basePrice: 12.99,
       tags: ['Popular'],
       modifierGroups: [
@@ -52,10 +54,22 @@ class SeedData {
           minSelection: 0,
           maxSelection: 4,
           options: [
-            ModifierOptionEntity(id: 'cheese', name: 'Extra Cheese', priceDelta: 2.00),
+            ModifierOptionEntity(
+              id: 'cheese',
+              name: 'Extra Cheese',
+              priceDelta: 2.00,
+            ),
             ModifierOptionEntity(id: 'bacon', name: 'Bacon', priceDelta: 3.50),
-            ModifierOptionEntity(id: 'avocado', name: 'Avocado', priceDelta: 2.50),
-            ModifierOptionEntity(id: 'egg', name: 'Fried Egg', priceDelta: 2.00),
+            ModifierOptionEntity(
+              id: 'avocado',
+              name: 'Avocado',
+              priceDelta: 2.50,
+            ),
+            ModifierOptionEntity(
+              id: 'egg',
+              name: 'Fried Egg',
+              priceDelta: 2.00,
+            ),
           ],
         ),
         ModifierGroupEntity(
@@ -64,10 +78,26 @@ class SeedData {
           minSelection: 0,
           maxSelection: 2,
           options: [
-            ModifierOptionEntity(id: 'ketchup', name: 'Ketchup', priceDelta: 0.00),
-            ModifierOptionEntity(id: 'mustard', name: 'Mustard', priceDelta: 0.00),
-            ModifierOptionEntity(id: 'bbq', name: 'BBQ Sauce', priceDelta: 1.50),
-            ModifierOptionEntity(id: 'aioli', name: 'Garlic Aioli', priceDelta: 1.50),
+            ModifierOptionEntity(
+              id: 'ketchup',
+              name: 'Ketchup',
+              priceDelta: 0.00,
+            ),
+            ModifierOptionEntity(
+              id: 'mustard',
+              name: 'Mustard',
+              priceDelta: 0.00,
+            ),
+            ModifierOptionEntity(
+              id: 'bbq',
+              name: 'BBQ Sauce',
+              priceDelta: 1.50,
+            ),
+            ModifierOptionEntity(
+              id: 'aioli',
+              name: 'Garlic Aioli',
+              priceDelta: 1.50,
+            ),
           ],
         ),
       ],
@@ -94,7 +124,8 @@ class SeedData {
       categoryId: 'pizza',
       name: 'Margherita Pizza',
       description: 'Fresh mozzarella, basil, and tomato sauce on crispy crust.',
-      image: 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=400',
+      image:
+          'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=400',
       basePrice: 16.50,
       tags: ['Popular', 'Vegetarian'],
       modifierGroups: [
@@ -105,9 +136,22 @@ class SeedData {
           minSelection: 1,
           maxSelection: 1,
           options: [
-            ModifierOptionEntity(id: 'small', name: 'Small (10")', priceDelta: 0.00),
-            ModifierOptionEntity(id: 'medium', name: 'Medium (12")', priceDelta: 4.00, isDefault: true),
-            ModifierOptionEntity(id: 'large', name: 'Large (14")', priceDelta: 7.00),
+            ModifierOptionEntity(
+              id: 'small',
+              name: 'Small (10")',
+              priceDelta: 0.00,
+            ),
+            ModifierOptionEntity(
+              id: 'medium',
+              name: 'Medium (12")',
+              priceDelta: 4.00,
+              isDefault: true,
+            ),
+            ModifierOptionEntity(
+              id: 'large',
+              name: 'Large (14")',
+              priceDelta: 7.00,
+            ),
           ],
         ),
         ModifierGroupEntity(
@@ -117,9 +161,22 @@ class SeedData {
           minSelection: 1,
           maxSelection: 1,
           options: [
-            ModifierOptionEntity(id: 'thin', name: 'Thin Crust', priceDelta: 0.00, isDefault: true),
-            ModifierOptionEntity(id: 'thick', name: 'Thick Crust', priceDelta: 2.00),
-            ModifierOptionEntity(id: 'stuffed', name: 'Stuffed Crust', priceDelta: 4.00),
+            ModifierOptionEntity(
+              id: 'thin',
+              name: 'Thin Crust',
+              priceDelta: 0.00,
+              isDefault: true,
+            ),
+            ModifierOptionEntity(
+              id: 'thick',
+              name: 'Thick Crust',
+              priceDelta: 2.00,
+            ),
+            ModifierOptionEntity(
+              id: 'stuffed',
+              name: 'Stuffed Crust',
+              priceDelta: 4.00,
+            ),
           ],
         ),
         ModifierGroupEntity(
@@ -128,11 +185,31 @@ class SeedData {
           minSelection: 0,
           maxSelection: 5,
           options: [
-            ModifierOptionEntity(id: 'mushrooms', name: 'Mushrooms', priceDelta: 2.00),
-            ModifierOptionEntity(id: 'olives', name: 'Olives', priceDelta: 1.50),
-            ModifierOptionEntity(id: 'peppers', name: 'Bell Peppers', priceDelta: 1.50),
-            ModifierOptionEntity(id: 'onions', name: 'Onions', priceDelta: 1.00),
-            ModifierOptionEntity(id: 'jalapenos', name: 'Jalapeños', priceDelta: 1.50),
+            ModifierOptionEntity(
+              id: 'mushrooms',
+              name: 'Mushrooms',
+              priceDelta: 2.00,
+            ),
+            ModifierOptionEntity(
+              id: 'olives',
+              name: 'Olives',
+              priceDelta: 1.50,
+            ),
+            ModifierOptionEntity(
+              id: 'peppers',
+              name: 'Bell Peppers',
+              priceDelta: 1.50,
+            ),
+            ModifierOptionEntity(
+              id: 'onions',
+              name: 'Onions',
+              priceDelta: 1.00,
+            ),
+            ModifierOptionEntity(
+              id: 'jalapenos',
+              name: 'Jalapeños',
+              priceDelta: 1.50,
+            ),
           ],
         ),
       ],
@@ -152,7 +229,8 @@ class SeedData {
       categoryId: 'appetizers',
       name: 'Chicken Wings',
       description: 'Crispy wings with your choice of sauce.',
-      image: 'https://images.unsplash.com/photo-1567620832903-9fc6debc209f?w=400',
+      image:
+          'https://images.unsplash.com/photo-1567620832903-9fc6debc209f?w=400',
       basePrice: 14.99,
       tags: ['Popular'],
       modifierGroups: [
@@ -163,9 +241,22 @@ class SeedData {
           minSelection: 1,
           maxSelection: 1,
           options: [
-            ModifierOptionEntity(id: 'wings-6', name: '6 Wings', priceDelta: 0.00, isDefault: true),
-            ModifierOptionEntity(id: 'wings-12', name: '12 Wings', priceDelta: 8.00),
-            ModifierOptionEntity(id: 'wings-24', name: '24 Wings', priceDelta: 18.00),
+            ModifierOptionEntity(
+              id: 'wings-6',
+              name: '6 Wings',
+              priceDelta: 0.00,
+              isDefault: true,
+            ),
+            ModifierOptionEntity(
+              id: 'wings-12',
+              name: '12 Wings',
+              priceDelta: 8.00,
+            ),
+            ModifierOptionEntity(
+              id: 'wings-24',
+              name: '24 Wings',
+              priceDelta: 18.00,
+            ),
           ],
         ),
         ModifierGroupEntity(
@@ -175,10 +266,27 @@ class SeedData {
           minSelection: 1,
           maxSelection: 1,
           options: [
-            ModifierOptionEntity(id: 'buffalo', name: 'Buffalo', priceDelta: 0.00, isDefault: true),
-            ModifierOptionEntity(id: 'bbq-wings', name: 'BBQ', priceDelta: 0.00),
-            ModifierOptionEntity(id: 'honey-garlic', name: 'Honey Garlic', priceDelta: 1.00),
-            ModifierOptionEntity(id: 'hot', name: 'Extra Hot', priceDelta: 1.00),
+            ModifierOptionEntity(
+              id: 'buffalo',
+              name: 'Buffalo',
+              priceDelta: 0.00,
+              isDefault: true,
+            ),
+            ModifierOptionEntity(
+              id: 'bbq-wings',
+              name: 'BBQ',
+              priceDelta: 0.00,
+            ),
+            ModifierOptionEntity(
+              id: 'honey-garlic',
+              name: 'Honey Garlic',
+              priceDelta: 1.00,
+            ),
+            ModifierOptionEntity(
+              id: 'hot',
+              name: 'Extra Hot',
+              priceDelta: 1.00,
+            ),
           ],
         ),
         ModifierGroupEntity(
@@ -188,8 +296,16 @@ class SeedData {
           maxSelection: 3,
           options: [
             ModifierOptionEntity(id: 'ranch', name: 'Ranch', priceDelta: 1.50),
-            ModifierOptionEntity(id: 'blue-cheese', name: 'Blue Cheese', priceDelta: 1.50),
-            ModifierOptionEntity(id: 'sriracha', name: 'Sriracha Mayo', priceDelta: 1.50),
+            ModifierOptionEntity(
+              id: 'blue-cheese',
+              name: 'Blue Cheese',
+              priceDelta: 1.50,
+            ),
+            ModifierOptionEntity(
+              id: 'sriracha',
+              name: 'Sriracha Mayo',
+              priceDelta: 1.50,
+            ),
           ],
         ),
       ],
@@ -200,7 +316,8 @@ class SeedData {
       id: 'item-4',
       categoryId: 'salads',
       name: 'Caesar Salad',
-      description: 'Crisp romaine, parmesan, croutons, and creamy Caesar dressing.',
+      description:
+          'Crisp romaine, parmesan, croutons, and creamy Caesar dressing.',
       image: 'https://images.unsplash.com/photo-1546793665-c74683f339c1?w=400',
       basePrice: 11.50,
       tags: ['Healthy'],
@@ -212,8 +329,17 @@ class SeedData {
           minSelection: 1,
           maxSelection: 1,
           options: [
-            ModifierOptionEntity(id: 'small-salad', name: 'Small', priceDelta: 0.00, isDefault: true),
-            ModifierOptionEntity(id: 'large-salad', name: 'Large', priceDelta: 4.00),
+            ModifierOptionEntity(
+              id: 'small-salad',
+              name: 'Small',
+              priceDelta: 0.00,
+              isDefault: true,
+            ),
+            ModifierOptionEntity(
+              id: 'large-salad',
+              name: 'Large',
+              priceDelta: 4.00,
+            ),
           ],
         ),
         ModifierGroupEntity(
@@ -222,9 +348,21 @@ class SeedData {
           minSelection: 0,
           maxSelection: 1,
           options: [
-            ModifierOptionEntity(id: 'grilled-chicken', name: 'Grilled Chicken', priceDelta: 5.00),
-            ModifierOptionEntity(id: 'grilled-shrimp', name: 'Grilled Shrimp', priceDelta: 7.00),
-            ModifierOptionEntity(id: 'crispy-chicken', name: 'Crispy Chicken', priceDelta: 5.00),
+            ModifierOptionEntity(
+              id: 'grilled-chicken',
+              name: 'Grilled Chicken',
+              priceDelta: 5.00,
+            ),
+            ModifierOptionEntity(
+              id: 'grilled-shrimp',
+              name: 'Grilled Shrimp',
+              priceDelta: 7.00,
+            ),
+            ModifierOptionEntity(
+              id: 'crispy-chicken',
+              name: 'Crispy Chicken',
+              priceDelta: 5.00,
+            ),
           ],
         ),
       ],
@@ -236,7 +374,8 @@ class SeedData {
       categoryId: 'beverages',
       name: 'Coffee',
       description: 'Freshly brewed coffee.',
-      image: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=400',
+      image:
+          'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=400',
       basePrice: 4.50,
       tags: [],
       modifierGroups: [], // No required modifiers = fast-add
@@ -248,7 +387,8 @@ class SeedData {
       categoryId: 'beverages',
       name: 'Iced Latte',
       description: 'Espresso with cold milk over ice.',
-      image: 'https://images.unsplash.com/photo-1517487881594-2787fef5ebf7?w=400',
+      image:
+          'https://images.unsplash.com/photo-1517487881594-2787fef5ebf7?w=400',
       basePrice: 6.50,
       tags: [],
       modifierGroups: [
@@ -259,9 +399,22 @@ class SeedData {
           minSelection: 1,
           maxSelection: 1,
           options: [
-            ModifierOptionEntity(id: 'small-coffee', name: 'Small', priceDelta: 0.00, isDefault: true),
-            ModifierOptionEntity(id: 'medium-coffee', name: 'Medium', priceDelta: 1.50),
-            ModifierOptionEntity(id: 'large-coffee', name: 'Large', priceDelta: 2.50),
+            ModifierOptionEntity(
+              id: 'small-coffee',
+              name: 'Small',
+              priceDelta: 0.00,
+              isDefault: true,
+            ),
+            ModifierOptionEntity(
+              id: 'medium-coffee',
+              name: 'Medium',
+              priceDelta: 1.50,
+            ),
+            ModifierOptionEntity(
+              id: 'large-coffee',
+              name: 'Large',
+              priceDelta: 2.50,
+            ),
           ],
         ),
         ModifierGroupEntity(
@@ -270,10 +423,27 @@ class SeedData {
           minSelection: 0,
           maxSelection: 1,
           options: [
-            ModifierOptionEntity(id: 'whole-milk', name: 'Whole Milk', priceDelta: 0.00, isDefault: true),
-            ModifierOptionEntity(id: 'almond-milk', name: 'Almond Milk', priceDelta: 1.00),
-            ModifierOptionEntity(id: 'oat-milk', name: 'Oat Milk', priceDelta: 1.00),
-            ModifierOptionEntity(id: 'soy-milk', name: 'Soy Milk', priceDelta: 1.00),
+            ModifierOptionEntity(
+              id: 'whole-milk',
+              name: 'Whole Milk',
+              priceDelta: 0.00,
+              isDefault: true,
+            ),
+            ModifierOptionEntity(
+              id: 'almond-milk',
+              name: 'Almond Milk',
+              priceDelta: 1.00,
+            ),
+            ModifierOptionEntity(
+              id: 'oat-milk',
+              name: 'Oat Milk',
+              priceDelta: 1.00,
+            ),
+            ModifierOptionEntity(
+              id: 'soy-milk',
+              name: 'Soy Milk',
+              priceDelta: 1.00,
+            ),
           ],
         ),
         ModifierGroupEntity(
@@ -282,9 +452,21 @@ class SeedData {
           minSelection: 0,
           maxSelection: 2,
           options: [
-            ModifierOptionEntity(id: 'extra-shot', name: 'Extra Shot', priceDelta: 1.50),
-            ModifierOptionEntity(id: 'vanilla-syrup', name: 'Vanilla Syrup', priceDelta: 0.50),
-            ModifierOptionEntity(id: 'caramel-syrup', name: 'Caramel Syrup', priceDelta: 0.50),
+            ModifierOptionEntity(
+              id: 'extra-shot',
+              name: 'Extra Shot',
+              priceDelta: 1.50,
+            ),
+            ModifierOptionEntity(
+              id: 'vanilla-syrup',
+              name: 'Vanilla Syrup',
+              priceDelta: 0.50,
+            ),
+            ModifierOptionEntity(
+              id: 'caramel-syrup',
+              name: 'Caramel Syrup',
+              priceDelta: 0.50,
+            ),
           ],
         ),
       ],
@@ -296,7 +478,8 @@ class SeedData {
       categoryId: 'sides',
       name: 'French Fries',
       description: 'Golden crispy fries.',
-      image: 'https://images.unsplash.com/photo-1576107232684-1279f390859f?w=400',
+      image:
+          'https://images.unsplash.com/photo-1576107232684-1279f390859f?w=400',
       basePrice: 5.50,
       tags: [],
       modifierGroups: [
@@ -307,9 +490,22 @@ class SeedData {
           minSelection: 1,
           maxSelection: 1,
           options: [
-            ModifierOptionEntity(id: 'small-fries', name: 'Small', priceDelta: 0.00, isDefault: true),
-            ModifierOptionEntity(id: 'medium-fries', name: 'Medium', priceDelta: 2.00),
-            ModifierOptionEntity(id: 'large-fries', name: 'Large', priceDelta: 3.50),
+            ModifierOptionEntity(
+              id: 'small-fries',
+              name: 'Small',
+              priceDelta: 0.00,
+              isDefault: true,
+            ),
+            ModifierOptionEntity(
+              id: 'medium-fries',
+              name: 'Medium',
+              priceDelta: 2.00,
+            ),
+            ModifierOptionEntity(
+              id: 'large-fries',
+              name: 'Large',
+              priceDelta: 3.50,
+            ),
           ],
         ),
       ],
@@ -321,7 +517,8 @@ class SeedData {
       categoryId: 'sides',
       name: 'Onion Rings',
       description: 'Crispy battered onion rings.',
-      image: 'https://images.unsplash.com/photo-1639024471283-03518883512d?w=400',
+      image:
+          'https://images.unsplash.com/photo-1639024471283-03518883512d?w=400',
       basePrice: 6.50,
       tags: [],
       modifierGroups: [],
@@ -333,7 +530,8 @@ class SeedData {
       categoryId: 'desserts',
       name: 'Chocolate Cake',
       description: 'Rich chocolate cake with ganache.',
-      image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400',
+      image:
+          'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400',
       basePrice: 8.50,
       tags: [],
       modifierGroups: [
@@ -343,8 +541,16 @@ class SeedData {
           minSelection: 0,
           maxSelection: 2,
           options: [
-            ModifierOptionEntity(id: 'ice-cream', name: 'Vanilla Ice Cream', priceDelta: 3.00),
-            ModifierOptionEntity(id: 'whipped-cream', name: 'Whipped Cream', priceDelta: 1.50),
+            ModifierOptionEntity(
+              id: 'ice-cream',
+              name: 'Vanilla Ice Cream',
+              priceDelta: 3.00,
+            ),
+            ModifierOptionEntity(
+              id: 'whipped-cream',
+              name: 'Whipped Cream',
+              priceDelta: 1.50,
+            ),
           ],
         ),
       ],
@@ -356,7 +562,8 @@ class SeedData {
       categoryId: 'mexican',
       name: 'Beef Tacos',
       description: 'Three soft tacos with seasoned beef.',
-      image: 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=400',
+      image:
+          'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=400',
       basePrice: 13.50,
       tags: ['Popular'],
       modifierGroups: [
@@ -367,8 +574,17 @@ class SeedData {
           minSelection: 1,
           maxSelection: 1,
           options: [
-            ModifierOptionEntity(id: 'soft-shell', name: 'Soft Shell', priceDelta: 0.00, isDefault: true),
-            ModifierOptionEntity(id: 'hard-shell', name: 'Hard Shell', priceDelta: 0.00),
+            ModifierOptionEntity(
+              id: 'soft-shell',
+              name: 'Soft Shell',
+              priceDelta: 0.00,
+              isDefault: true,
+            ),
+            ModifierOptionEntity(
+              id: 'hard-shell',
+              name: 'Hard Shell',
+              priceDelta: 0.00,
+            ),
           ],
         ),
         ModifierGroupEntity(
@@ -377,11 +593,27 @@ class SeedData {
           minSelection: 0,
           maxSelection: 5,
           options: [
-            ModifierOptionEntity(id: 'sour-cream', name: 'Sour Cream', priceDelta: 1.00),
-            ModifierOptionEntity(id: 'guacamole', name: 'Guacamole', priceDelta: 2.50),
+            ModifierOptionEntity(
+              id: 'sour-cream',
+              name: 'Sour Cream',
+              priceDelta: 1.00,
+            ),
+            ModifierOptionEntity(
+              id: 'guacamole',
+              name: 'Guacamole',
+              priceDelta: 2.50,
+            ),
             ModifierOptionEntity(id: 'salsa', name: 'Salsa', priceDelta: 0.00),
-            ModifierOptionEntity(id: 'cheese-taco', name: 'Extra Cheese', priceDelta: 1.50),
-            ModifierOptionEntity(id: 'jalapenos-taco', name: 'Jalapeños', priceDelta: 1.00),
+            ModifierOptionEntity(
+              id: 'cheese-taco',
+              name: 'Extra Cheese',
+              priceDelta: 1.50,
+            ),
+            ModifierOptionEntity(
+              id: 'jalapenos-taco',
+              name: 'Jalapeños',
+              priceDelta: 1.00,
+            ),
           ],
         ),
       ],
@@ -393,7 +625,8 @@ class SeedData {
       categoryId: 'pasta',
       name: 'Pasta Carbonara',
       description: 'Creamy pasta with bacon and parmesan.',
-      image: 'https://images.unsplash.com/photo-1612874742237-6526221588e3?w=400',
+      image:
+          'https://images.unsplash.com/photo-1612874742237-6526221588e3?w=400',
       basePrice: 17.50,
       tags: [],
       modifierGroups: [
@@ -404,8 +637,17 @@ class SeedData {
           minSelection: 1,
           maxSelection: 1,
           options: [
-            ModifierOptionEntity(id: 'spaghetti', name: 'Spaghetti', priceDelta: 0.00, isDefault: true),
-            ModifierOptionEntity(id: 'fettuccine', name: 'Fettuccine', priceDelta: 1.00),
+            ModifierOptionEntity(
+              id: 'spaghetti',
+              name: 'Spaghetti',
+              priceDelta: 0.00,
+              isDefault: true,
+            ),
+            ModifierOptionEntity(
+              id: 'fettuccine',
+              name: 'Fettuccine',
+              priceDelta: 1.00,
+            ),
             ModifierOptionEntity(id: 'penne', name: 'Penne', priceDelta: 0.00),
           ],
         ),
@@ -415,8 +657,16 @@ class SeedData {
           minSelection: 0,
           maxSelection: 2,
           options: [
-            ModifierOptionEntity(id: 'extra-bacon', name: 'Extra Bacon', priceDelta: 4.00),
-            ModifierOptionEntity(id: 'garlic-bread', name: 'Garlic Bread', priceDelta: 3.50),
+            ModifierOptionEntity(
+              id: 'extra-bacon',
+              name: 'Extra Bacon',
+              priceDelta: 4.00,
+            ),
+            ModifierOptionEntity(
+              id: 'garlic-bread',
+              name: 'Garlic Bread',
+              priceDelta: 3.50,
+            ),
           ],
         ),
       ],
@@ -428,7 +678,8 @@ class SeedData {
       categoryId: 'japanese',
       name: 'Sushi Platter',
       description: 'Assorted nigiri and rolls.',
-      image: 'https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=400',
+      image:
+          'https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=400',
       basePrice: 22.00,
       tags: ['Popular'],
       modifierGroups: [
@@ -439,9 +690,22 @@ class SeedData {
           minSelection: 1,
           maxSelection: 1,
           options: [
-            ModifierOptionEntity(id: 'small-platter', name: 'Small (12 pcs)', priceDelta: 0.00, isDefault: true),
-            ModifierOptionEntity(id: 'medium-platter', name: 'Medium (20 pcs)', priceDelta: 8.00),
-            ModifierOptionEntity(id: 'large-platter', name: 'Large (32 pcs)', priceDelta: 18.00),
+            ModifierOptionEntity(
+              id: 'small-platter',
+              name: 'Small (12 pcs)',
+              priceDelta: 0.00,
+              isDefault: true,
+            ),
+            ModifierOptionEntity(
+              id: 'medium-platter',
+              name: 'Medium (20 pcs)',
+              priceDelta: 8.00,
+            ),
+            ModifierOptionEntity(
+              id: 'large-platter',
+              name: 'Large (32 pcs)',
+              priceDelta: 18.00,
+            ),
           ],
         ),
         ModifierGroupEntity(
@@ -450,9 +714,21 @@ class SeedData {
           minSelection: 0,
           maxSelection: 3,
           options: [
-            ModifierOptionEntity(id: 'miso-soup', name: 'Miso Soup', priceDelta: 3.50),
-            ModifierOptionEntity(id: 'edamame', name: 'Edamame', priceDelta: 4.00),
-            ModifierOptionEntity(id: 'seaweed-salad', name: 'Seaweed Salad', priceDelta: 4.50),
+            ModifierOptionEntity(
+              id: 'miso-soup',
+              name: 'Miso Soup',
+              priceDelta: 3.50,
+            ),
+            ModifierOptionEntity(
+              id: 'edamame',
+              name: 'Edamame',
+              priceDelta: 4.00,
+            ),
+            ModifierOptionEntity(
+              id: 'seaweed-salad',
+              name: 'Seaweed Salad',
+              priceDelta: 4.50,
+            ),
           ],
         ),
       ],
@@ -464,7 +740,8 @@ class SeedData {
       categoryId: 'beverages',
       name: 'Mango Smoothie',
       description: 'Fresh mango blended with yogurt.',
-      image: 'https://images.unsplash.com/photo-1505252585461-04db1eb84625?w=400',
+      image:
+          'https://images.unsplash.com/photo-1505252585461-04db1eb84625?w=400',
       basePrice: 7.50,
       tags: ['Healthy'],
       modifierGroups: [],
@@ -476,7 +753,8 @@ class SeedData {
       categoryId: 'seafood',
       name: 'Fish & Chips',
       description: 'Beer-battered fish with crispy chips.',
-      image: 'https://images.unsplash.com/photo-1579208575657-c595a05383b7?w=400',
+      image:
+          'https://images.unsplash.com/photo-1579208575657-c595a05383b7?w=400',
       basePrice: 18.50,
       tags: [],
       modifierGroups: [
@@ -487,9 +765,22 @@ class SeedData {
           minSelection: 1,
           maxSelection: 1,
           options: [
-            ModifierOptionEntity(id: 'cod', name: 'Cod', priceDelta: 0.00, isDefault: true),
-            ModifierOptionEntity(id: 'haddock', name: 'Haddock', priceDelta: 2.00),
-            ModifierOptionEntity(id: 'salmon', name: 'Salmon', priceDelta: 4.00),
+            ModifierOptionEntity(
+              id: 'cod',
+              name: 'Cod',
+              priceDelta: 0.00,
+              isDefault: true,
+            ),
+            ModifierOptionEntity(
+              id: 'haddock',
+              name: 'Haddock',
+              priceDelta: 2.00,
+            ),
+            ModifierOptionEntity(
+              id: 'salmon',
+              name: 'Salmon',
+              priceDelta: 4.00,
+            ),
           ],
         ),
         ModifierGroupEntity(
@@ -498,9 +789,21 @@ class SeedData {
           minSelection: 0,
           maxSelection: 2,
           options: [
-            ModifierOptionEntity(id: 'coleslaw', name: 'Coleslaw', priceDelta: 3.00),
-            ModifierOptionEntity(id: 'mushy-peas', name: 'Mushy Peas', priceDelta: 2.50),
-            ModifierOptionEntity(id: 'tartar-sauce', name: 'Tartar Sauce', priceDelta: 1.50),
+            ModifierOptionEntity(
+              id: 'coleslaw',
+              name: 'Coleslaw',
+              priceDelta: 3.00,
+            ),
+            ModifierOptionEntity(
+              id: 'mushy-peas',
+              name: 'Mushy Peas',
+              priceDelta: 2.50,
+            ),
+            ModifierOptionEntity(
+              id: 'tartar-sauce',
+              name: 'Tartar Sauce',
+              priceDelta: 1.50,
+            ),
           ],
         ),
       ],
@@ -512,7 +815,8 @@ class SeedData {
       categoryId: 'beverages',
       name: 'Fresh Orange Juice',
       description: 'Freshly squeezed orange juice.',
-      image: 'https://images.unsplash.com/photo-1600271886742-f049cd451bba?w=400',
+      image:
+          'https://images.unsplash.com/photo-1600271886742-f049cd451bba?w=400',
       basePrice: 5.50,
       tags: ['Healthy'],
       modifierGroups: [],

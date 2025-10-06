@@ -1,8 +1,6 @@
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:dio/dio.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:path/path.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 
 import '../network/api_client.dart';
@@ -17,16 +15,7 @@ import '../../features/pos/domain/repositories/menu_repository.dart';
 import '../../features/pos/domain/usecases/get_menu_items.dart';
 import '../../features/pos/domain/usecases/get_menu_categories.dart';
 import '../../features/pos/presentation/bloc/menu_bloc.dart';
-
-import '../../features/cart/data/datasources/cart_local_datasource.dart';
-import '../../features/cart/data/datasources/mock_cart_local_datasource.dart';
-import '../../features/cart/data/repositories/cart_repository_impl.dart';
-import '../../features/cart/domain/repositories/cart_repository.dart';
-import '../../features/cart/domain/usecases/add_to_cart.dart';
-import '../../features/cart/domain/usecases/remove_from_cart.dart';
-import '../../features/cart/domain/usecases/update_cart_item.dart';
-import '../../features/cart/domain/usecases/clear_cart.dart';
-import '../../features/cart/presentation/bloc/cart_bloc.dart';
+import '../../features/pos/presentation/bloc/cart_bloc.dart';
 
 import '../../features/combos/presentation/bloc/combo_management_bloc.dart';
 
@@ -99,39 +88,8 @@ Future<void> _initMenu(GetIt sl) async {
 
 /// Initialize cart feature dependencies
 Future<void> _initCart(GetIt sl) async {
-  // Data sources
-  if (sl.isRegistered<Database>()) {
-    sl.registerLazySingleton<CartLocalDataSource>(
-      () => CartLocalDataSourceImpl(database: sl()),
-    );
-  } else {
-    // For web, register a mock local data source
-    sl.registerLazySingleton<CartLocalDataSource>(
-      () => MockCartLocalDataSource(),
-    );
-  }
-
-  // Repository
-  sl.registerLazySingleton<CartRepository>(
-    () => CartRepositoryImpl(localDataSource: sl()),
-  );
-
-  // Use cases
-  sl.registerLazySingleton(() => AddToCart(repository: sl()));
-  sl.registerLazySingleton(() => RemoveFromCart(repository: sl()));
-  sl.registerLazySingleton(() => UpdateCartItem(repository: sl()));
-  sl.registerLazySingleton(() => ClearCart(repository: sl()));
-
-  // BLoC (Factory - new instance each time)
-  sl.registerFactory(
-    () => CartBloc(
-      addToCart: sl(),
-      removeFromCart: sl(),
-      updateCartItem: sl(),
-      clearCart: sl(),
-      cartRepository: sl(),
-    ),
-  );
+  // BLoC (Singleton - shared cart across the app)
+  sl.registerLazySingleton(() => CartBloc()..add(const InitializeCart()));
 }
 
 /// Initialize combo feature dependencies
