@@ -124,7 +124,7 @@ class _MenuScreenNewState extends State<MenuScreenNew> {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -294,30 +294,42 @@ class _MenuScreenNewState extends State<MenuScreenNew> {
     final screenWidth = MediaQuery.of(context).size.width;
     int crossAxisCount;
     double spacing;
+    double childAspectRatio;
+    int maxLines;
 
-    // Responsive grid columns
+    // Responsive grid columns with proper aspect ratios to prevent overflow
     if (screenWidth > 1400) {
       crossAxisCount = 5;
       spacing = 20;
+      childAspectRatio = 0.8; // Taller cards for more content
+      maxLines = 3;
     } else if (screenWidth > 1024) {
       crossAxisCount = 4;
       spacing = 16;
+      childAspectRatio = 0.8;
+      maxLines = 3;
     } else if (screenWidth > 768) {
       crossAxisCount = 3;
       spacing = 16;
+      maxLines = 2;
+      childAspectRatio = 1.0;
     } else if (screenWidth > 600) {
-      crossAxisCount = 3;
+      crossAxisCount = 2;
       spacing = 12;
+      maxLines = 2;
+      childAspectRatio = 1.1;
     } else {
       crossAxisCount = 2;
       spacing = 12;
+      maxLines = 1;
+      childAspectRatio = 1.1; // More height for mobile
     }
 
     return GridView.builder(
       padding: EdgeInsets.all(spacing),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: crossAxisCount,
-        childAspectRatio: 0.7,
+        childAspectRatio: childAspectRatio,
         crossAxisSpacing: spacing,
         mainAxisSpacing: spacing,
       ),
@@ -325,6 +337,7 @@ class _MenuScreenNewState extends State<MenuScreenNew> {
       itemBuilder: (context, index) {
         final item = items[index];
         return MenuItemCard(
+          maxLines: maxLines,
           item: item,
           onTap: () {
             // Fast add for items without required modifiers

@@ -178,7 +178,9 @@ class _MenuScreenState extends State<MenuScreen> {
             padding: const EdgeInsets.all(AppSpacing.md),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: context.isCompact ? 2 : 3,
-              childAspectRatio: 0.8,
+              childAspectRatio: context.isCompact
+                  ? 0.75
+                  : 0.7, // Better aspect ratio to prevent overflow
               crossAxisSpacing: AppSpacing.md,
               mainAxisSpacing: AppSpacing.md,
             ),
@@ -187,6 +189,7 @@ class _MenuScreenState extends State<MenuScreen> {
               final item = state.items[index];
               return MenuItemCard(
                 item: item,
+                maxLines: context.isCompact ? 1 : 2,
                 onTap: () {
                   // Handle item tap - could show details or add to cart
                   ScaffoldMessenger.of(context).showSnackBar(
