@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../theme/tokens.dart';
+import '../core/theme/tokens.dart';
 import '../core/navigation/app_router.dart';
 
 /// Active Orders Panel - exact match to reference image
@@ -22,21 +22,19 @@ class ActiveOrdersPanel extends StatelessWidget {
         children: [
           // Header
           _buildHeader(),
-          
+
           // Search
           _buildSearchBar(),
-          
+
           // Content
           Expanded(
-            child: Builder(
-              builder: (context) => _buildOrdersList(context),
-            ),
+            child: Builder(builder: (context) => _buildOrdersList(context)),
           ),
         ],
       ),
     );
   }
-  
+
   Widget _buildHeader() {
     return Container(
       padding: const EdgeInsets.symmetric(
@@ -60,10 +58,7 @@ class ActiveOrdersPanel extends StatelessWidget {
           ),
           const Spacer(),
           Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 10,
-              vertical: 4,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
               color: AppColors.primary,
               borderRadius: BorderRadius.circular(12),
@@ -81,7 +76,7 @@ class ActiveOrdersPanel extends StatelessWidget {
       ),
     );
   }
-  
+
   Widget _buildSearchBar() {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.base),
@@ -116,7 +111,7 @@ class ActiveOrdersPanel extends StatelessWidget {
       ),
     );
   }
-  
+
   Widget _buildOrdersList(BuildContext context) {
     // Mock data matching reference image
     final orders = [
@@ -161,14 +156,15 @@ class ActiveOrdersPanel extends StatelessWidget {
         icon: Icons.delivery_dining,
       ),
     ];
-    
+
     return Column(
       children: [
         Expanded(
           child: ListView.separated(
             padding: const EdgeInsets.all(AppSpacing.base),
             itemCount: orders.length,
-            separatorBuilder: (context, index) => const SizedBox(height: AppSpacing.orderCardGap),
+            separatorBuilder: (context, index) =>
+                const SizedBox(height: AppSpacing.orderCardGap),
             itemBuilder: (context, index) => _OrderCard(
               order: orders[index],
               onTap: () => Navigator.of(context).pushNamed(AppRouter.orders),
@@ -187,7 +183,8 @@ class ActiveOrdersPanel extends StatelessWidget {
             width: double.infinity,
             height: 44,
             child: ElevatedButton(
-              onPressed: () => Navigator.of(context).pushNamed(AppRouter.orders),
+              onPressed: () =>
+                  Navigator.of(context).pushNamed(AppRouter.orders),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.error,
                 foregroundColor: Colors.white,
@@ -221,7 +218,7 @@ class _OrderData {
   final String status;
   final Color iconColor;
   final IconData icon;
-  
+
   _OrderData({
     required this.id,
     required this.type,
@@ -237,9 +234,9 @@ class _OrderData {
 class _OrderCard extends StatelessWidget {
   final _OrderData order;
   final VoidCallback? onTap;
-  
+
   const _OrderCard({required this.order, this.onTap});
-  
+
   Color get _borderColor {
     switch (order.status) {
       case 'PENDING':
@@ -278,84 +275,83 @@ class _OrderCard extends StatelessWidget {
             ),
           ],
         ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header row
-          Row(
-            children: [
-              // Icon
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                color: order.iconColor.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header row
+            Row(
+              children: [
+                // Icon
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: order.iconColor.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    order.icon,
+                    size: AppSizes.iconOrderCard,
+                    color: order.iconColor,
+                  ),
                 ),
-                child: Icon(
-                  order.icon,
-                  size: AppSizes.iconOrderCard,
-                  color: order.iconColor,
-                ),
-              ),
-              const SizedBox(width: 12),
-              // Order ID and Type
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Text(
-                          'Order ${order.id}',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.textPrimary,
+                const SizedBox(width: 12),
+                // Order ID and Type
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            'Order ${order.id}',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textPrimary,
+                            ),
                           ),
-                        ),
-                        const Spacer(),
-                        _buildStatusChip(order.status),
-                      ],
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      order.type,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: AppColors.textSecondary,
+                          const Spacer(),
+                          _buildStatusChip(order.status),
+                        ],
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 2),
+                      Text(
+                        order.type,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          // Details row
-          Row(
-            children: [
-              Expanded(
-                child: _buildDetailItem('Amount', '\$${order.amount.toStringAsFixed(2)}'),
-              ),
-              Expanded(
-                child: _buildDetailItem('Time', order.time),
-              ),
-              Expanded(
-                child: _buildDetailItem('Waiting', order.waiting),
-              ),
-            ],
-          ),
-        ],
-      ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            // Details row
+            Row(
+              children: [
+                Expanded(
+                  child: _buildDetailItem(
+                    'Amount',
+                    '\$${order.amount.toStringAsFixed(2)}',
+                  ),
+                ),
+                Expanded(child: _buildDetailItem('Time', order.time)),
+                Expanded(child: _buildDetailItem('Waiting', order.waiting)),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
-  
+
   Widget _buildStatusChip(String status) {
     Color bgColor;
     Color textColor;
-    
+
     switch (status) {
       case 'PENDING':
         bgColor = AppColors.statusPendingBg;
@@ -373,7 +369,7 @@ class _OrderCard extends StatelessWidget {
         bgColor = AppColors.bgPrimary;
         textColor = AppColors.textSecondary;
     }
-    
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
@@ -390,17 +386,14 @@ class _OrderCard extends StatelessWidget {
       ),
     );
   }
-  
+
   Widget _buildDetailItem(String label, String value) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          style: const TextStyle(
-            fontSize: 11,
-            color: AppColors.textSecondary,
-          ),
+          style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
         ),
         const SizedBox(height: 2),
         Text(

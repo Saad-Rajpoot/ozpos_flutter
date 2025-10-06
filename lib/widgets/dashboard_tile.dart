@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../theme/tokens.dart';
+import '../core/theme/tokens.dart';
 
 class DashboardTile extends StatefulWidget {
   final String title;

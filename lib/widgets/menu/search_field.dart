@@ -1,15 +1,11 @@
 import 'package:flutter/material.dart';
-import '../../theme/tokens.dart';
+import '../../core/theme/tokens.dart';
 
 class SearchField extends StatelessWidget {
   final Function(String) onSearch;
   final String? hintText;
 
-  const SearchField({
-    super.key,
-    required this.onSearch,
-    this.hintText,
-  });
+  const SearchField({super.key, required this.onSearch, this.hintText});
 
   @override
   Widget build(BuildContext context) {
@@ -38,9 +34,7 @@ class SearchField extends StatelessWidget {
             vertical: AppSpacing.sm,
           ),
         ),
-        style: AppTypography.body2.copyWith(
-          color: AppColors.textPrimary,
-        ),
+        style: AppTypography.body2.copyWith(color: AppColors.textPrimary),
       ),
     );
   }

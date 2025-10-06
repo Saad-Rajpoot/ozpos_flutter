@@ -6,7 +6,7 @@ import '../bloc/combo_management_state.dart';
 import '../../domain/entities/combo_entity.dart';
 import '../widgets/combo_card.dart';
 import '../widgets/combo_builder_modal.dart';
-import '../../../../theme/app_theme.dart';
+import '../../../../core/theme/app_theme.dart';
 
 class ComboDashboardScreen extends StatefulWidget {
   const ComboDashboardScreen({super.key});

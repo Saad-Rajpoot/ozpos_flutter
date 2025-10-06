@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../theme/tokens.dart';
+import '../../../../core/theme/tokens.dart';
 
 class ReservationsScreen extends StatelessWidget {
   const ReservationsScreen({super.key});
@@ -16,11 +16,7 @@ class ReservationsScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.calendar_today,
-              size: 64,
-              color: AppColors.primary,
-            ),
+            Icon(Icons.calendar_today, size: 64, color: AppColors.primary),
             const SizedBox(height: AppSpacing.lg),
             Text(
               'Reservations Screen',

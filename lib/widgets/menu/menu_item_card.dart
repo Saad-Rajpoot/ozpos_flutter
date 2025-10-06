@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../theme/tokens.dart';
+import '../../core/theme/tokens.dart';
 import '../../features/pos/domain/entities/menu_item_entity.dart';
 import 'item_configurator_dialog.dart';
 

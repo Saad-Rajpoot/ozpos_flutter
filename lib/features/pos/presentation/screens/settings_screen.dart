@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../theme/tokens.dart';
+import '../../../../core/theme/tokens.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -16,11 +16,7 @@ class SettingsScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.settings,
-              size: 64,
-              color: AppColors.primary,
-            ),
+            Icon(Icons.settings, size: 64, color: AppColors.primary),
             const SizedBox(height: AppSpacing.lg),
             Text(
               'Settings Screen',

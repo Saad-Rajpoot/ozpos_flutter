@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../theme/tokens.dart';
+import '../../core/theme/tokens.dart';
 import '../../features/pos/domain/entities/menu_category_entity.dart';
 
 class CategoryTabs extends StatelessWidget {
@@ -29,7 +29,7 @@ class CategoryTabs extends StatelessWidget {
               onTap: () => onCategorySelected(null),
             );
           }
-          
+
           final category = categories[index - 1];
           return _CategoryTab(
             label: category.name,
@@ -71,8 +71,12 @@ class _CategoryTab extends StatelessWidget {
             child: Text(
               label,
               style: AppTypography.body2.copyWith(
-                color: isSelected ? AppColors.textOnPrimary : AppColors.textSecondary,
-                fontWeight: isSelected ? AppTypography.medium : AppTypography.regular,
+                color: isSelected
+                    ? AppColors.textOnPrimary
+                    : AppColors.textSecondary,
+                fontWeight: isSelected
+                    ? AppTypography.medium
+                    : AppTypography.regular,
               ),
             ),
           ),

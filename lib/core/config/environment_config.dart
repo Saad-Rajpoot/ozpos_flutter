@@ -26,7 +26,8 @@ class EnvironmentConfig {
   /// Can be overridden with --dart-define=SENTRY_DSN=your_dsn
   static const String sentryDsn = String.fromEnvironment(
     'SENTRY_DSN',
-    defaultValue: '', // Default to empty - requires explicit configuration
+    defaultValue:
+        'https://5043c056bceb3ca2e4a92d2e6e2b0235@o4509604948869120.ingest.us.sentry.io/4510112203341824',
   );
 
   /// App version for Sentry releases

@@ -4,23 +4,19 @@ import '../../features/pos/domain/entities/menu_item_entity.dart';
 import '../../features/pos/domain/entities/modifier_group_entity.dart';
 import '../../features/pos/presentation/bloc/item_config_bloc.dart';
 import '../../features/pos/presentation/bloc/cart_bloc.dart';
-import '../../theme/tokens.dart';
+import '../../core/theme/tokens.dart';
 
 /// Item Configurator Dialog - Pixel-perfect match to reference
 class ItemConfiguratorDialog extends StatelessWidget {
   final MenuItemEntity item;
-  
-  const ItemConfiguratorDialog({
-    super.key,
-    required this.item,
-  });
-  
+
+  const ItemConfiguratorDialog({super.key, required this.item});
+
   static Future<void> show(BuildContext context, MenuItemEntity item) {
     return showDialog(
       context: context,
       builder: (dialogContext) => BlocProvider(
-        create: (_) => ItemConfigBloc()
-          ..add(InitializeItemConfig(item: item)),
+        create: (_) => ItemConfigBloc()..add(InitializeItemConfig(item: item)),
         child: BlocProvider.value(
           value: context.read<CartBloc>(),
           child: ItemConfiguratorDialog(item: item),
@@ -52,9 +48,7 @@ class ItemConfiguratorDialog extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               _buildHeader(context),
-              Flexible(
-                child: _buildContent(context),
-              ),
+              Flexible(child: _buildContent(context)),
               _buildFooter(context),
             ],
           ),
@@ -79,7 +73,11 @@ class ItemConfiguratorDialog extends StatelessWidget {
                 return Container(
                   height: 200,
                   color: AppColors.bgPrimary,
-                  child: const Icon(Icons.restaurant, size: 64, color: AppColors.textSecondary),
+                  child: const Icon(
+                    Icons.restaurant,
+                    size: 64,
+                    color: AppColors.textSecondary,
+                  ),
                 );
               },
             ),
@@ -152,7 +150,10 @@ class ItemConfiguratorDialog extends StatelessWidget {
               // Popular badge
               if (item.tags.contains('Popular'))
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFEF3C7),
                     borderRadius: BorderRadius.circular(8),
@@ -189,7 +190,9 @@ class ItemConfiguratorDialog extends StatelessWidget {
           ),
           const SizedBox(height: 24),
           // Modifier Groups
-          ...item.modifierGroups.map((group) => _buildModifierGroup(context, group)),
+          ...item.modifierGroups.map(
+            (group) => _buildModifierGroup(context, group),
+          ),
           // Combo Options
           if (item.comboOptions.isNotEmpty) ...[
             const SizedBox(height: 16),
@@ -204,9 +207,9 @@ class ItemConfiguratorDialog extends StatelessWidget {
     return BlocBuilder<ItemConfigBloc, ItemConfigState>(
       builder: (context, state) {
         if (state is! ItemConfigLoaded) return const SizedBox.shrink();
-        
+
         final selectedOptions = state.selectedOptions[group.id] ?? [];
-        
+
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -224,7 +227,10 @@ class ItemConfiguratorDialog extends StatelessWidget {
                 const SizedBox(width: 8),
                 if (group.isRequired)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFFFEE2E2),
                       borderRadius: BorderRadius.circular(4),
@@ -242,7 +248,10 @@ class ItemConfiguratorDialog extends StatelessWidget {
                 const Spacer(),
                 if (group.maxSelection < 999)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFFDBEAFE),
                       borderRadius: BorderRadius.circular(12),
@@ -306,7 +315,9 @@ class ItemConfiguratorDialog extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.white,
             border: Border.all(
-              color: isSelected ? const Color(0xFF3B82F6) : const Color(0xFFE5E7EB),
+              color: isSelected
+                  ? const Color(0xFF3B82F6)
+                  : const Color(0xFFE5E7EB),
               width: isSelected ? 2 : 1,
             ),
             borderRadius: BorderRadius.circular(8),
@@ -324,9 +335,15 @@ class ItemConfiguratorDialog extends StatelessWidget {
             children: [
               Icon(
                 isSelected
-                    ? (isRadio ? Icons.radio_button_checked : Icons.check_circle)
-                    : (isRadio ? Icons.radio_button_unchecked : Icons.circle_outlined),
-                color: isSelected ? const Color(0xFF3B82F6) : const Color(0xFF9CA3AF),
+                    ? (isRadio
+                          ? Icons.radio_button_checked
+                          : Icons.check_circle)
+                    : (isRadio
+                          ? Icons.radio_button_unchecked
+                          : Icons.circle_outlined),
+                color: isSelected
+                    ? const Color(0xFF3B82F6)
+                    : const Color(0xFF9CA3AF),
                 size: 20,
               ),
               const SizedBox(width: 12),
@@ -335,17 +352,23 @@ class ItemConfiguratorDialog extends StatelessWidget {
                   name,
                   style: TextStyle(
                     fontSize: 14,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                    fontWeight: isSelected
+                        ? FontWeight.w600
+                        : FontWeight.normal,
                     color: AppColors.textPrimary,
                   ),
                 ),
               ),
               Text(
-                priceDelta == 0.0 ? 'Free' : '+\$${priceDelta.toStringAsFixed(2)}',
+                priceDelta == 0.0
+                    ? 'Free'
+                    : '+\$${priceDelta.toStringAsFixed(2)}',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
-                  color: priceDelta == 0.0 ? const Color(0xFF6B7280) : AppColors.textPrimary,
+                  color: priceDelta == 0.0
+                      ? const Color(0xFF6B7280)
+                      : AppColors.textPrimary,
                 ),
               ),
             ],
@@ -359,13 +382,17 @@ class ItemConfiguratorDialog extends StatelessWidget {
     return BlocBuilder<ItemConfigBloc, ItemConfigState>(
       builder: (context, state) {
         if (state is! ItemConfigLoaded) return const SizedBox.shrink();
-        
+
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                const Icon(Icons.auto_awesome, size: 18, color: Color(0xFFF59E0B)),
+                const Icon(
+                  Icons.auto_awesome,
+                  size: 18,
+                  color: Color(0xFFF59E0B),
+                ),
                 const SizedBox(width: 8),
                 const Text(
                   'Make it a Combo',
@@ -377,7 +404,10 @@ class ItemConfiguratorDialog extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFDBEAFE),
                     borderRadius: BorderRadius.circular(12),
@@ -396,7 +426,13 @@ class ItemConfiguratorDialog extends StatelessWidget {
             const SizedBox(height: 12),
             ...item.comboOptions.map((combo) {
               final isSelected = state.selectedComboId == combo.id;
-              return _buildComboOption(context, combo.id, combo.name, combo.priceDelta, isSelected);
+              return _buildComboOption(
+                context,
+                combo.id,
+                combo.name,
+                combo.priceDelta,
+                isSelected,
+              );
             }),
           ],
         );
@@ -404,7 +440,13 @@ class ItemConfiguratorDialog extends StatelessWidget {
     );
   }
 
-  Widget _buildComboOption(BuildContext context, String comboId, String name, double priceDelta, bool isSelected) {
+  Widget _buildComboOption(
+    BuildContext context,
+    String comboId,
+    String name,
+    double priceDelta,
+    bool isSelected,
+  ) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: InkWell(
@@ -419,7 +461,9 @@ class ItemConfiguratorDialog extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.white,
             border: Border.all(
-              color: isSelected ? const Color(0xFF3B82F6) : const Color(0xFFE5E7EB),
+              color: isSelected
+                  ? const Color(0xFF3B82F6)
+                  : const Color(0xFFE5E7EB),
               width: isSelected ? 2 : 1,
             ),
             borderRadius: BorderRadius.circular(8),
@@ -427,8 +471,12 @@ class ItemConfiguratorDialog extends StatelessWidget {
           child: Row(
             children: [
               Icon(
-                isSelected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
-                color: isSelected ? const Color(0xFF3B82F6) : const Color(0xFF9CA3AF),
+                isSelected
+                    ? Icons.radio_button_checked
+                    : Icons.radio_button_unchecked,
+                color: isSelected
+                    ? const Color(0xFF3B82F6)
+                    : const Color(0xFF9CA3AF),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -436,7 +484,9 @@ class ItemConfiguratorDialog extends StatelessWidget {
                   name,
                   style: TextStyle(
                     fontSize: 14,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                    fontWeight: isSelected
+                        ? FontWeight.w600
+                        : FontWeight.normal,
                   ),
                 ),
               ),
@@ -461,7 +511,7 @@ class ItemConfiguratorDialog extends StatelessWidget {
         if (state is! ItemConfigLoaded) {
           return const SizedBox(height: 80);
         }
-        
+
         return Container(
           padding: const EdgeInsets.all(20),
           decoration: const BoxDecoration(
@@ -482,8 +532,8 @@ class ItemConfiguratorDialog extends StatelessWidget {
                     IconButton(
                       onPressed: state.quantity > 1
                           ? () => context.read<ItemConfigBloc>().add(
-                                UpdateQuantity(quantity: state.quantity - 1),
-                              )
+                              UpdateQuantity(quantity: state.quantity - 1),
+                            )
                           : null,
                       icon: const Icon(Icons.remove),
                       iconSize: 18,
@@ -501,8 +551,8 @@ class ItemConfiguratorDialog extends StatelessWidget {
                     ),
                     IconButton(
                       onPressed: () => context.read<ItemConfigBloc>().add(
-                            UpdateQuantity(quantity: state.quantity + 1),
-                          ),
+                        UpdateQuantity(quantity: state.quantity + 1),
+                      ),
                       icon: const Icon(Icons.add),
                       iconSize: 18,
                     ),
@@ -513,7 +563,9 @@ class ItemConfiguratorDialog extends StatelessWidget {
               // Reset button
               TextButton(
                 onPressed: () {
-                  context.read<ItemConfigBloc>().add(const ResetConfiguration());
+                  context.read<ItemConfigBloc>().add(
+                    const ResetConfiguration(),
+                  );
                 },
                 child: const Text('Reset'),
               ),
@@ -560,15 +612,19 @@ class ItemConfiguratorDialog extends StatelessWidget {
     // Build modifier strings
     final modifierStrings = <String>[];
     for (final entry in state.selectedOptions.entries) {
-      final group = state.item.modifierGroups.firstWhere((g) => g.id == entry.key);
+      final group = state.item.modifierGroups.firstWhere(
+        (g) => g.id == entry.key,
+      );
       for (final optionId in entry.value) {
         final option = group.options.firstWhere((o) => o.id == optionId);
         modifierStrings.add(option.name);
       }
     }
-    
+
     if (state.selectedComboId != null) {
-      final combo = state.item.comboOptions.firstWhere((c) => c.id == state.selectedComboId);
+      final combo = state.item.comboOptions.firstWhere(
+        (c) => c.id == state.selectedComboId,
+      );
       modifierStrings.add(combo.name);
     }
 
@@ -583,9 +639,9 @@ class ItemConfiguratorDialog extends StatelessWidget {
         modifierSummary: modifierStrings.join(', '),
       ),
     );
-    
+
     Navigator.pop(context);
-    
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Added ${state.item.name} to cart'),

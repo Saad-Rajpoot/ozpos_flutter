@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../theme/tokens.dart';
+import '../../../../core/theme/tokens.dart';
 
 class DocketDesignerScreen extends StatelessWidget {
   const DocketDesignerScreen({super.key});
@@ -16,11 +16,7 @@ class DocketDesignerScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.receipt_long,
-              size: 64,
-              color: AppColors.primary,
-            ),
+            Icon(Icons.receipt_long, size: 64, color: AppColors.primary),
             const SizedBox(height: AppSpacing.lg),
             Text(
               'Docket Designer Screen',
