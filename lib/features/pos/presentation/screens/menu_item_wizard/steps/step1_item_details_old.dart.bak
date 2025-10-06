@@ -1,0 +1,502 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../bloc/menu_edit_bloc.dart';
+import '../../../bloc/menu_edit_event.dart';
+import '../../../bloc/menu_edit_state.dart';
+
+/// Step 1: Item Details - Name, Description, Category, Image, Badges
+class Step1ItemDetails extends StatefulWidget {
+  const Step1ItemDetails({super.key});
+
+  @override
+  State<Step1ItemDetails> createState() => _Step1ItemDetailsState();
+}
+
+class _Step1ItemDetailsState extends State<Step1ItemDetails> {
+  late TextEditingController _nameController;
+  late TextEditingController _descriptionController;
+  late TextEditingController _skuController;
+
+  @override
+  void initState() {
+    super.initState();
+    final state = context.read<MenuEditBloc>().state;
+    _nameController = TextEditingController(text: state.item.name);
+    _descriptionController = TextEditingController(text: state.item.description);
+    _skuController = TextEditingController(text: state.item.sku);
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _descriptionController.dispose();
+    _skuController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<MenuEditBloc, MenuEditState>(
+      builder: (context, state) {
+        return Container(
+          constraints: const BoxConstraints(maxWidth: 800),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Image Upload Section
+              _buildImageSection(state),
+              const SizedBox(height: 32),
+
+              // Item Name
+              _buildTextField(
+                label: 'Item Name',
+                controller: _nameController,
+                required: true,
+                hint: 'e.g., Margherita Pizza',
+                onChanged: (value) {
+                  context.read<MenuEditBloc>().add(
+                        UpdateBasicInfo(name: value),
+                      );
+                },
+              ),
+              const SizedBox(height: 24),
+
+              // Description
+              _buildTextField(
+                label: 'Description',
+                controller: _descriptionController,
+                hint: 'Describe this item...',
+                maxLines: 4,
+                onChanged: (value) {
+                  context.read<MenuEditBloc>().add(
+                        UpdateBasicInfo(description: value),
+                      );
+                },
+              ),
+              const SizedBox(height: 24),
+
+              // SKU
+              _buildTextField(
+                label: 'SKU',
+                controller: _skuController,
+                hint: 'Item code or SKU',
+                onChanged: (value) {
+                  context.read<MenuEditBloc>().add(
+                        UpdateBasicInfo(sku: value),
+                      );
+                },
+              ),
+              const SizedBox(height: 24),
+
+              // Category Selector
+              _buildCategorySelector(state),
+              const SizedBox(height: 24),
+
+              // Badges Selector
+              _buildBadgesSection(state),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildImageSection(MenuEditState state) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Item Image',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF1F2937),
+          ),
+        ),
+        const SizedBox(height: 12),
+        Container(
+          width: double.infinity,
+          height: 200,
+          decoration: BoxDecoration(
+            color: Colors.grey.shade100,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey.shade300),
+          ),
+          child: state.item.imageUrl != null && state.item.imageUrl!.isNotEmpty
+              ? Stack(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.network(
+                        state.item.imageUrl!,
+                        width: double.infinity,
+                        height: double.infinity,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return _buildImagePlaceholder();
+                        },
+                      ),
+                    ),
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: IconButton(
+                        onPressed: () {
+                          context.read<MenuEditBloc>().add(
+                                const UpdateBasicInfo(imageUrl: ''),
+                              );
+                        },
+                        icon: const Icon(Icons.close, color: Colors.white),
+                        style: IconButton.styleFrom(
+                          backgroundColor: Colors.black54,
+                        ),
+                      ),
+                    ),
+                  ],
+                )
+              : _buildImagePlaceholder(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildImagePlaceholder() {
+    return InkWell(
+      onTap: () => _showImagePicker(),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.add_photo_alternate, size: 48, color: Colors.grey.shade400),
+          const SizedBox(height: 12),
+          Text(
+            'Click to upload image',
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey.shade600,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'PNG, JPG up to 5MB',
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.grey.shade500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showImagePicker() {
+    // TODO: Implement image picker
+    // For now, show a dialog with URL input
+    showDialog(
+      context: context,
+      builder: (context) {
+        final urlController = TextEditingController();
+        return AlertDialog(
+          title: const Text('Enter Image URL'),
+          content: TextField(
+            controller: urlController,
+            decoration: const InputDecoration(
+              labelText: 'Image URL',
+              hintText: 'https://example.com/image.jpg',
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                context.read<MenuEditBloc>().add(
+                      UpdateBasicInfo(imageUrl: urlController.text),
+                    );
+                Navigator.pop(context);
+              },
+              child: const Text('Add'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildTextField({
+    required String label,
+    required TextEditingController controller,
+    required Function(String) onChanged,
+    String? hint,
+    int maxLines = 1,
+    bool required = false,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF1F2937),
+              ),
+            ),
+            if (required)
+              const Text(
+                ' *',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFFEF4444),
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        TextField(
+          controller: controller,
+          maxLines: maxLines,
+          onChanged: onChanged,
+          decoration: InputDecoration(
+            hintText: hint,
+            filled: true,
+            fillColor: Colors.white,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: Colors.grey.shade300),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: Colors.grey.shade300),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Color(0xFF2196F3), width: 2),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCategorySelector(MenuEditState state) {
+    // Mock categories - replace with actual data
+    final categories = [
+      'Pizza',
+      'Pasta',
+      'Salads',
+      'Appetizers',
+      'Desserts',
+      'Beverages',
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Row(
+          children: [
+            Text(
+              'Category',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF1F2937),
+              ),
+            ),
+            Text(
+              ' *',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFFEF4444),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.grey.shade300),
+          ),
+          child: DropdownButtonFormField<String>(
+            value: state.item.categoryId.isEmpty ? null : state.item.categoryId,
+            hint: const Text('Select a category'),
+            decoration: const InputDecoration(
+              contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              border: InputBorder.none,
+            ),
+            items: categories.map((category) {
+              return DropdownMenuItem(
+                value: category,
+                child: Text(category),
+              );
+            }).toList(),
+            onChanged: (value) {
+              if (value != null) {
+                context.read<MenuEditBloc>().add(
+                      UpdateBasicInfo(categoryId: value),
+                    );
+              }
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBadgesSection(MenuEditState state) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Text(
+              'Badges',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF1F2937),
+              ),
+            ),
+            const Spacer(),
+            TextButton.icon(
+              onPressed: () => _showBadgeSelector(state),
+              icon: const Icon(Icons.add, size: 18),
+              label: const Text('Add Badge'),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        if (state.item.badges.isEmpty)
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade50,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.grey.shade200),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.label_outline, color: Colors.grey.shade400, size: 20),
+                const SizedBox(width: 12),
+                Text(
+                  'No badges added yet',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+              ],
+            ),
+          )
+        else
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: state.item.badges.map((badge) {
+              return Chip(
+                label: Text(badge.label),
+                backgroundColor: Color(int.parse(badge.color.replaceFirst('#', '0xFF'))),
+                labelStyle: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+                deleteIcon: const Icon(Icons.close, size: 16, color: Colors.white),
+                onDeleted: () {
+                  context.read<MenuEditBloc>().add(
+                        RemoveBadge(badgeId: badge.id),
+                      );
+                },
+              );
+            }).toList(),
+          ),
+      ],
+    );
+  }
+
+  void _showBadgeSelector(MenuEditState state) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return BlocProvider.value(
+          value: context.read<MenuEditBloc>(),
+          child: const _BadgeSelectorDialog(),
+        );
+      },
+    );
+  }
+}
+
+class _BadgeSelectorDialog extends StatelessWidget {
+  const _BadgeSelectorDialog();
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<MenuEditBloc, MenuEditState>(
+      builder: (context, state) {
+        // Filter out already selected badges
+        final selectedIds = state.item.badges.map((b) => b.id).toSet();
+        final availableBadges =
+            state.availableBadges.where((b) => !selectedIds.contains(b.id)).toList();
+
+        return AlertDialog(
+          title: const Text('Add Badge'),
+          content: SizedBox(
+            width: 400,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (availableBadges.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Text('All badges have been added'),
+                  )
+                else
+                  ...availableBadges.map((badge) {
+                    return ListTile(
+                      leading: Container(
+                        width: 40,
+                        height: 24,
+                        decoration: BoxDecoration(
+                          color: Color(int.parse(badge.color.replaceFirst('#', '0xFF'))),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Center(
+                          child: Text(
+                            badge.label,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ),
+                      title: Text(badge.label),
+                      onTap: () {
+                        context.read<MenuEditBloc>().add(AddBadge(badge: badge));
+                        Navigator.pop(context);
+                      },
+                    );
+                  }),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
