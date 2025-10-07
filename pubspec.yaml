@@ -46,8 +46,6 @@ dependencies:
   dartz: ^0.10.1
   
   # Data Classes
-  freezed_annotation: ^2.4.4
-  json_annotation: ^4.9.0
   equatable: ^2.0.5
   
   # Database - SQLite (works on all platforms)
@@ -90,7 +88,6 @@ dependencies:
   printing: ^5.12.0
   
   # HTTP
-  http: ^1.2.0
   dio: ^5.7.0
   
   # Error Tracking & Monitoring
@@ -109,9 +106,6 @@ dev_dependencies:
   flutter_lints: ^5.0.0
   
   # Code Generation
-  build_runner: ^2.4.13
-  freezed: ^2.5.7
-  json_serializable: ^6.8.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

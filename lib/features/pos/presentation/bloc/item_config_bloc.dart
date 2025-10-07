@@ -1,9 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
-import '../../domain/entities/menu_item_entity.dart';
+import '../../../menu/domain/entities/menu_item_entity.dart';
 import '../../domain/entities/modifier_group_entity.dart';
-import '../../domain/entities/modifier_option_entity.dart';
-import '../../domain/entities/combo_option_entity.dart';
 
 /// Item Configuration BLoC for managing modifier selection
 class ItemConfigBloc extends Bloc<ItemConfigEvent, ItemConfigState> {

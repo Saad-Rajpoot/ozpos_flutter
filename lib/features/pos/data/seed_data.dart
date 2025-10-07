@@ -1,4 +1,4 @@
-import '../domain/entities/menu_item_entity.dart';
+import '../../menu/domain/entities/menu_item_entity.dart';
 import '../domain/entities/modifier_group_entity.dart';
 import '../domain/entities/modifier_option_entity.dart';
 import '../domain/entities/combo_option_entity.dart';

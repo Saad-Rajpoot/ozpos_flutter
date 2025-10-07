@@ -1,22 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../features/pos/presentation/screens/dashboard_screen.dart';
-import '../../features/pos/presentation/screens/menu_screen.dart';
-import '../../features/pos/presentation/screens/checkout/checkout_screen.dart';
-import '../../features/pos/presentation/screens/orders/orders_screen.dart';
-import '../../features/pos/presentation/screens/tables/tables_screen.dart';
-import '../../features/pos/presentation/screens/delivery/delivery_screen.dart';
-import '../../features/pos/presentation/screens/reservations/reservations_screen.dart';
-import '../../features/pos/presentation/screens/reports/reports_screen.dart';
-import '../../features/pos/presentation/screens/settings_screen.dart';
-import '../../features/pos/presentation/screens/menu_editor_screen.dart';
-import '../../features/pos/presentation/screens/docket_designer_screen.dart';
-import '../../features/pos/presentation/screens/menu_item_wizard/menu_item_wizard_screen.dart';
-import '../../features/pos/presentation/screens/tables/move_table_screen.dart';
-import '../../features/pos/presentation/screens/addon_management/addon_categories_screen.dart';
-import '../../features/pos/presentation/bloc/addon_management/addon_management_bloc.dart';
-import '../../features/pos/presentation/bloc/addon_management/addon_management_event.dart';
-import '../../features/pos/domain/entities/menu_item_edit_entity.dart';
+import '../../features/dashboard/dashboard_screen.dart';
+import '../../features/menu/presentation/screens/menu_screen.dart';
+import '../../features/checkout/checkout_screen.dart';
+import '../../features/orders/orders_screen.dart';
+import '../../features/tables/tables_screen.dart';
+import '../../features/delivery/delivery_screen.dart';
+import '../../features/reservations/reservations_screen.dart';
+import '../../features/reports/reports_screen.dart';
+import '../../features/settings/settings_screen.dart';
+import '../../features/menu/presentation/screens/menu_editor_screen.dart';
+import '../../features/docket/docket_designer_screen.dart';
+import '../../features/menu/presentation/screens/menu_item_wizard_screen.dart';
+import '../../features/tables/move_table_screen.dart';
+import '../../features/addons/presentation/screens/addon_categories_screen.dart';
+import '../../features/addons/presentation/bloc/addon_management_bloc.dart';
+import '../../features/addons/presentation/bloc/addon_management_event.dart';
+import '../../features/menu/domain/entities/menu_item_edit_entity.dart';
 
 /// Centralized route management
 ///

@@ -187,13 +187,13 @@ NavigationService.pop();
 | `dashboard` | `/` | DashboardScreen | None |
 | `menu` | `/menu` | MenuScreenNew | `orderType?: String` |
 | `checkout` | `/checkout` | CheckoutScreenV2 | None (uses CartBloc) |
-| `orders` | `/orders` | OrdersScreenV2 | None |
-| `tables` | `/tables` | TablesScreenV2 | None |
+| `orders` | `/orders` | OrdersScreen | None |
+| `tables` | `/tables` | TablesScreen | None |
 | `delivery` | `/delivery` | DeliveryScreen | None |
-| `reservations` | `/reservations` | ReservationsScreenV2 | None |
-| `reports` | `/reports` | ReportsScreenV2 | None |
+| `reservations` | `/reservations` | ReservationsScreen | None |
+| `reports` | `/reports` | ReportsScreen | None |
 | `settings` | `/settings` | SettingsScreen | None |
-| `menuEditor` | `/menu-editor` | MenuEditorScreenV3 | None |
+| `menuEditor` | `/menu-editor` | MenuEditorScreen | None |
 | `docketDesigner` | `/docket-designer` | DocketDesignerScreen | None |
 | `menuItemWizard` | `/menu-item-wizard` | MenuItemWizardScreen | `existingItem?: MenuItemEditEntity, isDuplicate: bool` |
 | `moveTable` | `/move-table` | MoveTableScreen | `sourceTable: TableData` |
@@ -221,9 +221,9 @@ NavigationService.pop();
 ### 4. Updated All Screens ✅
 - **sidebar_nav.dart**: Uses NavigationService
 - **dashboard_screen.dart**: Uses NavigationService
-- **menu_editor_screen_v3.dart**: Uses NavigationService
+- **menu_editor_screen.dart**: Uses NavigationService
 - **cart_pane.dart**: Uses NavigationService
-- **tables_screen_v2.dart**: Uses NavigationService
+- **tables_screen.dart**: Uses NavigationService
 - **addon_categories_screen.dart**: Removed static route() method
 
 ---

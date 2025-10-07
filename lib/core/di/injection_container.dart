@@ -7,14 +7,13 @@ import '../network/api_client.dart';
 import '../network/network_info.dart';
 import '../utils/database_helper.dart';
 
-import '../../features/pos/data/datasources/menu_remote_datasource.dart';
-import '../../features/pos/data/datasources/menu_local_datasource.dart';
-import '../../features/pos/data/datasources/mock_menu_local_datasource.dart';
-import '../../features/pos/data/repositories/menu_repository_impl.dart';
-import '../../features/pos/domain/repositories/menu_repository.dart';
-import '../../features/pos/domain/usecases/get_menu_items.dart';
-import '../../features/pos/domain/usecases/get_menu_categories.dart';
-import '../../features/pos/presentation/bloc/menu_bloc.dart';
+import '../../features/menu/data/datasources/menu_remote_datasource.dart';
+import '../../features/menu/data/datasources/menu_local_datasource.dart';
+import '../../features/menu/data/repositories/menu_repository_impl.dart';
+import '../../features/menu/domain/repositories/menu_repository.dart';
+import '../../features/menu/domain/usecases/get_menu_items.dart';
+import '../../features/menu/domain/usecases/get_menu_categories.dart';
+import '../../features/menu/presentation/bloc/menu_bloc.dart';
 import '../../features/pos/presentation/bloc/cart_bloc.dart';
 
 import '../../features/combos/presentation/bloc/combo_management_bloc.dart';
@@ -61,17 +60,17 @@ Future<void> _initMenu(GetIt sl) async {
       () => MenuLocalDataSourceImpl(database: sl()),
     );
   } else {
-    // For web, register a mock local data source
-    sl.registerLazySingleton<MenuLocalDataSource>(
-      () => MockMenuLocalDataSource(),
-    );
+    // For web, use mock data directly (no registration needed for utility class)
+    print('Web platform detected - using mock data');
   }
 
   // Repository
   sl.registerLazySingleton<MenuRepository>(
     () => MenuRepositoryImpl(
       remoteDataSource: sl(),
-      localDataSource: sl(),
+      localDataSource: sl.isRegistered<MenuLocalDataSource>()
+          ? sl<MenuLocalDataSource>()
+          : null,
       networkInfo: sl(),
     ),
   );
