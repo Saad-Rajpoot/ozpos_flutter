@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../core/navigation/app_router.dart';
-import '../../core/navigation/navigation_service.dart';
-import '../../core/theme/tokens.dart';
-import '../../core/utils/responsive.dart';
-import '../menu/presentation/bloc/menu_bloc.dart';
-import '../pos/presentation/widgets/dashboard_tile.dart';
-import '../pos/presentation/widgets/active_orders_panel.dart';
-import '../../core/widgets/sidebar_nav.dart';
+import '../../../../core/navigation/app_router.dart';
+import '../../../../core/navigation/navigation_service.dart';
+import '../../../../core/theme/tokens.dart';
+import '../../../../core/utils/responsive.dart';
+import '../../../menu/presentation/bloc/menu_bloc.dart';
+import '../../../pos/presentation/widgets/dashboard_tile.dart';
+import '../../../pos/presentation/widgets/active_orders_panel.dart';
+import '../../../../core/widgets/sidebar_nav.dart';
 
 /// Dashboard Screen - Pixel-perfect match to reference image
 /// Responsive breakpoints:

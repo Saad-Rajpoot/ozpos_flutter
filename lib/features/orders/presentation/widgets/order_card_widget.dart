@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../../pos/domain/entities/order_entity.dart';
+import '../../../pos/domain/entities/order_entity.dart';
 import '../orders_tokens.dart';
 
 class OrderCardWidget extends StatelessWidget {

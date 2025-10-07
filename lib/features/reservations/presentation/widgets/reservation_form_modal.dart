@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../pos/domain/entities/reservation_entity.dart';
+import '../../../pos/domain/entities/reservation_entity.dart';
 
 class ReservationFormModal extends StatefulWidget {
   final ReservationEntity? reservation; // null for new, provided for edit

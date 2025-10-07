@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import '../../core/navigation/app_router.dart';
-import '../../core/widgets/sidebar_nav.dart';
+import '../../../../core/navigation/app_router.dart';
+import '../../../../core/widgets/sidebar_nav.dart';
 
 class ReportsScreen extends StatefulWidget {
   const ReportsScreen({super.key});

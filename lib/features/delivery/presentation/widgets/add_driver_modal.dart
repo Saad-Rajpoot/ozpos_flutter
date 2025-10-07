@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'delivery_tokens.dart';
+import '../delivery_tokens.dart';
 
 enum VehicleType { bike, car, scooter, van }
 
@@ -16,11 +16,11 @@ class _AddDriverModalState extends State<AddDriverModal> {
   final _phoneController = TextEditingController();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
-  
+
   VehicleType? _selectedVehicle;
   String _selectedRole = 'Self-managed';
   final List<String> _selectedZones = [];
-  
+
   bool _sendWelcomeSms = true;
   bool _enableGpsTracking = true;
   bool _allowCashPayments = false;
@@ -48,7 +48,9 @@ class _AddDriverModalState extends State<AddDriverModal> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(DeliveryTokens.radiusXl)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(DeliveryTokens.radiusXl),
+      ),
       child: Container(
         width: 600,
         constraints: const BoxConstraints(maxHeight: 800),
@@ -59,7 +61,9 @@ class _AddDriverModalState extends State<AddDriverModal> {
             Container(
               padding: const EdgeInsets.all(DeliveryTokens.spacingXl),
               decoration: const BoxDecoration(
-                border: Border(bottom: BorderSide(color: DeliveryTokens.borderColor)),
+                border: Border(
+                  bottom: BorderSide(color: DeliveryTokens.borderColor),
+                ),
               ),
               child: Row(
                 children: [
@@ -72,7 +76,7 @@ class _AddDriverModalState extends State<AddDriverModal> {
                 ],
               ),
             ),
-            
+
             // Form content
             Expanded(
               child: SingleChildScrollView(
@@ -85,41 +89,96 @@ class _AddDriverModalState extends State<AddDriverModal> {
                       // Photo upload
                       Center(child: _buildPhotoUpload()),
                       const SizedBox(height: 24),
-                      
+
                       // Driver Name & Phone
                       Row(
                         children: [
-                          Expanded(child: _buildTextField('Driver Name *', _nameController, 'Enter full name')),
+                          Expanded(
+                            child: _buildTextField(
+                              'Driver Name *',
+                              _nameController,
+                              'Enter full name',
+                            ),
+                          ),
                           const SizedBox(width: 16),
-                          Expanded(child: _buildTextField('Phone Number *', _phoneController, '+61 4XX XXX XXX', keyboardType: TextInputType.phone)),
+                          Expanded(
+                            child: _buildTextField(
+                              'Phone Number *',
+                              _phoneController,
+                              '+61 4XX XXX XXX',
+                              keyboardType: TextInputType.phone,
+                            ),
+                          ),
                         ],
                       ),
                       const SizedBox(height: 24),
-                      
+
                       // Vehicle Type
-                      const Text('Vehicle Type *', style: DeliveryTokens.labelMedium),
+                      const Text(
+                        'Vehicle Type *',
+                        style: DeliveryTokens.labelMedium,
+                      ),
                       const SizedBox(height: 12),
                       Row(
                         children: [
-                          Expanded(child: _buildVehicleOption(VehicleType.bike, Icons.pedal_bike, 'Bike')),
+                          Expanded(
+                            child: _buildVehicleOption(
+                              VehicleType.bike,
+                              Icons.pedal_bike,
+                              'Bike',
+                            ),
+                          ),
                           const SizedBox(width: 12),
-                          Expanded(child: _buildVehicleOption(VehicleType.car, Icons.directions_car, 'Car')),
+                          Expanded(
+                            child: _buildVehicleOption(
+                              VehicleType.car,
+                              Icons.directions_car,
+                              'Car',
+                            ),
+                          ),
                           const SizedBox(width: 12),
-                          Expanded(child: _buildVehicleOption(VehicleType.scooter, Icons.electric_scooter, 'Scooter')),
+                          Expanded(
+                            child: _buildVehicleOption(
+                              VehicleType.scooter,
+                              Icons.electric_scooter,
+                              'Scooter',
+                            ),
+                          ),
                           const SizedBox(width: 12),
-                          Expanded(child: _buildVehicleOption(VehicleType.van, Icons.local_shipping, 'Van')),
+                          Expanded(
+                            child: _buildVehicleOption(
+                              VehicleType.van,
+                              Icons.local_shipping,
+                              'Van',
+                            ),
+                          ),
                         ],
                       ),
                       const SizedBox(height: 24),
-                      
+
                       // Login Credentials
-                      const Text('Login Credentials', style: DeliveryTokens.headingSmall),
+                      const Text(
+                        'Login Credentials',
+                        style: DeliveryTokens.headingSmall,
+                      ),
                       const SizedBox(height: 16),
                       Row(
                         children: [
-                          Expanded(child: _buildTextField('Username', _usernameController, 'Auto-generated or custom')),
+                          Expanded(
+                            child: _buildTextField(
+                              'Username',
+                              _usernameController,
+                              'Auto-generated or custom',
+                            ),
+                          ),
                           const SizedBox(width: 16),
-                          Expanded(child: _buildTextField('Password', _passwordController, 'auto-generated-123')),
+                          Expanded(
+                            child: _buildTextField(
+                              'Password',
+                              _passwordController,
+                              'auto-generated-123',
+                            ),
+                          ),
                         ],
                       ),
                       const SizedBox(height: 8),
@@ -128,9 +187,12 @@ class _AddDriverModalState extends State<AddDriverModal> {
                         style: DeliveryTokens.caption,
                       ),
                       const SizedBox(height: 24),
-                      
+
                       // Driver Role
-                      const Text('Driver Role', style: DeliveryTokens.labelMedium),
+                      const Text(
+                        'Driver Role',
+                        style: DeliveryTokens.labelMedium,
+                      ),
                       const SizedBox(height: 12),
                       DropdownButtonFormField<String>(
                         initialValue: _selectedRole,
@@ -138,20 +200,40 @@ class _AddDriverModalState extends State<AddDriverModal> {
                           filled: true,
                           fillColor: DeliveryTokens.dividerColor,
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(DeliveryTokens.radiusMd),
-                            borderSide: const BorderSide(color: DeliveryTokens.borderColor),
+                            borderRadius: BorderRadius.circular(
+                              DeliveryTokens.radiusMd,
+                            ),
+                            borderSide: const BorderSide(
+                              color: DeliveryTokens.borderColor,
+                            ),
                           ),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
                         ),
-                        items: ['Self-managed', 'Company', 'Partner', 'Contractor'].map((role) {
-                          return DropdownMenuItem(value: role, child: Text(role));
-                        }).toList(),
-                        onChanged: (value) => setState(() => _selectedRole = value!),
+                        items:
+                            [
+                              'Self-managed',
+                              'Company',
+                              'Partner',
+                              'Contractor',
+                            ].map((role) {
+                              return DropdownMenuItem(
+                                value: role,
+                                child: Text(role),
+                              );
+                            }).toList(),
+                        onChanged: (value) =>
+                            setState(() => _selectedRole = value!),
                       ),
                       const SizedBox(height: 24),
-                      
+
                       // Zone Assignment
-                      const Text('Zone Assignment', style: DeliveryTokens.labelMedium),
+                      const Text(
+                        'Zone Assignment',
+                        style: DeliveryTokens.labelMedium,
+                      ),
                       const SizedBox(height: 12),
                       DropdownButtonFormField<String>(
                         decoration: InputDecoration(
@@ -159,16 +241,34 @@ class _AddDriverModalState extends State<AddDriverModal> {
                           fillColor: DeliveryTokens.dividerColor,
                           hintText: 'Select delivery zones',
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(DeliveryTokens.radiusMd),
-                            borderSide: const BorderSide(color: DeliveryTokens.borderColor),
+                            borderRadius: BorderRadius.circular(
+                              DeliveryTokens.radiusMd,
+                            ),
+                            borderSide: const BorderSide(
+                              color: DeliveryTokens.borderColor,
+                            ),
                           ),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
                         ),
-                        items: ['Downtown', 'Uptown', 'Suburbs', 'CBD', 'All Zones'].map((zone) {
-                          return DropdownMenuItem(value: zone, child: Text(zone));
-                        }).toList(),
+                        items:
+                            [
+                              'Downtown',
+                              'Uptown',
+                              'Suburbs',
+                              'CBD',
+                              'All Zones',
+                            ].map((zone) {
+                              return DropdownMenuItem(
+                                value: zone,
+                                child: Text(zone),
+                              );
+                            }).toList(),
                         onChanged: (value) {
-                          if (value != null && !_selectedZones.contains(value)) {
+                          if (value != null &&
+                              !_selectedZones.contains(value)) {
                             setState(() => _selectedZones.add(value));
                           }
                         },
@@ -178,11 +278,17 @@ class _AddDriverModalState extends State<AddDriverModal> {
                         Wrap(
                           spacing: 8,
                           runSpacing: 8,
-                          children: _selectedZones.map((zone) => Chip(
-                            label: Text(zone),
-                            deleteIcon: const Icon(Icons.close, size: 16),
-                            onDeleted: () => setState(() => _selectedZones.remove(zone)),
-                          )).toList(),
+                          children: _selectedZones
+                              .map(
+                                (zone) => Chip(
+                                  label: Text(zone),
+                                  deleteIcon: const Icon(Icons.close, size: 16),
+                                  onDeleted: () => setState(
+                                    () => _selectedZones.remove(zone),
+                                  ),
+                                ),
+                              )
+                              .toList(),
                         ),
                       ],
                       const SizedBox(height: 8),
@@ -191,39 +297,60 @@ class _AddDriverModalState extends State<AddDriverModal> {
                         style: DeliveryTokens.caption,
                       ),
                       const SizedBox(height: 24),
-                      
+
                       // Quick Setup Options
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
                           color: const Color(0xFFEFF6FF),
-                          borderRadius: BorderRadius.circular(DeliveryTokens.radiusLg),
+                          borderRadius: BorderRadius.circular(
+                            DeliveryTokens.radiusLg,
+                          ),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('Quick Setup Options', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Color(0xFF1E40AF))),
+                            const Text(
+                              'Quick Setup Options',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF1E40AF),
+                              ),
+                            ),
                             const SizedBox(height: 12),
                             CheckboxListTile(
                               value: _sendWelcomeSms,
-                              onChanged: (val) => setState(() => _sendWelcomeSms = val!),
-                              title: const Text('Send welcome SMS with login details', style: DeliveryTokens.bodyMedium),
+                              onChanged: (val) =>
+                                  setState(() => _sendWelcomeSms = val!),
+                              title: const Text(
+                                'Send welcome SMS with login details',
+                                style: DeliveryTokens.bodyMedium,
+                              ),
                               controlAffinity: ListTileControlAffinity.leading,
                               contentPadding: EdgeInsets.zero,
                               activeColor: const Color(0xFF8B5CF6),
                             ),
                             CheckboxListTile(
                               value: _enableGpsTracking,
-                              onChanged: (val) => setState(() => _enableGpsTracking = val!),
-                              title: const Text('Enable GPS tracking', style: DeliveryTokens.bodyMedium),
+                              onChanged: (val) =>
+                                  setState(() => _enableGpsTracking = val!),
+                              title: const Text(
+                                'Enable GPS tracking',
+                                style: DeliveryTokens.bodyMedium,
+                              ),
                               controlAffinity: ListTileControlAffinity.leading,
                               contentPadding: EdgeInsets.zero,
                               activeColor: const Color(0xFF8B5CF6),
                             ),
                             CheckboxListTile(
                               value: _allowCashPayments,
-                              onChanged: (val) => setState(() => _allowCashPayments = val!),
-                              title: const Text('Allow cash payments', style: DeliveryTokens.bodyMedium),
+                              onChanged: (val) =>
+                                  setState(() => _allowCashPayments = val!),
+                              title: const Text(
+                                'Allow cash payments',
+                                style: DeliveryTokens.bodyMedium,
+                              ),
                               controlAffinity: ListTileControlAffinity.leading,
                               contentPadding: EdgeInsets.zero,
                               activeColor: const Color(0xFF8B5CF6),
@@ -236,12 +363,14 @@ class _AddDriverModalState extends State<AddDriverModal> {
                 ),
               ),
             ),
-            
+
             // Footer
             Container(
               padding: const EdgeInsets.all(DeliveryTokens.spacingXl),
               decoration: const BoxDecoration(
-                border: Border(top: BorderSide(color: DeliveryTokens.borderColor)),
+                border: Border(
+                  top: BorderSide(color: DeliveryTokens.borderColor),
+                ),
               ),
               child: Row(
                 children: [
@@ -250,7 +379,9 @@ class _AddDriverModalState extends State<AddDriverModal> {
                       onPressed: () => Navigator.pop(context),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 14),
-                        side: const BorderSide(color: DeliveryTokens.borderColor),
+                        side: const BorderSide(
+                          color: DeliveryTokens.borderColor,
+                        ),
                       ),
                       child: const Text('Cancel'),
                     ),
@@ -284,15 +415,26 @@ class _AddDriverModalState extends State<AddDriverModal> {
           decoration: BoxDecoration(
             color: DeliveryTokens.dividerColor,
             borderRadius: BorderRadius.circular(DeliveryTokens.radiusLg),
-            border: Border.all(color: DeliveryTokens.borderColor, style: BorderStyle.solid, width: 2),
+            border: Border.all(
+              color: DeliveryTokens.borderColor,
+              style: BorderStyle.solid,
+              width: 2,
+            ),
           ),
-          child: const Icon(Icons.person, size: 48, color: DeliveryTokens.textTertiary),
+          child: const Icon(
+            Icons.person,
+            size: 48,
+            color: DeliveryTokens.textTertiary,
+          ),
         ),
         const SizedBox(height: 12),
         TextButton.icon(
           onPressed: () {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Photo upload - Coming soon'), behavior: SnackBarBehavior.floating),
+              const SnackBar(
+                content: Text('Photo upload - Coming soon'),
+                behavior: SnackBarBehavior.floating,
+              ),
             );
           },
           icon: const Icon(Icons.upload, size: 16),
@@ -306,7 +448,12 @@ class _AddDriverModalState extends State<AddDriverModal> {
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller, String hint, {TextInputType? keyboardType}) {
+  Widget _buildTextField(
+    String label,
+    TextEditingController controller,
+    String hint, {
+    TextInputType? keyboardType,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -323,7 +470,10 @@ class _AddDriverModalState extends State<AddDriverModal> {
               borderRadius: BorderRadius.circular(DeliveryTokens.radiusMd),
               borderSide: const BorderSide(color: DeliveryTokens.borderColor),
             ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
+            ),
           ),
           validator: (value) {
             if (label.contains('*') && (value == null || value.isEmpty)) {
@@ -338,30 +488,42 @@ class _AddDriverModalState extends State<AddDriverModal> {
 
   Widget _buildVehicleOption(VehicleType type, IconData icon, String label) {
     final isSelected = _selectedVehicle == type;
-    
+
     return InkWell(
       onTap: () => setState(() => _selectedVehicle = type),
       borderRadius: BorderRadius.circular(DeliveryTokens.radiusLg),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 20),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFFEFF6FF) : DeliveryTokens.dividerColor,
+          color: isSelected
+              ? const Color(0xFFEFF6FF)
+              : DeliveryTokens.dividerColor,
           borderRadius: BorderRadius.circular(DeliveryTokens.radiusLg),
           border: Border.all(
-            color: isSelected ? const Color(0xFF3B82F6) : DeliveryTokens.borderColor,
+            color: isSelected
+                ? const Color(0xFF3B82F6)
+                : DeliveryTokens.borderColor,
             width: isSelected ? 2 : 1,
           ),
         ),
         child: Column(
           children: [
-            Icon(icon, size: 32, color: isSelected ? const Color(0xFF3B82F6) : DeliveryTokens.textSecondary),
+            Icon(
+              icon,
+              size: 32,
+              color: isSelected
+                  ? const Color(0xFF3B82F6)
+                  : DeliveryTokens.textSecondary,
+            ),
             const SizedBox(height: 8),
             Text(
               label,
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                color: isSelected ? const Color(0xFF3B82F6) : DeliveryTokens.textSecondary,
+                color: isSelected
+                    ? const Color(0xFF3B82F6)
+                    : DeliveryTokens.textSecondary,
               ),
             ),
           ],

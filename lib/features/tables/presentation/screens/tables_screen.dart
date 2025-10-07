@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../core/navigation/app_router.dart';
-import '../../core/navigation/navigation_service.dart';
-import '../../core/widgets/sidebar_nav.dart';
+import '../../../../core/navigation/app_router.dart';
+import '../../../../core/navigation/navigation_service.dart';
+import '../../../../core/widgets/sidebar_nav.dart';
 
 enum TableStatus { available, occupied, reserved, cleaning }
 

@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../core/navigation/app_router.dart';
-import '../../core/widgets/sidebar_nav.dart';
-import '../pos/presentation/bloc/checkout_bloc.dart';
-import '../pos/presentation/bloc/cart_bloc.dart';
-import 'checkout_tokens.dart';
-import 'widgets/order_items_panel.dart';
-import 'widgets/payment_keypad_panel.dart';
-import 'widgets/payment_options_panel.dart';
+import '../../../../core/navigation/app_router.dart';
+import '../../../../core/widgets/sidebar_nav.dart';
+import '../../../checkout/presentation/widgets/order_items_panel.dart';
+import '../../../checkout/presentation/widgets/payment_keypad_panel.dart';
+import '../../../checkout/presentation/widgets/payment_options_panel.dart';
+import '../../../pos/presentation/bloc/cart_bloc.dart';
+import '../../../pos/presentation/bloc/checkout_bloc.dart';
+import '../checkout_tokens.dart';
 
 /// Checkout Screen - Compact layout matching React prototype
 ///

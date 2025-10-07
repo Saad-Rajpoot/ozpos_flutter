@@ -1,22 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../features/dashboard/dashboard_screen.dart';
-import '../../features/menu/presentation/screens/menu_screen.dart';
-import '../../features/checkout/checkout_screen.dart';
-import '../../features/orders/orders_screen.dart';
-import '../../features/tables/tables_screen.dart';
-import '../../features/delivery/delivery_screen.dart';
-import '../../features/reservations/reservations_screen.dart';
-import '../../features/reports/reports_screen.dart';
-import '../../features/settings/settings_screen.dart';
 import '../../features/menu/presentation/screens/menu_editor_screen.dart';
-import '../../features/docket/docket_designer_screen.dart';
+import '../../features/docket/presentation/screens/docket_designer_screen.dart';
 import '../../features/menu/presentation/screens/menu_item_wizard_screen.dart';
-import '../../features/tables/move_table_screen.dart';
 import '../../features/addons/presentation/screens/addon_categories_screen.dart';
 import '../../features/addons/presentation/bloc/addon_management_bloc.dart';
 import '../../features/addons/presentation/bloc/addon_management_event.dart';
 import '../../features/menu/domain/entities/menu_item_edit_entity.dart';
+import '../../features/dashboard/presentation/screens/dashboard_screen.dart';
+import '../../features/menu/presentation/screens/menu_screen.dart';
+import '../../features/checkout/presentation/screens/checkout_screen.dart';
+import '../../features/orders/presentation/screens/orders_screen.dart';
+import '../../features/tables/presentation/screens/tables_screen.dart';
+import '../../features/delivery/presentation/screens/delivery_screen.dart';
+import '../../features/reservations/presentation/screens/reservations_screen.dart';
+import '../../features/reports/presentation/screens/reports_screen.dart';
+import '../../features/settings/presentation/screens/settings_screen.dart';
+import '../../features/tables/presentation/screens/move_table_screen.dart';
 
 /// Centralized route management
 ///

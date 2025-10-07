@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../pos/presentation/bloc/cart_bloc.dart';
+import '../../../pos/presentation/bloc/cart_bloc.dart';
 import '../checkout_tokens.dart';
 
 /// Compact order line item - 2-row layout matching React prototype
