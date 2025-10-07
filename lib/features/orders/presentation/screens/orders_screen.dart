@@ -467,7 +467,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                 },
                 gradient: _getChannelGradient(channel),
               );
-            }).toList(),
+            }),
           ],
         ),
       ],

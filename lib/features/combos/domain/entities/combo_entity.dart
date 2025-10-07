@@ -40,27 +40,27 @@ class ComboEntity extends Equatable {
   });
 
   /// Computed properties for UI display
-  
+
   bool get isActive => status == ComboStatus.active;
-  
+
   bool get isVisible => isActive && availability.isCurrentlyAvailable;
-  
+
   List<String> get ribbons {
     final List<String> ribbons = [];
-    
+
     // Add time-based ribbons
     if (availability.isLimitedTime) ribbons.add('Limited Time');
     if (availability.isWeekendSpecial) ribbons.add('Weekend Special');
-    
+
     // Add popularity ribbon (would be computed from sales data)
     if (_isPopular) ribbons.add('Popular');
-    
+
     // Add best value ribbon
     if (_isBestValue) ribbons.add('Best Value');
-    
+
     return ribbons;
   }
-  
+
   String? get savingsText {
     final savings = computedSavings;
     if (savings > 0) {
@@ -68,33 +68,37 @@ class ComboEntity extends Equatable {
     }
     return null;
   }
-  
+
   double get computedSavings {
     // Calculate savings based on pricing mode
     switch (pricing.mode) {
       case PricingMode.fixed:
         final totalSeparate = _calculateTotalIfSeparate();
-        return totalSeparate > pricing.fixedPrice! ? totalSeparate - pricing.fixedPrice! : 0.0;
-      
+        return totalSeparate > pricing.fixedPrice!
+            ? totalSeparate - pricing.fixedPrice!
+            : 0.0;
+
       case PricingMode.percentage:
         final totalSeparate = _calculateTotalIfSeparate();
         return totalSeparate * (pricing.percentOff! / 100);
-      
+
       case PricingMode.amount:
         final totalSeparate = _calculateTotalIfSeparate();
-        return totalSeparate > pricing.amountOff! ? pricing.amountOff! : totalSeparate;
-      
+        return totalSeparate > pricing.amountOff!
+            ? pricing.amountOff!
+            : totalSeparate;
+
       case PricingMode.mixAndMatch:
         return _calculateMixAndMatchSavings();
     }
   }
-  
+
   double get finalPrice {
     final totalSeparate = _calculateTotalIfSeparate();
     final savings = computedSavings;
     return (totalSeparate - savings).clamp(0.0, double.infinity);
   }
-  
+
   List<String> get componentSummary {
     return slots.where((slot) => slot.defaultIncluded).map((slot) {
       if (slot.sourceType == SlotSourceType.specific) {
@@ -104,7 +108,7 @@ class ComboEntity extends Equatable {
       }
     }).toList();
   }
-  
+
   String? get eligibilityText {
     final timeWindows = availability.timeWindows;
     if (timeWindows.isNotEmpty) {
@@ -112,27 +116,27 @@ class ComboEntity extends Equatable {
     }
     return null;
   }
-  
+
   bool get hasValidationErrors => validationErrors.isNotEmpty;
-  
+
   List<String> get validationErrors {
     final List<String> errors = [];
-    
+
     // Name validation
     if (name.trim().isEmpty) {
       errors.add('Combo name is required');
     }
-    
+
     // Slots validation
     if (slots.isEmpty) {
       errors.add('At least one item slot is required');
     }
-    
+
     final requiredSlots = slots.where((s) => s.required).length;
     if (requiredSlots == 0) {
       errors.add('At least one slot must be required');
     }
-    
+
     // Pricing validation
     switch (pricing.mode) {
       case PricingMode.fixed:
@@ -141,7 +145,9 @@ class ComboEntity extends Equatable {
         }
         break;
       case PricingMode.percentage:
-        if (pricing.percentOff == null || pricing.percentOff! <= 0 || pricing.percentOff! >= 100) {
+        if (pricing.percentOff == null ||
+            pricing.percentOff! <= 0 ||
+            pricing.percentOff! >= 100) {
           errors.add('Percentage off must be between 1-99%');
         }
         break;
@@ -159,26 +165,24 @@ class ComboEntity extends Equatable {
         }
         break;
     }
-    
+
     // Availability validation
     if (!availability.posSystem && !availability.onlineMenu) {
       errors.add('Combo must be visible on POS or Online');
     }
-    
+
     return errors;
   }
 
   // Private helper methods
   bool get _isPopular {
-    // TODO: Implement based on sales data
     return false;
   }
-  
+
   bool get _isBestValue {
-    // TODO: Implement based on savings percentage
     return computedSavings > 5.0; // Example threshold
   }
-  
+
   double _calculateTotalIfSeparate() {
     double total = 0.0;
     for (final slot in slots) {
@@ -188,9 +192,8 @@ class ComboEntity extends Equatable {
     }
     return total;
   }
-  
+
   double _calculateMixAndMatchSavings() {
-    // TODO: Implement mix-and-match savings calculation
     return 0.0;
   }
 
@@ -230,19 +233,19 @@ class ComboEntity extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        name,
-        description,
-        image,
-        categoryTag,
-        pointsReward,
-        status,
-        slots,
-        pricing,
-        availability,
-        limits,
-        createdAt,
-        updatedAt,
-        hasUnsavedChanges,
-      ];
+    id,
+    name,
+    description,
+    image,
+    categoryTag,
+    pointsReward,
+    status,
+    slots,
+    pricing,
+    availability,
+    limits,
+    createdAt,
+    updatedAt,
+    hasUnsavedChanges,
+  ];
 }

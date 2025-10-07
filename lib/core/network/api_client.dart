@@ -48,15 +48,13 @@ class ApiClient {
       ),
     );
 
-    // TODO: Add retry interceptor when available
-
     // Logging interceptor (only in debug mode)
     if (kDebugMode) {
       _dio.interceptors.add(
         LogInterceptor(
           requestBody: true,
           responseBody: true,
-          logPrint: (object) => print(object),
+          logPrint: (object) => debugPrint(object.toString()),
         ),
       );
     }

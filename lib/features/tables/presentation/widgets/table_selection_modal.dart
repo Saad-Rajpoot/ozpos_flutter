@@ -507,7 +507,7 @@ class _TableListCard extends StatelessWidget {
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: const Color(0xFF3B82F6).withOpacity(0.1),
+                    color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -521,7 +521,7 @@ class _TableListCard extends StatelessWidget {
               width: 60,
               height: 60,
               decoration: BoxDecoration(
-                color: _statusColor.withOpacity(0.1),
+                color: _statusColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Column(
@@ -530,7 +530,7 @@ class _TableListCard extends StatelessWidget {
                   Icon(Icons.table_bar, color: _statusColor, size: 24),
                   const SizedBox(height: 2),
                   Text(
-                    '${table.number}',
+                    table.number,
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
@@ -564,7 +564,7 @@ class _TableListCard extends StatelessWidget {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: _statusColor.withOpacity(0.1),
+                          color: _statusColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
@@ -603,8 +603,8 @@ class _TableListCard extends StatelessWidget {
             // Radio button
             Radio<bool>(
               value: true,
-              groupValue: isSelected,
-              onChanged: (_) => onTap(),
+              groupValue: true,
+              onChanged: isSelected ? null : (_) => onTap(),
               activeColor: const Color(0xFF3B82F6),
             ),
           ],
@@ -651,13 +651,15 @@ class _FloorTableNode extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         child: Container(
           decoration: BoxDecoration(
-            color: isSelected ? _statusColor : _statusColor.withOpacity(0.1),
+            color: isSelected
+                ? _statusColor
+                : _statusColor.withValues(alpha: 0.1),
             shape: BoxShape.circle,
             border: Border.all(color: _statusColor, width: isSelected ? 3 : 2),
             boxShadow: isSelected
                 ? [
                     BoxShadow(
-                      color: _statusColor.withOpacity(0.3),
+                      color: _statusColor.withValues(alpha: 0.3),
                       blurRadius: 12,
                       offset: const Offset(0, 4),
                     ),
@@ -666,7 +668,7 @@ class _FloorTableNode extends StatelessWidget {
           ),
           child: Center(
             child: Text(
-              '${table.number}',
+              table.number,
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w700,

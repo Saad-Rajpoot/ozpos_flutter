@@ -12,7 +12,7 @@ import '../widgets/addon_category_editor_dialog.dart';
 ///
 /// Note: This screen is wrapped with BlocProvider in AppRouter
 class AddonCategoriesScreen extends StatelessWidget {
-  const AddonCategoriesScreen({Key? key}) : super(key: key);
+  const AddonCategoriesScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -434,9 +434,9 @@ class AddonCategoriesScreen extends StatelessWidget {
             ),
           )
         else
-          ...category.items
-              .map((item) => _buildInlineItemRow(context, category, item))
-              .toList(),
+          ...category.items.map(
+            (item) => _buildInlineItemRow(context, category, item),
+          ),
       ],
     );
   }

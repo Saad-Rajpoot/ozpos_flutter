@@ -36,7 +36,7 @@ class SidebarNav extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.primary.withOpacity(0.3),
+                      color: AppColors.primary.withValues(alpha: 0.3),
                       blurRadius: 12,
                       offset: const Offset(0, 4),
                     ),
@@ -152,7 +152,7 @@ class _NavItemState extends State<_NavItem> {
           onExit: (_) => setState(() => _isHovered = false),
           child: Material(
             color: widget.isActive
-                ? AppColors.sidebarItemActive.withOpacity(0.12)
+                ? AppColors.sidebarItemActive.withValues(alpha: 0.12)
                 : (_isHovered
                       ? AppColors.sidebarItemHover
                       : Colors.transparent),

@@ -30,7 +30,7 @@ class _MenuScreenState extends State<MenuScreen> {
         allCategories.add(item.categoryId);
       }
     }
-    return ['all', ...allCategories.toList()];
+    return ['all', ...allCategories];
   }
 
   List<MenuItemEntity> get _filteredItems {

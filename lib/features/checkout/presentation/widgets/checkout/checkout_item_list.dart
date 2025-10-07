@@ -5,10 +5,7 @@ import '../../bloc/cart_bloc.dart';
 class CheckoutItemList extends StatelessWidget {
   final List<CartLineItem> items;
 
-  const CheckoutItemList({
-    super.key,
-    required this.items,
-  });
+  const CheckoutItemList({super.key, required this.items});
 
   @override
   Widget build(BuildContext context) {
@@ -21,14 +18,14 @@ class CheckoutItemList extends StatelessWidget {
               Icon(
                 Icons.shopping_cart_outlined,
                 size: 64,
-                color: Colors.black.withOpacity(0.2),
+                color: Colors.black.withValues(alpha: 0.2),
               ),
               const SizedBox(height: 16),
               Text(
                 'No items in cart',
                 style: TextStyle(
                   fontSize: 16,
-                  color: Colors.black.withOpacity(0.4),
+                  color: Colors.black.withValues(alpha: 0.4),
                 ),
               ),
             ],
@@ -64,7 +61,7 @@ class CheckoutItemList extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
-                    color: Colors.black.withOpacity(0.6),
+                    color: Colors.black.withValues(alpha: 0.6),
                   ),
                 ),
               ],
@@ -109,7 +106,7 @@ class CheckoutItemList extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 12),
-            
+
             // Item details
             Expanded(
               child: Column(
@@ -123,7 +120,7 @@ class CheckoutItemList extends StatelessWidget {
                       color: Colors.black87,
                     ),
                   ),
-                  
+
                   // Modifiers summary
                   if (item.modifierSummary.isNotEmpty) ...[
                     const SizedBox(height: 4),
@@ -131,24 +128,24 @@ class CheckoutItemList extends StatelessWidget {
                       item.modifierSummary,
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.black.withOpacity(0.6),
+                        color: Colors.black.withValues(alpha: 0.6),
                       ),
                     ),
                   ],
-                  
+
                   // Unit price
                   const SizedBox(height: 4),
                   Text(
                     '\$${item.unitPrice.toStringAsFixed(2)} each',
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.black.withOpacity(0.5),
+                      color: Colors.black.withValues(alpha: 0.5),
                     ),
                   ),
                 ],
               ),
             ),
-            
+
             // Line total
             Text(
               '\$${item.lineTotal.toStringAsFixed(2)}',

@@ -6,22 +6,32 @@ import '../../bloc/combo_management_state.dart';
 
 class AvailabilityTab extends StatefulWidget {
   const AvailabilityTab({super.key});
-  
+
   @override
   State<AvailabilityTab> createState() => _AvailabilityTabState();
 }
 
 class _AvailabilityTabState extends State<AvailabilityTab> {
   // State variables for tracking selections
-  Map<String, bool> _orderTypes = {
+  final Map<String, bool> _orderTypes = const {
     'dineIn': true,
-    'takeaway': true, 
+    'takeaway': true,
     'delivery': true,
     'online': true,
   };
-  
-  Set<String> _selectedTimeSlots = {'Lunch'}; // Mock default selection
-  Set<int> _selectedWeekdays = {1, 2, 3, 4, 5, 6, 7}; // All days selected by default
+
+  final Set<String> _selectedTimeSlots = const {
+    'Lunch',
+  }; // Mock default selection
+  final Set<int> _selectedWeekdays = const {
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+  }; // All days selected by default
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +39,7 @@ class _AvailabilityTabState extends State<AvailabilityTab> {
       builder: (context, state) {
         final combo = state.editingCombo;
         if (combo == null) return const SizedBox.shrink();
-        
+
         return SingleChildScrollView(
           padding: const EdgeInsets.all(32),
           child: Column(
@@ -46,25 +56,22 @@ class _AvailabilityTabState extends State<AvailabilityTab> {
               const SizedBox(height: 8),
               const Text(
                 'Control when and how this combo deal is available to customers',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Color(0xFF6B7280),
-                ),
+                style: TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
               ),
               const SizedBox(height: 32),
-              
+
               // Order Type Availability
               _buildOrderTypeSection(combo),
               const SizedBox(height: 32),
-              
+
               // Time Restrictions
               _buildTimeRestrictionsSection(combo),
               const SizedBox(height: 32),
-              
+
               // Day of Week Selection
               _buildWeekdaySection(combo),
               const SizedBox(height: 32),
-              
+
               // Date Range
               _buildDateRangeSection(combo),
             ],
@@ -73,7 +80,7 @@ class _AvailabilityTabState extends State<AvailabilityTab> {
       },
     );
   }
-  
+
   Widget _buildOrderTypeSection(combo) {
     return Container(
       padding: const EdgeInsets.all(24),
@@ -96,13 +103,10 @@ class _AvailabilityTabState extends State<AvailabilityTab> {
           const SizedBox(height: 8),
           const Text(
             'Which order types can use this combo? (Select one or more)',
-            style: TextStyle(
-              fontSize: 14,
-              color: Color(0xFF6B7280),
-            ),
+            style: TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
           ),
           const SizedBox(height: 20),
-          
+
           GridView.count(
             crossAxisCount: 2,
             shrinkWrap: true,
@@ -145,7 +149,7 @@ class _AvailabilityTabState extends State<AvailabilityTab> {
       ),
     );
   }
-  
+
   Widget _buildOrderTypeCard(
     String title,
     String description,
@@ -156,7 +160,9 @@ class _AvailabilityTabState extends State<AvailabilityTab> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: isEnabled ? const Color(0xFF10B981).withValues(alpha: 0.1) : Colors.grey.withValues(alpha: 0.05),
+        color: isEnabled
+            ? const Color(0xFF10B981).withValues(alpha: 0.1)
+            : Colors.grey.withValues(alpha: 0.05),
         border: Border.all(
           color: isEnabled ? const Color(0xFF10B981) : const Color(0xFFE5E7EB),
           width: isEnabled ? 2 : 1,
@@ -167,7 +173,9 @@ class _AvailabilityTabState extends State<AvailabilityTab> {
         children: [
           Icon(
             icon,
-            color: isEnabled ? const Color(0xFF10B981) : const Color(0xFF9CA3AF),
+            color: isEnabled
+                ? const Color(0xFF10B981)
+                : const Color(0xFF9CA3AF),
             size: 18,
           ),
           const SizedBox(width: 8),
@@ -181,7 +189,9 @@ class _AvailabilityTabState extends State<AvailabilityTab> {
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: isEnabled ? const Color(0xFF10B981) : const Color(0xFF6B7280),
+                    color: isEnabled
+                        ? const Color(0xFF10B981)
+                        : const Color(0xFF6B7280),
                   ),
                 ),
                 Text(
@@ -205,7 +215,7 @@ class _AvailabilityTabState extends State<AvailabilityTab> {
       ),
     );
   }
-  
+
   Widget _buildTimeRestrictionsSection(combo) {
     return Container(
       padding: const EdgeInsets.all(24),
@@ -228,13 +238,10 @@ class _AvailabilityTabState extends State<AvailabilityTab> {
           const SizedBox(height: 8),
           const Text(
             'Select one or more time periods when this combo is available',
-            style: TextStyle(
-              fontSize: 14,
-              color: Color(0xFF6B7280),
-            ),
+            style: TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
           ),
           const SizedBox(height: 20),
-          
+
           GridView.count(
             crossAxisCount: 2,
             shrinkWrap: true,
@@ -277,7 +284,7 @@ class _AvailabilityTabState extends State<AvailabilityTab> {
       ),
     );
   }
-  
+
   Widget _buildTimeSlotCard(
     String title,
     String timeRange,
@@ -290,9 +297,13 @@ class _AvailabilityTabState extends State<AvailabilityTab> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF8B5CF6).withValues(alpha: 0.1) : Colors.white,
+          color: isSelected
+              ? const Color(0xFF8B5CF6).withValues(alpha: 0.1)
+              : Colors.white,
           border: Border.all(
-            color: isSelected ? const Color(0xFF8B5CF6) : const Color(0xFFE5E7EB),
+            color: isSelected
+                ? const Color(0xFF8B5CF6)
+                : const Color(0xFFE5E7EB),
             width: isSelected ? 2 : 1,
           ),
           borderRadius: BorderRadius.circular(8),
@@ -304,7 +315,9 @@ class _AvailabilityTabState extends State<AvailabilityTab> {
               children: [
                 Icon(
                   icon,
-                  color: isSelected ? const Color(0xFF8B5CF6) : const Color(0xFF9CA3AF),
+                  color: isSelected
+                      ? const Color(0xFF8B5CF6)
+                      : const Color(0xFF9CA3AF),
                   size: 20,
                 ),
                 const SizedBox(width: 8),
@@ -314,7 +327,9 @@ class _AvailabilityTabState extends State<AvailabilityTab> {
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: isSelected ? const Color(0xFF8B5CF6) : const Color(0xFF111827),
+                      color: isSelected
+                          ? const Color(0xFF8B5CF6)
+                          : const Color(0xFF111827),
                     ),
                   ),
                 ),
@@ -329,20 +344,17 @@ class _AvailabilityTabState extends State<AvailabilityTab> {
             const SizedBox(height: 4),
             Text(
               timeRange,
-              style: const TextStyle(
-                fontSize: 12,
-                color: Color(0xFF9CA3AF),
-              ),
+              style: const TextStyle(fontSize: 12, color: Color(0xFF9CA3AF)),
             ),
           ],
         ),
       ),
     );
   }
-  
+
   Widget _buildWeekdaySection(combo) {
     final weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    
+
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -364,30 +376,33 @@ class _AvailabilityTabState extends State<AvailabilityTab> {
           const SizedBox(height: 8),
           const Text(
             'Select which days this combo deal is available',
-            style: TextStyle(
-              fontSize: 14,
-              color: Color(0xFF6B7280),
-            ),
+            style: TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
           ),
           const SizedBox(height: 20),
-          
+
           Row(
             children: weekdays.asMap().entries.map((entry) {
               final index = entry.key;
               final day = entry.value;
               final isSelected = _selectedWeekdays.contains(index + 1);
-              
+
               return Expanded(
                 child: Padding(
-                  padding: EdgeInsets.only(right: index < weekdays.length - 1 ? 8 : 0),
+                  padding: EdgeInsets.only(
+                    right: index < weekdays.length - 1 ? 8 : 0,
+                  ),
                   child: GestureDetector(
                     onTap: () => _toggleWeekday(index + 1),
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       decoration: BoxDecoration(
-                        color: isSelected ? const Color(0xFF8B5CF6) : Colors.white,
+                        color: isSelected
+                            ? const Color(0xFF8B5CF6)
+                            : Colors.white,
                         border: Border.all(
-                          color: isSelected ? const Color(0xFF8B5CF6) : const Color(0xFFE5E7EB),
+                          color: isSelected
+                              ? const Color(0xFF8B5CF6)
+                              : const Color(0xFFE5E7EB),
                         ),
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -397,7 +412,9 @@ class _AvailabilityTabState extends State<AvailabilityTab> {
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: isSelected ? Colors.white : const Color(0xFF6B7280),
+                          color: isSelected
+                              ? Colors.white
+                              : const Color(0xFF6B7280),
                         ),
                       ),
                     ),
@@ -410,7 +427,7 @@ class _AvailabilityTabState extends State<AvailabilityTab> {
       ),
     );
   }
-  
+
   Widget _buildDateRangeSection(combo) {
     return Container(
       padding: const EdgeInsets.all(24),
@@ -433,13 +450,10 @@ class _AvailabilityTabState extends State<AvailabilityTab> {
           const SizedBox(height: 8),
           const Text(
             'Set the start and end dates for this combo deal',
-            style: TextStyle(
-              fontSize: 14,
-              color: Color(0xFF6B7280),
-            ),
+            style: TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
           ),
           const SizedBox(height: 20),
-          
+
           Row(
             children: [
               Expanded(
@@ -465,7 +479,11 @@ class _AvailabilityTabState extends State<AvailabilityTab> {
                         ),
                         child: const Row(
                           children: [
-                            Icon(Icons.calendar_today, size: 16, color: Color(0xFF6B7280)),
+                            Icon(
+                              Icons.calendar_today,
+                              size: 16,
+                              color: Color(0xFF6B7280),
+                            ),
                             SizedBox(width: 8),
                             Text(
                               'Jan 15, 2024',
@@ -502,7 +520,11 @@ class _AvailabilityTabState extends State<AvailabilityTab> {
                         ),
                         child: const Row(
                           children: [
-                            Icon(Icons.calendar_today, size: 16, color: Color(0xFF6B7280)),
+                            Icon(
+                              Icons.calendar_today,
+                              size: 16,
+                              color: Color(0xFF6B7280),
+                            ),
                             SizedBox(width: 8),
                             Text(
                               'Dec 31, 2024',
@@ -517,9 +539,9 @@ class _AvailabilityTabState extends State<AvailabilityTab> {
               ),
             ],
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           Row(
             children: [
               Checkbox(
@@ -531,10 +553,7 @@ class _AvailabilityTabState extends State<AvailabilityTab> {
               const Expanded(
                 child: Text(
                   'No end date (deal runs indefinitely)',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Color(0xFF374151),
-                  ),
+                  style: TextStyle(fontSize: 14, color: Color(0xFF374151)),
                 ),
               ),
             ],
@@ -543,7 +562,7 @@ class _AvailabilityTabState extends State<AvailabilityTab> {
       ),
     );
   }
-  
+
   // Event handlers
   void _updateOrderType(String orderType, bool enabled) {
     setState(() {
@@ -555,7 +574,7 @@ class _AvailabilityTabState extends State<AvailabilityTab> {
       ),
     );
   }
-  
+
   void _toggleTimeSlot(String name) {
     setState(() {
       if (_selectedTimeSlots.contains(name)) {
@@ -566,11 +585,13 @@ class _AvailabilityTabState extends State<AvailabilityTab> {
     });
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('${_selectedTimeSlots.contains(name) ? 'Selected' : 'Deselected'} $name time slot'),
+        content: Text(
+          '${_selectedTimeSlots.contains(name) ? 'Selected' : 'Deselected'} $name time slot',
+        ),
       ),
     );
   }
-  
+
   void _showCustomTimeDialog() {
     showDialog(
       context: context,
@@ -626,7 +647,7 @@ class _AvailabilityTabState extends State<AvailabilityTab> {
       ),
     );
   }
-  
+
   void _toggleWeekday(int weekday) {
     setState(() {
       if (_selectedWeekdays.contains(weekday)) {
@@ -635,17 +656,19 @@ class _AvailabilityTabState extends State<AvailabilityTab> {
         _selectedWeekdays.add(weekday);
       }
     });
-    
+
     final weekdayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     final dayName = weekdayNames[weekday - 1];
-    
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('${_selectedWeekdays.contains(weekday) ? 'Selected' : 'Deselected'} $dayName'),
+        content: Text(
+          '${_selectedWeekdays.contains(weekday) ? 'Selected' : 'Deselected'} $dayName',
+        ),
       ),
     );
   }
-  
+
   void _selectStartDate(BuildContext context) async {
     final date = await showDatePicker(
       context: context,
@@ -659,7 +682,7 @@ class _AvailabilityTabState extends State<AvailabilityTab> {
       );
     }
   }
-  
+
   void _selectEndDate(BuildContext context) async {
     final date = await showDatePicker(
       context: context,

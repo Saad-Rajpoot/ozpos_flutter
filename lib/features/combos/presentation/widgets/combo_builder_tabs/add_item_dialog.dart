@@ -6,7 +6,7 @@ import '../../../domain/entities/combo_slot_entity.dart';
 
 class AddItemDialog extends StatefulWidget {
   const AddItemDialog({super.key});
-  
+
   @override
   State<AddItemDialog> createState() => _AddItemDialogState();
 }
@@ -18,19 +18,19 @@ class _AddItemDialogState extends State<AddItemDialog> {
   bool _defaultIncluded = true;
   int _maxQuantity = 1;
   double _price = 0.0;
-  List<Map<String, dynamic>> _selectedItems = [];
+  final List<Map<String, dynamic>> _selectedItems = [];
   String? _selectedCategory;
   List<Map<String, dynamic>> _availableCategories = [];
   List<Map<String, dynamic>> _categoryItems = [];
-  Map<String, List<String>> _selectedSizes = {};
-  Map<String, List<String>> _selectedModifiers = {};
-  
+  final Map<String, List<String>> _selectedSizes = {};
+  final Map<String, List<String>> _selectedModifiers = {};
+
   @override
   void initState() {
     super.initState();
     _loadCategories();
   }
-  
+
   void _loadCategories() {
     // Mock categories - in real implementation, fetch from database
     _availableCategories = [
@@ -41,7 +41,7 @@ class _AddItemDialogState extends State<AddItemDialog> {
       {'id': 'desserts', 'name': 'Desserts'},
     ];
   }
-  
+
   void _loadItemsForCategory(String categoryId) {
     // Mock items for category - in real implementation, fetch from database
     final itemsByCategory = {
@@ -50,15 +50,29 @@ class _AddItemDialogState extends State<AddItemDialog> {
           'id': 'pizza1',
           'name': 'Margherita Pizza',
           'price': 12.50,
-          'sizes': [{'id': 'small', 'name': 'Small'}, {'id': 'medium', 'name': 'Medium'}, {'id': 'large', 'name': 'Large'}],
-          'modifiers': [{'id': 'extra_cheese', 'name': 'Extra Cheese'}, {'id': 'olives', 'name': 'Olives'}]
+          'sizes': [
+            {'id': 'small', 'name': 'Small'},
+            {'id': 'medium', 'name': 'Medium'},
+            {'id': 'large', 'name': 'Large'},
+          ],
+          'modifiers': [
+            {'id': 'extra_cheese', 'name': 'Extra Cheese'},
+            {'id': 'olives', 'name': 'Olives'},
+          ],
         },
         {
           'id': 'pizza2',
           'name': 'Pepperoni Pizza',
           'price': 14.00,
-          'sizes': [{'id': 'small', 'name': 'Small'}, {'id': 'medium', 'name': 'Medium'}, {'id': 'large', 'name': 'Large'}],
-          'modifiers': [{'id': 'extra_cheese', 'name': 'Extra Cheese'}, {'id': 'extra_pepperoni', 'name': 'Extra Pepperoni'}]
+          'sizes': [
+            {'id': 'small', 'name': 'Small'},
+            {'id': 'medium', 'name': 'Medium'},
+            {'id': 'large', 'name': 'Large'},
+          ],
+          'modifiers': [
+            {'id': 'extra_cheese', 'name': 'Extra Cheese'},
+            {'id': 'extra_pepperoni', 'name': 'Extra Pepperoni'},
+          ],
         },
       ],
       'burgers': [
@@ -66,15 +80,28 @@ class _AddItemDialogState extends State<AddItemDialog> {
           'id': 'burger1',
           'name': 'Classic Burger',
           'price': 11.00,
-          'sizes': [{'id': 'regular', 'name': 'Regular'}, {'id': 'large', 'name': 'Large'}],
-          'modifiers': [{'id': 'cheese', 'name': 'Cheese'}, {'id': 'bacon', 'name': 'Bacon'}, {'id': 'lettuce', 'name': 'Lettuce'}]
+          'sizes': [
+            {'id': 'regular', 'name': 'Regular'},
+            {'id': 'large', 'name': 'Large'},
+          ],
+          'modifiers': [
+            {'id': 'cheese', 'name': 'Cheese'},
+            {'id': 'bacon', 'name': 'Bacon'},
+            {'id': 'lettuce', 'name': 'Lettuce'},
+          ],
         },
         {
           'id': 'burger2',
           'name': 'BBQ Burger',
           'price': 12.50,
-          'sizes': [{'id': 'regular', 'name': 'Regular'}, {'id': 'large', 'name': 'Large'}],
-          'modifiers': [{'id': 'cheese', 'name': 'Cheese'}, {'id': 'onion_rings', 'name': 'Onion Rings'}]
+          'sizes': [
+            {'id': 'regular', 'name': 'Regular'},
+            {'id': 'large', 'name': 'Large'},
+          ],
+          'modifiers': [
+            {'id': 'cheese', 'name': 'Cheese'},
+            {'id': 'onion_rings', 'name': 'Onion Rings'},
+          ],
         },
       ],
       'sides': [
@@ -82,15 +109,27 @@ class _AddItemDialogState extends State<AddItemDialog> {
           'id': 'fries1',
           'name': 'French Fries',
           'price': 4.50,
-          'sizes': [{'id': 'small', 'name': 'Small'}, {'id': 'large', 'name': 'Large'}],
-          'modifiers': [{'id': 'salt', 'name': 'Extra Salt'}, {'id': 'ketchup', 'name': 'Ketchup'}]
+          'sizes': [
+            {'id': 'small', 'name': 'Small'},
+            {'id': 'large', 'name': 'Large'},
+          ],
+          'modifiers': [
+            {'id': 'salt', 'name': 'Extra Salt'},
+            {'id': 'ketchup', 'name': 'Ketchup'},
+          ],
         },
         {
           'id': 'wings1',
           'name': 'Buffalo Wings',
           'price': 16.50,
-          'sizes': [{'id': '6pc', 'name': '6 pieces'}, {'id': '12pc', 'name': '12 pieces'}],
-          'modifiers': [{'id': 'hot_sauce', 'name': 'Hot Sauce'}, {'id': 'ranch', 'name': 'Ranch Dip'}]
+          'sizes': [
+            {'id': '6pc', 'name': '6 pieces'},
+            {'id': '12pc', 'name': '12 pieces'},
+          ],
+          'modifiers': [
+            {'id': 'hot_sauce', 'name': 'Hot Sauce'},
+            {'id': 'ranch', 'name': 'Ranch Dip'},
+          ],
         },
       ],
       'drinks': [
@@ -98,17 +137,23 @@ class _AddItemDialogState extends State<AddItemDialog> {
           'id': 'drink1',
           'name': 'Coca Cola',
           'price': 2.50,
-          'sizes': [{'id': 'regular', 'name': 'Regular'}, {'id': 'large', 'name': 'Large'}],
-          'modifiers': [{'id': 'ice', 'name': 'Extra Ice'}, {'id': 'lemon', 'name': 'Lemon'}]
+          'sizes': [
+            {'id': 'regular', 'name': 'Regular'},
+            {'id': 'large', 'name': 'Large'},
+          ],
+          'modifiers': [
+            {'id': 'ice', 'name': 'Extra Ice'},
+            {'id': 'lemon', 'name': 'Lemon'},
+          ],
         },
       ],
     };
-    
+
     setState(() {
       _categoryItems = itemsByCategory[categoryId] ?? [];
     });
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Dialog(
@@ -124,10 +169,7 @@ class _AddItemDialogState extends State<AddItemDialog> {
               children: [
                 const Text(
                   'Add Combo Item',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                 ),
                 const Spacer(),
                 IconButton(
@@ -137,7 +179,7 @@ class _AddItemDialogState extends State<AddItemDialog> {
               ],
             ),
             const SizedBox(height: 24),
-            
+
             // Scrollable content area
             Flexible(
               child: SingleChildScrollView(
@@ -154,31 +196,40 @@ class _AddItemDialogState extends State<AddItemDialog> {
                       onChanged: (value) => setState(() => _slotName = value),
                     ),
                     const SizedBox(height: 16),
-                    
+
                     // Source Type Selection
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('Item Source:', style: TextStyle(fontWeight: FontWeight.w500)),
+                        const Text(
+                          'Item Source:',
+                          style: TextStyle(fontWeight: FontWeight.w500),
+                        ),
                         const SizedBox(height: 8),
                         Row(
                           children: [
                             Expanded(
                               child: RadioListTile<String>(
                                 title: const Text('Specific Items'),
-                                subtitle: const Text('Choose individual menu items'),
+                                subtitle: const Text(
+                                  'Choose individual menu items',
+                                ),
                                 value: 'specific',
                                 groupValue: _sourceType,
-                                onChanged: (value) => setState(() => _sourceType = value!),
+                                onChanged: (value) =>
+                                    setState(() => _sourceType = value!),
                               ),
                             ),
                             Expanded(
                               child: RadioListTile<String>(
                                 title: const Text('Category'),
-                                subtitle: const Text('Any item from a category'),
+                                subtitle: const Text(
+                                  'Any item from a category',
+                                ),
                                 value: 'category',
                                 groupValue: _sourceType,
-                                onChanged: (value) => setState(() => _sourceType = value!),
+                                onChanged: (value) =>
+                                    setState(() => _sourceType = value!),
                               ),
                             ),
                           ],
@@ -186,24 +237,24 @@ class _AddItemDialogState extends State<AddItemDialog> {
                       ],
                     ),
                     const SizedBox(height: 16),
-                    
+
                     // Item/Category Selection
                     if (_sourceType == 'specific')
                       _buildSpecificItemsSection()
                     else
                       _buildCategorySection(),
-                      
+
                     const SizedBox(height: 16),
-                    
+
                     // Settings
                     _buildSettingsSection(),
                   ],
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 24),
-            
+
             // Actions
             Row(
               children: [
@@ -228,11 +279,11 @@ class _AddItemDialogState extends State<AddItemDialog> {
       ),
     );
   }
-  
+
   Widget _buildSpecificItemsSection() {
     // All available items from all categories
     final allAvailableItems = <Map<String, dynamic>>[];
-    
+
     // Collect items from all categories
     final itemsByCategory = {
       'pizza': [
@@ -240,15 +291,29 @@ class _AddItemDialogState extends State<AddItemDialog> {
           'id': 'pizza1',
           'name': 'Margherita Pizza',
           'price': 12.50,
-          'sizes': [{'id': 'small', 'name': 'Small'}, {'id': 'medium', 'name': 'Medium'}, {'id': 'large', 'name': 'Large'}],
-          'modifiers': [{'id': 'extra_cheese', 'name': 'Extra Cheese'}, {'id': 'olives', 'name': 'Olives'}]
+          'sizes': [
+            {'id': 'small', 'name': 'Small'},
+            {'id': 'medium', 'name': 'Medium'},
+            {'id': 'large', 'name': 'Large'},
+          ],
+          'modifiers': [
+            {'id': 'extra_cheese', 'name': 'Extra Cheese'},
+            {'id': 'olives', 'name': 'Olives'},
+          ],
         },
         {
           'id': 'pizza2',
           'name': 'Pepperoni Pizza',
           'price': 14.00,
-          'sizes': [{'id': 'small', 'name': 'Small'}, {'id': 'medium', 'name': 'Medium'}, {'id': 'large', 'name': 'Large'}],
-          'modifiers': [{'id': 'extra_cheese', 'name': 'Extra Cheese'}, {'id': 'extra_pepperoni', 'name': 'Extra Pepperoni'}]
+          'sizes': [
+            {'id': 'small', 'name': 'Small'},
+            {'id': 'medium', 'name': 'Medium'},
+            {'id': 'large', 'name': 'Large'},
+          ],
+          'modifiers': [
+            {'id': 'extra_cheese', 'name': 'Extra Cheese'},
+            {'id': 'extra_pepperoni', 'name': 'Extra Pepperoni'},
+          ],
         },
       ],
       'burgers': [
@@ -256,15 +321,28 @@ class _AddItemDialogState extends State<AddItemDialog> {
           'id': 'burger1',
           'name': 'Classic Burger',
           'price': 11.00,
-          'sizes': [{'id': 'regular', 'name': 'Regular'}, {'id': 'large', 'name': 'Large'}],
-          'modifiers': [{'id': 'cheese', 'name': 'Cheese'}, {'id': 'bacon', 'name': 'Bacon'}, {'id': 'lettuce', 'name': 'Lettuce'}]
+          'sizes': [
+            {'id': 'regular', 'name': 'Regular'},
+            {'id': 'large', 'name': 'Large'},
+          ],
+          'modifiers': [
+            {'id': 'cheese', 'name': 'Cheese'},
+            {'id': 'bacon', 'name': 'Bacon'},
+            {'id': 'lettuce', 'name': 'Lettuce'},
+          ],
         },
         {
           'id': 'burger2',
           'name': 'BBQ Burger',
           'price': 12.50,
-          'sizes': [{'id': 'regular', 'name': 'Regular'}, {'id': 'large', 'name': 'Large'}],
-          'modifiers': [{'id': 'cheese', 'name': 'Cheese'}, {'id': 'onion_rings', 'name': 'Onion Rings'}]
+          'sizes': [
+            {'id': 'regular', 'name': 'Regular'},
+            {'id': 'large', 'name': 'Large'},
+          ],
+          'modifiers': [
+            {'id': 'cheese', 'name': 'Cheese'},
+            {'id': 'onion_rings', 'name': 'Onion Rings'},
+          ],
         },
       ],
       'sides': [
@@ -272,15 +350,27 @@ class _AddItemDialogState extends State<AddItemDialog> {
           'id': 'fries1',
           'name': 'French Fries',
           'price': 4.50,
-          'sizes': [{'id': 'small', 'name': 'Small'}, {'id': 'large', 'name': 'Large'}],
-          'modifiers': [{'id': 'salt', 'name': 'Extra Salt'}, {'id': 'ketchup', 'name': 'Ketchup'}]
+          'sizes': [
+            {'id': 'small', 'name': 'Small'},
+            {'id': 'large', 'name': 'Large'},
+          ],
+          'modifiers': [
+            {'id': 'salt', 'name': 'Extra Salt'},
+            {'id': 'ketchup', 'name': 'Ketchup'},
+          ],
         },
         {
           'id': 'wings1',
           'name': 'Buffalo Wings',
           'price': 16.50,
-          'sizes': [{'id': '6pc', 'name': '6 pieces'}, {'id': '12pc', 'name': '12 pieces'}],
-          'modifiers': [{'id': 'hot_sauce', 'name': 'Hot Sauce'}, {'id': 'ranch', 'name': 'Ranch Dip'}]
+          'sizes': [
+            {'id': '6pc', 'name': '6 pieces'},
+            {'id': '12pc', 'name': '12 pieces'},
+          ],
+          'modifiers': [
+            {'id': 'hot_sauce', 'name': 'Hot Sauce'},
+            {'id': 'ranch', 'name': 'Ranch Dip'},
+          ],
         },
       ],
       'drinks': [
@@ -288,20 +378,29 @@ class _AddItemDialogState extends State<AddItemDialog> {
           'id': 'drink1',
           'name': 'Coca Cola',
           'price': 2.50,
-          'sizes': [{'id': 'regular', 'name': 'Regular'}, {'id': 'large', 'name': 'Large'}],
-          'modifiers': [{'id': 'ice', 'name': 'Extra Ice'}, {'id': 'lemon', 'name': 'Lemon'}]
+          'sizes': [
+            {'id': 'regular', 'name': 'Regular'},
+            {'id': 'large', 'name': 'Large'},
+          ],
+          'modifiers': [
+            {'id': 'ice', 'name': 'Extra Ice'},
+            {'id': 'lemon', 'name': 'Lemon'},
+          ],
         },
       ],
     };
-    
+
     for (final items in itemsByCategory.values) {
       allAvailableItems.addAll(items);
     }
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Select Items:', style: TextStyle(fontWeight: FontWeight.w500)),
+        const Text(
+          'Select Items:',
+          style: TextStyle(fontWeight: FontWeight.w500),
+        ),
         const SizedBox(height: 8),
         Container(
           height: 300,
@@ -313,8 +412,10 @@ class _AddItemDialogState extends State<AddItemDialog> {
             itemCount: allAvailableItems.length,
             itemBuilder: (context, index) {
               final item = allAvailableItems[index];
-              final isSelected = _selectedItems.any((selected) => selected['id'] == item['id']);
-              
+              final isSelected = _selectedItems.any(
+                (selected) => selected['id'] == item['id'],
+              );
+
               return ExpansionTile(
                 leading: Checkbox(
                   value: isSelected,
@@ -324,10 +425,14 @@ class _AddItemDialogState extends State<AddItemDialog> {
                         _selectedItems.add(item);
                         if (_price == 0) _price = item['price'] as double;
                         // Initialize with default selections
-                        _selectedSizes[item['id']] = (item['sizes'] as List).map((s) => s['id'] as String).toList();
+                        _selectedSizes[item['id']] = (item['sizes'] as List)
+                            .map((s) => s['id'] as String)
+                            .toList();
                         _selectedModifiers[item['id']] = [];
                       } else {
-                        _selectedItems.removeWhere((selected) => selected['id'] == item['id']);
+                        _selectedItems.removeWhere(
+                          (selected) => selected['id'] == item['id'],
+                        );
                         _selectedSizes.remove(item['id']);
                         _selectedModifiers.remove(item['id']);
                       }
@@ -335,35 +440,38 @@ class _AddItemDialogState extends State<AddItemDialog> {
                   },
                 ),
                 title: Text(item['name'] as String),
-                subtitle: Text('\$${(item['price'] as double).toStringAsFixed(2)}'),
-                children: isSelected ? [
-                  _buildItemSizesAndModifiers(item),
-                ] : [],
+                subtitle: Text(
+                  '\$${(item['price'] as double).toStringAsFixed(2)}',
+                ),
+                children: isSelected ? [_buildItemSizesAndModifiers(item)] : [],
               );
             },
           ),
         ),
         const SizedBox(height: 8),
         Text(
-          '${_selectedItems.length} item(s) selected', 
+          '${_selectedItems.length} item(s) selected',
           style: TextStyle(color: Colors.grey[600], fontSize: 13),
         ),
       ],
     );
   }
-  
+
   Widget _buildCategorySection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Select Category:', style: TextStyle(fontWeight: FontWeight.w500)),
+        const Text(
+          'Select Category:',
+          style: TextStyle(fontWeight: FontWeight.w500),
+        ),
         const SizedBox(height: 8),
         DropdownButtonFormField<String>(
           decoration: const InputDecoration(
             border: OutlineInputBorder(),
             hintText: 'Choose a category',
           ),
-          value: _selectedCategory,
+          initialValue: _selectedCategory,
           items: _availableCategories.map((category) {
             return DropdownMenuItem(
               value: category['id'] as String,
@@ -379,10 +487,13 @@ class _AddItemDialogState extends State<AddItemDialog> {
             });
           },
         ),
-        
+
         if (_selectedCategory != null && _categoryItems.isNotEmpty) ...[
           const SizedBox(height: 16),
-          const Text('Items in this category:', style: TextStyle(fontWeight: FontWeight.w500)),
+          const Text(
+            'Items in this category:',
+            style: TextStyle(fontWeight: FontWeight.w500),
+          ),
           const SizedBox(height: 8),
           Container(
             height: 200,
@@ -394,8 +505,10 @@ class _AddItemDialogState extends State<AddItemDialog> {
               itemCount: _categoryItems.length,
               itemBuilder: (context, index) {
                 final item = _categoryItems[index];
-                final isSelected = _selectedItems.any((selected) => selected['id'] == item['id']);
-                
+                final isSelected = _selectedItems.any(
+                  (selected) => selected['id'] == item['id'],
+                );
+
                 return ExpansionTile(
                   leading: Checkbox(
                     value: isSelected,
@@ -404,10 +517,14 @@ class _AddItemDialogState extends State<AddItemDialog> {
                         if (selected!) {
                           _selectedItems.add(item);
                           if (_price == 0) _price = item['price'] as double;
-                          _selectedSizes[item['id']] = (item['sizes'] as List).map((s) => s['id'] as String).toList();
+                          _selectedSizes[item['id']] = (item['sizes'] as List)
+                              .map((s) => s['id'] as String)
+                              .toList();
                           _selectedModifiers[item['id']] = [];
                         } else {
-                          _selectedItems.removeWhere((selected) => selected['id'] == item['id']);
+                          _selectedItems.removeWhere(
+                            (selected) => selected['id'] == item['id'],
+                          );
                           _selectedSizes.remove(item['id']);
                           _selectedModifiers.remove(item['id']);
                         }
@@ -415,10 +532,12 @@ class _AddItemDialogState extends State<AddItemDialog> {
                     },
                   ),
                   title: Text(item['name'] as String),
-                  subtitle: Text('\$${(item['price'] as double).toStringAsFixed(2)}'),
-                  children: isSelected ? [
-                    _buildItemSizesAndModifiers(item),
-                  ] : [],
+                  subtitle: Text(
+                    '\$${(item['price'] as double).toStringAsFixed(2)}',
+                  ),
+                  children: isSelected
+                      ? [_buildItemSizesAndModifiers(item)]
+                      : [],
                 );
               },
             ),
@@ -427,27 +546,31 @@ class _AddItemDialogState extends State<AddItemDialog> {
       ],
     );
   }
-  
+
   Widget _buildItemSizesAndModifiers(Map<String, dynamic> item) {
     final itemId = item['id'] as String;
     final sizes = item['sizes'] as List<dynamic>;
     final modifiers = item['modifiers'] as List<dynamic>;
-    
+
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (sizes.isNotEmpty) ...[
-            const Text('Available Sizes:', style: TextStyle(fontWeight: FontWeight.w500)),
+            const Text(
+              'Available Sizes:',
+              style: TextStyle(fontWeight: FontWeight.w500),
+            ),
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
               children: sizes.map((size) {
                 final sizeId = size['id'] as String;
                 final sizeName = size['name'] as String;
-                final isSelected = _selectedSizes[itemId]?.contains(sizeId) ?? false;
-                
+                final isSelected =
+                    _selectedSizes[itemId]?.contains(sizeId) ?? false;
+
                 return FilterChip(
                   label: Text(sizeName),
                   selected: isSelected,
@@ -466,17 +589,21 @@ class _AddItemDialogState extends State<AddItemDialog> {
             ),
             const SizedBox(height: 12),
           ],
-          
+
           if (modifiers.isNotEmpty) ...[
-            const Text('Available Modifiers:', style: TextStyle(fontWeight: FontWeight.w500)),
+            const Text(
+              'Available Modifiers:',
+              style: TextStyle(fontWeight: FontWeight.w500),
+            ),
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
               children: modifiers.map((modifier) {
                 final modifierId = modifier['id'] as String;
                 final modifierName = modifier['name'] as String;
-                final isSelected = _selectedModifiers[itemId]?.contains(modifierId) ?? false;
-                
+                final isSelected =
+                    _selectedModifiers[itemId]?.contains(modifierId) ?? false;
+
                 return FilterChip(
                   label: Text(modifierName),
                   selected: isSelected,
@@ -498,14 +625,17 @@ class _AddItemDialogState extends State<AddItemDialog> {
       ),
     );
   }
-  
+
   Widget _buildSettingsSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Item Settings:', style: TextStyle(fontWeight: FontWeight.w500)),
+        const Text(
+          'Item Settings:',
+          style: TextStyle(fontWeight: FontWeight.w500),
+        ),
         const SizedBox(height: 12),
-        
+
         // Settings Row 1
         Row(
           children: [
@@ -527,7 +657,7 @@ class _AddItemDialogState extends State<AddItemDialog> {
             ),
           ],
         ),
-        
+
         // Settings Row 2
         Row(
           children: [
@@ -538,8 +668,11 @@ class _AddItemDialogState extends State<AddItemDialog> {
                   border: OutlineInputBorder(),
                 ),
                 keyboardType: TextInputType.number,
-                controller: TextEditingController(text: _maxQuantity.toString()),
-                onChanged: (value) => setState(() => _maxQuantity = int.tryParse(value) ?? 1),
+                controller: TextEditingController(
+                  text: _maxQuantity.toString(),
+                ),
+                onChanged: (value) =>
+                    setState(() => _maxQuantity = int.tryParse(value) ?? 1),
               ),
             ),
             const SizedBox(width: 16),
@@ -550,13 +683,16 @@ class _AddItemDialogState extends State<AddItemDialog> {
                   border: OutlineInputBorder(),
                 ),
                 keyboardType: TextInputType.number,
-                controller: TextEditingController(text: _price > 0 ? _price.toString() : ''),
-                onChanged: (value) => setState(() => _price = double.tryParse(value) ?? 0.0),
+                controller: TextEditingController(
+                  text: _price > 0 ? _price.toString() : '',
+                ),
+                onChanged: (value) =>
+                    setState(() => _price = double.tryParse(value) ?? 0.0),
               ),
             ),
           ],
         ),
-        
+
         // Size & Modifier Controls (Collapsed - would be expanded in real implementation)
         const SizedBox(height: 16),
         ExpansionTile(
@@ -616,32 +752,37 @@ class _AddItemDialogState extends State<AddItemDialog> {
       ],
     );
   }
-  
+
   bool _canSave() {
-    return _slotName.isNotEmpty && 
-           ((_sourceType == 'specific' && _selectedItems.isNotEmpty) ||
+    return _slotName.isNotEmpty &&
+        ((_sourceType == 'specific' && _selectedItems.isNotEmpty) ||
             (_sourceType == 'category' && _selectedCategory != null));
   }
-  
+
   void _saveSlot() {
     List<String> itemNames = [];
     List<String> itemIds = [];
-    
+
     if (_sourceType == 'specific') {
       itemNames = _selectedItems.map((item) => item['name'] as String).toList();
       itemIds = _selectedItems.map((item) => item['id'] as String).toList();
     }
-    
+
     String? categoryName;
     if (_sourceType == 'category' && _selectedCategory != null) {
-      categoryName = _availableCategories
-          .firstWhere((cat) => cat['id'] == _selectedCategory)['name'] as String;
+      categoryName =
+          _availableCategories.firstWhere(
+                (cat) => cat['id'] == _selectedCategory,
+              )['name']
+              as String;
     }
-    
+
     final slot = ComboSlotEntity(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       name: _slotName,
-      sourceType: _sourceType == 'specific' ? SlotSourceType.specific : SlotSourceType.category,
+      sourceType: _sourceType == 'specific'
+          ? SlotSourceType.specific
+          : SlotSourceType.category,
       specificItemIds: _sourceType == 'specific' ? itemIds : [],
       specificItemNames: _sourceType == 'specific' ? itemNames : [],
       categoryId: _sourceType == 'category' ? _selectedCategory : null,
@@ -653,13 +794,14 @@ class _AddItemDialogState extends State<AddItemDialog> {
       sortOrder: 0,
       // Include size and modifier restrictions
       allowedSizeIds: _selectedSizes.values.expand((sizes) => sizes).toList(),
-      modifierGroupAllowed: _selectedModifiers.values.expand((mods) => mods)
+      modifierGroupAllowed: _selectedModifiers.values
+          .expand((mods) => mods)
           .fold<Map<String, bool>>({}, (map, modId) {
-        map[modId] = true;
-        return map;
-      }),
+            map[modId] = true;
+            return map;
+          }),
     );
-    
+
     context.read<ComboManagementBloc>().add(AddComboSlot(slot: slot));
     Navigator.of(context).pop();
   }

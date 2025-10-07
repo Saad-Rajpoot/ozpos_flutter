@@ -42,8 +42,9 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
       if (_selectedOrderTab == 'Ready' && !order.isReady) return false;
       if (_selectedOrderTab == 'In Progress' &&
           !order.isInProgress &&
-          !order.isDelayed)
+          !order.isDelayed) {
         return false;
+      }
       return true;
     }).toList();
   }

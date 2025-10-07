@@ -62,7 +62,7 @@ class TipSection extends StatelessWidget {
                       },
                       style: OutlinedButton.styleFrom(
                         backgroundColor: isSelected
-                            ? const Color(0xFF2196F3).withOpacity(0.08)
+                            ? const Color(0xFF2196F3).withValues(alpha: 0.08)
                             : Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(

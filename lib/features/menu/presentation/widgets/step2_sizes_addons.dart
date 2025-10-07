@@ -114,7 +114,7 @@ class _Step2SizesAddOnsState extends State<Step2SizesAddOns> {
                     },
                     availableAddOnCategories: [],
                   );
-                }).toList(),
+                }),
 
               const SizedBox(height: 24),
 

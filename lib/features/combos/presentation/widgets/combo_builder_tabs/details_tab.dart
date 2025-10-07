@@ -217,7 +217,7 @@ class _DetailsTabState extends State<DetailsTab> {
                     ),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<String?>(
-                      value: combo.categoryTag,
+                      initialValue: combo.categoryTag,
                       decoration: InputDecoration(
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),

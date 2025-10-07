@@ -633,7 +633,6 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
     // Simulate payment processing
     await Future.delayed(const Duration(milliseconds: 800));
 
-    // TODO: Actual payment processing through use cases
     // - For cash: record transaction
     // - For card/wallet/BNPL: create payment intent server-side
     // - For split: process all tenders
@@ -647,7 +646,6 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
 
   void _onPayLater(PayLater event, Emitter<CheckoutState> emit) async {
     if (state is! CheckoutLoaded) return;
-    final currentState = state as CheckoutLoaded;
 
     emit(CheckoutProcessing());
 

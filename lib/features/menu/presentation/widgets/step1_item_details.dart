@@ -472,7 +472,9 @@ class _Step1ItemDetailsState extends State<Step1ItemDetails> {
             ),
           ),
           child: DropdownButtonFormField<String>(
-            value: selectedCategoryId.isNotEmpty ? selectedCategoryId : null,
+            initialValue: selectedCategoryId.isNotEmpty
+                ? selectedCategoryId
+                : null,
             decoration: const InputDecoration(
               contentPadding: EdgeInsets.symmetric(
                 horizontal: 16,
@@ -562,7 +564,7 @@ class _Step1ItemDetailsState extends State<Step1ItemDetails> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? color.withOpacity(0.15) : Colors.white,
+          color: isSelected ? color.withValues(alpha: 0.15) : Colors.white,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isSelected ? color : Colors.grey.shade300,

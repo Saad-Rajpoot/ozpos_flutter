@@ -160,7 +160,7 @@ class Step4Availability extends StatelessWidget {
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
             color: value
-                ? const Color(0xFF2196F3).withOpacity(0.1)
+                ? const Color(0xFF2196F3).withValues(alpha: 0.1)
                 : Colors.grey.shade100,
             borderRadius: BorderRadius.circular(8),
           ),
@@ -194,7 +194,7 @@ class Step4Availability extends StatelessWidget {
         Switch(
           value: value,
           onChanged: onChanged,
-          activeColor: const Color(0xFF2196F3),
+          activeThumbColor: const Color(0xFF2196F3),
         ),
       ],
     );
@@ -458,7 +458,7 @@ class Step4Availability extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         DropdownButtonFormField<String>(
-          value: value.isEmpty ? null : value,
+          initialValue: value.isEmpty ? null : value,
           hint: Text(hint),
           decoration: InputDecoration(
             filled: true,
@@ -505,7 +505,7 @@ class Step4Availability extends StatelessWidget {
       label: Text(label),
       selected: value,
       onSelected: onChanged,
-      selectedColor: const Color(0xFF2196F3).withOpacity(0.2),
+      selectedColor: const Color(0xFF2196F3).withValues(alpha: 0.2),
       checkmarkColor: const Color(0xFF2196F3),
       backgroundColor: Colors.grey.shade100,
       labelStyle: TextStyle(

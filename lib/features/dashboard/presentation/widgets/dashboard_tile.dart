@@ -25,7 +25,6 @@ class _DashboardTileState extends State<DashboardTile>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _scaleAnimation;
-  late Animation<double> _shadowAnimation;
   bool _isHovered = false;
   bool _isPressed = false;
 
@@ -38,10 +37,6 @@ class _DashboardTileState extends State<DashboardTile>
     );
 
     _scaleAnimation = Tween<double>(begin: 1.0, end: 0.98).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
-    );
-
-    _shadowAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
   }
@@ -125,7 +120,7 @@ class _DashboardTileState extends State<DashboardTile>
                           borderRadius: BorderRadius.circular(AppRadius.tile),
                           gradient: LinearGradient(
                             colors: widget.gradient.colors
-                                .map((color) => color.withOpacity(0.9))
+                                .map((color) => color.withValues(alpha: 0.9))
                                 .toList(),
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
@@ -202,7 +197,7 @@ class _DashboardTileState extends State<DashboardTile>
                                   : AppTypography.labelMedium,
                               fontWeight: AppTypography.regular,
                               color: _isHovered
-                                  ? AppColors.textWhite.withOpacity(0.8)
+                                  ? AppColors.textWhite.withValues(alpha: 0.8)
                                   : AppColors.textSecondary,
                             ),
                             child: Text(

@@ -11,8 +11,7 @@ class ReportsScreen extends StatefulWidget {
 }
 
 class _ReportsScreenState extends State<ReportsScreen> {
-  String _selectedRange = 'Today';
-  String _selectedBranch = 'Main Branch';
+  final String _selectedRange = 'Today';
 
   @override
   Widget build(BuildContext context) {

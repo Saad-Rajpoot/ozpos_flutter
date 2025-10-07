@@ -14,12 +14,12 @@ class AddonItemSelectorDialog extends StatefulWidget {
   final String categoryName;
 
   const AddonItemSelectorDialog({
-    Key? key,
+    super.key,
     required this.itemId,
     this.sizeId,
     required this.categoryId,
     required this.categoryName,
-  }) : super(key: key);
+  });
 
   @override
   State<AddonItemSelectorDialog> createState() =>

@@ -12,11 +12,11 @@ class AddonCategoryPickerSheet extends StatefulWidget {
   final String? sizeLabel; // Display label for the size
 
   const AddonCategoryPickerSheet({
-    Key? key,
+    super.key,
     required this.itemId,
     this.sizeId,
     this.sizeLabel,
-  }) : super(key: key);
+  });
 
   @override
   State<AddonCategoryPickerSheet> createState() =>

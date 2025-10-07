@@ -84,7 +84,7 @@ class _DiscountSectionState extends State<DiscountSection> {
                       },
                       style: OutlinedButton.styleFrom(
                         backgroundColor: isSelected
-                            ? const Color(0xFFD32F2F).withOpacity(0.08)
+                            ? const Color(0xFFD32F2F).withValues(alpha: 0.08)
                             : Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(
@@ -179,7 +179,7 @@ class _DiscountSectionState extends State<DiscountSection> {
                   child: Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF4CAF50).withOpacity(0.1),
+                      color: const Color(0xFF4CAF50).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
                         color: const Color(0xFF4CAF50),
@@ -270,7 +270,7 @@ class _DiscountSectionState extends State<DiscountSection> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFF9800).withOpacity(0.1),
+                  color: const Color(0xFFFF9800).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: const Color(0xFFFF9800), width: 1),
                 ),

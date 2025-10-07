@@ -6,7 +6,6 @@ import '../bloc/combo_management_state.dart';
 import '../../domain/entities/combo_entity.dart';
 import '../widgets/combo_card.dart';
 import '../widgets/combo_builder_modal.dart';
-import '../../../../core/theme/app_theme.dart';
 
 class ComboDashboardScreen extends StatefulWidget {
   const ComboDashboardScreen({super.key});
@@ -165,9 +164,7 @@ class _ComboDashboardScreenState extends State<ComboDashboardScreen> {
           _buildActionButton(
             icon: Icons.add,
             label: 'Add New Item',
-            onPressed: () {
-              // TODO: Navigate to menu item wizard
-            },
+            onPressed: () {},
           ),
           const SizedBox(width: 12),
           _buildActionButton(
@@ -221,7 +218,7 @@ class _ComboDashboardScreenState extends State<ComboDashboardScreen> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: const Color(0xFF8B5CF6).withOpacity(0.1),
+              color: const Color(0xFF8B5CF6).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: const Icon(Icons.star, color: Color(0xFF8B5CF6), size: 20),
@@ -255,7 +252,7 @@ class _ComboDashboardScreenState extends State<ComboDashboardScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: const Color(0xFF10B981).withOpacity(0.1),
+              color: const Color(0xFF10B981).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(4),
             ),
             child: const Text(
@@ -371,7 +368,7 @@ class _ComboDashboardScreenState extends State<ComboDashboardScreen> {
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: const Color(0xFF8B5CF6).withOpacity(0.1),
+              color: const Color(0xFF8B5CF6).withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: const Icon(
@@ -481,7 +478,6 @@ class _ComboDashboardScreenState extends State<ComboDashboardScreen> {
   }
 
   void _addComboToCart(BuildContext context, ComboEntity combo) {
-    // TODO: Implement POS guided selector
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Added "${combo.name}" to cart'),

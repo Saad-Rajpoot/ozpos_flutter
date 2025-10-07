@@ -108,10 +108,12 @@ class EnvironmentConfig {
 
   /// Session tracking interval
   static Duration get sessionTrackingInterval {
-    if (isDebug)
+    if (isDebug) {
       return const Duration(seconds: 10); // Frequent tracking in debug
-    if (isStaging)
+    }
+    if (isStaging) {
       return const Duration(seconds: 30); // Moderate tracking in staging
+    }
     return const Duration(minutes: 2); // Less frequent in production
   }
 

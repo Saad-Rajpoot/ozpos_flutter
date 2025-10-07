@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../bloc/combo_management_bloc.dart';
-import '../../bloc/combo_management_event.dart';
 import '../../bloc/combo_management_state.dart';
 import '../../../domain/entities/combo_entity.dart';
 
@@ -110,7 +109,7 @@ class _AdvancedTabState extends State<AdvancedTab> {
                     ),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<ComboStatus>(
-                      value: combo.status,
+                      initialValue: combo.status,
                       decoration: InputDecoration(
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
@@ -531,7 +530,7 @@ class _AdvancedTabState extends State<AdvancedTab> {
                     ),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<String>(
-                      value: 'Medium',
+                      initialValue: 'Medium',
                       decoration: InputDecoration(
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),

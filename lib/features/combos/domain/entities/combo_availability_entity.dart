@@ -2,7 +2,15 @@ import 'package:equatable/equatable.dart';
 
 enum OrderType { dineIn, takeaway, delivery, online }
 
-enum DayOfWeek { monday, tuesday, wednesday, thursday, friday, saturday, sunday }
+enum DayOfWeek {
+  monday,
+  tuesday,
+  wednesday,
+  thursday,
+  friday,
+  saturday,
+  sunday,
+}
 
 class TimeWindow extends Equatable {
   final String id;
@@ -51,7 +59,7 @@ class TimeOfDay extends Equatable {
   String get formatted {
     final h = hour == 0 ? 12 : (hour > 12 ? hour - 12 : hour);
     final ampm = hour < 12 ? 'AM' : 'PM';
-    return '${h}:${minute.toString().padLeft(2, '0')} $ampm';
+    return '$h:${minute.toString().padLeft(2, '0')} $ampm';
   }
 
   @override
@@ -79,7 +87,11 @@ class ComboAvailabilityEntity extends Equatable {
   const ComboAvailabilityEntity({
     this.posSystem = true,
     this.onlineMenu = true,
-    this.orderTypes = const [OrderType.dineIn, OrderType.takeaway, OrderType.delivery],
+    this.orderTypes = const [
+      OrderType.dineIn,
+      OrderType.takeaway,
+      OrderType.delivery,
+    ],
     this.timeWindows = const [],
     this.daysOfWeek = const [
       DayOfWeek.monday,
@@ -95,7 +107,7 @@ class ComboAvailabilityEntity extends Equatable {
   });
 
   // Factory constructors for common availability patterns
-  
+
   static ComboAvailabilityEntity lunchOnly() {
     return ComboAvailabilityEntity(
       timeWindows: [
@@ -126,10 +138,7 @@ class ComboAvailabilityEntity extends Equatable {
     required DateTime startDate,
     required DateTime endDate,
   }) {
-    return ComboAvailabilityEntity(
-      startDate: startDate,
-      endDate: endDate,
-    );
+    return ComboAvailabilityEntity(startDate: startDate, endDate: endDate);
   }
 
   // Computed properties
@@ -144,15 +153,15 @@ class ComboAvailabilityEntity extends Equatable {
 
   bool get isLimitedTime => hasDateRestrictions;
 
-  bool get isWeekendSpecial => 
-    daysOfWeek.length == 2 && 
-    daysOfWeek.contains(DayOfWeek.saturday) && 
-    daysOfWeek.contains(DayOfWeek.sunday);
+  bool get isWeekendSpecial =>
+      daysOfWeek.length == 2 &&
+      daysOfWeek.contains(DayOfWeek.saturday) &&
+      daysOfWeek.contains(DayOfWeek.sunday);
 
-  bool get isWeekdaysOnly => 
-    daysOfWeek.length == 5 && 
-    !daysOfWeek.contains(DayOfWeek.saturday) && 
-    !daysOfWeek.contains(DayOfWeek.sunday);
+  bool get isWeekdaysOnly =>
+      daysOfWeek.length == 5 &&
+      !daysOfWeek.contains(DayOfWeek.saturday) &&
+      !daysOfWeek.contains(DayOfWeek.sunday);
 
   bool get isCurrentlyAvailable {
     final now = DateTime.now();
@@ -177,7 +186,6 @@ class ComboAvailabilityEntity extends Equatable {
   Duration? get timeUntilNextAvailability {
     if (isCurrentlyAvailable) return null;
 
-    // TODO: Calculate next availability window
     // This would require more complex logic to find the next valid time slot
     return null;
   }
@@ -242,7 +250,7 @@ class ComboAvailabilityEntity extends Equatable {
     }
 
     for (final window in timeWindows) {
-      if (window.startTime.hour == window.endTime.hour && 
+      if (window.startTime.hour == window.endTime.hour &&
           window.startTime.minute == window.endTime.minute) {
         errors.add('Time window "${window.name}" has no duration');
       }
@@ -256,14 +264,22 @@ class ComboAvailabilityEntity extends Equatable {
   DayOfWeek _dayOfWeekFromDateTime(DateTime date) {
     // DateTime.weekday: Monday = 1, Sunday = 7
     switch (date.weekday) {
-      case 1: return DayOfWeek.monday;
-      case 2: return DayOfWeek.tuesday;
-      case 3: return DayOfWeek.wednesday;
-      case 4: return DayOfWeek.thursday;
-      case 5: return DayOfWeek.friday;
-      case 6: return DayOfWeek.saturday;
-      case 7: return DayOfWeek.sunday;
-      default: return DayOfWeek.monday;
+      case 1:
+        return DayOfWeek.monday;
+      case 2:
+        return DayOfWeek.tuesday;
+      case 3:
+        return DayOfWeek.wednesday;
+      case 4:
+        return DayOfWeek.thursday;
+      case 5:
+        return DayOfWeek.friday;
+      case 6:
+        return DayOfWeek.saturday;
+      case 7:
+        return DayOfWeek.sunday;
+      default:
+        return DayOfWeek.monday;
     }
   }
 
@@ -293,12 +309,12 @@ class ComboAvailabilityEntity extends Equatable {
 
   @override
   List<Object?> get props => [
-        posSystem,
-        onlineMenu,
-        orderTypes,
-        timeWindows,
-        daysOfWeek,
-        startDate,
-        endDate,
-      ];
+    posSystem,
+    onlineMenu,
+    orderTypes,
+    timeWindows,
+    daysOfWeek,
+    startDate,
+    endDate,
+  ];
 }

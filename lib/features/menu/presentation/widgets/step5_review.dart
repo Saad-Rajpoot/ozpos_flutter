@@ -24,7 +24,7 @@ class Step5Review extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF10B981).withOpacity(0.1),
+                    color: const Color(0xFF10B981).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(color: const Color(0xFF10B981)),
                   ),
@@ -67,7 +67,7 @@ class Step5Review extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFEF4444).withOpacity(0.1),
+                    color: const Color(0xFFEF4444).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(color: const Color(0xFFEF4444)),
                   ),
@@ -293,7 +293,7 @@ class Step5Review extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF2196F3).withOpacity(0.1),
+                    color: const Color(0xFF2196F3).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(icon, size: 24, color: const Color(0xFF2196F3)),
@@ -527,7 +527,7 @@ class Step5Review extends StatelessWidget {
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF10B981).withOpacity(0.1),
+                  color: const Color(0xFF10B981).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: const Color(0xFF10B981)),
                 ),
@@ -577,7 +577,7 @@ class Step5Review extends StatelessWidget {
         border: Border.all(color: Colors.grey.shade300),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 20,
             offset: const Offset(0, 4),
           ),

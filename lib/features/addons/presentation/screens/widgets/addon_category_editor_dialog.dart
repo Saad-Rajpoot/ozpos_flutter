@@ -10,7 +10,7 @@ import '../../../domain/entities/addon_management_entities.dart';
 class AddonCategoryEditorDialog extends StatefulWidget {
   final AddonCategory? category;
 
-  const AddonCategoryEditorDialog({Key? key, this.category}) : super(key: key);
+  const AddonCategoryEditorDialog({super.key, this.category});
 
   static Future<void> show({
     required BuildContext context,
@@ -76,7 +76,10 @@ class _AddonCategoryEditorDialogState extends State<AddonCategoryEditorDialog> {
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [Colors.white, Colors.blue.shade50.withOpacity(0.3)],
+              colors: [
+                Colors.white,
+                Colors.blue.shade50.withValues(alpha: 0.3),
+              ],
             ),
             borderRadius: BorderRadius.circular(16),
           ),

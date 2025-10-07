@@ -13,11 +13,11 @@ class AddonRulesCompactDisplay extends StatelessWidget {
   final String? sizeLabel;
 
   const AddonRulesCompactDisplay({
-    Key? key,
+    super.key,
     required this.itemId,
     this.sizeId,
     this.sizeLabel,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -303,9 +303,7 @@ class AddonRulesCompactDisplay extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         if (hasOverrides) _buildResetButton(context),
-        ...rules
-            .map((rule) => _buildExpandableRuleCard(context, state, rule))
-            .toList(),
+        ...rules.map((rule) => _buildExpandableRuleCard(context, state, rule)),
       ],
     );
   }
@@ -359,7 +357,7 @@ class AddonRulesCompactDisplay extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -485,7 +483,7 @@ class AddonRulesCompactDisplay extends StatelessWidget {
               style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
             ),
             value: rule.isRequired,
-            activeColor: Colors.red.shade600,
+            activeThumbColor: Colors.red.shade600,
             onChanged: (value) =>
                 _updateRule(context, rule.copyWith(isRequired: value)),
           ),
@@ -631,7 +629,7 @@ class AddonRulesCompactDisplay extends StatelessWidget {
             if (item.id.isEmpty) return const SizedBox.shrink();
 
             return _buildEditableItemCard(context, item, rule);
-          }).toList()
+          })
         else
           Container(
             padding: const EdgeInsets.all(16),
