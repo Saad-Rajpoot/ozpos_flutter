@@ -57,7 +57,7 @@ class MenuRepositoryImpl implements MenuRepository {
         }
       } else {
         // No local data source, use mock data as fallback
-        final items = MenuMockDataSource.getMockMenuItems();
+        final items = await MenuMockDataSourceImpl().getMenuItems();
         if (items.isNotEmpty) {
           return Right(items.map((model) => model.toEntity()).toList());
         }
@@ -158,7 +158,7 @@ class MenuRepositoryImpl implements MenuRepository {
         }
       } else {
         // No local data source, use mock data as fallback
-        final categories = MenuMockDataSource.getMockCategories();
+        final categories = await MenuMockDataSourceImpl().getMenuCategories();
         if (categories.isNotEmpty) {
           return Right(categories.map((model) => model.toEntity()).toList());
         }

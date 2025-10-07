@@ -7,12 +7,14 @@ import '../constants/app_constants.dart';
 class ApiClient {
   late final Dio _dio;
   final SharedPreferences _sharedPreferences;
+  final String _baseUrl;
 
-  ApiClient({required SharedPreferences sharedPreferences})
-    : _sharedPreferences = sharedPreferences {
+  ApiClient({required SharedPreferences sharedPreferences, String? baseUrl})
+    : _sharedPreferences = sharedPreferences,
+      _baseUrl = baseUrl ?? AppConstants.baseUrl {
     _dio = Dio(
       BaseOptions(
-        baseUrl: AppConstants.baseUrl,
+        baseUrl: _baseUrl,
         connectTimeout: AppConstants.connectionTimeout,
         receiveTimeout: AppConstants.receiveTimeout,
         sendTimeout: AppConstants.sendTimeout,

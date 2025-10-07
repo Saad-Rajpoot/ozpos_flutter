@@ -8,18 +8,18 @@ class MockMenuLocalDataSource implements MenuLocalDataSource {
   @override
   Future<List<MenuItemModel>> getMenuItems() async {
     // Return mock data for web
-    return MenuMockDataSource.getMockMenuItems();
+    return MenuMockDataSourceImpl().getMenuItems();
   }
 
   @override
   Future<List<MenuItemModel>> getMenuItemsByCategory(String categoryId) async {
-    final allItems = MenuMockDataSource.getMockMenuItems();
+    final allItems = await MenuMockDataSourceImpl().getMenuItems();
     return allItems.where((item) => item.categoryId == categoryId).toList();
   }
 
   @override
   Future<MenuItemModel?> getMenuItemById(String id) async {
-    final allItems = MenuMockDataSource.getMockMenuItems();
+    final allItems = await MenuMockDataSourceImpl().getMenuItems();
     try {
       return allItems.firstWhere((item) => item.id == id);
     } catch (e) {
@@ -29,12 +29,12 @@ class MockMenuLocalDataSource implements MenuLocalDataSource {
 
   @override
   Future<List<MenuCategoryModel>> getMenuCategories() async {
-    return MenuMockDataSource.getMockCategories();
+    return MenuMockDataSourceImpl().getMenuCategories();
   }
 
   @override
   Future<MenuCategoryModel?> getMenuCategoryById(String id) async {
-    final allCategories = MenuMockDataSource.getMockCategories();
+    final allCategories = await MenuMockDataSourceImpl().getMenuCategories();
     try {
       return allCategories.firstWhere((cat) => cat.id == id);
     } catch (e) {
@@ -44,7 +44,7 @@ class MockMenuLocalDataSource implements MenuLocalDataSource {
 
   @override
   Future<List<MenuItemModel>> searchMenuItems(String query) async {
-    final allItems = MenuMockDataSource.getMockMenuItems();
+    final allItems = await MenuMockDataSourceImpl().getMenuItems();
     return allItems
         .where(
           (item) =>
@@ -56,7 +56,7 @@ class MockMenuLocalDataSource implements MenuLocalDataSource {
 
   @override
   Future<List<MenuItemModel>> getPopularMenuItems() async {
-    final allItems = MenuMockDataSource.getMockMenuItems();
+    final allItems = await MenuMockDataSourceImpl().getMenuItems();
     return allItems.where((item) => item.tags.contains('Popular')).toList();
   }
 

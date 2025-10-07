@@ -33,14 +33,14 @@ class MenuLocalDataSourceImpl implements MenuLocalDataSource {
       );
       // If database is empty, return mock data
       if (maps.isEmpty) {
-        return MenuMockDataSource.getMockMenuItems();
+        return MenuMockDataSourceImpl().getMenuItems();
       }
       return maps.map((map) => MenuItemModel.fromJson(map)).toList();
     } catch (e) {
       // For web or database errors, return mock data
       if (e.toString().contains('Database operations not supported on web') ||
           e.toString().contains('no such table')) {
-        return MenuMockDataSource.getMockMenuItems();
+        return MenuMockDataSourceImpl().getMenuItems();
       }
       throw CacheException(message: e.toString());
     }
@@ -88,14 +88,14 @@ class MenuLocalDataSourceImpl implements MenuLocalDataSource {
       );
       // If database is empty, return mock data
       if (maps.isEmpty) {
-        return MenuMockDataSource.getMockCategories();
+        return MenuMockDataSourceImpl().getMenuCategories();
       }
       return maps.map((map) => MenuCategoryModel.fromJson(map)).toList();
     } catch (e) {
       // For web or database errors, return mock data
       if (e.toString().contains('Database operations not supported on web') ||
           e.toString().contains('no such table')) {
-        return MenuMockDataSource.getMockCategories();
+        return MenuMockDataSourceImpl().getMenuCategories();
       }
       throw CacheException(message: e.toString());
     }

@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
+import 'core/config/app_config.dart';
 import 'core/config/environment_config.dart';
 import 'core/di/injection_container.dart' as di;
 import 'core/navigation/app_router.dart';
@@ -20,6 +21,12 @@ void main() async {
 
   // Initialize BLoC observer for error tracking
   Bloc.observer = SentryBlocObserver();
+
+  // Initialize AppConfig FIRST (environment-based configuration)
+  AppConfig.instance.initialize(
+    environment: AppEnvironment
+        .development, // Change as needed for different environments
+  );
 
   // Initialize dependency injection
   await di.init();

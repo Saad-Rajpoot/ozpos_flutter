@@ -3,11 +3,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 
+import '../config/app_config.dart';
 import '../network/api_client.dart';
 import '../network/network_info.dart';
 import '../utils/database_helper.dart';
 
 import '../../features/menu/data/datasources/menu_remote_datasource.dart';
+import '../../features/menu/data/datasources/menu_mock_datasource.dart';
 import '../../features/menu/data/datasources/menu_local_datasource.dart';
 import '../../features/menu/data/repositories/menu_repository_impl.dart';
 import '../../features/menu/domain/repositories/menu_repository.dart';
@@ -21,6 +23,9 @@ final sl = GetIt.instance;
 
 /// Initialize dependency injection
 Future<void> init() async {
+  // Initialize AppConfig first - this should be done in main.dart
+  // AppConfig.instance.initialize(environment: AppEnvironment.development);
+
   // External dependencies
   final sharedPreferences = await SharedPreferences.getInstance();
   sl.registerLazySingleton(() => sharedPreferences);
@@ -38,7 +43,12 @@ Future<void> init() async {
   sl.registerLazySingleton<NetworkInfo>(
     () => NetworkInfoImpl(connectivity: Connectivity()),
   );
-  sl.registerLazySingleton(() => ApiClient(sharedPreferences: sl()));
+
+  // API Client with environment-based configuration
+  sl.registerLazySingleton(
+    () =>
+        ApiClient(sharedPreferences: sl(), baseUrl: AppConfig.instance.baseUrl),
+  );
 
   // Features
   await _initMenu(sl);
@@ -48,19 +58,22 @@ Future<void> init() async {
 
 /// Initialize menu feature dependencies
 Future<void> _initMenu(GetIt sl) async {
-  // Data sources
-  sl.registerLazySingleton<MenuRemoteDataSource>(
-    () => MenuRemoteDataSourceImpl(apiClient: sl()),
-  );
+  // Environment-based data source selection
+  sl.registerLazySingleton<MenuRemoteDataSource>(() {
+    if (AppConfig.instance.useMockData) {
+      // Use mock data source for development
+      return MenuMockDataSourceImpl();
+    } else {
+      // Use remote data source for staging/production
+      return MenuRemoteDataSourceImpl(apiClient: sl());
+    }
+  });
 
   // Only register local data source if database is available
   if (sl.isRegistered<Database>()) {
     sl.registerLazySingleton<MenuLocalDataSource>(
       () => MenuLocalDataSourceImpl(database: sl()),
     );
-  } else {
-    // For web, use mock data directly (no registration needed for utility class)
-    print('Web platform detected - using mock data');
   }
 
   // Repository

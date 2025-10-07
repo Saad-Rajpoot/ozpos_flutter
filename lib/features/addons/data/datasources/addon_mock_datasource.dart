@@ -1,4 +1,4 @@
-import '../../domain/entities/addon_management_entities.dart';
+import "../../domain/entities/addon_management_entities.dart";
 
 /// Mock add-on categories for testing menu editor
 /// Matches the React prototype data structure
