@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import '../../../pos/modifier_group_entity.dart';
+import 'modifier_group_entity.dart';
 import '../../../combos/domain/entities/combo_option_entity.dart';
 
 /// Menu item entity

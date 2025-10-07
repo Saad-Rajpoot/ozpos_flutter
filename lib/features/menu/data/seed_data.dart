@@ -1,6 +1,6 @@
 import '../domain/entities/menu_item_entity.dart';
-import '../../pos/modifier_group_entity.dart';
-import '../../pos/modifier_option_entity.dart';
+import '../domain/entities/modifier_group_entity.dart';
+import '../domain/entities/modifier_option_entity.dart';
 import '../../combos/domain/entities/combo_option_entity.dart';
 import '../../tables/domain/entities/table_entity.dart';
 

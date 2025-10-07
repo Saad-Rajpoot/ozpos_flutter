@@ -5,9 +5,9 @@ import '../../domain/entities/menu_item_entity.dart';
 import '../../../../core/navigation/app_router.dart';
 import '../../../../core/constants/app_responsive.dart';
 import '../widgets/menu_item_card.dart';
-import '../../../pos/cart_pane.dart';
-import '../../../../core/widgets/sidebar_nav.dart';
+import '../../../checkout/presentation/widgets/cart_pane.dart';
 import '../../../checkout/presentation/bloc/cart_bloc.dart' as cart_bloc;
+import '../../../../core/widgets/sidebar_nav.dart';
 
 /// Menu Screen with Seed Data and Cart Integration
 class MenuScreen extends StatefulWidget {

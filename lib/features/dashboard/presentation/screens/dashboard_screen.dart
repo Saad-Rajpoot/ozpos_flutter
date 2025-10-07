@@ -5,7 +5,7 @@ import '../../../../core/navigation/navigation_service.dart';
 import '../../../../core/constants/app_responsive.dart';
 import '../../../menu/presentation/bloc/menu_bloc.dart';
 import '../widgets/dashboard_tile.dart';
-import '../../../pos/active_orders_panel.dart';
+import '../../../orders/presentation/widgets/active_orders_panel.dart';
 import '../../../../core/widgets/sidebar_nav.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_sizes.dart';

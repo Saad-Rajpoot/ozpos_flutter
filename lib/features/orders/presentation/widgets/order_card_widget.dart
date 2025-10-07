@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../orders/domain/entities/order_entity.dart';
-import '../orders_tokens.dart';
+import '../constants/orders_constants.dart';
 
 class OrderCardWidget extends StatelessWidget {
   final OrderEntity order;
@@ -14,9 +14,9 @@ class OrderCardWidget extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(OrdersTokens.cardRadius),
-        border: Border.all(color: OrdersTokens.colorBorder, width: 2),
-        boxShadow: OrdersTokens.shadowCard,
+        borderRadius: BorderRadius.circular(OrdersConstants.cardRadius),
+        border: Border.all(color: OrdersConstants.colorBorder, width: 2),
+        boxShadow: OrdersConstants.shadowCard,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -27,14 +27,14 @@ class OrderCardWidget extends StatelessWidget {
             decoration: BoxDecoration(
               gradient: LinearGradient(colors: _getChannelGradient()),
               borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(OrdersTokens.cardRadius - 2),
-                topRight: Radius.circular(OrdersTokens.cardRadius - 2),
+                topLeft: Radius.circular(OrdersConstants.cardRadius - 2),
+                topRight: Radius.circular(OrdersConstants.cardRadius - 2),
               ),
             ),
           ),
 
           Padding(
-            padding: const EdgeInsets.all(OrdersTokens.paddingCard),
+            padding: const EdgeInsets.all(OrdersConstants.paddingCard),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -92,14 +92,14 @@ class OrderCardWidget extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           decoration: BoxDecoration(
-            color: OrdersTokens.colorBgSecondary,
+            color: OrdersConstants.colorBgSecondary,
             borderRadius: BorderRadius.circular(6),
           ),
           child: Text(
             '#${order.queueNumber}',
-            style: OrdersTokens.bodySmall.copyWith(
+            style: OrdersConstants.bodySmall.copyWith(
               fontWeight: FontWeight.w700,
-              color: OrdersTokens.colorTextPrimary,
+              color: OrdersConstants.colorTextPrimary,
             ),
           ),
         ),
@@ -116,7 +116,7 @@ class OrderCardWidget extends StatelessWidget {
           ),
           child: Text(
             _getStatusLabel(),
-            style: OrdersTokens.badge.copyWith(color: _getStatusTextColor()),
+            style: OrdersConstants.badge.copyWith(color: _getStatusTextColor()),
           ),
         ),
       ],
@@ -128,7 +128,7 @@ class OrderCardWidget extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 12),
       decoration: const BoxDecoration(
         border: Border(
-          bottom: BorderSide(color: OrdersTokens.colorDivider, width: 2),
+          bottom: BorderSide(color: OrdersConstants.colorDivider, width: 2),
         ),
       ),
       child: Column(
@@ -136,8 +136,8 @@ class OrderCardWidget extends StatelessWidget {
         children: [
           Text(
             order.id,
-            style: OrdersTokens.headingSmall.copyWith(
-              color: OrdersTokens.colorTextPrimary,
+            style: OrdersConstants.headingSmall.copyWith(
+              color: OrdersConstants.colorTextPrimary,
             ),
           ),
           const SizedBox(height: 8),
@@ -156,7 +156,7 @@ class OrderCardWidget extends StatelessWidget {
                 ),
                 child: Text(
                   order.channel.name,
-                  style: OrdersTokens.bodySmall.copyWith(
+                  style: OrdersConstants.bodySmall.copyWith(
                     fontWeight: FontWeight.w600,
                     color: _getChannelTextColor(),
                   ),
@@ -171,9 +171,9 @@ class OrderCardWidget extends StatelessWidget {
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: OrdersTokens.colorBgSecondary,
+                  color: OrdersConstants.colorBgSecondary,
                   borderRadius: BorderRadius.circular(6),
-                  border: Border.all(color: OrdersTokens.colorBorder),
+                  border: Border.all(color: OrdersConstants.colorBorder),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -181,14 +181,14 @@ class OrderCardWidget extends StatelessWidget {
                     Icon(
                       _getOrderTypeIcon(),
                       size: 14,
-                      color: OrdersTokens.colorTextSecondary,
+                      color: OrdersConstants.colorTextSecondary,
                     ),
                     const SizedBox(width: 4),
                     Text(
                       _getOrderTypeLabel(),
-                      style: OrdersTokens.bodySmall.copyWith(
+                      style: OrdersConstants.bodySmall.copyWith(
                         fontWeight: FontWeight.w500,
-                        color: OrdersTokens.colorTextSecondary,
+                        color: OrdersConstants.colorTextSecondary,
                       ),
                     ),
                   ],
@@ -206,7 +206,7 @@ class OrderCardWidget extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 12),
       decoration: const BoxDecoration(
         border: Border(
-          bottom: BorderSide(color: OrdersTokens.colorDivider, width: 2),
+          bottom: BorderSide(color: OrdersConstants.colorDivider, width: 2),
         ),
       ),
       child: Column(
@@ -216,24 +216,24 @@ class OrderCardWidget extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
               margin: const EdgeInsets.only(bottom: 8),
               decoration: BoxDecoration(
-                color: OrdersTokens.colorBgSecondary,
+                color: OrdersConstants.colorBgSecondary,
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: OrdersTokens.colorBorder),
+                border: Border.all(color: OrdersConstants.colorBorder),
               ),
               child: Row(
                 children: [
                   const Icon(
                     Icons.person,
                     size: 14,
-                    color: OrdersTokens.colorTextMuted,
+                    color: OrdersConstants.colorTextMuted,
                   ),
                   const SizedBox(width: 6),
                   Expanded(
                     child: Text(
                       order.customerName,
-                      style: OrdersTokens.bodySmall.copyWith(
+                      style: OrdersConstants.bodySmall.copyWith(
                         fontWeight: FontWeight.w600,
-                        color: OrdersTokens.colorTextPrimary,
+                        color: OrdersConstants.colorTextPrimary,
                       ),
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -266,7 +266,7 @@ class OrderCardWidget extends StatelessWidget {
                       const SizedBox(width: 4),
                       Text(
                         _getElapsedTime(),
-                        style: OrdersTokens.bodySmall.copyWith(
+                        style: OrdersConstants.bodySmall.copyWith(
                           fontWeight: FontWeight.w600,
                           color: const Color(0xFFD97706),
                         ),
@@ -300,7 +300,7 @@ class OrderCardWidget extends StatelessWidget {
                       const SizedBox(width: 4),
                       Text(
                         _formatTime(order.estimatedTime),
-                        style: OrdersTokens.bodySmall.copyWith(
+                        style: OrdersConstants.bodySmall.copyWith(
                           fontWeight: FontWeight.w600,
                           color: const Color(0xFF1E40AF),
                         ),
@@ -324,7 +324,7 @@ class OrderCardWidget extends StatelessWidget {
           colors: [Color(0xFFF9FAFB), Color(0xFFF3F4F6)],
         ),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: OrdersTokens.colorBorder),
+        border: Border.all(color: OrdersConstants.colorBorder),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -334,14 +334,14 @@ class OrderCardWidget extends StatelessWidget {
               const Icon(
                 Icons.shopping_bag,
                 size: 14,
-                color: OrdersTokens.colorTextMuted,
+                color: OrdersConstants.colorTextMuted,
               ),
               const SizedBox(width: 4),
               Text(
                 '${order.items.length} item${order.items.length != 1 ? 's' : ''}',
-                style: OrdersTokens.bodySmall.copyWith(
+                style: OrdersConstants.bodySmall.copyWith(
                   fontWeight: FontWeight.w700,
-                  color: OrdersTokens.colorTextPrimary,
+                  color: OrdersConstants.colorTextPrimary,
                 ),
               ),
             ],
@@ -351,8 +351,8 @@ class OrderCardWidget extends StatelessWidget {
             order.items.length <= 2
                 ? order.items.map((i) => i.name).join(', ')
                 : '${order.items[0].name} +${order.items.length - 1} more',
-            style: OrdersTokens.bodySmall.copyWith(
-              color: OrdersTokens.colorTextSecondary,
+            style: OrdersConstants.bodySmall.copyWith(
+              color: OrdersConstants.colorTextSecondary,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -377,7 +377,7 @@ class OrderCardWidget extends StatelessWidget {
         children: [
           Text(
             'Total',
-            style: OrdersTokens.bodyMedium.copyWith(
+            style: OrdersConstants.bodyMedium.copyWith(
               fontWeight: FontWeight.w700,
               color: const Color(0xFFD1D5DB),
             ),
@@ -403,12 +403,12 @@ class OrderCardWidget extends StatelessWidget {
         if (order.status == OrderStatus.active) ...[
           _buildActionButton(
             icon: Icons.restaurant,
-            color: OrdersTokens.colorActionCooking,
+            color: OrdersConstants.colorActionCooking,
             onTap: () => _showToast(context, 'Cooking'),
           ),
           _buildActionButton(
             icon: Icons.check_circle,
-            color: OrdersTokens.colorActionReady,
+            color: OrdersConstants.colorActionReady,
             filled: true,
             onTap: () => _showToast(context, 'Ready'),
           ),
@@ -416,25 +416,25 @@ class OrderCardWidget extends StatelessWidget {
         if (order.orderType == OrderType.delivery)
           _buildActionButton(
             icon: Icons.send,
-            color: OrdersTokens.colorActionDispatch,
+            color: OrdersConstants.colorActionDispatch,
             filled: true,
             onTap: () => _showToast(context, 'Dispatch'),
           ),
         if (order.paymentStatus == PaymentStatus.unpaid)
           _buildActionButton(
             icon: Icons.attach_money,
-            color: OrdersTokens.colorActionPay,
+            color: OrdersConstants.colorActionPay,
             filled: true,
             onTap: () => _showToast(context, 'Pay'),
           ),
         _buildActionButton(
           icon: Icons.edit,
-          color: OrdersTokens.colorTextSecondary,
+          color: OrdersConstants.colorTextSecondary,
           onTap: () => _showToast(context, 'Edit'),
         ),
         _buildActionButton(
           icon: Icons.cancel,
-          color: OrdersTokens.colorActionCancel,
+          color: OrdersConstants.colorActionCancel,
           onTap: () => _showToast(context, 'Cancel'),
         ),
       ],
@@ -449,13 +449,13 @@ class OrderCardWidget extends StatelessWidget {
   }) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(OrdersTokens.buttonRadiusSm),
+      borderRadius: BorderRadius.circular(OrdersConstants.buttonRadiusSm),
       child: Container(
         width: 60,
         height: 32,
         decoration: BoxDecoration(
           color: filled ? color : Colors.transparent,
-          borderRadius: BorderRadius.circular(OrdersTokens.buttonRadiusSm),
+          borderRadius: BorderRadius.circular(OrdersConstants.buttonRadiusSm),
           border: Border.all(
             color: filled ? color.withValues(alpha: 0.5) : color,
             width: 2,
@@ -469,133 +469,163 @@ class OrderCardWidget extends StatelessWidget {
   List<Color> _getChannelGradient() {
     switch (order.channel) {
       case OrderChannel.ubereats:
-        return [OrdersTokens.colorUberEatsStart, OrdersTokens.colorUberEatsEnd];
+        return [
+          OrdersConstants.colorUberEatsStart,
+          OrdersConstants.colorUberEatsEnd,
+        ];
       case OrderChannel.doordash:
-        return [OrdersTokens.colorDoorDashStart, OrdersTokens.colorDoorDashEnd];
+        return [
+          OrdersConstants.colorDoorDashStart,
+          OrdersConstants.colorDoorDashEnd,
+        ];
       case OrderChannel.menulog:
-        return [OrdersTokens.colorMenulogStart, OrdersTokens.colorMenulogEnd];
+        return [
+          OrdersConstants.colorMenulogStart,
+          OrdersConstants.colorMenulogEnd,
+        ];
       case OrderChannel.website:
-        return [OrdersTokens.colorWebsiteStart, OrdersTokens.colorWebsiteEnd];
+        return [
+          OrdersConstants.colorWebsiteStart,
+          OrdersConstants.colorWebsiteEnd,
+        ];
       case OrderChannel.app:
-        return [OrdersTokens.colorAppStart, OrdersTokens.colorAppEnd];
+        return [OrdersConstants.colorAppStart, OrdersConstants.colorAppEnd];
       case OrderChannel.qr:
-        return [OrdersTokens.colorQrStart, OrdersTokens.colorQrEnd];
+        return [OrdersConstants.colorQrStart, OrdersConstants.colorQrEnd];
       case OrderChannel.dinein:
-        return [OrdersTokens.colorDineInStart, OrdersTokens.colorDineInEnd];
+        return [
+          OrdersConstants.colorDineInStart,
+          OrdersConstants.colorDineInEnd,
+        ];
       case OrderChannel.takeaway:
-        return [OrdersTokens.colorTakeawayStart, OrdersTokens.colorTakeawayEnd];
+        return [
+          OrdersConstants.colorTakeawayStart,
+          OrdersConstants.colorTakeawayEnd,
+        ];
     }
   }
 
   List<Color> _getChannelBgGradient() {
     switch (order.channel) {
       case OrderChannel.ubereats:
-        return [OrdersTokens.colorUberEatsBg, OrdersTokens.colorUberEatsBg];
+        return [
+          OrdersConstants.colorUberEatsBg,
+          OrdersConstants.colorUberEatsBg,
+        ];
       case OrderChannel.doordash:
-        return [OrdersTokens.colorDoorDashBg, OrdersTokens.colorDoorDashBg];
+        return [
+          OrdersConstants.colorDoorDashBg,
+          OrdersConstants.colorDoorDashBg,
+        ];
       case OrderChannel.menulog:
-        return [OrdersTokens.colorMenulogBg, OrdersTokens.colorMenulogBg];
+        return [OrdersConstants.colorMenulogBg, OrdersConstants.colorMenulogBg];
       case OrderChannel.website:
-        return [OrdersTokens.colorWebsiteBg, OrdersTokens.colorWebsiteBg];
+        return [OrdersConstants.colorWebsiteBg, OrdersConstants.colorWebsiteBg];
       case OrderChannel.app:
-        return [OrdersTokens.colorAppBg, OrdersTokens.colorAppBg];
+        return [OrdersConstants.colorAppBg, OrdersConstants.colorAppBg];
       case OrderChannel.qr:
-        return [OrdersTokens.colorQrBg, OrdersTokens.colorQrBg];
+        return [OrdersConstants.colorQrBg, OrdersConstants.colorQrBg];
       case OrderChannel.dinein:
-        return [OrdersTokens.colorDineInBg, OrdersTokens.colorDineInBg];
+        return [OrdersConstants.colorDineInBg, OrdersConstants.colorDineInBg];
       case OrderChannel.takeaway:
-        return [OrdersTokens.colorTakeawayBg, OrdersTokens.colorTakeawayBg];
+        return [
+          OrdersConstants.colorTakeawayBg,
+          OrdersConstants.colorTakeawayBg,
+        ];
     }
   }
 
   Color _getChannelTextColor() {
     switch (order.channel) {
       case OrderChannel.ubereats:
-        return OrdersTokens.colorUberEatsText;
+        return OrdersConstants.colorUberEatsText;
       case OrderChannel.doordash:
-        return OrdersTokens.colorDoorDashText;
+        return OrdersConstants.colorDoorDashText;
       case OrderChannel.menulog:
-        return OrdersTokens.colorMenulogText;
+        return OrdersConstants.colorMenulogText;
       case OrderChannel.website:
-        return OrdersTokens.colorWebsiteText;
+        return OrdersConstants.colorWebsiteText;
       case OrderChannel.app:
-        return OrdersTokens.colorAppText;
+        return OrdersConstants.colorAppText;
       case OrderChannel.qr:
-        return OrdersTokens.colorQrText;
+        return OrdersConstants.colorQrText;
       case OrderChannel.dinein:
-        return OrdersTokens.colorDineInText;
+        return OrdersConstants.colorDineInText;
       case OrderChannel.takeaway:
-        return OrdersTokens.colorTakeawayText;
+        return OrdersConstants.colorTakeawayText;
     }
   }
 
   Color _getChannelBorderColor() {
     switch (order.channel) {
       case OrderChannel.ubereats:
-        return OrdersTokens.colorUberEatsBorder;
+        return OrdersConstants.colorUberEatsBorder;
       case OrderChannel.doordash:
-        return OrdersTokens.colorDoorDashBorder;
+        return OrdersConstants.colorDoorDashBorder;
       case OrderChannel.menulog:
-        return OrdersTokens.colorMenulogBorder;
+        return OrdersConstants.colorMenulogBorder;
       case OrderChannel.website:
-        return OrdersTokens.colorWebsiteBorder;
+        return OrdersConstants.colorWebsiteBorder;
       case OrderChannel.app:
-        return OrdersTokens.colorAppBorder;
+        return OrdersConstants.colorAppBorder;
       case OrderChannel.qr:
-        return OrdersTokens.colorQrBorder;
+        return OrdersConstants.colorQrBorder;
       case OrderChannel.dinein:
-        return OrdersTokens.colorDineInBorder;
+        return OrdersConstants.colorDineInBorder;
       case OrderChannel.takeaway:
-        return OrdersTokens.colorTakeawayBorder;
+        return OrdersConstants.colorTakeawayBorder;
     }
   }
 
   List<Color> _getStatusGradient() {
     if (order.status == OrderStatus.cancelled) {
       return [
-        OrdersTokens.colorStatusCancelledBg,
-        OrdersTokens.colorStatusCancelledBg,
+        OrdersConstants.colorStatusCancelledBg,
+        OrdersConstants.colorStatusCancelledBg,
       ];
     }
     if (order.status == OrderStatus.completed) {
       return [
-        OrdersTokens.colorStatusCompletedBg,
-        OrdersTokens.colorStatusCompletedBg,
+        OrdersConstants.colorStatusCompletedBg,
+        OrdersConstants.colorStatusCompletedBg,
       ];
     }
     if (order.paymentStatus == PaymentStatus.unpaid) {
       return [
-        OrdersTokens.colorStatusUnpaidBg,
-        OrdersTokens.colorStatusUnpaidBg,
+        OrdersConstants.colorStatusUnpaidBg,
+        OrdersConstants.colorStatusUnpaidBg,
       ];
     }
-    return [OrdersTokens.colorStatusActiveBg, OrdersTokens.colorStatusActiveBg];
+    return [
+      OrdersConstants.colorStatusActiveBg,
+      OrdersConstants.colorStatusActiveBg,
+    ];
   }
 
   Color _getStatusTextColor() {
     if (order.status == OrderStatus.cancelled) {
-      return OrdersTokens.colorStatusCancelledText;
+      return OrdersConstants.colorStatusCancelledText;
     }
     if (order.status == OrderStatus.completed) {
-      return OrdersTokens.colorStatusCompletedText;
+      return OrdersConstants.colorStatusCompletedText;
     }
     if (order.paymentStatus == PaymentStatus.unpaid) {
-      return OrdersTokens.colorStatusUnpaidText;
+      return OrdersConstants.colorStatusUnpaidText;
     }
-    return OrdersTokens.colorStatusActiveText;
+    return OrdersConstants.colorStatusActiveText;
   }
 
   Color _getStatusBorderColor() {
     if (order.status == OrderStatus.cancelled) {
-      return OrdersTokens.colorStatusCancelledBorder;
+      return OrdersConstants.colorStatusCancelledBorder;
     }
     if (order.status == OrderStatus.completed) {
-      return OrdersTokens.colorStatusCompletedBorder;
+      return OrdersConstants.colorStatusCompletedBorder;
     }
     if (order.paymentStatus == PaymentStatus.unpaid) {
-      return OrdersTokens.colorStatusUnpaidBorder;
+      return OrdersConstants.colorStatusUnpaidBorder;
     }
-    return OrdersTokens.colorStatusActiveBorder;
+    return OrdersConstants.colorStatusActiveBorder;
   }
 
   String _getStatusLabel() {

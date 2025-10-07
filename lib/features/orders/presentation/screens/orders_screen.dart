@@ -3,7 +3,7 @@ import '../../../../core/navigation/app_router.dart';
 import '../../../../core/widgets/sidebar_nav.dart';
 import '../../../orders/data/datasources/mock_orders_data.dart';
 import '../../../orders/domain/entities/order_entity.dart';
-import '../orders_tokens.dart';
+import '../constants/orders_constants.dart';
 import '../widgets/order_card_widget.dart';
 
 class OrdersScreen extends StatefulWidget {
@@ -103,10 +103,10 @@ class _OrdersScreenState extends State<OrdersScreen> {
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
-        border: Border(bottom: BorderSide(color: OrdersTokens.colorBorder)),
+        border: Border(bottom: BorderSide(color: OrdersConstants.colorBorder)),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(OrdersTokens.paddingHeader),
+        padding: const EdgeInsets.all(OrdersConstants.paddingHeader),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -119,15 +119,15 @@ class _OrdersScreenState extends State<OrdersScreen> {
                     children: [
                       Text(
                         'Order Management',
-                        style: OrdersTokens.headingLarge.copyWith(
-                          color: OrdersTokens.colorTextPrimary,
+                        style: OrdersConstants.headingLarge.copyWith(
+                          color: OrdersConstants.colorTextPrimary,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         'Track and manage all your orders in real-time',
-                        style: OrdersTokens.bodySmall.copyWith(
-                          color: OrdersTokens.colorTextMuted,
+                        style: OrdersConstants.bodySmall.copyWith(
+                          color: OrdersConstants.colorTextMuted,
                         ),
                       ),
                     ],
@@ -140,7 +140,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                     Container(
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        border: Border.all(color: OrdersTokens.colorBorder),
+                        border: Border.all(color: OrdersConstants.colorBorder),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Row(
@@ -164,7 +164,9 @@ class _OrdersScreenState extends State<OrdersScreen> {
                       onPressed: () => setState(() {}),
                       style: IconButton.styleFrom(
                         backgroundColor: Colors.white,
-                        side: const BorderSide(color: OrdersTokens.colorBorder),
+                        side: const BorderSide(
+                          color: OrdersConstants.colorBorder,
+                        ),
                       ),
                     ),
                   ],
@@ -209,7 +211,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
         child: Icon(
           icon,
           size: 16,
-          color: isActive ? Colors.white : OrdersTokens.colorTextMuted,
+          color: isActive ? Colors.white : OrdersConstants.colorTextMuted,
         ),
       ),
     );
@@ -224,8 +226,8 @@ class _OrdersScreenState extends State<OrdersScreen> {
             value: '${_stats['active']}',
             icon: Icons.access_time,
             gradientColors: const [
-              OrdersTokens.colorKpiActiveStart,
-              OrdersTokens.colorKpiActiveEnd,
+              OrdersConstants.colorKpiActiveStart,
+              OrdersConstants.colorKpiActiveEnd,
             ],
           ),
         ),
@@ -236,8 +238,8 @@ class _OrdersScreenState extends State<OrdersScreen> {
             value: '${_stats['completed']}',
             icon: Icons.check_circle,
             gradientColors: const [
-              OrdersTokens.colorKpiCompletedStart,
-              OrdersTokens.colorKpiCompletedEnd,
+              OrdersConstants.colorKpiCompletedStart,
+              OrdersConstants.colorKpiCompletedEnd,
             ],
           ),
         ),
@@ -248,8 +250,8 @@ class _OrdersScreenState extends State<OrdersScreen> {
             value: '${_stats['cancelled']}',
             icon: Icons.cancel,
             gradientColors: const [
-              OrdersTokens.colorKpiCancelledStart,
-              OrdersTokens.colorKpiCancelledEnd,
+              OrdersConstants.colorKpiCancelledStart,
+              OrdersConstants.colorKpiCancelledEnd,
             ],
           ),
         ),
@@ -260,8 +262,8 @@ class _OrdersScreenState extends State<OrdersScreen> {
             value: '\$${_stats['revenue'].toStringAsFixed(0)}',
             icon: Icons.trending_up,
             gradientColors: const [
-              OrdersTokens.colorKpiRevenueStart,
-              OrdersTokens.colorKpiRevenueEnd,
+              OrdersConstants.colorKpiRevenueStart,
+              OrdersConstants.colorKpiRevenueEnd,
             ],
           ),
         ),
@@ -280,7 +282,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
       decoration: BoxDecoration(
         gradient: LinearGradient(colors: gradientColors),
         borderRadius: BorderRadius.circular(12),
-        boxShadow: OrdersTokens.shadowCard,
+        boxShadow: OrdersConstants.shadowCard,
       ),
       child: Row(
         children: [
@@ -290,7 +292,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
               children: [
                 Text(
                   label,
-                  style: OrdersTokens.caption.copyWith(
+                  style: OrdersConstants.caption.copyWith(
                     color: Colors.white.withValues(alpha: 0.9),
                   ),
                 ),
@@ -324,24 +326,24 @@ class _OrdersScreenState extends State<OrdersScreen> {
       onChanged: (value) => setState(() => _searchQuery = value),
       decoration: InputDecoration(
         hintText: 'Search orders...',
-        hintStyle: OrdersTokens.bodyMedium.copyWith(
-          color: OrdersTokens.colorTextMuted,
+        hintStyle: OrdersConstants.bodyMedium.copyWith(
+          color: OrdersConstants.colorTextMuted,
         ),
         prefixIcon: const Icon(Icons.search, size: 16),
         filled: true,
         fillColor: Colors.white,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: OrdersTokens.colorBorder),
+          borderSide: const BorderSide(color: OrdersConstants.colorBorder),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: OrdersTokens.colorBorder),
+          borderSide: const BorderSide(color: OrdersConstants.colorBorder),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
           borderSide: const BorderSide(
-            color: OrdersTokens.colorKpiActiveStart,
+            color: OrdersConstants.colorKpiActiveStart,
             width: 2,
           ),
         ),
@@ -356,7 +358,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
   Widget _buildTabs() {
     return Container(
       decoration: BoxDecoration(
-        color: OrdersTokens.colorBgSecondary,
+        color: OrdersConstants.colorBgSecondary,
         borderRadius: BorderRadius.circular(10),
       ),
       padding: const EdgeInsets.all(4),
@@ -404,7 +406,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
         decoration: BoxDecoration(
           color: isActive ? Colors.white : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
-          boxShadow: isActive ? OrdersTokens.shadowCard : null,
+          boxShadow: isActive ? OrdersConstants.shadowCard : null,
         ),
         child: Row(
           children: [
@@ -412,17 +414,17 @@ class _OrdersScreenState extends State<OrdersScreen> {
               icon,
               size: 14,
               color: isActive
-                  ? OrdersTokens.colorTextPrimary
-                  : OrdersTokens.colorTextMuted,
+                  ? OrdersConstants.colorTextPrimary
+                  : OrdersConstants.colorTextMuted,
             ),
             const SizedBox(width: 6),
             Text(
               '$label ($count)',
-              style: OrdersTokens.bodySmall.copyWith(
+              style: OrdersConstants.bodySmall.copyWith(
                 fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
                 color: isActive
-                    ? OrdersTokens.colorTextPrimary
-                    : OrdersTokens.colorTextMuted,
+                    ? OrdersConstants.colorTextPrimary
+                    : OrdersConstants.colorTextMuted,
               ),
             ),
           ],
@@ -442,8 +444,8 @@ class _OrdersScreenState extends State<OrdersScreen> {
           children: [
             Text(
               'CHANNELS:',
-              style: OrdersTokens.caption.copyWith(
-                color: OrdersTokens.colorTextMuted,
+              style: OrdersConstants.caption.copyWith(
+                color: OrdersConstants.colorTextMuted,
               ),
             ),
             _buildFilterChip(
@@ -482,23 +484,25 @@ class _OrdersScreenState extends State<OrdersScreen> {
   }) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(OrdersTokens.chipRadius),
+      borderRadius: BorderRadius.circular(OrdersConstants.chipRadius),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
           gradient: isSelected ? LinearGradient(colors: gradient) : null,
           color: isSelected ? null : Colors.white,
-          borderRadius: BorderRadius.circular(OrdersTokens.chipRadius),
+          borderRadius: BorderRadius.circular(OrdersConstants.chipRadius),
           border: Border.all(
-            color: isSelected ? Colors.transparent : OrdersTokens.colorBorder,
+            color: isSelected
+                ? Colors.transparent
+                : OrdersConstants.colorBorder,
           ),
-          boxShadow: OrdersTokens.shadowCard,
+          boxShadow: OrdersConstants.shadowCard,
         ),
         child: Text(
           label,
-          style: OrdersTokens.bodySmall.copyWith(
+          style: OrdersConstants.bodySmall.copyWith(
             fontWeight: FontWeight.w600,
-            color: isSelected ? Colors.white : OrdersTokens.colorTextPrimary,
+            color: isSelected ? Colors.white : OrdersConstants.colorTextPrimary,
           ),
         ),
       ),
@@ -517,8 +521,8 @@ class _OrdersScreenState extends State<OrdersScreen> {
       padding: const EdgeInsets.all(16),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: crossAxisCount,
-        crossAxisSpacing: OrdersTokens.gapBetweenCards,
-        mainAxisSpacing: OrdersTokens.gapBetweenCards,
+        crossAxisSpacing: OrdersConstants.gapBetweenCards,
+        mainAxisSpacing: OrdersConstants.gapBetweenCards,
         childAspectRatio: 0.75,
       ),
       itemCount: _filteredOrders.length,
@@ -529,9 +533,9 @@ class _OrdersScreenState extends State<OrdersScreen> {
   }
 
   int _getCrossAxisCount(double width) {
-    if (width >= OrdersTokens.breakpointDesktop) return 4;
-    if (width >= OrdersTokens.breakpointTablet) return 3;
-    if (width >= OrdersTokens.breakpointMobile) return 2;
+    if (width >= OrdersConstants.breakpointDesktop) return 4;
+    if (width >= OrdersConstants.breakpointTablet) return 3;
+    if (width >= OrdersConstants.breakpointMobile) return 2;
     return 1;
   }
 
@@ -552,21 +556,21 @@ class _OrdersScreenState extends State<OrdersScreen> {
             child: const Icon(
               Icons.shopping_bag,
               size: 40,
-              color: OrdersTokens.colorTextMuted,
+              color: OrdersConstants.colorTextMuted,
             ),
           ),
           const SizedBox(height: 16),
           Text(
             'No orders found',
-            style: OrdersTokens.headingSmall.copyWith(
-              color: OrdersTokens.colorTextPrimary,
+            style: OrdersConstants.headingSmall.copyWith(
+              color: OrdersConstants.colorTextPrimary,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             'Try adjusting your filters or search terms',
-            style: OrdersTokens.bodyMedium.copyWith(
-              color: OrdersTokens.colorTextMuted,
+            style: OrdersConstants.bodyMedium.copyWith(
+              color: OrdersConstants.colorTextMuted,
             ),
           ),
         ],
@@ -577,21 +581,39 @@ class _OrdersScreenState extends State<OrdersScreen> {
   List<Color> _getChannelGradient(OrderChannel channel) {
     switch (channel) {
       case OrderChannel.ubereats:
-        return [OrdersTokens.colorUberEatsStart, OrdersTokens.colorUberEatsEnd];
+        return [
+          OrdersConstants.colorUberEatsStart,
+          OrdersConstants.colorUberEatsEnd,
+        ];
       case OrderChannel.doordash:
-        return [OrdersTokens.colorDoorDashStart, OrdersTokens.colorDoorDashEnd];
+        return [
+          OrdersConstants.colorDoorDashStart,
+          OrdersConstants.colorDoorDashEnd,
+        ];
       case OrderChannel.menulog:
-        return [OrdersTokens.colorMenulogStart, OrdersTokens.colorMenulogEnd];
+        return [
+          OrdersConstants.colorMenulogStart,
+          OrdersConstants.colorMenulogEnd,
+        ];
       case OrderChannel.website:
-        return [OrdersTokens.colorWebsiteStart, OrdersTokens.colorWebsiteEnd];
+        return [
+          OrdersConstants.colorWebsiteStart,
+          OrdersConstants.colorWebsiteEnd,
+        ];
       case OrderChannel.app:
-        return [OrdersTokens.colorAppStart, OrdersTokens.colorAppEnd];
+        return [OrdersConstants.colorAppStart, OrdersConstants.colorAppEnd];
       case OrderChannel.qr:
-        return [OrdersTokens.colorQrStart, OrdersTokens.colorQrEnd];
+        return [OrdersConstants.colorQrStart, OrdersConstants.colorQrEnd];
       case OrderChannel.dinein:
-        return [OrdersTokens.colorDineInStart, OrdersTokens.colorDineInEnd];
+        return [
+          OrdersConstants.colorDineInStart,
+          OrdersConstants.colorDineInEnd,
+        ];
       case OrderChannel.takeaway:
-        return [OrdersTokens.colorTakeawayStart, OrdersTokens.colorTakeawayEnd];
+        return [
+          OrdersConstants.colorTakeawayStart,
+          OrdersConstants.colorTakeawayEnd,
+        ];
     }
   }
 }

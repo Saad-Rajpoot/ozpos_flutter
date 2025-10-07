@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import '../../core/navigation/app_router.dart';
-import '../../core/constants/app_colors.dart';
-import '../../core/constants/app_sizes.dart';
-import '../../core/constants/app_spacing.dart';
-import '../../core/constants/app_typography.dart';
-import '../../core/constants/app_radius.dart';
+import '../../../../core/navigation/app_router.dart';
+import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_sizes.dart';
+import '../../../../core/constants/app_spacing.dart';
+import '../../../../core/constants/app_typography.dart';
+import '../../../../core/constants/app_radius.dart';
 
 /// Active Orders Panel - exact match to reference image
 /// Fixed width 360dp on desktop/large, collapsible on compact

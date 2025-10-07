@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../core/navigation/app_router.dart';
-import '../../core/navigation/navigation_service.dart';
-import '../checkout/presentation/bloc/cart_bloc.dart';
-import '../tables/presentation/widgets/table_selection_modal.dart';
+import '../../../tables/presentation/widgets/table_selection_modal.dart';
+import '../../../../core/navigation/app_router.dart';
+import '../../../../core/navigation/navigation_service.dart';
+import '../bloc/cart_bloc.dart';
 
 /// Cart Pane - Right sidebar for order management
 /// Width: 360px (desktop), 320px (tablet-L), drawer (mobile)
