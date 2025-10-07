@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../../../core/theme/tokens.dart';
+import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_spacing.dart';
+import '../../../../core/constants/app_typography.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});

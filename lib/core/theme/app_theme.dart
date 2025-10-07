@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import 'tokens.dart';
+import '../constants/app_colors.dart';
+import '../constants/app_radius.dart';
+import '../constants/app_spacing.dart';
+import '../constants/app_typography.dart';
 
 class AppTheme {
   static ThemeData get lightTheme {
@@ -93,21 +96,45 @@ class AppTheme {
         ),
       ),
       textTheme: TextTheme(
-        displayLarge: AppTypography.heading1.copyWith(color: AppColors.textPrimary),
-        displayMedium: AppTypography.heading2.copyWith(color: AppColors.textPrimary),
-        displaySmall: AppTypography.heading3.copyWith(color: AppColors.textPrimary),
-        headlineLarge: AppTypography.heading1.copyWith(color: AppColors.textPrimary),
-        headlineMedium: AppTypography.heading2.copyWith(color: AppColors.textPrimary),
-        headlineSmall: AppTypography.heading3.copyWith(color: AppColors.textPrimary),
-        titleLarge: AppTypography.heading2.copyWith(color: AppColors.textPrimary),
-        titleMedium: AppTypography.heading3.copyWith(color: AppColors.textPrimary),
+        displayLarge: AppTypography.heading1.copyWith(
+          color: AppColors.textPrimary,
+        ),
+        displayMedium: AppTypography.heading2.copyWith(
+          color: AppColors.textPrimary,
+        ),
+        displaySmall: AppTypography.heading3.copyWith(
+          color: AppColors.textPrimary,
+        ),
+        headlineLarge: AppTypography.heading1.copyWith(
+          color: AppColors.textPrimary,
+        ),
+        headlineMedium: AppTypography.heading2.copyWith(
+          color: AppColors.textPrimary,
+        ),
+        headlineSmall: AppTypography.heading3.copyWith(
+          color: AppColors.textPrimary,
+        ),
+        titleLarge: AppTypography.heading2.copyWith(
+          color: AppColors.textPrimary,
+        ),
+        titleMedium: AppTypography.heading3.copyWith(
+          color: AppColors.textPrimary,
+        ),
         titleSmall: AppTypography.body1.copyWith(color: AppColors.textPrimary),
         bodyLarge: AppTypography.body1.copyWith(color: AppColors.textPrimary),
         bodyMedium: AppTypography.body2.copyWith(color: AppColors.textPrimary),
-        bodySmall: AppTypography.caption.copyWith(color: AppColors.textSecondary),
-        labelLarge: AppTypography.button.copyWith(color: AppColors.textOnPrimary),
-        labelMedium: AppTypography.overline.copyWith(color: AppColors.textSecondary),
-        labelSmall: AppTypography.caption.copyWith(color: AppColors.textSecondary),
+        bodySmall: AppTypography.caption.copyWith(
+          color: AppColors.textSecondary,
+        ),
+        labelLarge: AppTypography.button.copyWith(
+          color: AppColors.textOnPrimary,
+        ),
+        labelMedium: AppTypography.overline.copyWith(
+          color: AppColors.textSecondary,
+        ),
+        labelSmall: AppTypography.caption.copyWith(
+          color: AppColors.textSecondary,
+        ),
       ),
     );
   }

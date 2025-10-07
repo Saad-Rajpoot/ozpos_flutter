@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
-import '../theme/tokens.dart';
 import '../navigation/app_router.dart';
 import '../navigation/navigation_service.dart';
+import '../constants/app_sizes.dart';
+import '../constants/app_colors.dart';
+import '../constants/app_spacing.dart';
+import '../constants/app_radius.dart';
 
 /// Sidebar Navigation - Icon-only dark slate design from reference
 /// Fixed width 80dp

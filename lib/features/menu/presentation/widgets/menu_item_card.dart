@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../../../core/theme/tokens.dart';
 import '../../domain/entities/menu_item_entity.dart';
 import 'item_configurator_dialog.dart';
+import '../../../../core/constants/app_colors.dart';
 
 /// Menu Item Card - Pixel-perfect match to reference
 /// Shows image, name, description, price with Customise/Add buttons

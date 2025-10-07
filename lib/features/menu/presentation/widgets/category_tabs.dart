@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../../../core/theme/tokens.dart';
+import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_spacing.dart';
+import '../../../../core/constants/app_radius.dart';
+import '../../../../core/constants/app_typography.dart';
 import '../../domain/entities/menu_category_entity.dart';
 
 class CategoryTabs extends StatelessWidget {

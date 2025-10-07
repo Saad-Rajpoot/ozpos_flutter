@@ -8,7 +8,7 @@ import 'core/config/environment_config.dart';
 import 'core/di/injection_container.dart' as di;
 import 'core/navigation/app_router.dart';
 import 'core/navigation/navigation_service.dart';
-import 'core/observers/sentry_bloc_observer.dart';
+import 'core/utils/sentry_bloc_observer.dart';
 import 'core/services/sentry_service.dart';
 import 'core/theme/app_theme.dart';
 import 'features/menu/presentation/bloc/menu_bloc.dart';

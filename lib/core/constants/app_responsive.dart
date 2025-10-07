@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../theme/tokens.dart';
+import 'app_sizes.dart';
+import 'app_spacing.dart';
 
 /// Breakpoint categories matching spec:
 /// compact: ≤900dp (tablet portrait 8-10")

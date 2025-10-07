@@ -17,6 +17,7 @@ import '../../features/reservations/presentation/screens/reservations_screen.dar
 import '../../features/reports/presentation/screens/reports_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
 import '../../features/tables/presentation/screens/move_table_screen.dart';
+import '../widgets/error_screen.dart';
 
 /// Centralized route management
 ///
@@ -152,32 +153,5 @@ class AppRouter {
           settings: settings,
         );
     }
-  }
-}
-
-/// Error screen for unknown routes
-class ErrorScreen extends StatelessWidget {
-  const ErrorScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Error')),
-      body: const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.error_outline, size: 64, color: Colors.red),
-            SizedBox(height: 16),
-            Text('Page not found', style: TextStyle(fontSize: 24)),
-            SizedBox(height: 8),
-            Text(
-              'The requested page could not be found.',
-              style: TextStyle(fontSize: 16),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }

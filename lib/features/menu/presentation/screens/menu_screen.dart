@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../menu/data/seed_data.dart';
 import '../../domain/entities/menu_item_entity.dart';
 import '../../../../core/navigation/app_router.dart';
-import '../../../../core/utils/responsive.dart';
+import '../../../../core/constants/app_responsive.dart';
 import '../widgets/menu_item_card.dart';
 import '../../../pos/cart_pane.dart';
 import '../../../../core/widgets/sidebar_nav.dart';
