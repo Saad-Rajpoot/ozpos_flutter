@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/navigation/app_router.dart';
 import '../../../../core/widgets/sidebar_nav.dart';
-import '../../../pos/domain/entities/reservation_entity.dart';
+import '../../../reservations/domain/entities/reservation_entity.dart';
 import '../widgets/reservation_form_modal.dart';
 
 class ReservationsScreen extends StatefulWidget {

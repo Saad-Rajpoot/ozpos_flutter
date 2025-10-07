@@ -1,17 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../domain/entities/payment_method.dart';
-import '../../../domain/entities/tender_entity.dart';
-import '../../bloc/checkout_bloc.dart';
+import '../../../../checkout/domain/entities/payment_method.dart';
+import '../../../../checkout/domain/entities/tender_entity.dart';
+import '../../../presentation/bloc/checkout_bloc.dart';
 
 /// Split Payment Section - Manage multiple tenders and split evenly
 class SplitPaymentSection extends StatelessWidget {
   final CheckoutLoaded state;
 
-  const SplitPaymentSection({
-    super.key,
-    required this.state,
-  });
+  const SplitPaymentSection({super.key, required this.state});
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +32,7 @@ class SplitPaymentSection extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            
+
             // Split evenly buttons
             Row(
               children: [
@@ -48,7 +45,11 @@ class SplitPaymentSection extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 12),
-                ...[[2, '2'], [3, '3'], [4, '4']].map((pair) {
+                ...[
+                  [2, '2'],
+                  [3, '3'],
+                  [4, '4'],
+                ].map((pair) {
                   final ways = pair[0] as int;
                   final label = pair[1] as String;
                   return Expanded(
@@ -56,7 +57,9 @@ class SplitPaymentSection extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 4),
                       child: OutlinedButton(
                         onPressed: () {
-                          context.read<CheckoutBloc>().add(SplitEvenly(ways: ways));
+                          context.read<CheckoutBloc>().add(
+                            SplitEvenly(ways: ways),
+                          );
                         },
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 10),
@@ -79,9 +82,9 @@ class SplitPaymentSection extends StatelessWidget {
                 }),
               ],
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Remaining amount
             Container(
               padding: const EdgeInsets.all(12),
@@ -123,9 +126,9 @@ class SplitPaymentSection extends StatelessWidget {
                 ],
               ),
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Tenders list
             if (state.tenders.isEmpty)
               Center(
@@ -159,9 +162,9 @@ class SplitPaymentSection extends StatelessWidget {
                   );
                 }).toList(),
               ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Add tender button
             if (state.splitRemaining > 0)
               OutlinedButton.icon(
@@ -202,11 +205,7 @@ class SplitPaymentSection extends StatelessWidget {
               color: statusColor.withOpacity(0.1),
               borderRadius: BorderRadius.circular(6),
             ),
-            child: Icon(
-              tender.method.icon,
-              size: 20,
-              color: statusColor,
-            ),
+            child: Icon(tender.method.icon, size: 20, color: statusColor),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -272,7 +271,9 @@ class SplitPaymentSection extends StatelessWidget {
       context: context,
       builder: (dialogContext) => StatefulBuilder(
         builder: (statefulContext, setState) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
           title: const Text('Add Tender'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -366,8 +367,8 @@ class SplitPaymentSection extends StatelessWidget {
                 final amount = double.tryParse(amountController.text) ?? 0.0;
                 if (amount > 0) {
                   context.read<CheckoutBloc>().add(
-                        AddTender(method: selectedMethod, amount: amount),
-                      );
+                    AddTender(method: selectedMethod, amount: amount),
+                  );
                   Navigator.of(dialogContext).pop();
                 }
               },

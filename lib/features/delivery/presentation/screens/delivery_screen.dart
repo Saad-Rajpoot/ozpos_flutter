@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../../../core/navigation/app_router.dart';
 import '../../../../core/widgets/sidebar_nav.dart';
-import '../../../pos/domain/entities/delivery_entities.dart';
-import '../../../pos/data/datasources/mock_delivery_data.dart';
+import '../../../delivery/domain/entities/delivery_entities.dart';
+import '../../../delivery/data/datasources/mock_delivery_data.dart';
 import '../delivery_tokens.dart';
 import '../widgets/add_driver_modal.dart';
 

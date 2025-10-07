@@ -1,16 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../bloc/checkout_bloc.dart';
+import '../../../presentation/bloc/checkout_bloc.dart';
 
 /// Cash Keypad - Numeric input with quick amount buttons
 /// Matches React prototype keypad design
 class CashKeypad extends StatelessWidget {
   final CheckoutLoaded state;
 
-  const CashKeypad({
-    super.key,
-    required this.state,
-  });
+  const CashKeypad({super.key, required this.state});
 
   @override
   Widget build(BuildContext context) {
@@ -20,14 +17,14 @@ class CashKeypad extends StatelessWidget {
         // Cash display
         _buildCashDisplay(context),
         const SizedBox(height: 12),
-        
+
         // Quick amount buttons
         _buildQuickAmounts(context),
         const SizedBox(height: 12),
-        
+
         // Numeric keypad
         _buildNumericKeypad(context),
-        
+
         // Change display
         if (state.cashReceivedNum > 0) ...[
           const SizedBox(height: 12),
@@ -41,14 +38,16 @@ class CashKeypad extends StatelessWidget {
     final cashText = state.cashReceived.isEmpty ? '0.00' : state.cashReceived;
     final grandTotal = state.grandTotal;
     final isSufficient = state.cashReceivedNum >= grandTotal;
-    
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: const Color(0xFFF5F5F5),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: isSufficient ? const Color(0xFF4CAF50) : const Color(0xFFE0E0E0),
+          color: isSufficient
+              ? const Color(0xFF4CAF50)
+              : const Color(0xFFE0E0E0),
           width: isSufficient ? 2 : 1,
         ),
       ),
@@ -77,7 +76,10 @@ class CashKeypad extends StatelessWidget {
               ),
               if (isSufficient && state.cashReceivedNum > 0)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFF4CAF50),
                     borderRadius: BorderRadius.circular(4),
@@ -106,7 +108,7 @@ class CashKeypad extends StatelessWidget {
 
   Widget _buildQuickAmounts(BuildContext context) {
     final amounts = [5, 10, 20, 50, 100];
-    
+
     return Row(
       children: amounts.map((amount) {
         return Expanded(
@@ -114,7 +116,9 @@ class CashKeypad extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 4),
             child: OutlinedButton(
               onPressed: () {
-                context.read<CheckoutBloc>().add(QuickAmountPress(amount: amount));
+                context.read<CheckoutBloc>().add(
+                  QuickAmountPress(amount: amount),
+                );
               },
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 12),
@@ -148,20 +152,22 @@ class CashKeypad extends StatelessWidget {
 
     return Column(
       children: [
-        ...keys.map((row) => Padding(
-          padding: const EdgeInsets.only(bottom: 8),
-          child: Row(
-            children: row.map((key) {
-              return Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  child: _buildKeypadButton(context, key),
-                ),
-              );
-            }).toList(),
+        ...keys.map(
+          (row) => Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Row(
+              children: row.map((key) {
+                return Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: _buildKeypadButton(context, key),
+                  ),
+                );
+              }).toList(),
+            ),
           ),
-        )),
-        
+        ),
+
         // Backspace button (full width)
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 4),
@@ -171,7 +177,11 @@ class CashKeypad extends StatelessWidget {
     );
   }
 
-  Widget _buildKeypadButton(BuildContext context, String key, {bool isBackspace = false}) {
+  Widget _buildKeypadButton(
+    BuildContext context,
+    String key, {
+    bool isBackspace = false,
+  }) {
     return SizedBox(
       height: 52,
       child: ElevatedButton(
@@ -185,7 +195,9 @@ class CashKeypad extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
             side: BorderSide(
-              color: isBackspace ? const Color(0xFFD32F2F) : const Color(0xFFE0E0E0),
+              color: isBackspace
+                  ? const Color(0xFFD32F2F)
+                  : const Color(0xFFE0E0E0),
             ),
           ),
         ),
@@ -202,18 +214,15 @@ class CashKeypad extends StatelessWidget {
 
   Widget _buildChangeDisplay(BuildContext context) {
     final change = state.cashChange;
-    
+
     if (change <= 0) return const SizedBox.shrink();
-    
+
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: const Color(0xFF4CAF50).withOpacity(0.1),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: const Color(0xFF4CAF50),
-          width: 1,
-        ),
+        border: Border.all(color: const Color(0xFF4CAF50), width: 1),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,

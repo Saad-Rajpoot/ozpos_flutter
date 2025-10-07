@@ -2,9 +2,9 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
-import '../../domain/entities/payment_method.dart';
-import '../../domain/entities/tender_entity.dart';
-import '../../domain/entities/voucher_entity.dart';
+import '../../../checkout/domain/entities/payment_method.dart';
+import '../../../checkout/domain/entities/tender_entity.dart';
+import '../../../checkout/domain/entities/voucher_entity.dart';
 import './cart_bloc.dart';
 
 // ============================================================================

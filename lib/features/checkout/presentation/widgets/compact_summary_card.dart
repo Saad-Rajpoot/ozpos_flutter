@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../pos/presentation/bloc/checkout_bloc.dart';
+import '../../../checkout/presentation/bloc/checkout_bloc.dart';
 import '../checkout_tokens.dart';
 
 /// Compact summary card - shows subtotal, tax, and total

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../pos/presentation/bloc/checkout_bloc.dart';
-import '../../../pos/domain/entities/payment_method.dart';
+import '../../../checkout/presentation/bloc/checkout_bloc.dart';
+import '../../../checkout/domain/entities/payment_method.dart';
 import '../checkout_tokens.dart';
 import 'compact_keypad.dart';
 

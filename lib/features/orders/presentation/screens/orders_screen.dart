@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../../../core/navigation/app_router.dart';
 import '../../../../core/widgets/sidebar_nav.dart';
-import '../../../pos/data/datasources/mock_orders_data.dart';
-import '../../../pos/domain/entities/order_entity.dart';
+import '../../../orders/data/datasources/mock_orders_data.dart';
+import '../../../orders/domain/entities/order_entity.dart';
 import '../orders_tokens.dart';
 import '../widgets/order_card_widget.dart';
 

@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
-import '../../bloc/checkout_bloc.dart';
+import '../../../presentation/bloc/checkout_bloc.dart';
 
 /// Order Summary Card - Shows complete breakdown of order totals
 class OrderSummaryCard extends StatelessWidget {
   final CheckoutLoaded state;
 
-  const OrderSummaryCard({
-    super.key,
-    required this.state,
-  });
+  const OrderSummaryCard({super.key, required this.state});
 
   @override
   Widget build(BuildContext context) {
@@ -32,14 +29,14 @@ class OrderSummaryCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            
+
             // Subtotal
             _buildSummaryRow(
               'Subtotal',
               state.subtotal,
               subtitle: '${state.itemCount} items',
             ),
-            
+
             // Tips
             if (state.tipAmount > 0) ...[
               const SizedBox(height: 8),
@@ -49,7 +46,7 @@ class OrderSummaryCard extends StatelessWidget {
                 color: const Color(0xFF2196F3),
               ),
             ],
-            
+
             // Discounts
             if (state.discountAmount > 0) ...[
               const SizedBox(height: 8),
@@ -59,7 +56,7 @@ class OrderSummaryCard extends StatelessWidget {
                 color: const Color(0xFFD32F2F),
               ),
             ],
-            
+
             // Vouchers
             if (state.voucherTotal > 0) ...[
               const SizedBox(height: 8),
@@ -70,7 +67,7 @@ class OrderSummaryCard extends StatelessWidget {
                 color: const Color(0xFF4CAF50),
               ),
             ],
-            
+
             // Loyalty
             if (state.loyaltyRedemption > 0) ...[
               const SizedBox(height: 8),
@@ -80,28 +77,20 @@ class OrderSummaryCard extends StatelessWidget {
                 color: const Color(0xFFFF9800),
               ),
             ],
-            
+
             const SizedBox(height: 12),
             const Divider(),
             const SizedBox(height: 12),
-            
+
             // Tax
-            _buildSummaryRow(
-              'GST (10%)',
-              state.tax,
-              isImportant: true,
-            ),
-            
+            _buildSummaryRow('GST (10%)', state.tax, isImportant: true),
+
             const SizedBox(height: 12),
             const Divider(thickness: 2),
             const SizedBox(height: 12),
-            
+
             // Grand Total
-            _buildSummaryRow(
-              'TOTAL',
-              state.grandTotal,
-              isGrandTotal: true,
-            ),
+            _buildSummaryRow('TOTAL', state.grandTotal, isGrandTotal: true),
           ],
         ),
       ),
@@ -131,7 +120,8 @@ class OrderSummaryCard extends StatelessWidget {
                   fontWeight: isGrandTotal
                       ? FontWeight.w700
                       : (isImportant ? FontWeight.w600 : FontWeight.w500),
-                  color: color ?? (isGrandTotal ? Colors.black87 : Colors.black87),
+                  color:
+                      color ?? (isGrandTotal ? Colors.black87 : Colors.black87),
                 ),
               ),
               if (subtitle != null) ...[
@@ -156,7 +146,9 @@ class OrderSummaryCard extends StatelessWidget {
             fontWeight: isGrandTotal
                 ? FontWeight.w700
                 : (isImportant ? FontWeight.w600 : FontWeight.w600),
-            color: color ?? (isGrandTotal ? const Color(0xFF2196F3) : Colors.black87),
+            color:
+                color ??
+                (isGrandTotal ? const Color(0xFF2196F3) : Colors.black87),
           ),
         ),
       ],

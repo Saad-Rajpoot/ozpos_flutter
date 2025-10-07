@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../pos/data/seed_data.dart';
+import '../../../menu/data/seed_data.dart';
 import '../../domain/entities/menu_item_entity.dart';
 import '../../../../core/navigation/app_router.dart';
 import '../../../../core/utils/responsive.dart';
 import '../widgets/menu_item_card.dart';
-import '../../../pos/presentation/widgets/cart_pane.dart';
+import '../../../pos/cart_pane.dart';
 import '../../../../core/widgets/sidebar_nav.dart';
-import '../../../pos/presentation/bloc/cart_bloc.dart' as cart_bloc;
+import '../../../checkout/presentation/bloc/cart_bloc.dart' as cart_bloc;
 
 /// Menu Screen with Seed Data and Cart Integration
 class MenuScreen extends StatefulWidget {

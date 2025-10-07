@@ -12,8 +12,8 @@ import 'core/observers/sentry_bloc_observer.dart';
 import 'core/services/sentry_service.dart';
 import 'core/theme/app_theme.dart';
 import 'features/menu/presentation/bloc/menu_bloc.dart';
-import 'features/pos/presentation/bloc/cart_bloc.dart';
 import 'features/combos/presentation/bloc/combo_management_bloc.dart';
+import 'features/checkout/presentation/bloc/cart_bloc.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

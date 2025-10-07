@@ -14,8 +14,7 @@ import '../../features/menu/domain/repositories/menu_repository.dart';
 import '../../features/menu/domain/usecases/get_menu_items.dart';
 import '../../features/menu/domain/usecases/get_menu_categories.dart';
 import '../../features/menu/presentation/bloc/menu_bloc.dart';
-import '../../features/pos/presentation/bloc/cart_bloc.dart';
-
+import '../../features/checkout/presentation/bloc/cart_bloc.dart';
 import '../../features/combos/presentation/bloc/combo_management_bloc.dart';
 
 final sl = GetIt.instance;

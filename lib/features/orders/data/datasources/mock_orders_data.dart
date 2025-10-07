@@ -1,10 +1,10 @@
-import '../../domain/entities/order_entity.dart';
+import '../../../orders/domain/entities/order_entity.dart';
 
 /// Mock orders data matching React prototype
 class MockOrdersData {
   static List<OrderEntity> getMockOrders() {
     final now = DateTime.now();
-    
+
     return [
       OrderEntity(
         id: 'UE-12345',
@@ -16,7 +16,11 @@ class MockOrdersData {
         customerName: 'John Doe',
         customerPhone: '+1 234-567-8901',
         items: const [
-          OrderItemEntity(name: 'Classic Beef Burger', quantity: 1, price: 12.99),
+          OrderItemEntity(
+            name: 'Classic Beef Burger',
+            quantity: 1,
+            price: 12.99,
+          ),
           OrderItemEntity(name: 'French Fries', quantity: 1, price: 4.50),
           OrderItemEntity(name: 'Coca-Cola', quantity: 1, price: 2.50),
         ],

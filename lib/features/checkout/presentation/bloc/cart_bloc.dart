@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import '../../../menu/domain/entities/menu_item_entity.dart';
-import '../../domain/entities/table_entity.dart';
+import '../../../tables/domain/entities/table_entity.dart';
 
 // ============================================================================
 // CART LINE ITEM

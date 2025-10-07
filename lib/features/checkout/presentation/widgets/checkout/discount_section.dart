@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../bloc/checkout_bloc.dart';
+import '../../../presentation/bloc/checkout_bloc.dart';
 
 /// Discount Section - Percentage discounts, voucher codes, and loyalty redemption
 class DiscountSection extends StatefulWidget {
   final CheckoutLoaded state;
 
-  const DiscountSection({
-    super.key,
-    required this.state,
-  });
+  const DiscountSection({super.key, required this.state});
 
   @override
   State<DiscountSection> createState() => _DiscountSectionState();
@@ -81,9 +78,9 @@ class _DiscountSectionState extends State<DiscountSection> {
                     padding: const EdgeInsets.symmetric(horizontal: 4),
                     child: OutlinedButton(
                       onPressed: () {
-                        context
-                            .read<CheckoutBloc>()
-                            .add(SetDiscountPercent(percent: percent));
+                        context.read<CheckoutBloc>().add(
+                          SetDiscountPercent(percent: percent),
+                        );
                       },
                       style: OutlinedButton.styleFrom(
                         backgroundColor: isSelected
@@ -107,8 +104,9 @@ class _DiscountSectionState extends State<DiscountSection> {
                         '$percent%',
                         style: TextStyle(
                           fontSize: 14,
-                          fontWeight:
-                              isSelected ? FontWeight.w600 : FontWeight.w500,
+                          fontWeight: isSelected
+                              ? FontWeight.w600
+                              : FontWeight.w500,
                         ),
                       ),
                     ),
@@ -140,7 +138,9 @@ class _DiscountSectionState extends State<DiscountSection> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 12),
+                        horizontal: 12,
+                        vertical: 12,
+                      ),
                     ),
                   ),
                 ),
@@ -148,9 +148,9 @@ class _DiscountSectionState extends State<DiscountSection> {
                 ElevatedButton(
                   onPressed: () {
                     if (_voucherController.text.isNotEmpty) {
-                      context
-                          .read<CheckoutBloc>()
-                          .add(ApplyVoucher(code: _voucherController.text));
+                      context.read<CheckoutBloc>().add(
+                        ApplyVoucher(code: _voucherController.text),
+                      );
                       _voucherController.clear();
                     }
                   },
@@ -158,7 +158,9 @@ class _DiscountSectionState extends State<DiscountSection> {
                     backgroundColor: const Color(0xFF2196F3),
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 20, vertical: 16),
+                      horizontal: 20,
+                      vertical: 16,
+                    ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -189,8 +191,11 @@ class _DiscountSectionState extends State<DiscountSection> {
                       children: [
                         Row(
                           children: [
-                            const Icon(Icons.local_offer,
-                                color: Color(0xFF4CAF50), size: 16),
+                            const Icon(
+                              Icons.local_offer,
+                              color: Color(0xFF4CAF50),
+                              size: 16,
+                            ),
                             const SizedBox(width: 8),
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -218,9 +223,9 @@ class _DiscountSectionState extends State<DiscountSection> {
                         IconButton(
                           icon: const Icon(Icons.close, size: 18),
                           onPressed: () {
-                            context
-                                .read<CheckoutBloc>()
-                                .add(RemoveVoucher(id: voucher.id));
+                            context.read<CheckoutBloc>().add(
+                              RemoveVoucher(id: voucher.id),
+                            );
                           },
                           color: Colors.black54,
                           padding: EdgeInsets.zero,
@@ -267,18 +272,18 @@ class _DiscountSectionState extends State<DiscountSection> {
                 decoration: BoxDecoration(
                   color: const Color(0xFFFF9800).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: const Color(0xFFFF9800),
-                    width: 1,
-                  ),
+                  border: Border.all(color: const Color(0xFFFF9800), width: 1),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Row(
                       children: [
-                        const Icon(Icons.stars,
-                            color: Color(0xFFFF9800), size: 16),
+                        const Icon(
+                          Icons.stars,
+                          color: Color(0xFFFF9800),
+                          size: 16,
+                        ),
                         const SizedBox(width: 8),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -306,9 +311,9 @@ class _DiscountSectionState extends State<DiscountSection> {
                     IconButton(
                       icon: const Icon(Icons.close, size: 18),
                       onPressed: () {
-                        context
-                            .read<CheckoutBloc>()
-                            .add(UndoLoyaltyRedemption());
+                        context.read<CheckoutBloc>().add(
+                          UndoLoyaltyRedemption(),
+                        );
                       },
                       color: Colors.black54,
                       padding: EdgeInsets.zero,
@@ -374,9 +379,9 @@ class _DiscountSectionState extends State<DiscountSection> {
             onPressed: () {
               final amount = double.tryParse(amountController.text) ?? 0.0;
               if (amount > 0) {
-                context
-                    .read<CheckoutBloc>()
-                    .add(RedeemLoyaltyPoints(amount: amount));
+                context.read<CheckoutBloc>().add(
+                  RedeemLoyaltyPoints(amount: amount),
+                );
                 Navigator.of(dialogContext).pop();
               }
             },

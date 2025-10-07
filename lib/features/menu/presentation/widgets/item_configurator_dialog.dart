@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../domain/entities/menu_item_entity.dart';
-import '../../../pos/domain/entities/modifier_group_entity.dart';
-import '../../../pos/presentation/bloc/item_config_bloc.dart';
-import '../../../pos/presentation/bloc/cart_bloc.dart';
+import '../../../pos/modifier_group_entity.dart';
+import '../../../pos/item_config_bloc.dart';
+import '../../../checkout/presentation/bloc/cart_bloc.dart';
 
 /// Item Configurator Dialog - Pixel-perfect match to reference
 class ItemConfiguratorDialog extends StatelessWidget {

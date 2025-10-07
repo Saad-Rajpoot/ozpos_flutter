@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
-import '../../../pos/domain/entities/modifier_group_entity.dart';
-import '../../../pos/domain/entities/combo_option_entity.dart';
+import '../../../pos/modifier_group_entity.dart';
+import '../../../combos/domain/entities/combo_option_entity.dart';
 
 /// Menu item entity
 class MenuItemEntity extends Equatable {

@@ -1,4 +1,4 @@
-import '../../../menu/domain/entities/menu_item_edit_entity.dart';
+import '../menu/domain/entities/menu_item_edit_entity.dart';
 
 /// System badges that come pre-configured
 /// Matches the React prototype badge system

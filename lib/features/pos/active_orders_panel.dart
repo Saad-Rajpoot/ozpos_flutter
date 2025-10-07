@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../../../core/theme/tokens.dart';
-import '../../../../core/navigation/app_router.dart';
+import '../../core/theme/tokens.dart';
+import '../../core/navigation/app_router.dart';
 
 /// Active Orders Panel - exact match to reference image
 /// Fixed width 360dp on desktop/large, collapsible on compact

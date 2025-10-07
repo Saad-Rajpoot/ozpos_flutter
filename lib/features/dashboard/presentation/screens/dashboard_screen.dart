@@ -5,8 +5,8 @@ import '../../../../core/navigation/navigation_service.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../menu/presentation/bloc/menu_bloc.dart';
-import '../../../pos/presentation/widgets/dashboard_tile.dart';
-import '../../../pos/presentation/widgets/active_orders_panel.dart';
+import '../widgets/dashboard_tile.dart';
+import '../../../pos/active_orders_panel.dart';
 import '../../../../core/widgets/sidebar_nav.dart';
 
 /// Dashboard Screen - Pixel-perfect match to reference image

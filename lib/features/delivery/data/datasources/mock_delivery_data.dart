@@ -1,4 +1,4 @@
-import '../../domain/entities/delivery_entities.dart';
+import '../../../delivery/domain/entities/delivery_entities.dart';
 
 class MockDeliveryData {
   static DeliveryKpiData getKpis() {
@@ -56,7 +56,7 @@ class MockDeliveryData {
 
   static List<DeliveryOrderEntity> getOrders() {
     final now = DateTime.now();
-    
+
     return [
       DeliveryOrderEntity(
         id: 'o1',

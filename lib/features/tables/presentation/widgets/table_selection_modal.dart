@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:ozpos_flutter/features/pos/domain/entities/table_entity.dart';
-import 'package:ozpos_flutter/features/pos/data/seed_data.dart';
-import 'package:ozpos_flutter/features/pos/presentation/bloc/cart_bloc.dart';
+import 'package:ozpos_flutter/features/tables/domain/entities/table_entity.dart';
+import 'package:ozpos_flutter/features/menu/data/seed_data.dart';
+import '../../../checkout/presentation/bloc/cart_bloc.dart';
 
 enum TableViewMode { list, floor }
 
