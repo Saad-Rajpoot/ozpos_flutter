@@ -1,12 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 /// Table status enum
-enum TableStatus {
-  available,
-  occupied,
-  reserved,
-  cleaning,
-}
+enum TableStatus { available, occupied, reserved, cleaning }
 
 /// Table entity for restaurant floor management
 class TableEntity extends Equatable {
@@ -19,7 +14,7 @@ class TableEntity extends Equatable {
   final double? currentBill; // Current bill amount if occupied
   final int? floorX; // X position on floor view (0-10)
   final int? floorY; // Y position on floor view (0-10)
-  
+
   const TableEntity({
     required this.id,
     required this.number,
@@ -34,14 +29,14 @@ class TableEntity extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        number,
-        seats,
-        status,
-        serverName,
-        orderId,
-        currentBill,
-        floorX,
-        floorY,
-      ];
+    id,
+    number,
+    seats,
+    status,
+    serverName,
+    orderId,
+    currentBill,
+    floorX,
+    floorY,
+  ];
 }

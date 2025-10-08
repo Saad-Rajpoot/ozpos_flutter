@@ -1,0 +1,5 @@
+{
+  "message": "Failed to load tables data",
+  "error": "Connection timeout",
+  "statusCode": 500
+}

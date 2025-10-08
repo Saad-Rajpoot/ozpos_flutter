@@ -1,39 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../../../../core/navigation/app_router.dart';
 import '../../../../core/navigation/navigation_service.dart';
 import '../../../../core/widgets/sidebar_nav.dart';
-
-enum TableStatus { available, occupied, reserved, cleaning }
-
-enum TableArea { main, tens, twenties, patio }
-
-class TableData {
-  final int number;
-  final TableStatus status;
-  final TableArea area;
-  final String? serverTag;
-  final double? amount;
-  final Duration? elapsedTime;
-  final int? guests;
-  final String? orderId;
-  final int? items;
-  final String? waiter;
-  final String? notes;
-
-  const TableData({
-    required this.number,
-    required this.status,
-    required this.area,
-    this.serverTag,
-    this.amount,
-    this.elapsedTime,
-    this.guests,
-    this.orderId,
-    this.items,
-    this.waiter,
-    this.notes,
-  });
-}
+import '../bloc/table_management_bloc.dart';
+import '../bloc/table_management_event.dart';
+import '../bloc/table_management_state.dart';
+import '../../domain/entities/table_types.dart';
 
 class TablesScreen extends StatefulWidget {
   const TablesScreen({super.key});
@@ -47,80 +21,16 @@ class _TablesScreenState extends State<TablesScreen> {
   TableStatus? _filterStatus;
   String _searchQuery = '';
   TableData? _selectedTable;
+  List<TableData> _tableDataList = [];
 
-  final List<TableData> _mockTables = [
-    const TableData(
-      number: 3,
-      status: TableStatus.occupied,
-      area: TableArea.main,
-      serverTag: 'AB',
-      amount: 17.60,
-      elapsedTime: Duration(minutes: 8),
-      guests: 2,
-      orderId: '#2481',
-      items: 3,
-      waiter: 'AB',
-      notes: 'No onions, birthday dessert',
-    ),
-    const TableData(
-      number: 5,
-      status: TableStatus.available,
-      area: TableArea.main,
-    ),
-    const TableData(
-      number: 7,
-      status: TableStatus.reserved,
-      area: TableArea.main,
-      guests: 4,
-    ),
-    const TableData(
-      number: 9,
-      status: TableStatus.cleaning,
-      area: TableArea.main,
-    ),
-    const TableData(
-      number: 11,
-      status: TableStatus.available,
-      area: TableArea.tens,
-    ),
-    const TableData(
-      number: 13,
-      status: TableStatus.occupied,
-      area: TableArea.tens,
-      serverTag: 'CD',
-      amount: 45.30,
-      elapsedTime: Duration(minutes: 35),
-      guests: 3,
-    ),
-    const TableData(
-      number: 21,
-      status: TableStatus.available,
-      area: TableArea.twenties,
-    ),
-    const TableData(
-      number: 23,
-      status: TableStatus.occupied,
-      area: TableArea.twenties,
-      serverTag: 'EF',
-      amount: 88.90,
-      elapsedTime: Duration(minutes: 55),
-      guests: 5,
-    ),
-    const TableData(
-      number: 101,
-      status: TableStatus.available,
-      area: TableArea.patio,
-    ),
-    const TableData(
-      number: 103,
-      status: TableStatus.reserved,
-      area: TableArea.patio,
-      guests: 6,
-    ),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    context.read<TableManagementBloc>().add(const LoadTablesEvent());
+  }
 
   List<TableData> get _filteredTables {
-    return _mockTables.where((table) {
+    return _tableDataList.where((table) {
       // Area filter
       if (table.area != _selectedArea) return false;
 
@@ -140,7 +50,7 @@ class _TablesScreenState extends State<TablesScreen> {
   }
 
   int _getAreaTableCount(TableArea area) {
-    return _mockTables.where((t) => t.area == area).length;
+    return _tableDataList.where((t) => t.area == area).length;
   }
 
   @override
@@ -437,18 +347,73 @@ class _TablesScreenState extends State<TablesScreen> {
 
           // Table cards grid
           Expanded(
-            child: GridView.builder(
-              padding: const EdgeInsets.all(16),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                childAspectRatio: 1.5,
-              ),
-              itemCount: _filteredTables.length,
-              itemBuilder: (context, index) {
-                final table = _filteredTables[index];
-                return _buildTableCard(table);
+            child: BlocBuilder<TableManagementBloc, TableManagementState>(
+              builder: (context, state) {
+                if (state is TableManagementLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                if (state is TableManagementError) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.error_outline,
+                          size: 64,
+                          color: Colors.red.shade300,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Error: ${state.message}',
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: () {
+                            context.read<TableManagementBloc>().add(
+                              const LoadTablesEvent(),
+                            );
+                          },
+                          child: const Text('Retry'),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                if (state is TableManagementLoaded) {
+                  _tableDataList = state.tables
+                      .map((entity) => TableData.fromEntity(entity))
+                      .toList();
+
+                  if (_filteredTables.isEmpty) {
+                    return const Center(
+                      child: Text(
+                        'No tables found',
+                        style: TextStyle(fontSize: 16, color: Colors.grey),
+                      ),
+                    );
+                  }
+
+                  return GridView.builder(
+                    padding: const EdgeInsets.all(16),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 3,
+                          crossAxisSpacing: 16,
+                          mainAxisSpacing: 16,
+                          childAspectRatio: 1.5,
+                        ),
+                    itemCount: _filteredTables.length,
+                    itemBuilder: (context, index) {
+                      final table = _filteredTables[index];
+                      return _buildTableCard(table);
+                    },
+                  );
+                }
+
+                return const SizedBox.shrink();
               },
             ),
           ),

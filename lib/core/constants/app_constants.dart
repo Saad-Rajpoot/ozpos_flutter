@@ -24,6 +24,7 @@ class AppConstants {
 
   // Table endpoints
   static const String getTablesEndpoint = '/tables';
+  static const String getMoveTablesEndpoint = '/tables/move/available';
   static const String updateTableEndpoint = '/tables/{id}';
   static const String moveTableEndpoint = '/tables/move';
   static const String mergeTableEndpoint = '/tables/merge';

@@ -25,6 +25,14 @@ import '../../features/addons/data/repositories/addon_repository_impl.dart';
 import '../../features/addons/domain/repositories/addon_repository.dart';
 import '../../features/addons/domain/usecases/get_addon_categories.dart';
 import '../../features/addons/presentation/bloc/addon_management_bloc.dart';
+import '../../features/tables/data/datasources/table_data_source.dart';
+import '../../features/tables/data/datasources/table_mock_datasource.dart';
+import '../../features/tables/data/datasources/table_remote_datasource.dart';
+import '../../features/tables/data/repositories/table_repository_impl.dart';
+import '../../features/tables/domain/repositories/table_repository.dart';
+import '../../features/tables/domain/usecases/get_tables.dart';
+import '../../features/tables/domain/usecases/get_available_tables.dart';
+import '../../features/tables/presentation/bloc/table_management_bloc.dart';
 import '../../features/reservations/data/datasources/reservations_data_source.dart';
 import '../../features/reservations/data/datasources/reservations_mock_datasource.dart';
 import '../../features/reservations/data/datasources/reservations_remote_datasource.dart';
@@ -69,6 +77,7 @@ Future<void> init() async {
   await _initCart(sl);
   await _initCombos(sl);
   await _initAddons(sl);
+  await _initTables(sl);
   await _initReservations(sl);
 }
 
@@ -148,6 +157,34 @@ Future<void> _initAddons(GetIt sl) async {
 
   // BLoC (Factory - new instance each time)
   sl.registerFactory(() => AddonManagementBloc(getAddonCategories: sl()));
+}
+
+/// Initialize tables feature dependencies
+Future<void> _initTables(GetIt sl) async {
+  // Environment-based data source selection for main tables
+  sl.registerLazySingleton<TableDataSource>(() {
+    if (AppConfig.instance.environment == AppEnvironment.development) {
+      // Use mock data source for development
+      return TableMockDataSourceImpl();
+    } else {
+      // Use remote data source for production
+      return TableRemoteDataSourceImpl(apiClient: sl());
+    }
+  });
+
+  // Repositories
+  sl.registerLazySingleton<TableRepository>(
+    () => TableRepositoryImpl(tableDataSource: sl(), networkInfo: sl()),
+  );
+
+  // Use cases
+  sl.registerLazySingleton(() => GetTables(sl()));
+  sl.registerLazySingleton(() => GetMoveAvailableTables(sl()));
+
+  // BLoCs (Factory - new instance each time)
+  sl.registerFactory(
+    () => TableManagementBloc(getTables: sl(), getMoveAvailableTables: sl()),
+  );
 }
 
 /// Initialize reservations feature dependencies

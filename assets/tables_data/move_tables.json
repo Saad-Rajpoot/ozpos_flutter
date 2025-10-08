@@ -1,0 +1,114 @@
+[
+  {
+    "id": "table_1",
+    "number": "1",
+    "seats": 2,
+    "status": "available",
+    "serverName": "10s",
+    "floorX": 1,
+    "floorY": 1
+  },
+  {
+    "id": "table_2",
+    "number": "2",
+    "seats": 4,
+    "status": "occupied",
+    "serverName": "10s",
+    "currentBill": 45.30,
+    "orderId": "#2482",
+    "floorX": 2,
+    "floorY": 1
+  },
+  {
+    "id": "table_4",
+    "number": "4",
+    "seats": 6,
+    "status": "available",
+    "serverName": "MAIN",
+    "floorX": 3,
+    "floorY": 1
+  },
+  {
+    "id": "table_5",
+    "number": "5",
+    "seats": 4,
+    "status": "reserved",
+    "orderId": "#2483",
+    "floorX": 1,
+    "floorY": 2
+  },
+  {
+    "id": "table_6",
+    "number": "6",
+    "seats": 2,
+    "status": "available",
+    "serverName": "20s",
+    "floorX": 2,
+    "floorY": 2
+  },
+  {
+    "id": "table_7",
+    "number": "7",
+    "seats": 8,
+    "status": "cleaning",
+    "floorX": 3,
+    "floorY": 2
+  },
+  {
+    "id": "table_8",
+    "number": "8",
+    "seats": 4,
+    "status": "available",
+    "serverName": "PATIO",
+    "floorX": 1,
+    "floorY": 3
+  },
+  {
+    "id": "table_11",
+    "number": "11",
+    "seats": 4,
+    "status": "available",
+    "floorX": 1,
+    "floorY": 4
+  },
+  {
+    "id": "table_12",
+    "number": "12",
+    "seats": 6,
+    "status": "available",
+    "floorX": 2,
+    "floorY": 4
+  },
+  {
+    "id": "table_21",
+    "number": "21",
+    "seats": 2,
+    "status": "available",
+    "floorX": 1,
+    "floorY": 5
+  },
+  {
+    "id": "table_22",
+    "number": "22",
+    "seats": 4,
+    "status": "available",
+    "floorX": 2,
+    "floorY": 5
+  },
+  {
+    "id": "table_101",
+    "number": "101",
+    "seats": 6,
+    "status": "available",
+    "floorX": 1,
+    "floorY": 6
+  },
+  {
+    "id": "table_102",
+    "number": "102",
+    "seats": 8,
+    "status": "available",
+    "floorX": 2,
+    "floorY": 6
+  }
+]

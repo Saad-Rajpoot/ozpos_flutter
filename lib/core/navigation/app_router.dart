@@ -13,11 +13,13 @@ import '../../features/menu/presentation/screens/menu_screen.dart';
 import '../../features/checkout/presentation/screens/checkout_screen.dart';
 import '../../features/orders/presentation/screens/orders_screen.dart';
 import '../../features/tables/presentation/screens/tables_screen.dart';
+import '../../features/tables/presentation/screens/move_table_screen.dart';
+import '../../features/tables/presentation/bloc/table_management_bloc.dart';
+import '../../features/tables/presentation/bloc/table_management_event.dart';
 import '../../features/delivery/presentation/screens/delivery_screen.dart';
 import '../../features/reservations/presentation/screens/reservations_screen.dart';
 import '../../features/reports/presentation/screens/reports_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
-import '../../features/tables/presentation/screens/move_table_screen.dart';
 import '../widgets/error_screen.dart';
 
 /// Centralized route management
@@ -83,7 +85,10 @@ class AppRouter {
 
       case tables:
         return MaterialPageRoute(
-          builder: (_) => const TablesScreen(),
+          builder: (_) => BlocProvider<TableManagementBloc>.value(
+            value: di.sl<TableManagementBloc>()..add(const LoadTablesEvent()),
+            child: const TablesScreen(),
+          ),
           settings: settings,
         );
 
@@ -134,7 +139,11 @@ class AppRouter {
 
       case moveTable:
         return MaterialPageRoute(
-          builder: (_) => MoveTableScreen(sourceTable: args?['sourceTable']),
+          builder: (_) => BlocProvider<TableManagementBloc>.value(
+            value: di.sl<TableManagementBloc>()
+              ..add(const LoadMoveAvailableTablesEvent()),
+            child: MoveTableScreen(sourceTable: args?['sourceTable']),
+          ),
           settings: settings,
         );
 

@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
-import 'tables_screen.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../bloc/table_management_bloc.dart';
+import '../bloc/table_management_event.dart';
+import '../bloc/table_management_state.dart';
+import '../../domain/entities/table_types.dart';
 
 class MoveTableScreen extends StatefulWidget {
   final TableData sourceTable;
@@ -14,56 +18,10 @@ class _MoveTableScreenState extends State<MoveTableScreen> {
   String _searchQuery = '';
   TableArea? _filterArea;
   TableData? _selectedDestination;
-
-  final List<TableData> _mockTables = [
-    const TableData(
-      number: 1,
-      status: TableStatus.available,
-      area: TableArea.main,
-      serverTag: '10s',
-    ),
-    const TableData(
-      number: 2,
-      status: TableStatus.occupied,
-      area: TableArea.main,
-      serverTag: '10s',
-      amount: 45.30,
-      elapsedTime: Duration(minutes: 35),
-      guests: 3,
-    ),
-    const TableData(
-      number: 4,
-      status: TableStatus.available,
-      area: TableArea.main,
-      serverTag: 'MAIN',
-    ),
-    const TableData(
-      number: 5,
-      status: TableStatus.reserved,
-      area: TableArea.main,
-      guests: 4,
-    ),
-    const TableData(
-      number: 6,
-      status: TableStatus.available,
-      area: TableArea.main,
-      serverTag: '20s',
-    ),
-    const TableData(
-      number: 7,
-      status: TableStatus.cleaning,
-      area: TableArea.main,
-    ),
-    const TableData(
-      number: 8,
-      status: TableStatus.available,
-      area: TableArea.patio,
-      serverTag: 'PATIO',
-    ),
-  ];
+  List<TableData> _availableTables = [];
 
   List<TableData> get _filteredTables {
-    return _mockTables.where((table) {
+    return _availableTables.where((table) {
       // Don't show source table
       if (table.number == widget.sourceTable.number) return false;
 
@@ -317,18 +275,73 @@ class _MoveTableScreenState extends State<MoveTableScreen> {
 
           // Destination grid
           Expanded(
-            child: GridView.builder(
-              padding: const EdgeInsets.all(16),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 4,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                childAspectRatio: 1.2,
-              ),
-              itemCount: _filteredTables.length,
-              itemBuilder: (context, index) {
-                final table = _filteredTables[index];
-                return _buildDestinationCard(table);
+            child: BlocBuilder<TableManagementBloc, TableManagementState>(
+              builder: (context, state) {
+                if (state is TableManagementLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                if (state is TableManagementError) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.error_outline,
+                          size: 64,
+                          color: Colors.red.shade300,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Error: ${state.message}',
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: () {
+                            context.read<TableManagementBloc>().add(
+                              const LoadMoveAvailableTablesEvent(),
+                            );
+                          },
+                          child: const Text('Retry'),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                if (state is TableManagementLoaded) {
+                  _availableTables = state.tables
+                      .map((entity) => TableData.fromEntity(entity))
+                      .toList();
+
+                  if (_filteredTables.isEmpty) {
+                    return const Center(
+                      child: Text(
+                        'No available tables found',
+                        style: TextStyle(fontSize: 16, color: Colors.grey),
+                      ),
+                    );
+                  }
+
+                  return GridView.builder(
+                    padding: const EdgeInsets.all(16),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 4,
+                          crossAxisSpacing: 16,
+                          mainAxisSpacing: 16,
+                          childAspectRatio: 1.2,
+                        ),
+                    itemCount: _filteredTables.length,
+                    itemBuilder: (context, index) {
+                      final table = _filteredTables[index];
+                      return _buildDestinationCard(table);
+                    },
+                  );
+                }
+
+                return const SizedBox.shrink();
               },
             ),
           ),
