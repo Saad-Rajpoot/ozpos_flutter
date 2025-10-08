@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../bloc/cart_bloc.dart';
+import '../bloc/cart_bloc.dart';
 
 /// Checkout Item List - Display all cart items in checkout
 class CheckoutItemList extends StatelessWidget {

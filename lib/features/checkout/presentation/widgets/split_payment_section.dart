@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../checkout/domain/entities/payment_method.dart';
-import '../../../../checkout/domain/entities/tender_entity.dart';
-import '../../../presentation/bloc/checkout_bloc.dart';
+import '../../../checkout/domain/entities/payment_method.dart';
+import '../../../checkout/domain/entities/tender_entity.dart';
+import '../bloc/checkout_bloc.dart';
 
 /// Split Payment Section - Manage multiple tenders and split evenly
 class SplitPaymentSection extends StatelessWidget {

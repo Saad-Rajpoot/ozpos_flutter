@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../presentation/bloc/checkout_bloc.dart';
+import '../bloc/checkout_bloc.dart';
 
 /// Order Summary Card - Shows complete breakdown of order totals
 class OrderSummaryCard extends StatelessWidget {

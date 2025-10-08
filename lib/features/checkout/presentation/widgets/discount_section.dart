@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../presentation/bloc/checkout_bloc.dart';
+import '../bloc/checkout_bloc.dart';
 
 /// Discount Section - Percentage discounts, voucher codes, and loyalty redemption
 class DiscountSection extends StatefulWidget {

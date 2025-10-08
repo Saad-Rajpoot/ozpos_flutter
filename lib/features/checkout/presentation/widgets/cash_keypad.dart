@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../presentation/bloc/checkout_bloc.dart';
+import '../../../checkout/presentation/bloc/checkout_bloc.dart';
 
 /// Cash Keypad - Numeric input with quick amount buttons
 /// Matches React prototype keypad design

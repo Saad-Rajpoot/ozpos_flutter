@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../presentation/bloc/checkout_bloc.dart';
+import '../bloc/checkout_bloc.dart';
 
 /// Tip Section - Percentage buttons (0%, 5%, 10%, 15%) and custom tip input
 class TipSection extends StatelessWidget {

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../checkout/domain/entities/payment_method.dart';
-import '../../../presentation/bloc/checkout_bloc.dart';
+import '../../../checkout/domain/entities/payment_method.dart';
+import '../bloc/checkout_bloc.dart';
 
 /// Payment Method Selector - Matches React prototype design
 /// Shows four payment options: Cash, Card, Wallet, BNPL
