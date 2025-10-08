@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/navigation/app_router.dart';
 import '../../../../core/widgets/sidebar_nav.dart';
-import '../../../reservations/domain/entities/reservation_entity.dart';
+import '../../domain/entities/reservation_entity.dart';
+import '../bloc/reservation_management_bloc.dart';
+import '../bloc/reservation_management_event.dart';
+import '../bloc/reservation_management_state.dart';
 import '../widgets/reservation_form_modal.dart';
 
 class ReservationsScreen extends StatefulWidget {
@@ -13,159 +17,51 @@ class ReservationsScreen extends StatefulWidget {
 }
 
 class _ReservationsScreenState extends State<ReservationsScreen> {
-  String _selectedDateFilter = 'Today';
+  String _selectedDateFilter = 'All';
   String _searchQuery = '';
   bool _isListView = true;
 
-  late List<ReservationEntity> _reservations;
+  List<ReservationEntity> _getFilteredReservations(
+    ReservationManagementState state,
+  ) {
+    if (state is ReservationManagementLoaded) {
+      return state.reservations.where((res) {
+        // Date filter
+        bool matchesDate = true;
+        if (_selectedDateFilter == 'Today') {
+          final today = DateTime.now();
+          matchesDate =
+              res.timing.startAt.year == today.year &&
+              res.timing.startAt.month == today.month &&
+              res.timing.startAt.day == today.day;
+        } else if (_selectedDateFilter == 'Tomorrow') {
+          final tomorrow = DateTime.now().add(const Duration(days: 1));
+          matchesDate =
+              res.timing.startAt.year == tomorrow.year &&
+              res.timing.startAt.month == tomorrow.month &&
+              res.timing.startAt.day == tomorrow.day;
+        }
 
-  @override
-  void initState() {
-    super.initState();
-    _loadMockData();
+        // Search filter
+        bool matchesSearch = true;
+        if (_searchQuery.isNotEmpty) {
+          final query = _searchQuery.toLowerCase();
+          matchesSearch =
+              res.guest.name.toLowerCase().contains(query) ||
+              res.guest.phone.toLowerCase().contains(query) ||
+              res.reservationId.toLowerCase().contains(query);
+        }
+
+        return matchesDate && matchesSearch;
+      }).toList();
+    }
+
+    return [];
   }
 
-  void _loadMockData() {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final tomorrow = today.add(const Duration(days: 1));
-
-    _reservations = [
-      ReservationEntity(
-        reservationId: 'res-001',
-        vendorId: 'vendor-1',
-        branchId: 'branch-1',
-        tableId: 'Table 12',
-        guest: const GuestInfo(name: 'Sarah Johnson', phone: '+1 234-567-8901'),
-        party: const PartyDetails(size: 4),
-        timing: ReservationTiming(
-          startAt: today.add(const Duration(hours: 19)),
-          durationMinutes: 90,
-        ),
-        status: ReservationStatus.confirmed,
-        source: ReservationSource.phone,
-        preferences: const ReservationPreferences(tags: []),
-        financials: const ReservationFinancials(),
-        audit: AuditInfo(createdBy: 'system', createdAt: now),
-      ),
-      ReservationEntity(
-        reservationId: 'res-002',
-        vendorId: 'vendor-1',
-        branchId: 'branch-1',
-        tableId: 'Table 8',
-        guest: const GuestInfo(name: 'Mike Chen', phone: '+1 234-567-8902'),
-        party: const PartyDetails(size: 2),
-        timing: ReservationTiming(
-          startAt: today.add(const Duration(hours: 19, minutes: 30)),
-          durationMinutes: 90,
-        ),
-        status: ReservationStatus.pending,
-        source: ReservationSource.website,
-        preferences: const ReservationPreferences(tags: []),
-        financials: const ReservationFinancials(),
-        audit: AuditInfo(createdBy: 'system', createdAt: now),
-      ),
-      ReservationEntity(
-        reservationId: 'res-003',
-        vendorId: 'vendor-1',
-        branchId: 'branch-1',
-        tableId: 'Table 15',
-        orderId: 'ord-123',
-        guest: const GuestInfo(name: 'Emma Wilson', phone: '+1 234-567-8903'),
-        party: const PartyDetails(size: 6),
-        timing: ReservationTiming(
-          startAt: today.add(const Duration(hours: 18)),
-          durationMinutes: 120,
-        ),
-        status: ReservationStatus.seated,
-        source: ReservationSource.app,
-        preferences: const ReservationPreferences(tags: ['birthday']),
-        financials: const ReservationFinancials(),
-        audit: AuditInfo(createdBy: 'system', createdAt: now),
-      ),
-      ReservationEntity(
-        reservationId: 'res-004',
-        vendorId: 'vendor-1',
-        branchId: 'branch-1',
-        tableId: 'Table 10',
-        guest: const GuestInfo(
-          name: 'Linda Martinez',
-          phone: '+1 234-567-8905',
-        ),
-        party: const PartyDetails(size: 2),
-        timing: ReservationTiming(
-          startAt: today.add(const Duration(hours: 18, minutes: 30)),
-          durationMinutes: 90,
-        ),
-        status: ReservationStatus.cancelled,
-        source: ReservationSource.phone,
-        preferences: const ReservationPreferences(tags: []),
-        financials: const ReservationFinancials(cancellationFee: 10.0),
-        audit: AuditInfo(createdBy: 'system', createdAt: now),
-      ),
-      ReservationEntity(
-        reservationId: 'res-005',
-        vendorId: 'vendor-1',
-        branchId: 'branch-1',
-        guest: const GuestInfo(name: 'Robert Brown', phone: '+1 234-567-8906'),
-        party: const PartyDetails(size: 4),
-        timing: ReservationTiming(
-          startAt: tomorrow.add(const Duration(hours: 19)),
-          durationMinutes: 90,
-        ),
-        status: ReservationStatus.confirmed,
-        source: ReservationSource.website,
-        preferences: const ReservationPreferences(tags: ['allergy']),
-        financials: const ReservationFinancials(
-          depositAmount: 50.0,
-          depositStatus: DepositStatus.held,
-        ),
-        audit: AuditInfo(createdBy: 'system', createdAt: now),
-      ),
-      ReservationEntity(
-        reservationId: 'res-006',
-        vendorId: 'vendor-1',
-        branchId: 'branch-1',
-        guest: const GuestInfo(name: 'Jennifer Lee', phone: '+1 234-567-8907'),
-        party: const PartyDetails(size: 8, specialNeeds: true),
-        timing: ReservationTiming(
-          startAt: tomorrow.add(const Duration(hours: 20)),
-          durationMinutes: 120,
-        ),
-        status: ReservationStatus.confirmed,
-        source: ReservationSource.phone,
-        preferences: const ReservationPreferences(tags: []),
-        financials: const ReservationFinancials(),
-        audit: AuditInfo(createdBy: 'system', createdAt: now),
-      ),
-    ];
+  int _getBookingsCount(ReservationManagementState state) {
+    return _getFilteredReservations(state).length;
   }
-
-  List<ReservationEntity> get _filteredReservations {
-    return _reservations.where((res) {
-      // Date filter
-      bool matchesDate = true;
-      if (_selectedDateFilter == 'Today') {
-        matchesDate = res.timing.isToday;
-      } else if (_selectedDateFilter == 'Tomorrow') {
-        matchesDate = res.timing.isTomorrow;
-      }
-
-      // Search filter
-      bool matchesSearch = true;
-      if (_searchQuery.isNotEmpty) {
-        final query = _searchQuery.toLowerCase();
-        matchesSearch =
-            res.guest.name.toLowerCase().contains(query) ||
-            (res.guest.phone?.contains(query) ?? false) ||
-            res.reservationId.toLowerCase().contains(query);
-      }
-
-      return matchesDate && matchesSearch;
-    }).toList();
-  }
-
-  int get _bookingsCount => _filteredReservations.length;
 
   @override
   Widget build(BuildContext context) {
@@ -183,15 +79,25 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
             if (isDesktop)
               const SidebarNav(activeRoute: AppRouter.reservations),
             Expanded(
-              child: Column(
-                children: [
-                  _buildHeader(),
-                  _buildToolbar(),
-                  Expanded(
-                    child: _isListView ? _buildListView() : _buildFloorView(),
+              child:
+                  BlocBuilder<
+                    ReservationManagementBloc,
+                    ReservationManagementState
+                  >(
+                    builder: (context, state) {
+                      return Column(
+                        children: [
+                          _buildHeader(),
+                          _buildToolbar(),
+                          Expanded(
+                            child: _isListView
+                                ? _buildListView(state)
+                                : _buildFloorView(),
+                          ),
+                        ],
+                      );
+                    },
                   ),
-                ],
-              ),
             ),
           ],
         ),
@@ -217,9 +123,19 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
                 'Reservations',
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
               ),
-              Text(
-                '$_bookingsCount bookings',
-                style: const TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
+              BlocBuilder<
+                ReservationManagementBloc,
+                ReservationManagementState
+              >(
+                builder: (context, state) {
+                  return Text(
+                    '${_getBookingsCount(state)} bookings',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Color(0xFF6B7280),
+                    ),
+                  );
+                },
               ),
             ],
           ),
@@ -392,134 +308,168 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
     );
   }
 
-  Widget _buildListView() {
-    final reservations = _filteredReservations;
+  Widget _buildListView(ReservationManagementState state) {
+    if (state is ReservationManagementLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
 
-    if (reservations.isEmpty) {
+    if (state is ReservationManagementError) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.event_busy, size: 64, color: Colors.grey.shade300),
+            Icon(Icons.error_outline, size: 64, color: Colors.red.shade300),
             const SizedBox(height: 16),
             Text(
-              'No reservations found',
+              'Error: ${state.message}',
               style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                context.read<ReservationManagementBloc>().add(
+                  const LoadReservationsEvent(),
+                );
+              },
+              child: const Text('Retry'),
             ),
           ],
         ),
       );
     }
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          children: [
-            // Table header
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: const BoxDecoration(
-                border: Border(bottom: BorderSide(color: Color(0xFFE5E7EB))),
-              ),
-              child: const Row(
-                children: [
-                  Expanded(
-                    flex: 2,
-                    child: Text(
-                      'GUEST NAME',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF6B7280),
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: Text(
-                      'DATE',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF6B7280),
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: Text(
-                      'TIME',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF6B7280),
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: Text(
-                      'PARTY SIZE',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF6B7280),
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: Text(
-                      'TABLE',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF6B7280),
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: Text(
-                      'STATUS',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF6B7280),
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    flex: 2,
-                    child: Text(
-                      'ACTIONS',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF6B7280),
-                      ),
-                      textAlign: TextAlign.right,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+    if (state is ReservationManagementLoaded) {
+      final reservations = _getFilteredReservations(state);
 
-            // Table rows
-            ...reservations.map(
-              (reservation) => _buildReservationRow(reservation),
-            ),
-          ],
+      if (reservations.isEmpty) {
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.event_busy, size: 64, color: Colors.grey.shade300),
+              const SizedBox(height: 16),
+              Text(
+                'No reservations found',
+                style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
+              ),
+            ],
+          ),
+        );
+      }
+
+      return SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.04),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              // Table header
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: const BoxDecoration(
+                  border: Border(bottom: BorderSide(color: Color(0xFFE5E7EB))),
+                ),
+                child: const Row(
+                  children: [
+                    Expanded(
+                      flex: 2,
+                      child: Text(
+                        'GUEST NAME',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF6B7280),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: Text(
+                        'DATE',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF6B7280),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: Text(
+                        'TIME',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF6B7280),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: Text(
+                        'PARTY SIZE',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF6B7280),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: Text(
+                        'TABLE',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF6B7280),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: Text(
+                        'STATUS',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF6B7280),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      flex: 2,
+                      child: Text(
+                        'ACTIONS',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF6B7280),
+                        ),
+                        textAlign: TextAlign.right,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Table rows
+              ...reservations.map(
+                (reservation) => _buildReservationRow(reservation),
+              ),
+            ],
+          ),
         ),
-      ),
-    );
+      );
+    }
+
+    // Default case - show loading or empty state
+    return const Center(child: CircularProgressIndicator());
   }
 
   Widget _buildReservationRow(ReservationEntity reservation) {
@@ -546,14 +496,13 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                if (reservation.guest.phone != null)
-                  Text(
-                    reservation.guest.phone!,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Color(0xFF6B7280),
-                    ),
+                Text(
+                  reservation.guest.phone,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFF6B7280),
                   ),
+                ),
               ],
             ),
           ),
@@ -591,7 +540,7 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
           // Table
           Expanded(
             child: Text(
-              reservation.tableId ?? '—',
+              reservation.tableId,
               style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
             ),
           ),
@@ -638,10 +587,6 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
         textColor = const Color(0xFFDC2626);
         label = 'Cancelled';
         break;
-      default:
-        backgroundColor = const Color(0xFFF3F4F6);
-        textColor = const Color(0xFF6B7280);
-        label = status.toString().split('.').last;
     }
 
     return Container(
@@ -664,7 +609,9 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
   List<Widget> _buildActionButtons(ReservationEntity reservation) {
     final buttons = <Widget>[];
 
-    if (reservation.canSeat) {
+    // Seat button for pending/confirmed reservations
+    if (reservation.status == ReservationStatus.pending ||
+        reservation.status == ReservationStatus.confirmed) {
       buttons.add(
         _buildActionButton(
           'Seat',
@@ -674,37 +621,27 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
       );
     }
 
-    if (reservation.canCheckout) {
-      buttons.add(
-        _buildActionButton(
-          'Checkout',
-          const Color(0xFF3B82F6),
-          () => _checkoutReservation(reservation),
-        ),
-      );
-    }
-
+    // Edit button
     buttons.add(
       IconButton(
         icon: const Icon(Icons.edit, size: 18),
-        onPressed: reservation.canEdit
-            ? () => _editReservation(reservation)
-            : null,
+        onPressed: () => _editReservation(reservation),
         tooltip: 'Edit',
       ),
     );
 
-    buttons.add(
-      TextButton(
-        onPressed: reservation.canCancel
-            ? () => _cancelReservation(reservation)
-            : null,
-        child: const Text(
-          'Cancel',
-          style: TextStyle(color: Color(0xFFEF4444), fontSize: 14),
+    // Cancel button for non-cancelled reservations
+    if (reservation.status != ReservationStatus.cancelled) {
+      buttons.add(
+        TextButton(
+          onPressed: () => _cancelReservation(reservation),
+          child: const Text(
+            'Cancel',
+            style: TextStyle(color: Color(0xFFEF4444), fontSize: 14),
+          ),
         ),
-      ),
-    );
+      );
+    }
 
     return buttons;
   }
@@ -768,10 +705,6 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
     );
   }
 
-  void _checkoutReservation(ReservationEntity reservation) {
-    Navigator.of(context).pushNamed(AppRouter.checkout);
-  }
-
   void _editReservation(ReservationEntity reservation) async {
     final result = await showDialog(
       context: context,
@@ -801,11 +734,16 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
             onPressed: () {
               Navigator.pop(context);
               setState(() {
-                final index = _reservations.indexWhere(
-                  (r) => r.reservationId == reservation.reservationId,
-                );
+                final index =
+                    _getFilteredReservations(
+                      context.read<ReservationManagementBloc>().state,
+                    ).indexWhere(
+                      (r) => r.reservationId == reservation.reservationId,
+                    );
                 if (index != -1) {
-                  _reservations[index] = reservation.copyWith(
+                  _getFilteredReservations(
+                    context.read<ReservationManagementBloc>().state,
+                  )[index] = reservation.copyWith(
                     status: ReservationStatus.cancelled,
                   );
                 }

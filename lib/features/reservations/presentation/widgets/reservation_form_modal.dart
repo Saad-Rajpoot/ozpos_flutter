@@ -39,7 +39,7 @@ class _ReservationFormModalState extends State<ReservationFormModal> {
     _partySizeController = TextEditingController(
       text: res?.party.size.toString() ?? '2',
     );
-    _notesController = TextEditingController(text: res?.notes ?? '');
+    _notesController = TextEditingController(text: res?.guest.notes ?? '');
 
     if (res != null) {
       _selectedDate = res.timing.startAt;

@@ -89,6 +89,12 @@ class SidebarNav extends StatelessWidget {
                   route: AppRouter.delivery,
                   isActive: activeRoute == AppRouter.delivery,
                 ),
+                _NavItem(
+                  icon: Icons.event,
+                  label: 'Reservations',
+                  route: AppRouter.reservations,
+                  isActive: activeRoute == AppRouter.reservations,
+                ),
               ],
             ),
           ),

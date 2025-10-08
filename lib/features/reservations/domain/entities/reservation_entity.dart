@@ -1,309 +1,187 @@
-/// Reservation status enum
-enum ReservationStatus {
-  pending,
-  confirmed,
-  seated,
-  completed,
-  cancelled,
-  noShow,
-}
+import 'package:equatable/equatable.dart';
 
-/// Reservation source enum
-enum ReservationSource { walkIn, phone, website, app, integration }
+/// Reservation status enum based on JSON structure
+enum ReservationStatus { pending, confirmed, seated, cancelled }
 
-/// Deposit status enum
-enum DepositStatus { held, refunded, applied }
+/// Reservation source enum based on JSON structure
+enum ReservationSource { phone, website, app }
 
 /// Guest information
-class GuestInfo {
+class Guest extends Equatable {
   final String name;
-  final String? phone;
+  final String phone;
   final String? email;
+  final String? notes;
 
-  const GuestInfo({required this.name, this.phone, this.email});
+  const Guest({
+    required this.name,
+    required this.phone,
+    this.email = '',
+    this.notes = '',
+  });
 
-  bool get hasContactInfo => phone != null || email != null;
+  @override
+  List<Object?> get props => [name, phone, email, notes];
+
+  Guest copyWith({String? name, String? phone, String? email, String? notes}) {
+    return Guest(
+      name: name ?? this.name,
+      phone: phone ?? this.phone,
+      email: email ?? this.email,
+      notes: notes ?? this.notes,
+    );
+  }
 }
 
 /// Party details
-class PartyDetails {
+class Party extends Equatable {
   final int size;
-  final int? highChairs;
-  final bool? specialNeeds;
 
-  const PartyDetails({required this.size, this.highChairs, this.specialNeeds});
+  const Party({required this.size});
 
-  bool get requiresAccessibility =>
-      specialNeeds == true || (highChairs != null && highChairs! > 0);
+  @override
+  List<Object?> get props => [size];
+
+  Party copyWith({int? size}) {
+    return Party(size: size ?? this.size);
+  }
 }
 
 /// Reservation timing
-class ReservationTiming {
+class Timing extends Equatable {
   final DateTime startAt;
   final int durationMinutes;
-  final String timezone;
 
-  const ReservationTiming({
-    required this.startAt,
-    this.durationMinutes = 90,
-    this.timezone = 'UTC',
-  });
+  const Timing({required this.startAt, required this.durationMinutes});
 
-  DateTime get endAt => startAt.add(Duration(minutes: durationMinutes));
+  @override
+  List<Object?> get props => [startAt, durationMinutes];
 
-  bool get isToday {
-    final now = DateTime.now();
-    return startAt.year == now.year &&
-        startAt.month == now.month &&
-        startAt.day == now.day;
+  Timing copyWith({DateTime? startAt, int? durationMinutes}) {
+    return Timing(
+      startAt: startAt ?? this.startAt,
+      durationMinutes: durationMinutes ?? this.durationMinutes,
+    );
   }
-
-  bool get isTomorrow {
-    final tomorrow = DateTime.now().add(const Duration(days: 1));
-    return startAt.year == tomorrow.year &&
-        startAt.month == tomorrow.month &&
-        startAt.day == tomorrow.day;
-  }
-
-  bool get isInPast => startAt.isBefore(DateTime.now());
 }
 
 /// Reservation preferences
-class ReservationPreferences {
-  final String? areaId;
-  final String? tablePreferenceId;
-  final bool autoAssign;
+class Preferences extends Equatable {
   final List<String> tags;
 
-  const ReservationPreferences({
-    this.areaId,
-    this.tablePreferenceId,
-    this.autoAssign = true,
-    this.tags = const [],
-  });
+  const Preferences({required this.tags});
 
-  bool get hasBirthdayTag => tags.contains('birthday');
-  bool get hasAllergyTag => tags.contains('allergy');
+  @override
+  List<Object?> get props => [tags];
+
+  Preferences copyWith({List<String>? tags}) {
+    return Preferences(tags: tags ?? this.tags);
+  }
 }
 
 /// Reservation financials
-class ReservationFinancials {
-  final double? depositAmount;
-  final DepositStatus? depositStatus;
-  final double? cancellationFee;
+class Financials extends Equatable {
+  const Financials();
 
-  const ReservationFinancials({
-    this.depositAmount,
-    this.depositStatus,
-    this.cancellationFee,
-  });
+  @override
+  List<Object?> get props => [];
 
-  bool get hasDeposit => depositAmount != null && depositAmount! > 0;
-  bool get isDepositRefundable => depositStatus == DepositStatus.held;
+  Financials copyWith() {
+    return Financials();
+  }
 }
 
 /// Reservation audit info
-class AuditInfo {
+class Audit extends Equatable {
   final String createdBy;
-  final String? updatedBy;
   final DateTime createdAt;
-  final DateTime? updatedAt;
 
-  const AuditInfo({
-    required this.createdBy,
-    this.updatedBy,
-    required this.createdAt,
-    this.updatedAt,
-  });
+  const Audit({required this.createdBy, required this.createdAt});
+
+  @override
+  List<Object?> get props => [createdBy, createdAt];
+
+  Audit copyWith({String? createdBy, DateTime? createdAt}) {
+    return Audit(
+      createdBy: createdBy ?? this.createdBy,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
 }
 
-/// Main Reservation Entity
-class ReservationEntity {
-  // IDs & Links
+/// Main Reservation Entity - matches JSON structure exactly
+class ReservationEntity extends Equatable {
   final String reservationId;
   final String vendorId;
   final String branchId;
-  final String? orderId;
-  final String? tableId;
-
-  // Guest & Party
-  final GuestInfo guest;
-  final PartyDetails party;
-
-  // Timing
-  final ReservationTiming timing;
-
-  // Status & Source
+  final String tableId;
+  final Guest guest;
+  final Party party;
+  final Timing timing;
   final ReservationStatus status;
   final ReservationSource source;
-  final String? externalRef;
-
-  // Preferences
-  final ReservationPreferences preferences;
-
-  // Financials
-  final ReservationFinancials financials;
-
-  // Notes
-  final String? notes;
-
-  // Audit
-  final AuditInfo audit;
-
-  // Sync/Meta
-  final bool isDirty;
-  final String? syncStatus;
-  final int version;
-  final String? idempotencyKey;
+  final Preferences preferences;
+  final Financials financials;
+  final Audit audit;
 
   const ReservationEntity({
     required this.reservationId,
     required this.vendorId,
     required this.branchId,
-    this.orderId,
-    this.tableId,
+    required this.tableId,
     required this.guest,
     required this.party,
     required this.timing,
     required this.status,
     required this.source,
-    this.externalRef,
     required this.preferences,
     required this.financials,
-    this.notes,
     required this.audit,
-    this.isDirty = false,
-    this.syncStatus,
-    this.version = 1,
-    this.idempotencyKey,
   });
 
-  // Business Logic
-  bool get isActive =>
-      status == ReservationStatus.pending ||
-      status == ReservationStatus.confirmed ||
-      status == ReservationStatus.seated;
+  @override
+  List<Object?> get props => [
+    reservationId,
+    vendorId,
+    branchId,
+    tableId,
+    guest,
+    party,
+    timing,
+    status,
+    source,
+    preferences,
+    financials,
+    audit,
+  ];
 
-  bool get canSeat =>
-      (status == ReservationStatus.pending ||
-          status == ReservationStatus.confirmed) &&
-      !timing.isInPast;
-
-  bool get canEdit =>
-      status != ReservationStatus.completed &&
-      status != ReservationStatus.cancelled;
-
-  bool get canCancel =>
-      status != ReservationStatus.completed &&
-      status != ReservationStatus.cancelled &&
-      status != ReservationStatus.noShow;
-
-  bool get canCheckout => status == ReservationStatus.seated && orderId != null;
-
-  bool get isSeated => status == ReservationStatus.seated;
-
-  bool get hasTable => tableId != null;
-
-  String get displayStatus {
-    switch (status) {
-      case ReservationStatus.pending:
-        return 'Pending';
-      case ReservationStatus.confirmed:
-        return 'Confirmed';
-      case ReservationStatus.seated:
-        return 'Seated';
-      case ReservationStatus.completed:
-        return 'Completed';
-      case ReservationStatus.cancelled:
-        return 'Cancelled';
-      case ReservationStatus.noShow:
-        return 'No Show';
-    }
-  }
-
-  String get displaySource {
-    switch (source) {
-      case ReservationSource.walkIn:
-        return 'Walk-in';
-      case ReservationSource.phone:
-        return 'Phone';
-      case ReservationSource.website:
-        return 'Website';
-      case ReservationSource.app:
-        return 'App';
-      case ReservationSource.integration:
-        return 'Integration';
-    }
-  }
-
-  // State Transitions
-  bool canTransitionTo(ReservationStatus newStatus) {
-    switch (status) {
-      case ReservationStatus.pending:
-        return newStatus == ReservationStatus.confirmed ||
-            newStatus == ReservationStatus.seated ||
-            newStatus == ReservationStatus.cancelled ||
-            newStatus == ReservationStatus.noShow;
-
-      case ReservationStatus.confirmed:
-        return newStatus == ReservationStatus.seated ||
-            newStatus == ReservationStatus.cancelled ||
-            newStatus == ReservationStatus.noShow;
-
-      case ReservationStatus.seated:
-        return newStatus == ReservationStatus.completed ||
-            newStatus == ReservationStatus.cancelled ||
-            newStatus == ReservationStatus.noShow;
-
-      case ReservationStatus.completed:
-      case ReservationStatus.cancelled:
-      case ReservationStatus.noShow:
-        return false; // Terminal states
-    }
-  }
-
-  // Copy with
   ReservationEntity copyWith({
     String? reservationId,
     String? vendorId,
     String? branchId,
-    String? orderId,
     String? tableId,
-    GuestInfo? guest,
-    PartyDetails? party,
-    ReservationTiming? timing,
+    Guest? guest,
+    Party? party,
+    Timing? timing,
     ReservationStatus? status,
     ReservationSource? source,
-    String? externalRef,
-    ReservationPreferences? preferences,
-    ReservationFinancials? financials,
-    String? notes,
-    AuditInfo? audit,
-    bool? isDirty,
-    String? syncStatus,
-    int? version,
-    String? idempotencyKey,
+    Preferences? preferences,
+    Financials? financials,
+    Audit? audit,
   }) {
     return ReservationEntity(
       reservationId: reservationId ?? this.reservationId,
       vendorId: vendorId ?? this.vendorId,
       branchId: branchId ?? this.branchId,
-      orderId: orderId ?? this.orderId,
       tableId: tableId ?? this.tableId,
       guest: guest ?? this.guest,
       party: party ?? this.party,
       timing: timing ?? this.timing,
       status: status ?? this.status,
       source: source ?? this.source,
-      externalRef: externalRef ?? this.externalRef,
       preferences: preferences ?? this.preferences,
       financials: financials ?? this.financials,
-      notes: notes ?? this.notes,
       audit: audit ?? this.audit,
-      isDirty: isDirty ?? this.isDirty,
-      syncStatus: syncStatus ?? this.syncStatus,
-      version: version ?? this.version,
-      idempotencyKey: idempotencyKey ?? this.idempotencyKey,
     );
   }
 }

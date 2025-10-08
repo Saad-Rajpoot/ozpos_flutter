@@ -1,31 +1,28 @@
+import '../../../../core/network/api_client.dart';
+import '../../../../core/errors/exceptions.dart';
+import 'reservations_data_source.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../../domain/entities/reservation_entity.dart';
+import '../models/reservation_model.dart';
 
-/// Remote data source interface for reservations
-abstract class ReservationsRemoteDataSource {
-  /// Get all reservations
-  Future<List<ReservationEntity>> getReservations();
+class ReservationsRemoteDataSourceImpl implements ReservationsDataSource {
+  final ApiClient _apiClient;
 
-  /// Get reservations by date
-  Future<List<ReservationEntity>> getReservationsByDate(DateTime date);
+  ReservationsRemoteDataSourceImpl({required ApiClient apiClient})
+    : _apiClient = apiClient;
 
-  /// Get reservation by ID
-  Future<ReservationEntity> getReservationById(String id);
-
-  /// Create new reservation
-  Future<ReservationEntity> createReservation(ReservationEntity reservation);
-
-  /// Update reservation
-  Future<ReservationEntity> updateReservation(ReservationEntity reservation);
-
-  /// Cancel reservation
-  Future<void> cancelReservation(String reservationId);
-
-  /// Seat reservation
-  Future<ReservationEntity> seatReservation(
-    String reservationId,
-    String tableId,
-  );
-
-  /// Checkout reservation
-  Future<ReservationEntity> checkoutReservation(String reservationId);
+  @override
+  Future<List<ReservationEntity>> getReservations() async {
+    try {
+      final response = await _apiClient.get(
+        AppConstants.getReservationsEndpoint,
+      );
+      final List<dynamic> data = response.data['data'];
+      return data
+          .map((json) => ReservationModel.fromJson(json).toEntity())
+          .toList();
+    } catch (e) {
+      throw ServerException(message: 'Failed to fetch reservations');
+    }
+  }
 }

@@ -25,6 +25,13 @@ import '../../features/addons/data/repositories/addon_repository_impl.dart';
 import '../../features/addons/domain/repositories/addon_repository.dart';
 import '../../features/addons/domain/usecases/get_addon_categories.dart';
 import '../../features/addons/presentation/bloc/addon_management_bloc.dart';
+import '../../features/reservations/data/datasources/reservations_data_source.dart';
+import '../../features/reservations/data/datasources/reservations_mock_datasource.dart';
+import '../../features/reservations/data/datasources/reservations_remote_datasource.dart';
+import '../../features/reservations/data/repositories/reservation_repository_impl.dart';
+import '../../features/reservations/domain/repositories/reservation_repository.dart';
+import '../../features/reservations/domain/usecases/get_reservations.dart';
+import '../../features/reservations/presentation/bloc/reservation_management_bloc.dart';
 
 final sl = GetIt.instance;
 
@@ -62,6 +69,7 @@ Future<void> init() async {
   await _initCart(sl);
   await _initCombos(sl);
   await _initAddons(sl);
+  await _initReservations(sl);
 }
 
 /// Initialize menu feature dependencies
@@ -140,4 +148,32 @@ Future<void> _initAddons(GetIt sl) async {
 
   // BLoC (Factory - new instance each time)
   sl.registerFactory(() => AddonManagementBloc(getAddonCategories: sl()));
+}
+
+/// Initialize reservations feature dependencies
+Future<void> _initReservations(GetIt sl) async {
+  // Environment-based data source selection
+  sl.registerLazySingleton<ReservationsDataSource>(() {
+    if (AppConfig.instance.environment == AppEnvironment.development) {
+      // Use mock data source for development
+      return ReservationsMockDataSourceImpl();
+    } else {
+      // Use remote data source for production
+      return ReservationsRemoteDataSourceImpl(apiClient: sl());
+    }
+  });
+
+  // Repository
+  sl.registerLazySingleton<ReservationRepository>(
+    () => ReservationRepositoryImpl(
+      reservationsDataSource: sl(),
+      networkInfo: sl(),
+    ),
+  );
+
+  // Use cases
+  sl.registerLazySingleton(() => GetReservations(sl()));
+
+  // BLoC (Factory - new instance each time)
+  sl.registerFactory(() => ReservationManagementBloc(getReservations: sl()));
 }
