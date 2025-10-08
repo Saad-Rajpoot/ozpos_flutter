@@ -5,7 +5,7 @@ import 'package:get_it/get_it.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
 import 'core/config/app_config.dart';
-import 'core/config/environment_config.dart';
+import 'core/config/sentry_config.dart';
 import 'core/di/injection_container.dart' as di;
 import 'core/navigation/app_router.dart';
 import 'core/navigation/navigation_service.dart';
@@ -24,8 +24,8 @@ void main() async {
 
   // Initialize AppConfig FIRST (environment-based configuration)
   AppConfig.instance.initialize(
-    environment: AppEnvironment
-        .development, // Change as needed for different environments
+    environment:
+        AppEnvironment.development, // Change to production for remote API
   );
 
   // Initialize dependency injection
@@ -34,27 +34,27 @@ void main() async {
   // Set up Flutter error handlers to capture ALL errors
   _setupErrorHandlers();
 
-  // Print environment configuration in debug mode
-  EnvironmentConfig.printConfig();
+  // Print configuration in debug mode
+  AppConfig.instance.printConfig();
+  SentryConfig.printConfig();
 
-  // Initialize Sentry based on environment configuration
-  if (EnvironmentConfig.enableSentry) {
+  // Initialize Sentry based on configuration
+  if (SentryConfig.enableSentry) {
     await SentryFlutter.init((options) {
-      options.dsn = EnvironmentConfig.sentryDsn;
-      options.environment = EnvironmentConfig.environment;
-      options.release = 'ozpos-flutter@${EnvironmentConfig.appVersion}';
-      options.tracesSampleRate = EnvironmentConfig.sentrySampleRate;
-      options.profilesSampleRate =
-          EnvironmentConfig.sentryPerformanceSampleRate;
-      options.attachScreenshot = EnvironmentConfig.attachScreenshots;
-      options.attachViewHierarchy = EnvironmentConfig.attachViewHierarchy;
-      options.debug = EnvironmentConfig.sentryDebug;
-      options.maxBreadcrumbs = EnvironmentConfig.maxBreadcrumbs;
+      options.dsn = SentryConfig.sentryDsn;
+      options.environment = AppConfig.instance.environment.name;
+      options.release = 'ozpos-flutter@${SentryConfig.appVersion}';
+      options.tracesSampleRate = SentryConfig.sentrySampleRate;
+      options.profilesSampleRate = SentryConfig.sentryPerformanceSampleRate;
+      options.attachScreenshot = SentryConfig.attachScreenshots;
+      options.attachViewHierarchy = SentryConfig.attachViewHierarchy;
+      options.debug = SentryConfig.sentryDebug;
+      options.maxBreadcrumbs = SentryConfig.maxBreadcrumbs;
       options.autoSessionTrackingInterval =
-          EnvironmentConfig.sessionTrackingInterval;
+          SentryConfig.sessionTrackingInterval;
     }, appRunner: () => runApp(const OzposApp()));
   } else {
-    // Run app without Sentry in debug mode
+    // Run app without Sentry
     runApp(const OzposApp());
   }
 }
@@ -95,7 +95,7 @@ void _setupErrorHandlers() {
     FlutterError.presentError(details);
 
     // Send to Sentry using the package's built-in method
-    if (EnvironmentConfig.enableSentry) {
+    if (SentryConfig.enableSentry) {
       Sentry.captureException(
         details.exception,
         stackTrace: details.stack,
@@ -114,7 +114,7 @@ void _setupErrorHandlers() {
 
   // Capture platform/async errors that Flutter doesn't catch
   PlatformDispatcher.instance.onError = (error, stack) {
-    if (EnvironmentConfig.enableSentry) {
+    if (SentryConfig.enableSentry) {
       SentryService.reportError(
         error,
         stack,

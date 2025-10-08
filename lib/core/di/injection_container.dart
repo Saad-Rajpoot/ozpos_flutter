@@ -18,6 +18,13 @@ import '../../features/menu/domain/usecases/get_menu_categories.dart';
 import '../../features/menu/presentation/bloc/menu_bloc.dart';
 import '../../features/checkout/presentation/bloc/cart_bloc.dart';
 import '../../features/combos/presentation/bloc/combo_management_bloc.dart';
+import '../../features/addons/data/datasources/addon_data_source.dart';
+import '../../features/addons/data/datasources/addon_mock_datasource.dart';
+import '../../features/addons/data/datasources/addon_remote_datasource.dart';
+import '../../features/addons/data/repositories/addon_repository_impl.dart';
+import '../../features/addons/domain/repositories/addon_repository.dart';
+import '../../features/addons/domain/usecases/get_addon_categories.dart';
+import '../../features/addons/presentation/bloc/addon_management_bloc.dart';
 
 final sl = GetIt.instance;
 
@@ -54,17 +61,18 @@ Future<void> init() async {
   await _initMenu(sl);
   await _initCart(sl);
   await _initCombos(sl);
+  await _initAddons(sl);
 }
 
 /// Initialize menu feature dependencies
 Future<void> _initMenu(GetIt sl) async {
   // Environment-based data source selection
   sl.registerLazySingleton<MenuRemoteDataSource>(() {
-    if (AppConfig.instance.useMockData) {
+    if (AppConfig.instance.environment == AppEnvironment.development) {
       // Use mock data source for development
       return MenuMockDataSourceImpl();
     } else {
-      // Use remote data source for staging/production
+      // Use remote data source for production
       return MenuRemoteDataSourceImpl(apiClient: sl());
     }
   });
@@ -107,4 +115,29 @@ Future<void> _initCart(GetIt sl) async {
 Future<void> _initCombos(GetIt sl) async {
   // BLoC (Factory - new instance each time)
   sl.registerFactory(() => ComboManagementBloc());
+}
+
+/// Initialize addon feature dependencies
+Future<void> _initAddons(GetIt sl) async {
+  // Environment-based data source selection
+  sl.registerLazySingleton<AddonDataSource>(() {
+    if (AppConfig.instance.environment == AppEnvironment.development) {
+      // Use mock data source for development
+      return AddonMockDataSourceImpl();
+    } else {
+      // Use remote data source for production
+      return AddonRemoteDataSourceImpl(apiClient: sl());
+    }
+  });
+
+  // Repository
+  sl.registerLazySingleton<AddonRepository>(
+    () => AddonRepositoryImpl(addonDataSource: sl(), networkInfo: sl()),
+  );
+
+  // Use cases
+  sl.registerLazySingleton(() => GetAddonCategories(sl()));
+
+  // BLoC (Factory - new instance each time)
+  sl.registerFactory(() => AddonManagementBloc(getAddonCategories: sl()));
 }

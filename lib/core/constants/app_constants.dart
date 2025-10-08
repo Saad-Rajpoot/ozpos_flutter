@@ -8,6 +8,9 @@ class AppConstants {
   static const String logoutEndpoint = '/auth/logout';
   static const String refreshEndpoint = '/auth/refresh';
 
+  // Addon endpoints
+  static const String getAddonCategoriesEndpoint = '/addons/categories';
+
   // Menu endpoints
   static const String getMenuItemsEndpoint = '/menu/items';
   static const String getMenuCategoriesEndpoint = '/menu/categories';

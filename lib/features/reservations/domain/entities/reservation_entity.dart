@@ -9,20 +9,10 @@ enum ReservationStatus {
 }
 
 /// Reservation source enum
-enum ReservationSource {
-  walkIn,
-  phone,
-  website,
-  app,
-  integration,
-}
+enum ReservationSource { walkIn, phone, website, app, integration }
 
 /// Deposit status enum
-enum DepositStatus {
-  held,
-  refunded,
-  applied,
-}
+enum DepositStatus { held, refunded, applied }
 
 /// Guest information
 class GuestInfo {
@@ -30,11 +20,7 @@ class GuestInfo {
   final String? phone;
   final String? email;
 
-  const GuestInfo({
-    required this.name,
-    this.phone,
-    this.email,
-  });
+  const GuestInfo({required this.name, this.phone, this.email});
 
   bool get hasContactInfo => phone != null || email != null;
 }
@@ -45,13 +31,10 @@ class PartyDetails {
   final int? highChairs;
   final bool? specialNeeds;
 
-  const PartyDetails({
-    required this.size,
-    this.highChairs,
-    this.specialNeeds,
-  });
+  const PartyDetails({required this.size, this.highChairs, this.specialNeeds});
 
-  bool get requiresAccessibility => specialNeeds == true || (highChairs != null && highChairs! > 0);
+  bool get requiresAccessibility =>
+      specialNeeds == true || (highChairs != null && highChairs! > 0);
 }
 
 /// Reservation timing
@@ -67,19 +50,19 @@ class ReservationTiming {
   });
 
   DateTime get endAt => startAt.add(Duration(minutes: durationMinutes));
-  
+
   bool get isToday {
     final now = DateTime.now();
-    return startAt.year == now.year && 
-           startAt.month == now.month && 
-           startAt.day == now.day;
+    return startAt.year == now.year &&
+        startAt.month == now.month &&
+        startAt.day == now.day;
   }
 
   bool get isTomorrow {
     final tomorrow = DateTime.now().add(const Duration(days: 1));
-    return startAt.year == tomorrow.year && 
-           startAt.month == tomorrow.month && 
-           startAt.day == tomorrow.day;
+    return startAt.year == tomorrow.year &&
+        startAt.month == tomorrow.month &&
+        startAt.day == tomorrow.day;
   }
 
   bool get isInPast => startAt.isBefore(DateTime.now());
@@ -196,20 +179,24 @@ class ReservationEntity {
   });
 
   // Business Logic
-  bool get isActive => status == ReservationStatus.pending || 
-                       status == ReservationStatus.confirmed || 
-                       status == ReservationStatus.seated;
+  bool get isActive =>
+      status == ReservationStatus.pending ||
+      status == ReservationStatus.confirmed ||
+      status == ReservationStatus.seated;
 
-  bool get canSeat => (status == ReservationStatus.pending || 
-                       status == ReservationStatus.confirmed) && 
-                      !timing.isInPast;
+  bool get canSeat =>
+      (status == ReservationStatus.pending ||
+          status == ReservationStatus.confirmed) &&
+      !timing.isInPast;
 
-  bool get canEdit => status != ReservationStatus.completed && 
-                      status != ReservationStatus.cancelled;
+  bool get canEdit =>
+      status != ReservationStatus.completed &&
+      status != ReservationStatus.cancelled;
 
-  bool get canCancel => status != ReservationStatus.completed && 
-                        status != ReservationStatus.cancelled && 
-                        status != ReservationStatus.noShow;
+  bool get canCancel =>
+      status != ReservationStatus.completed &&
+      status != ReservationStatus.cancelled &&
+      status != ReservationStatus.noShow;
 
   bool get canCheckout => status == ReservationStatus.seated && orderId != null;
 
@@ -254,20 +241,20 @@ class ReservationEntity {
     switch (status) {
       case ReservationStatus.pending:
         return newStatus == ReservationStatus.confirmed ||
-               newStatus == ReservationStatus.seated ||
-               newStatus == ReservationStatus.cancelled ||
-               newStatus == ReservationStatus.noShow;
-      
+            newStatus == ReservationStatus.seated ||
+            newStatus == ReservationStatus.cancelled ||
+            newStatus == ReservationStatus.noShow;
+
       case ReservationStatus.confirmed:
         return newStatus == ReservationStatus.seated ||
-               newStatus == ReservationStatus.cancelled ||
-               newStatus == ReservationStatus.noShow;
-      
+            newStatus == ReservationStatus.cancelled ||
+            newStatus == ReservationStatus.noShow;
+
       case ReservationStatus.seated:
         return newStatus == ReservationStatus.completed ||
-               newStatus == ReservationStatus.cancelled ||
-               newStatus == ReservationStatus.noShow;
-      
+            newStatus == ReservationStatus.cancelled ||
+            newStatus == ReservationStatus.noShow;
+
       case ReservationStatus.completed:
       case ReservationStatus.cancelled:
       case ReservationStatus.noShow:

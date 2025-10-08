@@ -1,0 +1,5 @@
+{
+  "error": "Failed to load menu items",
+  "message": "Invalid JSON format in menu_items.json",
+  "code": "INVALID_JSON"
+}

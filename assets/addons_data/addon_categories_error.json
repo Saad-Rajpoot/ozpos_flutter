@@ -1,0 +1,5 @@
+{
+  "error": "Failed to load addon categories",
+  "message": "Network error occurred while fetching addon categories data",
+  "code": "NETWORK_ERROR"
+}

@@ -1,0 +1,62 @@
+[
+  {
+    "id": "cat-1",
+    "name": "Pizza",
+    "description": "Delicious wood-fired pizzas",
+    "image": "https://via.placeholder.com/300x200/FF6B6B/FFFFFF?text=Pizza",
+    "isActive": true,
+    "sortOrder": 1,
+    "createdAt": "2025-01-08T10:00:00.000Z",
+    "updatedAt": "2025-01-08T10:00:00.000Z"
+  },
+  {
+    "id": "cat-2",
+    "name": "Burgers",
+    "description": "Juicy gourmet burgers",
+    "image": "https://via.placeholder.com/300x200/4ECDC4/FFFFFF?text=Burgers",
+    "isActive": true,
+    "sortOrder": 2,
+    "createdAt": "2025-01-08T10:00:00.000Z",
+    "updatedAt": "2025-01-08T10:00:00.000Z"
+  },
+  {
+    "id": "cat-3",
+    "name": "Pasta",
+    "description": "Fresh homemade pasta",
+    "image": "https://via.placeholder.com/300x200/FFE66D/FFFFFF?text=Pasta",
+    "isActive": true,
+    "sortOrder": 3,
+    "createdAt": "2025-01-08T10:00:00.000Z",
+    "updatedAt": "2025-01-08T10:00:00.000Z"
+  },
+  {
+    "id": "cat-4",
+    "name": "Salads",
+    "description": "Fresh and healthy salads",
+    "image": "https://via.placeholder.com/300x200/95E1D3/FFFFFF?text=Salads",
+    "isActive": true,
+    "sortOrder": 4,
+    "createdAt": "2025-01-08T10:00:00.000Z",
+    "updatedAt": "2025-01-08T10:00:00.000Z"
+  },
+  {
+    "id": "cat-5",
+    "name": "Desserts",
+    "description": "Sweet treats",
+    "image": "https://via.placeholder.com/300x200/F38181/FFFFFF?text=Desserts",
+    "isActive": true,
+    "sortOrder": 5,
+    "createdAt": "2025-01-08T10:00:00.000Z",
+    "updatedAt": "2025-01-08T10:00:00.000Z"
+  },
+  {
+    "id": "cat-6",
+    "name": "Beverages",
+    "description": "Hot and cold drinks",
+    "image": "https://via.placeholder.com/300x200/AA96DA/FFFFFF?text=Beverages",
+    "isActive": true,
+    "sortOrder": 6,
+    "createdAt": "2025-01-08T10:00:00.000Z",
+    "updatedAt": "2025-01-08T10:00:00.000Z"
+  }
+]

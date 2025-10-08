@@ -1,174 +1,67 @@
+import 'dart:convert';
+import 'package:flutter/services.dart' show rootBundle;
 import '../../../orders/domain/entities/order_entity.dart';
 
-/// Mock orders data matching React prototype
+/// Mock orders data source that loads from JSON files
 class MockOrdersData {
-  static List<OrderEntity> getMockOrders() {
-    final now = DateTime.now();
+  static Future<List<OrderEntity>> getMockOrders() async {
+    try {
+      // Try to load success data first
+      final jsonString = await rootBundle.loadString(
+        'assets/orders_data/orders_data.json',
+      );
+      final List<dynamic> jsonData = json.decode(jsonString);
+      final now = DateTime.now();
 
-    return [
-      OrderEntity(
-        id: 'UE-12345',
-        queueNumber: '01',
-        channel: OrderChannel.ubereats,
-        orderType: OrderType.delivery,
-        paymentStatus: PaymentStatus.paid,
-        status: OrderStatus.active,
-        customerName: 'John Doe',
-        customerPhone: '+1 234-567-8901',
-        items: const [
-          OrderItemEntity(
-            name: 'Classic Beef Burger',
-            quantity: 1,
-            price: 12.99,
+      return jsonData.map((order) {
+        return OrderEntity(
+          id: order['id'],
+          queueNumber: order['queueNumber'],
+          channel: OrderChannel.values.firstWhere(
+            (e) => e.toString().split('.').last == order['channel'],
           ),
-          OrderItemEntity(name: 'French Fries', quantity: 1, price: 4.50),
-          OrderItemEntity(name: 'Coca-Cola', quantity: 1, price: 2.50),
-        ],
-        subtotal: 19.99,
-        tax: 2.00,
-        total: 21.99,
-        createdAt: now.subtract(const Duration(minutes: 30)),
-        estimatedTime: now.add(const Duration(minutes: 30)),
-        specialInstructions: 'Extra sauce on the side',
-      ),
-      OrderEntity(
-        id: 'DD-12346',
-        queueNumber: '02',
-        channel: OrderChannel.doordash,
-        orderType: OrderType.delivery,
-        paymentStatus: PaymentStatus.paid,
-        status: OrderStatus.active,
-        customerName: 'Jane Smith',
-        customerPhone: '+1 234-567-8902',
-        items: const [
-          OrderItemEntity(name: 'Margherita Pizza', quantity: 1, price: 18.00),
-          OrderItemEntity(name: 'Garlic Bread', quantity: 1, price: 6.00),
-        ],
-        subtotal: 24.00,
-        tax: 2.40,
-        total: 26.40,
-        createdAt: now.subtract(const Duration(minutes: 15)),
-        estimatedTime: now.add(const Duration(minutes: 45)),
-        specialInstructions: 'Ring doorbell twice',
-      ),
-      OrderEntity(
-        id: 'ML-12347',
-        queueNumber: '03',
-        channel: OrderChannel.menulog,
-        orderType: OrderType.delivery,
-        paymentStatus: PaymentStatus.paid,
-        status: OrderStatus.completed,
-        customerName: 'Mike Johnson',
-        customerPhone: '+1 234-567-8903',
-        items: const [
-          OrderItemEntity(name: 'Chicken Tikka', quantity: 2, price: 15.00),
-          OrderItemEntity(name: 'Naan Bread', quantity: 2, price: 4.00),
-        ],
-        subtotal: 38.00,
-        tax: 3.80,
-        total: 41.80,
-        createdAt: now.subtract(const Duration(hours: 1, minutes: 30)),
-        estimatedTime: now.subtract(const Duration(hours: 1)),
-        specialInstructions: '',
-      ),
-      OrderEntity(
-        id: 'WEB-12348',
-        queueNumber: '04',
-        channel: OrderChannel.website,
-        orderType: OrderType.takeaway,
-        paymentStatus: PaymentStatus.unpaid,
-        status: OrderStatus.active,
-        customerName: 'Sarah Wilson',
-        customerPhone: '+1 234-567-8904',
-        items: const [
-          OrderItemEntity(name: 'Caesar Salad', quantity: 1, price: 12.50),
-          OrderItemEntity(name: 'Grilled Chicken', quantity: 1, price: 18.00),
-        ],
-        subtotal: 30.50,
-        tax: 3.05,
-        total: 33.55,
-        createdAt: now,
-        estimatedTime: now.add(const Duration(minutes: 20)),
-        specialInstructions: 'No croutons please',
-      ),
-      OrderEntity(
-        id: 'APP-12349',
-        queueNumber: '05',
-        channel: OrderChannel.app,
-        orderType: OrderType.takeaway,
-        paymentStatus: PaymentStatus.paid,
-        status: OrderStatus.active,
-        customerName: 'David Brown',
-        customerPhone: '+1 234-567-8905',
-        items: const [
-          OrderItemEntity(name: 'Fish & Chips', quantity: 1, price: 16.99),
-          OrderItemEntity(name: 'Mushy Peas', quantity: 1, price: 3.50),
-        ],
-        subtotal: 20.49,
-        tax: 2.05,
-        total: 22.54,
-        createdAt: now.subtract(const Duration(minutes: 5)),
-        estimatedTime: now.add(const Duration(minutes: 25)),
-        specialInstructions: 'Extra lemon wedges',
-      ),
-      OrderEntity(
-        id: 'QR-12350',
-        queueNumber: '06',
-        channel: OrderChannel.qr,
-        orderType: OrderType.dinein,
-        paymentStatus: PaymentStatus.paid,
-        status: OrderStatus.active,
-        customerName: 'Table 7',
-        items: const [
-          OrderItemEntity(name: 'Ribeye Steak', quantity: 1, price: 32.00),
-          OrderItemEntity(name: 'Mashed Potatoes', quantity: 1, price: 8.00),
-          OrderItemEntity(name: 'Red Wine', quantity: 1, price: 12.00),
-        ],
-        subtotal: 52.00,
-        tax: 5.20,
-        total: 57.20,
-        createdAt: now.subtract(const Duration(minutes: 10)),
-        estimatedTime: now.add(const Duration(minutes: 20)),
-        specialInstructions: 'Medium rare steak',
-      ),
-      OrderEntity(
-        id: 'DIN-12351',
-        queueNumber: '07',
-        channel: OrderChannel.dinein,
-        orderType: OrderType.dinein,
-        paymentStatus: PaymentStatus.unpaid,
-        status: OrderStatus.active,
-        customerName: 'Table 3',
-        items: const [
-          OrderItemEntity(name: 'Pasta Carbonara', quantity: 2, price: 14.50),
-          OrderItemEntity(name: 'Garlic Bread', quantity: 1, price: 6.00),
-        ],
-        subtotal: 35.00,
-        tax: 3.50,
-        total: 38.50,
-        createdAt: now.subtract(const Duration(minutes: 5)),
-        estimatedTime: now.add(const Duration(minutes: 25)),
-        specialInstructions: 'Extra parmesan cheese',
-      ),
-      OrderEntity(
-        id: 'TO-12352',
-        queueNumber: '08',
-        channel: OrderChannel.takeaway,
-        orderType: OrderType.takeaway,
-        paymentStatus: PaymentStatus.paid,
-        status: OrderStatus.cancelled,
-        customerName: 'Lisa Chen',
-        customerPhone: '+1 234-567-8906',
-        items: const [
-          OrderItemEntity(name: 'Sushi Platter', quantity: 1, price: 28.00),
-        ],
-        subtotal: 28.00,
-        tax: 2.80,
-        total: 30.80,
-        createdAt: now.subtract(const Duration(minutes: 50)),
-        estimatedTime: now.subtract(const Duration(minutes: 20)),
-        specialInstructions: 'Customer requested cancellation',
-      ),
-    ];
+          orderType: OrderType.values.firstWhere(
+            (e) => e.toString().split('.').last == order['orderType'],
+          ),
+          paymentStatus: PaymentStatus.values.firstWhere(
+            (e) => e.toString().split('.').last == order['paymentStatus'],
+          ),
+          status: OrderStatus.values.firstWhere(
+            (e) => e.toString().split('.').last == order['status'],
+          ),
+          customerName: order['customerName'],
+          customerPhone: order['customerPhone'],
+          items: (order['items'] as List<dynamic>).map((item) {
+            return OrderItemEntity(
+              name: item['name'],
+              quantity: item['quantity'],
+              price: item['price'].toDouble(),
+            );
+          }).toList(),
+          subtotal: order['subtotal'].toDouble(),
+          tax: order['tax'].toDouble(),
+          total: order['total'].toDouble(),
+          createdAt: now.subtract(
+            Duration(minutes: order['createdAtMinutes'] ?? 0),
+          ),
+          estimatedTime: now.add(
+            Duration(minutes: order['estimatedTimeMinutes'] ?? 0),
+          ),
+          specialInstructions: order['specialInstructions'],
+        );
+      }).toList();
+    } catch (e) {
+      // If success data fails to load, try loading error data
+      try {
+        final errorJsonString = await rootBundle.loadString(
+          'assets/orders_data/orders_data_error.json',
+        );
+        final Map<String, dynamic> errorData = json.decode(errorJsonString);
+        throw Exception(errorData['message'] ?? 'Failed to load orders data');
+      } catch (errorLoadingError) {
+        // If even error data fails, throw the original error
+        throw Exception('Failed to load orders data: $e');
+      }
+    }
   }
 }

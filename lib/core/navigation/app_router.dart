@@ -6,6 +6,7 @@ import '../../features/menu/presentation/screens/menu_item_wizard_screen.dart';
 import '../../features/addons/presentation/screens/addon_categories_screen.dart';
 import '../../features/addons/presentation/bloc/addon_management_bloc.dart';
 import '../../features/addons/presentation/bloc/addon_management_event.dart';
+import '../../core/di/injection_container.dart' as di;
 import '../../features/menu/domain/entities/menu_item_edit_entity.dart';
 import '../../features/dashboard/presentation/screens/dashboard_screen.dart';
 import '../../features/menu/presentation/screens/menu_screen.dart';
@@ -139,9 +140,9 @@ class AppRouter {
 
       case addonManagement:
         return MaterialPageRoute(
-          builder: (_) => BlocProvider(
-            create: (context) =>
-                AddonManagementBloc()..add(const LoadAddonCategoriesEvent()),
+          builder: (_) => BlocProvider<AddonManagementBloc>.value(
+            value: di.sl<AddonManagementBloc>()
+              ..add(const LoadAddonCategoriesEvent()),
             child: const AddonCategoriesScreen(),
           ),
           settings: settings,

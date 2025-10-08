@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:uuid/uuid.dart';
 import '../../domain/entities/menu_item_edit_entity.dart';
-import '../../../addons/presentation/widgets/addon_rules_compact_display.dart';
 
 /// Individual size row with expandable details
 class SizeRowWidget extends StatefulWidget {
@@ -245,10 +243,6 @@ class _SizeRowWidgetState extends State<SizeRowWidget> {
               ),
             ],
           ),
-          const SizedBox(height: 16),
-
-          // Add-ons section
-          _buildAddOnsSection(),
         ],
       ),
     );
@@ -349,24 +343,6 @@ class _SizeRowWidgetState extends State<SizeRowWidget> {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildAddOnsSection() {
-    // Generate or use existing size ID
-    final sizeId = widget.size.id ?? const Uuid().v4();
-
-    // If size doesn't have an ID yet, update it
-    if (widget.size.id == null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        widget.onUpdate(widget.size.copyWith(id: sizeId));
-      });
-    }
-
-    return AddonRulesCompactDisplay(
-      itemId: widget.itemId,
-      sizeId: sizeId,
-      sizeLabel: widget.size.name,
     );
   }
 

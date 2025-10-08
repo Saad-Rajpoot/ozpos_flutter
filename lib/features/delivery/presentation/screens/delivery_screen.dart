@@ -14,9 +14,11 @@ class DeliveryScreen extends StatefulWidget {
 }
 
 class _DeliveryScreenState extends State<DeliveryScreen> {
-  late DeliveryKpiData _kpis;
-  late List<DriverEntity> _drivers;
-  late List<DeliveryOrderEntity> _orders;
+  DeliveryKpiData? _kpis;
+  List<DriverEntity>? _drivers;
+  List<DeliveryOrderEntity>? _orders;
+  bool _isLoading = true;
+  String? _errorMessage;
 
   String _selectedDateFilter = 'Today';
   String _selectedSourceFilter = 'All Sources';
@@ -31,14 +33,32 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
     _loadData();
   }
 
-  void _loadData() {
-    _kpis = MockDeliveryData.getKpis();
-    _drivers = MockDeliveryData.getDrivers();
-    _orders = MockDeliveryData.getOrders();
+  Future<void> _loadData() async {
+    try {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = null;
+      });
+
+      _kpis = await MockDeliveryData.getKpis();
+      _drivers = await MockDeliveryData.getDrivers();
+      _orders = await MockDeliveryData.getOrders();
+
+      setState(() {
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Error loading delivery data: $e';
+      });
+      debugPrint('Error loading delivery data: $e');
+    }
   }
 
   List<DeliveryOrderEntity> get _filteredOrders {
-    return _orders.where((order) {
+    if (_orders == null) return [];
+    return _orders!.where((order) {
       if (_selectedOrderTab == 'Ready' && !order.isReady) return false;
       if (_selectedOrderTab == 'In Progress' &&
           !order.isInProgress &&
@@ -49,9 +69,9 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
     }).toList();
   }
 
-  int get _readyCount => _orders.where((o) => o.isReady).length;
+  int get _readyCount => _orders?.where((o) => o.isReady).length ?? 0;
   int get _inProgressCount =>
-      _orders.where((o) => o.isInProgress || o.isDelayed).length;
+      _orders?.where((o) => o.isInProgress || o.isDelayed).length ?? 0;
 
   @override
   Widget build(BuildContext context) {
@@ -166,6 +186,34 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
   }
 
   Widget _buildKpiStrip() {
+    if (_isLoading) {
+      return Container(
+        padding: const EdgeInsets.all(DeliveryTokens.spacingXl),
+        child: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_errorMessage != null) {
+      return Container(
+        padding: const EdgeInsets.all(DeliveryTokens.spacingXl),
+        child: Center(
+          child: Column(
+            children: [
+              const Icon(Icons.error_outline, size: 48, color: Colors.red),
+              const SizedBox(height: 16),
+              Text('Failed to load data', style: DeliveryTokens.headingSmall),
+              const SizedBox(height: 8),
+              Text(_errorMessage!, style: DeliveryTokens.bodySmall),
+              const SizedBox(height: 16),
+              ElevatedButton(onPressed: _loadData, child: const Text('Retry')),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (_kpis == null) return const SizedBox.shrink();
+
     return Container(
       padding: const EdgeInsets.all(DeliveryTokens.spacingXl),
       child: Row(
@@ -173,7 +221,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
           Expanded(
             child: _buildKpiCard(
               'Active Drivers',
-              '${_kpis.activeDrivers}',
+              '${_kpis!.activeDrivers}',
               Icons.people,
               DeliveryTokens.kpiActiveDriversStart,
               DeliveryTokens.kpiActiveDriversEnd,
@@ -183,7 +231,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
           Expanded(
             child: _buildKpiCard(
               'In Progress',
-              '${_kpis.inProgress}',
+              '${_kpis!.inProgress}',
               Icons.local_shipping,
               DeliveryTokens.kpiInProgressStart,
               DeliveryTokens.kpiInProgressEnd,
@@ -193,7 +241,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
           Expanded(
             child: _buildKpiCard(
               'Delayed Orders',
-              '${_kpis.delayedOrders}',
+              '${_kpis!.delayedOrders}',
               Icons.access_time,
               DeliveryTokens.kpiDelayedStart,
               DeliveryTokens.kpiDelayedEnd,
@@ -203,7 +251,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
           Expanded(
             child: _buildKpiCard(
               'Avg ETA',
-              '${_kpis.avgEtaMinutes}m',
+              '${_kpis!.avgEtaMinutes}m',
               Icons.schedule,
               DeliveryTokens.kpiAvgEtaStart,
               DeliveryTokens.kpiAvgEtaEnd,
@@ -288,7 +336,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
           const SizedBox(width: 12),
           _buildDropdownFilter(
             _selectedDriverFilter,
-            ['All Drivers', ..._drivers.map((d) => d.name)],
+            ['All Drivers', ..._drivers?.map((d) => d.name) ?? []],
             (val) => setState(() => _selectedDriverFilter = val!),
           ),
         ],
@@ -436,7 +484,8 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                   ),
 
                   // Driver markers
-                  ..._drivers.map((driver) => _buildDriverMarker(driver)),
+                  ..._drivers?.map((driver) => _buildDriverMarker(driver)) ??
+                      [],
 
                   // Selected order route (if any)
                   if (_selectedOrder != null && _selectedOrder!.hasDriver)
@@ -571,13 +620,33 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
           ),
           const Divider(height: 1),
           Expanded(
-            child: ListView.separated(
-              padding: const EdgeInsets.all(DeliveryTokens.spacingLg),
-              itemCount: _filteredOrders.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
-              itemBuilder: (context, index) =>
-                  _buildOrderCard(_filteredOrders[index]),
-            ),
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : _errorMessage != null
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.error_outline,
+                          size: 32,
+                          color: Colors.red,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Failed to load orders',
+                          style: DeliveryTokens.bodySmall,
+                        ),
+                      ],
+                    ),
+                  )
+                : ListView.separated(
+                    padding: const EdgeInsets.all(DeliveryTokens.spacingLg),
+                    itemCount: _filteredOrders.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 12),
+                    itemBuilder: (context, index) =>
+                        _buildOrderCard(_filteredOrders[index]),
+                  ),
           ),
         ],
       ),
@@ -817,13 +886,33 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
           ),
           const Divider(height: 1),
           Expanded(
-            child: ListView.separated(
-              padding: const EdgeInsets.all(DeliveryTokens.spacingLg),
-              itemCount: _drivers.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
-              itemBuilder: (context, index) =>
-                  _buildDriverCard(_drivers[index]),
-            ),
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : _errorMessage != null
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.error_outline,
+                          size: 32,
+                          color: Colors.red,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Failed to load drivers',
+                          style: DeliveryTokens.bodySmall,
+                        ),
+                      ],
+                    ),
+                  )
+                : ListView.separated(
+                    padding: const EdgeInsets.all(DeliveryTokens.spacingLg),
+                    itemCount: _drivers?.length ?? 0,
+                    separatorBuilder: (_, __) => const SizedBox(height: 12),
+                    itemBuilder: (context, index) =>
+                        _buildDriverCard(_drivers![index]),
+                  ),
           ),
         ],
       ),
@@ -1144,11 +1233,21 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
   }
 
   void _showAssignDriverModal(DeliveryOrderEntity order) {
+    if (_drivers == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Drivers not loaded yet'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
     showDialog(
       context: context,
       builder: (context) => _AssignDriverModal(
         order: order,
-        drivers: _drivers,
+        drivers: _drivers!,
         onAssign: (driver) {
           Navigator.pop(context);
           ScaffoldMessenger.of(context).showSnackBar(

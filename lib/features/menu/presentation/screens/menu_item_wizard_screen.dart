@@ -6,6 +6,7 @@ import '../bloc/menu_edit_event.dart';
 import '../bloc/menu_edit_state.dart';
 import '../../../addons/presentation/bloc/addon_management_bloc.dart';
 import '../../../addons/presentation/bloc/addon_management_event.dart';
+import '../../../addons/domain/usecases/get_addon_categories.dart';
 import '../../domain/entities/menu_item_edit_entity.dart';
 import '../../domain/repositories/menu_repository.dart';
 import '../widgets/wizard_stepper.dart';
@@ -38,18 +39,10 @@ class MenuItemWizardScreen extends StatelessWidget {
               MenuEditBloc(menuRepository: GetIt.instance<MenuRepository>())
                 ..add(InitializeMenuEdit(existingItem: existingItem)),
         ),
-        BlocProvider(
-          create: (context) {
-            final bloc = AddonManagementBloc()
-              ..add(const LoadAddonCategoriesEvent());
-
-            // Load attachments if editing existing item
-            if (existingItem?.id != null) {
-              bloc.add(LoadItemAddonAttachmentsEvent(existingItem!.id!));
-            }
-
-            return bloc;
-          },
+        BlocProvider<AddonManagementBloc>(
+          create: (context) => AddonManagementBloc(
+            getAddonCategories: GetIt.instance<GetAddonCategories>(),
+          )..add(const LoadAddonCategoriesEvent()),
         ),
       ],
       child: const _MenuItemWizardView(),

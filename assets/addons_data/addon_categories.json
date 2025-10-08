@@ -1,0 +1,158 @@
+[
+  {
+    "id": "cheese-options",
+    "name": "Cheese Options",
+    "description": "Choose your cheese",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z",
+    "items": [
+      {
+        "id": "cheese-cheddar",
+        "name": "Cheddar Cheese",
+        "basePriceDelta": 1.50
+      },
+      {
+        "id": "cheese-mozzarella",
+        "name": "Mozzarella",
+        "basePriceDelta": 1.50
+      },
+      {
+        "id": "cheese-parmesan",
+        "name": "Parmesan",
+        "basePriceDelta": 1.75
+      },
+      {
+        "id": "cheese-swiss",
+        "name": "Swiss Cheese",
+        "basePriceDelta": 1.75
+      },
+      {
+        "id": "cheese-blue",
+        "name": "Blue Cheese",
+        "basePriceDelta": 2.00
+      }
+    ]
+  },
+  {
+    "id": "sauces",
+    "name": "Sauces",
+    "description": "Choose your sauces",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z",
+    "items": [
+      {
+        "id": "sauce-ketchup",
+        "name": "Ketchup",
+        "basePriceDelta": 0.50
+      },
+      {
+        "id": "sauce-mustard",
+        "name": "Mustard",
+        "basePriceDelta": 0.50
+      },
+      {
+        "id": "sauce-mayo",
+        "name": "Mayonnaise",
+        "basePriceDelta": 0.50
+      },
+      {
+        "id": "sauce-bbq",
+        "name": "BBQ Sauce",
+        "basePriceDelta": 0.75
+      },
+      {
+        "id": "sauce-ranch",
+        "name": "Ranch",
+        "basePriceDelta": 0.75
+      },
+      {
+        "id": "sauce-sriracha",
+        "name": "Sriracha",
+        "basePriceDelta": 0.75
+      },
+      {
+        "id": "sauce-aioli",
+        "name": "Aioli",
+        "basePriceDelta": 0.85
+      }
+    ]
+  },
+  {
+    "id": "extra-toppings",
+    "name": "Extra Toppings",
+    "description": "Add extra toppings",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z",
+    "items": [
+      {
+        "id": "topping-bacon",
+        "name": "Bacon",
+        "basePriceDelta": 2.50
+      },
+      {
+        "id": "topping-egg",
+        "name": "Fried Egg",
+        "basePriceDelta": 1.50
+      },
+      {
+        "id": "topping-avocado",
+        "name": "Avocado",
+        "basePriceDelta": 2.00
+      },
+      {
+        "id": "topping-mushrooms",
+        "name": "Mushrooms",
+        "basePriceDelta": 1.50
+      },
+      {
+        "id": "topping-onions",
+        "name": "Grilled Onions",
+        "basePriceDelta": 1.00
+      },
+      {
+        "id": "topping-jalapenos",
+        "name": "Jalapeños",
+        "basePriceDelta": 0.75
+      },
+      {
+        "id": "topping-pickles",
+        "name": "Pickles",
+        "basePriceDelta": 0.50
+      }
+    ]
+  },
+  {
+    "id": "spices",
+    "name": "Spices & Seasonings",
+    "description": "Add spices",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z",
+    "items": [
+      {
+        "id": "spice-salt",
+        "name": "Extra Salt",
+        "basePriceDelta": 0.00
+      },
+      {
+        "id": "spice-pepper",
+        "name": "Black Pepper",
+        "basePriceDelta": 0.00
+      },
+      {
+        "id": "spice-paprika",
+        "name": "Paprika",
+        "basePriceDelta": 0.25
+      },
+      {
+        "id": "spice-chili",
+        "name": "Chili Flakes",
+        "basePriceDelta": 0.25
+      },
+      {
+        "id": "spice-garlic",
+        "name": "Garlic Powder",
+        "basePriceDelta": 0.25
+      }
+    ]
+  }
+]

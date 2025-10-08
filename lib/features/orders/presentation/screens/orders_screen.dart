@@ -14,12 +14,33 @@ class OrdersScreen extends StatefulWidget {
 }
 
 class _OrdersScreenState extends State<OrdersScreen> {
-  final List<OrderEntity> _allOrders = MockOrdersData.getMockOrders();
+  List<OrderEntity> _allOrders = [];
+  bool _isLoading = true;
 
   String _searchQuery = '';
   OrderStatus _activeTab = OrderStatus.active;
   final Set<OrderChannel> _selectedChannels = {};
   bool _viewModeGrid = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadOrders();
+  }
+
+  Future<void> _loadOrders() async {
+    try {
+      _allOrders = await MockOrdersData.getMockOrders();
+      _isLoading = false;
+      setState(() {});
+    } catch (e) {
+      _isLoading = false;
+      // Handle error - you might want to show an error message to user
+      debugPrint('Error loading orders: $e');
+
+      setState(() {});
+    }
+  }
 
   List<OrderEntity> get _filteredOrders {
     return _allOrders.where((order) {
@@ -46,6 +67,10 @@ class _OrdersScreenState extends State<OrdersScreen> {
   }
 
   Map<String, dynamic> get _stats {
+    if (_allOrders.isEmpty) {
+      return {'active': 0, 'completed': 0, 'cancelled': 0, 'revenue': 0.0};
+    }
+
     final active = _allOrders
         .where((o) => o.status == OrderStatus.active)
         .length;
@@ -510,6 +535,10 @@ class _OrdersScreenState extends State<OrdersScreen> {
   }
 
   Widget _buildOrdersGrid() {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
     if (_filteredOrders.isEmpty) {
       return _buildEmptyState();
     }

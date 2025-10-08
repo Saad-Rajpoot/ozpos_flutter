@@ -1,91 +1,43 @@
-import "../../domain/entities/addon_management_entities.dart";
+import 'dart:convert';
+import 'package:flutter/services.dart' show rootBundle;
+import '../../domain/entities/addon_management_entities.dart';
+import '../model/addon_category_model.dart';
+import 'addon_data_source.dart';
 
-/// Mock add-on categories for testing menu editor
-/// Matches the React prototype data structure
-final List<AddonCategory> mockAddOnCategories = [
-  AddonCategory(
-    id: 'cheese-options',
-    name: 'Cheese Options',
-    description: 'Choose your cheese',
-    items: [
-      AddonItem(
-        id: 'cheese-cheddar',
-        name: 'Cheddar Cheese',
-        basePriceDelta: 1.50,
-      ),
-      AddonItem(
-        id: 'cheese-mozzarella',
-        name: 'Mozzarella',
-        basePriceDelta: 1.50,
-      ),
-      AddonItem(id: 'cheese-parmesan', name: 'Parmesan', basePriceDelta: 1.75),
-      AddonItem(id: 'cheese-swiss', name: 'Swiss Cheese', basePriceDelta: 1.75),
-      AddonItem(id: 'cheese-blue', name: 'Blue Cheese', basePriceDelta: 2.00),
-    ],
-    createdAt: DateTime(2024, 1, 1),
-    updatedAt: DateTime(2024, 1, 1),
-  ),
+/// Mock add-on categories data source that loads from JSON files
+class AddonMockDataSourceImpl implements AddonDataSource {
+  /// Load addon categories from JSON file
+  /// Simulates API behavior: tries to load success data, falls back to error data on failure
+  @override
+  Future<List<AddonCategory>> getAddonCategories() async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    try {
+      // Try to load success data first
+      final jsonString = await rootBundle.loadString(
+        'assets/addons_data/addon_categories.json',
+      );
+      final List<dynamic> jsonData = json.decode(jsonString);
 
-  AddonCategory(
-    id: 'sauces',
-    name: 'Sauces',
-    description: 'Choose your sauces',
-    items: [
-      AddonItem(id: 'sauce-ketchup', name: 'Ketchup', basePriceDelta: 0.50),
-      AddonItem(id: 'sauce-mustard', name: 'Mustard', basePriceDelta: 0.50),
-      AddonItem(id: 'sauce-mayo', name: 'Mayonnaise', basePriceDelta: 0.50),
-      AddonItem(id: 'sauce-bbq', name: 'BBQ Sauce', basePriceDelta: 0.75),
-      AddonItem(id: 'sauce-ranch', name: 'Ranch', basePriceDelta: 0.75),
-      AddonItem(id: 'sauce-sriracha', name: 'Sriracha', basePriceDelta: 0.75),
-      AddonItem(id: 'sauce-aioli', name: 'Aioli', basePriceDelta: 0.85),
-    ],
-    createdAt: DateTime(2024, 1, 1),
-    updatedAt: DateTime(2024, 1, 1),
-  ),
-  AddonCategory(
-    id: 'extra-toppings',
-    name: 'Extra Toppings',
-    description: 'Add extra toppings',
-    items: [
-      AddonItem(id: 'topping-bacon', name: 'Bacon', basePriceDelta: 2.50),
-      AddonItem(id: 'topping-egg', name: 'Fried Egg', basePriceDelta: 1.50),
-      AddonItem(id: 'topping-avocado', name: 'Avocado', basePriceDelta: 2.00),
-      AddonItem(
-        id: 'topping-mushrooms',
-        name: 'Mushrooms',
-        basePriceDelta: 1.50,
-      ),
-      AddonItem(
-        id: 'topping-onions',
-        name: 'Grilled Onions',
-        basePriceDelta: 1.00,
-      ),
-      AddonItem(
-        id: 'topping-jalapenos',
-        name: 'Jalapeños',
-        basePriceDelta: 0.75,
-      ),
-      AddonItem(id: 'topping-pickles', name: 'Pickles', basePriceDelta: 0.50),
-    ],
-    createdAt: DateTime(2024, 1, 1),
-    updatedAt: DateTime(2024, 1, 1),
-  ),
-  AddonCategory(
-    id: 'spices',
-    name: 'Spices & Seasonings',
-    description: 'Add spices',
-    items: [
-      AddonItem(id: 'spice-salt', name: 'Extra Salt', basePriceDelta: 0.00),
-      AddonItem(id: 'spice-pepper', name: 'Black Pepper', basePriceDelta: 0.00),
-      AddonItem(id: 'spice-paprika', name: 'Paprika', basePriceDelta: 0.25),
-      AddonItem(id: 'spice-chili', name: 'Chili Flakes', basePriceDelta: 0.25),
-      AddonItem(
-        id: 'spice-garlic',
-        name: 'Garlic Powder',
-        basePriceDelta: 0.25,
-      ),
-    ],
-    createdAt: DateTime(2024, 1, 1),
-    updatedAt: DateTime(2024, 1, 1),
-  ),
-];
+      return jsonData.map((categoryData) {
+        final categoryModel = AddonCategoryModel.fromJson(
+          categoryData as Map<String, dynamic>,
+        );
+        return categoryModel.toEntity();
+      }).toList();
+    } catch (e) {
+      // If success data fails to load, try loading error data
+      try {
+        final errorJsonString = await rootBundle.loadString(
+          'assets/addons_data/addon_categories_error.json',
+        );
+        final Map<String, dynamic> errorData = json.decode(errorJsonString);
+        throw Exception(
+          errorData['message'] ?? 'Failed to load addon categories',
+        );
+      } catch (errorLoadingError) {
+        // If even error data fails, throw the original error
+        throw Exception('Failed to load addon categories: $e');
+      }
+    }
+  }
+}
