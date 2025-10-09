@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/navigation/app_router.dart';
 import '../../../../core/widgets/sidebar_nav.dart';
-import '../../../delivery/domain/entities/delivery_entities.dart';
-import '../../../delivery/data/datasources/mock_delivery_data.dart';
+import '../../domain/entities/delivery_entities.dart';
+import '../bloc/delivery_bloc.dart';
+import '../bloc/delivery_event.dart';
+import '../bloc/delivery_state.dart';
 import '../delivery_tokens.dart';
 import '../widgets/add_driver_modal.dart';
 
@@ -14,64 +17,46 @@ class DeliveryScreen extends StatefulWidget {
 }
 
 class _DeliveryScreenState extends State<DeliveryScreen> {
-  DeliveryKpiData? _kpis;
-  List<DriverEntity>? _drivers;
-  List<DeliveryOrderEntity>? _orders;
-  bool _isLoading = true;
-  String? _errorMessage;
-
   String _selectedDateFilter = 'Today';
   String _selectedSourceFilter = 'All Sources';
   String _selectedDriverFilter = 'All Drivers';
   String _selectedOrderTab = 'Ready';
-  DeliveryOrderEntity? _selectedOrder;
+  OrderEntity? _selectedOrder;
   DriverEntity? _selectedDriver;
 
   @override
   void initState() {
     super.initState();
-    _loadData();
+    context.read<DeliveryBloc>().add(const LoadDeliveryDataEvent());
   }
 
-  Future<void> _loadData() async {
-    try {
-      setState(() {
-        _isLoading = true;
-        _errorMessage = null;
-      });
-
-      _kpis = await MockDeliveryData.getKpis();
-      _drivers = await MockDeliveryData.getDrivers();
-      _orders = await MockDeliveryData.getOrders();
-
-      setState(() {
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-        _errorMessage = 'Error loading delivery data: $e';
-      });
-      debugPrint('Error loading delivery data: $e');
-    }
-  }
-
-  List<DeliveryOrderEntity> get _filteredOrders {
-    if (_orders == null) return [];
-    return _orders!.where((order) {
-      if (_selectedOrderTab == 'Ready' && !order.isReady) return false;
+  List<OrderEntity> get _filteredOrders {
+    final state = context.read<DeliveryBloc>().state;
+    if (state is! DeliveryLoaded) return [];
+    return state.deliveryData.orders.where((order) {
+      if (_selectedOrderTab == 'Ready' && order.status != 'ready') return false;
       if (_selectedOrderTab == 'In Progress' &&
-          !order.isInProgress &&
-          !order.isDelayed) {
+          order.status != 'inProgress' &&
+          order.status != 'delayed') {
         return false;
       }
       return true;
     }).toList();
   }
 
-  int get _readyCount => _orders?.where((o) => o.isReady).length ?? 0;
-  int get _inProgressCount =>
-      _orders?.where((o) => o.isInProgress || o.isDelayed).length ?? 0;
+  int get _readyCount {
+    final state = context.read<DeliveryBloc>().state;
+    if (state is! DeliveryLoaded) return 0;
+    return state.deliveryData.orders.where((o) => o.status == 'ready').length;
+  }
+
+  int get _inProgressCount {
+    final state = context.read<DeliveryBloc>().state;
+    if (state is! DeliveryLoaded) return 0;
+    return state.deliveryData.orders
+        .where((o) => o.status == 'inProgress' || o.status == 'delayed')
+        .length;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -186,79 +171,95 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
   }
 
   Widget _buildKpiStrip() {
-    if (_isLoading) {
-      return Container(
-        padding: const EdgeInsets.all(DeliveryTokens.spacingXl),
-        child: const Center(child: CircularProgressIndicator()),
-      );
-    }
+    return BlocBuilder<DeliveryBloc, DeliveryState>(
+      builder: (context, state) {
+        if (state is DeliveryLoading) {
+          return Container(
+            padding: const EdgeInsets.all(DeliveryTokens.spacingXl),
+            child: const Center(child: CircularProgressIndicator()),
+          );
+        }
 
-    if (_errorMessage != null) {
-      return Container(
-        padding: const EdgeInsets.all(DeliveryTokens.spacingXl),
-        child: Center(
-          child: Column(
-            children: [
-              const Icon(Icons.error_outline, size: 48, color: Colors.red),
-              const SizedBox(height: 16),
-              Text('Failed to load data', style: DeliveryTokens.headingSmall),
-              const SizedBox(height: 8),
-              Text(_errorMessage!, style: DeliveryTokens.bodySmall),
-              const SizedBox(height: 16),
-              ElevatedButton(onPressed: _loadData, child: const Text('Retry')),
-            ],
-          ),
-        ),
-      );
-    }
+        if (state is DeliveryError) {
+          return Container(
+            padding: const EdgeInsets.all(DeliveryTokens.spacingXl),
+            child: Center(
+              child: Column(
+                children: [
+                  const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Failed to load data',
+                    style: DeliveryTokens.headingSmall,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(state.message, style: DeliveryTokens.bodySmall),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () => context.read<DeliveryBloc>().add(
+                      const LoadDeliveryDataEvent(),
+                    ),
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
 
-    if (_kpis == null) return const SizedBox.shrink();
+        if (state is DeliveryLoaded) {
+          final kpis = state.deliveryData.kpiData;
 
-    return Container(
-      padding: const EdgeInsets.all(DeliveryTokens.spacingXl),
-      child: Row(
-        children: [
-          Expanded(
-            child: _buildKpiCard(
-              'Active Drivers',
-              '${_kpis!.activeDrivers}',
-              Icons.people,
-              DeliveryTokens.kpiActiveDriversStart,
-              DeliveryTokens.kpiActiveDriversEnd,
+          return Container(
+            padding: const EdgeInsets.all(DeliveryTokens.spacingXl),
+            child: Row(
+              children: [
+                Expanded(
+                  child: _buildKpiCard(
+                    'Active Drivers',
+                    '${kpis.activeDrivers}',
+                    Icons.people,
+                    DeliveryTokens.kpiActiveDriversStart,
+                    DeliveryTokens.kpiActiveDriversEnd,
+                  ),
+                ),
+                const SizedBox(width: DeliveryTokens.spacingLg),
+                Expanded(
+                  child: _buildKpiCard(
+                    'In Progress',
+                    '${kpis.inProgress}',
+                    Icons.local_shipping,
+                    DeliveryTokens.kpiInProgressStart,
+                    DeliveryTokens.kpiInProgressEnd,
+                  ),
+                ),
+                const SizedBox(width: DeliveryTokens.spacingLg),
+                Expanded(
+                  child: _buildKpiCard(
+                    'Delayed Orders',
+                    '${kpis.delayedOrders}',
+                    Icons.access_time,
+                    DeliveryTokens.kpiDelayedStart,
+                    DeliveryTokens.kpiDelayedEnd,
+                  ),
+                ),
+                const SizedBox(width: DeliveryTokens.spacingLg),
+                Expanded(
+                  child: _buildKpiCard(
+                    'Avg ETA',
+                    '${kpis.avgEtaMinutes}m',
+                    Icons.schedule,
+                    DeliveryTokens.kpiAvgEtaStart,
+                    DeliveryTokens.kpiAvgEtaEnd,
+                  ),
+                ),
+              ],
             ),
-          ),
-          const SizedBox(width: DeliveryTokens.spacingLg),
-          Expanded(
-            child: _buildKpiCard(
-              'In Progress',
-              '${_kpis!.inProgress}',
-              Icons.local_shipping,
-              DeliveryTokens.kpiInProgressStart,
-              DeliveryTokens.kpiInProgressEnd,
-            ),
-          ),
-          const SizedBox(width: DeliveryTokens.spacingLg),
-          Expanded(
-            child: _buildKpiCard(
-              'Delayed Orders',
-              '${_kpis!.delayedOrders}',
-              Icons.access_time,
-              DeliveryTokens.kpiDelayedStart,
-              DeliveryTokens.kpiDelayedEnd,
-            ),
-          ),
-          const SizedBox(width: DeliveryTokens.spacingLg),
-          Expanded(
-            child: _buildKpiCard(
-              'Avg ETA',
-              '${_kpis!.avgEtaMinutes}m',
-              Icons.schedule,
-              DeliveryTokens.kpiAvgEtaStart,
-              DeliveryTokens.kpiAvgEtaEnd,
-            ),
-          ),
-        ],
-      ),
+          );
+        }
+
+        return const SizedBox.shrink();
+      },
     );
   }
 
@@ -334,10 +335,24 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
             (val) => setState(() => _selectedSourceFilter = val!),
           ),
           const SizedBox(width: 12),
-          _buildDropdownFilter(
-            _selectedDriverFilter,
-            ['All Drivers', ..._drivers?.map((d) => d.name) ?? []],
-            (val) => setState(() => _selectedDriverFilter = val!),
+          BlocBuilder<DeliveryBloc, DeliveryState>(
+            builder: (context, state) {
+              if (state is DeliveryLoaded) {
+                return _buildDropdownFilter(
+                  _selectedDriverFilter,
+                  [
+                    'All Drivers',
+                    ...state.deliveryData.drivers.map((d) => d.name),
+                  ],
+                  (val) => setState(() => _selectedDriverFilter = val!),
+                );
+              }
+              return _buildDropdownFilter(
+                _selectedDriverFilter,
+                ['All Drivers'],
+                (val) => setState(() => _selectedDriverFilter = val!),
+              );
+            },
           ),
         ],
       ),
@@ -484,11 +499,16 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                   ),
 
                   // Driver markers
-                  ..._drivers?.map((driver) => _buildDriverMarker(driver)) ??
-                      [],
+                  ...context.read<DeliveryBloc>().state is DeliveryLoaded
+                      ? (context.read<DeliveryBloc>().state as DeliveryLoaded)
+                            .deliveryData
+                            .drivers
+                            .map((driver) => _buildDriverMarker(driver))
+                      : [],
 
                   // Selected order route (if any)
-                  if (_selectedOrder != null && _selectedOrder!.hasDriver)
+                  if (_selectedOrder != null &&
+                      _selectedOrder!.assignedDriverId != null)
                     _buildRouteIndicator(_selectedOrder!),
                 ],
               ),
@@ -502,8 +522,8 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
   Widget _buildDriverMarker(DriverEntity driver) {
     // Calculate position based on lat/long (simplified for demo)
     final position = _calculateMarkerPosition(
-      driver.latitude!,
-      driver.longitude!,
+      driver.latitude,
+      driver.longitude,
     );
     final statusColor = _getDriverStatusColor(driver.status);
 
@@ -542,7 +562,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
     );
   }
 
-  Widget _buildRouteIndicator(DeliveryOrderEntity order) {
+  Widget _buildRouteIndicator(OrderEntity order) {
     return Positioned(
       left: 100,
       top: 100,
@@ -620,10 +640,14 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
           ),
           const Divider(height: 1),
           Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : _errorMessage != null
-                ? Center(
+            child: BlocBuilder<DeliveryBloc, DeliveryState>(
+              builder: (context, state) {
+                if (state is DeliveryLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                if (state is DeliveryError) {
+                  return Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -639,14 +663,26 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                         ),
                       ],
                     ),
-                  )
-                : ListView.separated(
+                  );
+                }
+
+                if (state is DeliveryLoaded) {
+                  if (_filteredOrders.isEmpty) {
+                    return const Center(child: Text('No orders found'));
+                  }
+
+                  return ListView.separated(
                     padding: const EdgeInsets.all(DeliveryTokens.spacingLg),
                     itemCount: _filteredOrders.length,
                     separatorBuilder: (_, __) => const SizedBox(height: 12),
                     itemBuilder: (context, index) =>
                         _buildOrderCard(_filteredOrders[index]),
-                  ),
+                  );
+                }
+
+                return const SizedBox.shrink();
+              },
+            ),
           ),
         ],
       ),
@@ -684,7 +720,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
     );
   }
 
-  Widget _buildOrderCard(DeliveryOrderEntity order) {
+  Widget _buildOrderCard(OrderEntity order) {
     final isSelected = _selectedOrder?.id == order.id;
     final channelColor = _getChannelColor(order.channel);
     final statusColor = _getOrderStatusColor(order.status);
@@ -886,10 +922,14 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
           ),
           const Divider(height: 1),
           Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : _errorMessage != null
-                ? Center(
+            child: BlocBuilder<DeliveryBloc, DeliveryState>(
+              builder: (context, state) {
+                if (state is DeliveryLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                if (state is DeliveryError) {
+                  return Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -905,14 +945,22 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                         ),
                       ],
                     ),
-                  )
-                : ListView.separated(
+                  );
+                }
+
+                if (state is DeliveryLoaded) {
+                  return ListView.separated(
                     padding: const EdgeInsets.all(DeliveryTokens.spacingLg),
-                    itemCount: _drivers?.length ?? 0,
+                    itemCount: state.deliveryData.drivers.length,
                     separatorBuilder: (_, __) => const SizedBox(height: 12),
                     itemBuilder: (context, index) =>
-                        _buildDriverCard(_drivers![index]),
-                  ),
+                        _buildDriverCard(state.deliveryData.drivers[index]),
+                  );
+                }
+
+                return const SizedBox.shrink();
+              },
+            ),
           ),
         ],
       ),
@@ -1150,90 +1198,99 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
     );
   }
 
-  Color _getChannelColor(OrderChannel channel) {
+  Color _getChannelColor(String channel) {
     switch (channel) {
-      case OrderChannel.website:
+      case 'website':
         return DeliveryTokens.channelWebsite;
-      case OrderChannel.uberEats:
+      case 'uberEats':
         return DeliveryTokens.channelUberEats;
-      case OrderChannel.doorDash:
+      case 'doorDash':
         return DeliveryTokens.channelDoorDash;
-      case OrderChannel.app:
+      case 'app':
         return DeliveryTokens.channelApp;
-      case OrderChannel.qr:
+      case 'qr':
         return DeliveryTokens.channelQr;
-      case OrderChannel.phone:
+      case 'phone':
         return DeliveryTokens.channelPhone;
+      default:
+        return DeliveryTokens.textSecondary;
     }
   }
 
-  String _getChannelLabel(OrderChannel channel) {
+  String _getChannelLabel(String channel) {
     switch (channel) {
-      case OrderChannel.website:
+      case 'website':
         return 'Website';
-      case OrderChannel.uberEats:
+      case 'uberEats':
         return 'UberEats';
-      case OrderChannel.doorDash:
+      case 'doorDash':
         return 'DoorDash';
-      case OrderChannel.app:
+      case 'app':
         return 'App';
-      case OrderChannel.qr:
+      case 'qr':
         return 'QR';
-      case OrderChannel.phone:
+      case 'phone':
         return 'Phone';
+      default:
+        return channel;
     }
   }
 
-  Color _getOrderStatusColor(DeliveryOrderStatus status) {
+  Color _getOrderStatusColor(String status) {
     switch (status) {
-      case DeliveryOrderStatus.ready:
+      case 'ready':
         return DeliveryTokens.statusReady;
-      case DeliveryOrderStatus.delayed:
+      case 'delayed':
         return DeliveryTokens.statusDelayed;
-      case DeliveryOrderStatus.inProgress:
+      case 'inProgress':
         return DeliveryTokens.statusInProgress;
       default:
         return DeliveryTokens.textTertiary;
     }
   }
 
-  String _getOrderStatusLabel(DeliveryOrderStatus status) {
+  String _getOrderStatusLabel(String status) {
     switch (status) {
-      case DeliveryOrderStatus.ready:
+      case 'ready':
         return 'Ready';
-      case DeliveryOrderStatus.delayed:
+      case 'delayed':
         return 'Delayed';
-      case DeliveryOrderStatus.inProgress:
+      case 'inProgress':
         return 'In Progress';
       default:
-        return 'Unknown';
+        return status;
     }
   }
 
-  Color _getDriverStatusColor(DriverStatus status) {
+  Color _getDriverStatusColor(String status) {
     switch (status) {
-      case DriverStatus.online:
+      case 'online':
         return DeliveryTokens.statusOnline;
-      case DriverStatus.busy:
+      case 'busy':
         return DeliveryTokens.statusBusy;
-      case DriverStatus.offline:
+      case 'offline':
         return DeliveryTokens.statusOffline;
+      default:
+        return DeliveryTokens.textTertiary;
     }
   }
 
-  String _getDriverStatusLabel(DriverStatus status) {
+  String _getDriverStatusLabel(String status) {
     switch (status) {
-      case DriverStatus.online:
+      case 'online':
         return 'Online';
-      case DriverStatus.busy:
+      case 'busy':
         return 'Busy';
-      case DriverStatus.offline:
+      case 'offline':
         return 'Offline';
+      default:
+        return status;
     }
   }
 
-  void _showAssignDriverModal(DeliveryOrderEntity order) {
-    if (_drivers == null) {
+  void _showAssignDriverModal(OrderEntity order) {
+    final state = context.read<DeliveryBloc>().state;
+    if (state is! DeliveryLoaded) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Drivers not loaded yet'),
@@ -1247,7 +1304,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
       context: context,
       builder: (context) => _AssignDriverModal(
         order: order,
-        drivers: _drivers!,
+        drivers: state.deliveryData.drivers,
         onAssign: (driver) {
           Navigator.pop(context);
           ScaffoldMessenger.of(context).showSnackBar(
@@ -1263,7 +1320,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
 }
 
 class _AssignDriverModal extends StatefulWidget {
-  final DeliveryOrderEntity order;
+  final OrderEntity order;
   final List<DriverEntity> drivers;
   final Function(DriverEntity) onAssign;
 
@@ -1459,14 +1516,16 @@ class _AssignDriverModalState extends State<_AssignDriverModal> {
     );
   }
 
-  Color _getDriverStatusColor(DriverStatus status) {
+  Color _getDriverStatusColor(String status) {
     switch (status) {
-      case DriverStatus.online:
+      case 'online':
         return DeliveryTokens.statusOnline;
-      case DriverStatus.busy:
+      case 'busy':
         return DeliveryTokens.statusBusy;
-      case DriverStatus.offline:
+      case 'offline':
         return DeliveryTokens.statusOffline;
+      default:
+        return DeliveryTokens.textTertiary;
     }
   }
 }

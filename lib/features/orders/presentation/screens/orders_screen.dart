@@ -293,28 +293,6 @@ class _OrdersScreenState extends State<OrdersScreen> {
     );
   }
 
-  Widget _buildToggleButton({
-    required IconData icon,
-    required bool isActive,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: isActive ? Colors.black : Colors.transparent,
-          borderRadius: BorderRadius.circular(6),
-        ),
-        child: Icon(
-          icon,
-          size: 16,
-          color: isActive ? Colors.white : OrdersConstants.colorTextMuted,
-        ),
-      ),
-    );
-  }
-
   Widget _buildSearchBar() {
     return TextField(
       onChanged: (value) => setState(() => _searchQuery = value),

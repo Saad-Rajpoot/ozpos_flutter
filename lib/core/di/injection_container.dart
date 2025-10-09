@@ -54,6 +54,13 @@ import '../../features/orders/data/repositories/orders_repository_impl.dart';
 import '../../features/orders/domain/repositories/orders_repository.dart';
 import '../../features/orders/domain/usecases/get_orders.dart';
 import '../../features/orders/presentation/bloc/orders_management_bloc.dart';
+import '../../features/delivery/data/datasources/delivery_data_source.dart';
+import '../../features/delivery/data/datasources/delivery_remote_datasource.dart';
+import '../../features/delivery/data/datasources/delivery_mock_datasource.dart';
+import '../../features/delivery/data/repositories/delivery_repository_impl.dart';
+import '../../features/delivery/domain/repositories/delivery_repository.dart';
+import '../../features/delivery/domain/usecases/get_delivery_data.dart';
+import '../../features/delivery/presentation/bloc/delivery_bloc.dart';
 
 final sl = GetIt.instance;
 
@@ -95,6 +102,7 @@ Future<void> init() async {
   await _initReservations(sl);
   await _initReports(sl);
   await _initOrders(sl);
+  await _initDelivery(sl);
 }
 
 /// Initialize orders feature dependencies
@@ -265,10 +273,7 @@ Future<void> _initReports(GetIt sl) async {
       return ReportsMockDataSourceImpl();
     } else {
       // Use remote data source for production
-      return ReportsRemoteDataSourceImpl(
-        client: sl(),
-        baseUrl: AppConfig.instance.baseUrl,
-      );
+      return ReportsRemoteDataSourceImpl(client: sl());
     }
   });
 
@@ -282,4 +287,29 @@ Future<void> _initReports(GetIt sl) async {
 
   // BLoC (Factory - new instance each time)
   sl.registerFactory(() => ReportsBloc(getReportsData: sl()));
+}
+
+/// Initialize delivery feature dependencies
+Future<void> _initDelivery(GetIt sl) async {
+  // Environment-based data source selection
+  sl.registerLazySingleton<DeliveryDataSource>(() {
+    if (AppConfig.instance.environment == AppEnvironment.development) {
+      // Use local data source for development (JSON files)
+      return DeliveryMockDataSourceImpl();
+    } else {
+      // Use remote data source for production
+      return DeliveryRemoteDataSourceImpl(client: sl());
+    }
+  });
+
+  // Repository
+  sl.registerLazySingleton<DeliveryRepository>(
+    () => DeliveryRepositoryImpl(deliveryDataSource: sl(), networkInfo: sl()),
+  );
+
+  // Use cases
+  sl.registerLazySingleton(() => GetDeliveryData(sl()));
+
+  // BLoC (Factory - new instance each time)
+  sl.registerFactory(() => DeliveryBloc(getDeliveryData: sl()));
 }

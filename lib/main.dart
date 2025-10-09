@@ -17,6 +17,7 @@ import 'features/combos/presentation/bloc/combo_management_bloc.dart';
 import 'features/checkout/presentation/bloc/cart_bloc.dart';
 import 'features/reservations/presentation/bloc/reservation_management_bloc.dart';
 import 'features/reservations/presentation/bloc/reservation_management_event.dart';
+import 'features/delivery/presentation/bloc/delivery_bloc.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -77,6 +78,9 @@ class OzposApp extends StatelessWidget {
           create: (_) =>
               GetIt.instance<ReservationManagementBloc>()
                 ..add(const LoadReservationsEvent()),
+        ),
+        BlocProvider<DeliveryBloc>(
+          create: (_) => GetIt.instance<DeliveryBloc>(),
         ),
       ],
       child: MaterialApp(
