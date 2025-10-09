@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../features/menu/presentation/screens/menu_editor_screen.dart';
-import '../../features/docket/presentation/screens/docket_designer_screen.dart';
 import '../../features/menu/presentation/screens/menu_item_wizard_screen.dart';
 import '../../features/addons/presentation/screens/addon_categories_screen.dart';
 import '../../features/addons/presentation/bloc/addon_management_bloc.dart';
@@ -25,6 +24,9 @@ import '../../features/settings/presentation/screens/settings_screen.dart';
 import '../widgets/error_screen.dart';
 import '../../features/reports/presentation/bloc/reports_bloc.dart';
 import '../../features/orders/presentation/bloc/orders_management_bloc.dart';
+import '../../features/docket/presentation/bloc/docket_management_bloc.dart';
+import '../../features/docket/presentation/bloc/docket_management_event.dart';
+import '../../features/docket/presentation/screens/docket_management_screen.dart';
 
 /// Centralized route management
 ///
@@ -45,10 +47,10 @@ class AppRouter {
   static const String reports = '/reports';
   static const String settings = '/settings';
   static const String menuEditor = '/menu-editor';
-  static const String docketDesigner = '/docket-designer';
   static const String menuItemWizard = '/menu-item-wizard';
   static const String moveTable = '/move-table';
   static const String addonManagement = '/addon-management';
+  static const String docketManagement = '/docket-management';
 
   // ========================================================================
   // ROUTE GENERATOR
@@ -132,12 +134,6 @@ class AppRouter {
           settings: settings,
         );
 
-      case docketDesigner:
-        return MaterialPageRoute(
-          builder: (_) => const DocketDesignerScreen(),
-          settings: settings,
-        );
-
       case menuItemWizard:
         return MaterialPageRoute(
           builder: (_) => MenuItemWizardScreen(
@@ -163,6 +159,15 @@ class AppRouter {
             value: di.sl<AddonManagementBloc>()
               ..add(const LoadAddonCategoriesEvent()),
             child: const AddonCategoriesScreen(),
+          ),
+          settings: settings,
+        );
+
+      case docketManagement:
+        return MaterialPageRoute(
+          builder: (_) => BlocProvider<DocketManagementBloc>.value(
+            value: di.sl<DocketManagementBloc>()..add(const LoadDocketsEvent()),
+            child: const DocketManagementScreen(),
           ),
           settings: settings,
         );

@@ -127,6 +127,7 @@ flutter:
     - assets/orders_data/
     - assets/tables_data/
     - assets/reports_data/
+    - assets/docket_data/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

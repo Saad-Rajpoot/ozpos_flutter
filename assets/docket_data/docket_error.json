@@ -1,0 +1,5 @@
+{
+  "error": "Failed to load docket data",
+  "message": "Network error occurred while fetching docket data",
+  "code": "NETWORK_ERROR"
+}

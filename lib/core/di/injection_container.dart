@@ -61,6 +61,13 @@ import '../../features/delivery/data/repositories/delivery_repository_impl.dart'
 import '../../features/delivery/domain/repositories/delivery_repository.dart';
 import '../../features/delivery/domain/usecases/get_delivery_data.dart';
 import '../../features/delivery/presentation/bloc/delivery_bloc.dart';
+import '../../features/docket/data/datasources/docket_data_source.dart';
+import '../../features/docket/data/datasources/docket_mock_datasource.dart';
+import '../../features/docket/data/datasources/docket_remote_datasource.dart';
+import '../../features/docket/data/repositories/docket_repository_impl.dart';
+import '../../features/docket/domain/repositories/docket_repository.dart';
+import '../../features/docket/domain/usecases/get_dockets.dart';
+import '../../features/docket/presentation/bloc/docket_management_bloc.dart';
 
 final sl = GetIt.instance;
 
@@ -103,6 +110,7 @@ Future<void> init() async {
   await _initReports(sl);
   await _initOrders(sl);
   await _initDelivery(sl);
+  await _initDocket(sl);
 }
 
 /// Initialize orders feature dependencies
@@ -312,4 +320,29 @@ Future<void> _initDelivery(GetIt sl) async {
 
   // BLoC (Factory - new instance each time)
   sl.registerFactory(() => DeliveryBloc(getDeliveryData: sl()));
+}
+
+/// Initialize docket feature dependencies
+Future<void> _initDocket(GetIt sl) async {
+  // Environment-based data source selection
+  sl.registerLazySingleton<DocketDataSource>(() {
+    if (AppConfig.instance.environment == AppEnvironment.development) {
+      // Use mock data source for development
+      return DocketMockDataSourceImpl();
+    } else {
+      // Use remote data source for production
+      return DocketRemoteDataSourceImpl(apiClient: sl());
+    }
+  });
+
+  // Repository
+  sl.registerLazySingleton<DocketRepository>(
+    () => DocketRepositoryImpl(docketDataSource: sl(), networkInfo: sl()),
+  );
+
+  // Use cases
+  sl.registerLazySingleton(() => GetDockets(sl()));
+
+  // BLoC (Factory - new instance each time)
+  sl.registerFactory(() => DocketManagementBloc(getDockets: sl()));
 }

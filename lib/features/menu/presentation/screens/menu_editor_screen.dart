@@ -149,6 +149,26 @@ class _MenuEditorScreenState extends State<MenuEditorScreen> {
             ),
           ),
 
+          const SizedBox(height: 12),
+
+          // Docket Management Button
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: OutlinedButton.icon(
+              onPressed: () => _openDocketManagement(context),
+              icon: const Icon(Icons.receipt_long, size: 18),
+              label: const Text('Manage Dockets'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: const Color(0xFF4CAF50),
+                side: const BorderSide(color: Color(0xFF4CAF50)),
+                minimumSize: const Size(double.infinity, 44),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+          ),
+
           const SizedBox(height: 20),
 
           // Categories List
@@ -1011,6 +1031,10 @@ class _MenuEditorScreenState extends State<MenuEditorScreen> {
 
   void _openAddonManagement(BuildContext context) {
     NavigationService.pushNamed(AppRouter.addonManagement);
+  }
+
+  void _openDocketManagement(BuildContext context) {
+    NavigationService.pushNamed(AppRouter.docketManagement);
   }
 
   void _openComboCreator(BuildContext context) {
