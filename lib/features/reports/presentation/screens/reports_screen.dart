@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fl_chart/fl_chart.dart';
+import '../bloc/reports_bloc.dart';
+import '../bloc/reports_state.dart';
 import '../../../../core/navigation/app_router.dart';
 import '../../../../core/widgets/sidebar_nav.dart';
 
@@ -32,20 +35,31 @@ class _ReportsScreenState extends State<ReportsScreen> {
 
             // Main content
             Expanded(
-              child: CustomScrollView(
-                slivers: [
-                  // Header
-                  _buildHeader(),
+              child: BlocConsumer<ReportsBloc, ReportsState>(
+                listener: (context, state) {
+                  if (state is ReportsError) {
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(SnackBar(content: Text(state.message)));
+                  }
+                },
+                builder: (context, state) {
+                  return CustomScrollView(
+                    slivers: [
+                      // Header
+                      _buildHeader(),
 
-                  // KPI Cards
-                  _buildKPICards(),
+                      // KPI Cards
+                      _buildKPICards(),
 
-                  // Content Grid
-                  _buildContentGrid(),
+                      // Content Grid
+                      _buildContentGrid(),
 
-                  // Footer Snapshot
-                  _buildSnapshotBanner(),
-                ],
+                      // Footer Snapshot
+                      _buildSnapshotBanner(),
+                    ],
+                  );
+                },
               ),
             ),
           ],
@@ -192,51 +206,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
   }
 
   Widget _buildKPICards() {
-    final kpis = [
-      {
-        'label': 'Total Sales',
-        'value': '\$12,450',
-        'delta': '+8.5% vs yesterday',
-        'positive': true,
-        'color': const Color(0xFF3B82F6),
-      },
-      {
-        'label': 'Avg Order Value',
-        'value': '\$39.84',
-        'delta': '-2.1% vs last week',
-        'positive': false,
-        'color': const Color(0xFF10B981),
-      },
-      {
-        'label': 'Orders Completed',
-        'value': '312',
-        'delta': '+12.3% vs yesterday',
-        'positive': true,
-        'color': const Color(0xFF8B5CF6),
-      },
-      {
-        'label': 'Avg Turnover Time',
-        'value': '22m',
-        'delta': '-15.2% vs last week',
-        'positive': true,
-        'color': const Color(0xFFF97316),
-      },
-      {
-        'label': 'Gross Profit Margin',
-        'value': '68.5%',
-        'delta': '+3.4% vs last month',
-        'positive': true,
-        'color': const Color(0xFF6366F1),
-      },
-      {
-        'label': 'Loyalty Points Used',
-        'value': '2847',
-        'delta': '+18.7% points redeemed',
-        'positive': true,
-        'color': const Color(0xFFEC4899),
-      },
-    ];
-
     return SliverPadding(
       padding: const EdgeInsets.all(24),
       sliver: SliverGrid(
@@ -247,70 +216,94 @@ class _ReportsScreenState extends State<ReportsScreen> {
           childAspectRatio: 1.5,
         ),
         delegate: SliverChildBuilderDelegate(
-          (context, index) => _buildKPICard(kpis[index]),
-          childCount: kpis.length,
+          (context, index) => _buildKPICard(context, index),
+          childCount: 6,
         ),
       ),
     );
   }
 
-  Widget _buildKPICard(Map<String, dynamic> kpi) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            (kpi['color'] as Color).withValues(alpha: 0.1),
-            Colors.white,
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                kpi['label'],
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: Color(0xFF6B7280),
-                  fontWeight: FontWeight.w500,
-                ),
+  Widget _buildKPICard(BuildContext context, int index) {
+    return BlocBuilder<ReportsBloc, ReportsState>(
+      builder: (context, state) {
+        if (state is ReportsLoaded &&
+            index < state.reportsData.kpiCards.length) {
+          final kpi = state.reportsData.kpiCards[index];
+          final color = _parseColor(kpi.color);
+
+          return Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [color.withValues(alpha: 0.1), Colors.white],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-              Icon(
-                kpi['positive'] ? Icons.trending_up : Icons.trending_down,
-                size: 16,
-                color: kpi['positive']
-                    ? const Color(0xFF10B981)
-                    : const Color(0xFFEF4444),
-              ),
-            ],
-          ),
-          const Spacer(),
-          Text(
-            kpi['value'],
-            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            kpi['delta'],
-            style: TextStyle(
-              fontSize: 11,
-              color: kpi['positive']
-                  ? const Color(0xFF10B981)
-                  : const Color(0xFFEF4444),
-              fontWeight: FontWeight.w500,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFE5E7EB)),
             ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      kpi.label,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF6B7280),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    Icon(
+                      kpi.positive ? Icons.trending_up : Icons.trending_down,
+                      size: 16,
+                      color: kpi.positive
+                          ? const Color(0xFF10B981)
+                          : const Color(0xFFEF4444),
+                    ),
+                  ],
+                ),
+                const Spacer(),
+                Text(
+                  kpi.value,
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  kpi.delta,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: kpi.positive
+                        ? const Color(0xFF10B981)
+                        : const Color(0xFFEF4444),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+
+        return Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.grey.shade100,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFE5E7EB)),
           ),
-        ],
-      ),
+          child: const Center(child: CircularProgressIndicator()),
+        );
+      },
     );
+  }
+
+  Color _parseColor(String colorHex) {
+    return Color(int.parse(colorHex.substring(2), radix: 16));
   }
 
   Widget _buildContentGrid() {
@@ -342,16 +335,36 @@ class _ReportsScreenState extends State<ReportsScreen> {
     return _buildCard(
       'Order Funnel',
       Icons.filter_list,
-      Column(
-        children: [
-          _buildFunnelBar('Orders Placed', 312, 312, const Color(0xFF3B82F6)),
-          const SizedBox(height: 8),
-          _buildFunnelBar('In Kitchen', 298, 312, const Color(0xFF8B5CF6)),
-          const SizedBox(height: 8),
-          _buildFunnelBar('Served', 287, 312, const Color(0xFF10B981)),
-          const SizedBox(height: 8),
-          _buildFunnelBar('Paid', 281, 312, const Color(0xFFF97316)),
-        ],
+      BlocBuilder<ReportsBloc, ReportsState>(
+        builder: (context, state) {
+          if (state is ReportsLoaded) {
+            return Column(
+              children: state.reportsData.orderFunnel.map((stage) {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: _buildFunnelBar(
+                    stage.label,
+                    stage.value,
+                    stage.max,
+                    _parseColor(stage.color),
+                  ),
+                );
+              }).toList(),
+            );
+          }
+
+          return Column(
+            children: [
+              _buildFunnelBar('Orders Placed', 0, 100, Colors.grey.shade300),
+              const SizedBox(height: 8),
+              _buildFunnelBar('In Kitchen', 0, 100, Colors.grey.shade300),
+              const SizedBox(height: 8),
+              _buildFunnelBar('Served', 0, 100, Colors.grey.shade300),
+              const SizedBox(height: 8),
+              _buildFunnelBar('Paid', 0, 100, Colors.grey.shade300),
+            ],
+          );
+        },
       ),
     );
   }
@@ -402,89 +415,194 @@ class _ReportsScreenState extends State<ReportsScreen> {
     return _buildCard(
       'Service Speed',
       Icons.access_time,
-      Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          SizedBox(
-            height: 120,
-            width: 120,
-            child: Stack(
+      BlocBuilder<ReportsBloc, ReportsState>(
+        builder: (context, state) {
+          if (state is ReportsLoaded) {
+            final serviceSpeed = state.reportsData.serviceSpeed;
+
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                PieChart(
-                  PieChartData(
-                    sections: [
-                      PieChartSectionData(
-                        value: 36,
-                        color: const Color(0xFF10B981),
-                        radius: 30,
-                        showTitle: false,
+                SizedBox(
+                  height: 120,
+                  width: 120,
+                  child: Stack(
+                    children: [
+                      PieChart(
+                        PieChartData(
+                          sections: serviceSpeed.chartSections.map((section) {
+                            return PieChartSectionData(
+                              value: section.value.toDouble(),
+                              color: _parseColor(section.color),
+                              radius: 30,
+                              showTitle: false,
+                            );
+                          }).toList(),
+                          sectionsSpace: 0,
+                          centerSpaceRadius: 45,
+                        ),
                       ),
-                      PieChartSectionData(
-                        value: 64,
-                        color: const Color(0xFFF3F4F6),
-                        radius: 30,
-                        showTitle: false,
+                      Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              serviceSpeed.avgTime,
+                              style: const TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            Text(
+                              serviceSpeed.avgTimeLabel,
+                              style: const TextStyle(
+                                fontSize: 10,
+                                color: Color(0xFF6B7280),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
-                    sectionsSpace: 0,
-                    centerSpaceRadius: 45,
                   ),
                 ),
-                const Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        '22m',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w700,
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Column(
+                      children: [
+                        Text(
+                          'Prep Time',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.grey[600],
+                          ),
                         ),
-                      ),
-                      Text(
-                        'Avg Time',
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: Color(0xFF6B7280),
+                        Text(
+                          serviceSpeed.prepTime,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
+                    Column(
+                      children: [
+                        Text(
+                          'Service Time',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                        Text(
+                          serviceSpeed.serviceTime,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ],
-            ),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            );
+          }
+
+          return Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Column(
-                children: [
-                  Text(
-                    'Prep Time',
-                    style: TextStyle(fontSize: 11, color: Colors.grey[600]),
-                  ),
-                  const Text(
-                    '8m',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-                  ),
-                ],
+              SizedBox(
+                height: 120,
+                width: 120,
+                child: Stack(
+                  children: [
+                    PieChart(
+                      PieChartData(
+                        sections: [
+                          PieChartSectionData(
+                            value: 50,
+                            color: Colors.grey.shade300,
+                            radius: 30,
+                            showTitle: false,
+                          ),
+                          PieChartSectionData(
+                            value: 50,
+                            color: Colors.grey.shade200,
+                            radius: 30,
+                            showTitle: false,
+                          ),
+                        ],
+                        sectionsSpace: 0,
+                        centerSpaceRadius: 45,
+                      ),
+                    ),
+                    const Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            '--',
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          Text(
+                            'Avg Time',
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: Color(0xFF6B7280),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              Column(
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  Text(
-                    'Service Time',
-                    style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+                  Column(
+                    children: [
+                      Text(
+                        'Prep Time',
+                        style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+                      ),
+                      const Text(
+                        '--',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
                   ),
-                  const Text(
-                    '14m',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                  Column(
+                    children: [
+                      Text(
+                        'Service Time',
+                        style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+                      ),
+                      const Text(
+                        '--',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
             ],
-          ),
-        ],
+          );
+        },
       ),
     );
   }
@@ -493,73 +611,103 @@ class _ReportsScreenState extends State<ReportsScreen> {
     return _buildCard(
       'Payment Methods',
       Icons.payment,
-      Row(
-        children: [
-          Expanded(
-            child: PieChart(
-              PieChartData(
-                sections: [
-                  PieChartSectionData(
-                    value: 45,
-                    color: const Color(0xFF3B82F6),
-                    title: '45%',
-                    titleStyle: const TextStyle(
-                      fontSize: 11,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
+      BlocBuilder<ReportsBloc, ReportsState>(
+        builder: (context, state) {
+          if (state is ReportsLoaded) {
+            return Row(
+              children: [
+                Expanded(
+                  child: PieChart(
+                    PieChartData(
+                      sections: state.reportsData.paymentMethods.map((method) {
+                        return PieChartSectionData(
+                          value: method.percentage.toDouble(),
+                          color: _parseColor(method.color),
+                          title: '${method.percentage}%',
+                          titleStyle: const TextStyle(
+                            fontSize: 11,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        );
+                      }).toList(),
+                      sectionsSpace: 2,
+                      centerSpaceRadius: 0,
                     ),
                   ),
-                  PieChartSectionData(
-                    value: 30,
-                    color: const Color(0xFF10B981),
-                    title: '30%',
-                    titleStyle: const TextStyle(
-                      fontSize: 11,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  PieChartSectionData(
-                    value: 15,
-                    color: const Color(0xFF8B5CF6),
-                    title: '15%',
-                    titleStyle: const TextStyle(
-                      fontSize: 11,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  PieChartSectionData(
-                    value: 10,
-                    color: const Color(0xFFF97316),
-                    title: '10%',
-                    titleStyle: const TextStyle(
-                      fontSize: 11,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-                sectionsSpace: 2,
-                centerSpaceRadius: 0,
-              ),
-            ),
-          ),
-          const SizedBox(width: 16),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
+                ),
+                const SizedBox(width: 16),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: state.reportsData.paymentMethods.map((method) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: _buildLegendItem(
+                        method.method,
+                        '${method.percentage}%',
+                        _parseColor(method.color),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ],
+            );
+          }
+
+          return Row(
             children: [
-              _buildLegendItem('Card', '45%', const Color(0xFF3B82F6)),
-              const SizedBox(height: 8),
-              _buildLegendItem('Cash', '30%', const Color(0xFF10B981)),
-              const SizedBox(height: 8),
-              _buildLegendItem('Online', '15%', const Color(0xFF8B5CF6)),
-              const SizedBox(height: 8),
-              _buildLegendItem('Wallet', '10%', const Color(0xFFF97316)),
+              Expanded(
+                child: PieChart(
+                  PieChartData(
+                    sections: [
+                      PieChartSectionData(
+                        value: 25,
+                        color: Colors.grey.shade300,
+                        title: '',
+                        titleStyle: const TextStyle(fontSize: 11),
+                      ),
+                      PieChartSectionData(
+                        value: 25,
+                        color: Colors.grey.shade400,
+                        title: '',
+                        titleStyle: const TextStyle(fontSize: 11),
+                      ),
+                      PieChartSectionData(
+                        value: 25,
+                        color: Colors.grey.shade500,
+                        title: '',
+                        titleStyle: const TextStyle(fontSize: 11),
+                      ),
+                      PieChartSectionData(
+                        value: 25,
+                        color: Colors.grey.shade600,
+                        title: '',
+                        titleStyle: const TextStyle(fontSize: 11),
+                      ),
+                    ],
+                    sectionsSpace: 2,
+                    centerSpaceRadius: 0,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _buildLegendItem('Card', '--', Colors.grey.shade300),
+                  const SizedBox(height: 8),
+                  _buildLegendItem('Cash', '--', Colors.grey.shade400),
+                  const SizedBox(height: 8),
+                  _buildLegendItem('Online', '--', Colors.grey.shade500),
+                  const SizedBox(height: 8),
+                  _buildLegendItem('Wallet', '--', Colors.grey.shade600),
+                ],
+              ),
             ],
-          ),
-        ],
+          );
+        },
       ),
     );
   }
@@ -709,24 +857,34 @@ class _ReportsScreenState extends State<ReportsScreen> {
     return _buildCard(
       'Category Sales',
       Icons.category,
-      Column(
-        children: [
-          _buildCategoryItem(
-            'Burgers',
-            '\$4200',
-            0.357,
-            const Color(0xFF3B82F6),
-          ),
-          const SizedBox(height: 8),
-          _buildCategoryItem('Pizza', '\$3100', 0.269, const Color(0xFF10B981)),
-          const SizedBox(height: 8),
-          _buildCategoryItem(
-            'Drinks',
-            '\$2800',
-            0.226,
-            const Color(0xFFF97316),
-          ),
-        ],
+      BlocBuilder<ReportsBloc, ReportsState>(
+        builder: (context, state) {
+          if (state is ReportsLoaded) {
+            return Column(
+              children: state.reportsData.categorySales.map((category) {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: _buildCategoryItem(
+                    category.name,
+                    category.amount,
+                    category.percentage,
+                    _parseColor(category.color),
+                  ),
+                );
+              }).toList(),
+            );
+          }
+
+          return Column(
+            children: [
+              _buildCategoryItem('Burgers', '--', 0.0, Colors.grey.shade300),
+              const SizedBox(height: 8),
+              _buildCategoryItem('Pizza', '--', 0.0, Colors.grey.shade300),
+              const SizedBox(height: 8),
+              _buildCategoryItem('Drinks', '--', 0.0, Colors.grey.shade300),
+            ],
+          );
+        },
       ),
     );
   }
@@ -776,14 +934,39 @@ class _ReportsScreenState extends State<ReportsScreen> {
     return _buildCard(
       'Top Selling Items',
       Icons.star,
-      Column(
-        children: [
-          _buildTopItem('🍔', 'Classic Burger', '\$1125', '#1', '45 orders'),
-          const Divider(height: 16),
-          _buildTopItem('🍕', 'Margherita Pizza', '\$950', '#2', '38 orders'),
-          const Divider(height: 16),
-          _buildTopItem('🍗', 'Chicken Wings', '\$896', '#3', '32 orders'),
-        ],
+      BlocBuilder<ReportsBloc, ReportsState>(
+        builder: (context, state) {
+          if (state is ReportsLoaded) {
+            return Column(
+              children: state.reportsData.topSellingItems.map((item) {
+                final index = state.reportsData.topSellingItems.indexOf(item);
+                return Column(
+                  children: [
+                    _buildTopItem(
+                      item.emoji,
+                      item.name,
+                      item.revenue,
+                      item.rank,
+                      item.orders,
+                    ),
+                    if (index < state.reportsData.topSellingItems.length - 1)
+                      const Divider(height: 16),
+                  ],
+                );
+              }).toList(),
+            );
+          }
+
+          return Column(
+            children: [
+              _buildTopItem('🍔', 'Loading...', '--', '#1', '--'),
+              const Divider(height: 16),
+              _buildTopItem('🍕', 'Loading...', '--', '#2', '--'),
+              const Divider(height: 16),
+              _buildTopItem('🍗', 'Loading...', '--', '#3', '--'),
+            ],
+          );
+        },
       ),
     );
   }
@@ -863,26 +1046,64 @@ class _ReportsScreenState extends State<ReportsScreen> {
     return _buildCard(
       'Needs Attention',
       Icons.warning_amber,
-      Column(
-        children: [
-          _buildAttentionItem('🌮', 'Fish Tacos', '\$45', '3 orders only'),
-          const Divider(height: 16),
-          _buildAttentionItem('🥗', 'Quinoa Bowl', '\$75', '5 orders only'),
-          const Divider(height: 16),
-          _buildAttentionItem('🌯', 'Veggie Wrap', '\$84', '7 orders only'),
-          const SizedBox(height: 12),
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton(
-              onPressed: () {},
-              style: OutlinedButton.styleFrom(
-                foregroundColor: const Color(0xFFF97316),
-                side: const BorderSide(color: Color(0xFFF97316)),
+      BlocBuilder<ReportsBloc, ReportsState>(
+        builder: (context, state) {
+          if (state is ReportsLoaded) {
+            return Column(
+              children: [
+                ...state.reportsData.needsAttention.map((item) {
+                  final index = state.reportsData.needsAttention.indexOf(item);
+                  return Column(
+                    children: [
+                      _buildAttentionItem(
+                        item.emoji,
+                        item.name,
+                        item.revenue,
+                        item.orders,
+                      ),
+                      if (index < state.reportsData.needsAttention.length - 1)
+                        const Divider(height: 16),
+                    ],
+                  );
+                }),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: () {},
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFFF97316),
+                      side: const BorderSide(color: Color(0xFFF97316)),
+                    ),
+                    child: const Text('View Marketing Suggestions'),
+                  ),
+                ),
+              ],
+            );
+          }
+
+          return Column(
+            children: [
+              _buildAttentionItem('🌮', 'Loading...', '--', '--'),
+              const Divider(height: 16),
+              _buildAttentionItem('🥗', 'Loading...', '--', '--'),
+              const Divider(height: 16),
+              _buildAttentionItem('🌯', 'Loading...', '--', '--'),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: () {},
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: const Color(0xFFF97316),
+                    side: const BorderSide(color: Color(0xFFF97316)),
+                  ),
+                  child: const Text('View Marketing Suggestions'),
+                ),
               ),
-              child: const Text('View Marketing Suggestions'),
-            ),
-          ),
-        ],
+            ],
+          );
+        },
       ),
     );
   }
@@ -961,43 +1182,64 @@ class _ReportsScreenState extends State<ReportsScreen> {
     return _buildCard(
       'Staff Performance Today',
       Icons.people,
-      Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        children: [
-          _buildStaffCard(
-            'S',
-            'Sarah M.',
-            '89',
-            '23',
-            '95%',
-            const Color(0xFF3B82F6),
-          ),
-          _buildStaffCard(
-            'M',
-            'Mike R.',
-            '76',
-            '18',
-            '88%',
-            const Color(0xFF10B981),
-          ),
-          _buildStaffCard(
-            'L',
-            'Lisa K.',
-            '82',
-            '31',
-            '92%',
-            const Color(0xFF8B5CF6),
-          ),
-          _buildStaffCard(
-            'T',
-            'Tom W.',
-            '65',
-            '15',
-            '85%',
-            const Color(0xFFF97316),
-          ),
-        ],
+      BlocBuilder<ReportsBloc, ReportsState>(
+        builder: (context, state) {
+          if (state is ReportsLoaded) {
+            return Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: state.reportsData.staffPerformance.map((staff) {
+                return _buildStaffCard(
+                  staff.initial,
+                  staff.name,
+                  staff.orders,
+                  staff.upsells,
+                  staff.efficiency,
+                  _parseColor(staff.color),
+                );
+              }).toList(),
+            );
+          }
+
+          return Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              _buildStaffCard(
+                'S',
+                'Loading...',
+                '--',
+                '--',
+                '--',
+                Colors.grey.shade300,
+              ),
+              _buildStaffCard(
+                'M',
+                'Loading...',
+                '--',
+                '--',
+                '--',
+                Colors.grey.shade300,
+              ),
+              _buildStaffCard(
+                'L',
+                'Loading...',
+                '--',
+                '--',
+                '--',
+                Colors.grey.shade300,
+              ),
+              _buildStaffCard(
+                'T',
+                'Loading...',
+                '--',
+                '--',
+                '--',
+                Colors.grey.shade300,
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -1063,37 +1305,76 @@ class _ReportsScreenState extends State<ReportsScreen> {
           color: const Color(0xFF1E293B),
           borderRadius: BorderRadius.circular(12),
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+        child: BlocBuilder<ReportsBloc, ReportsState>(
+          builder: (context, state) {
+            if (state is ReportsLoaded) {
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        state.reportsData.snapshotBanner.title,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        state.reportsData.snapshotBanner.summary,
+                        style: TextStyle(color: Colors.grey[400], fontSize: 13),
+                      ),
+                    ],
+                  ),
+                  ElevatedButton.icon(
+                    onPressed: () {},
+                    icon: const Icon(Icons.arrow_forward, size: 16),
+                    label: const Text('View Advanced Online Reports'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF3B82F6),
+                      foregroundColor: Colors.white,
+                    ),
+                  ),
+                ],
+              );
+            }
+
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  "Today's Snapshot",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "Today's Snapshot",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Loading...',
+                      style: TextStyle(color: Colors.grey[400], fontSize: 13),
+                    ),
+                  ],
+                ),
+                ElevatedButton.icon(
+                  onPressed: () {},
+                  icon: const Icon(Icons.arrow_forward, size: 16),
+                  label: const Text('View Advanced Online Reports'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF3B82F6),
+                    foregroundColor: Colors.white,
                   ),
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  '312 Orders • \$12,450 Sales • 22m Avg Turnover Time • 68.5% Profit Margin',
-                  style: TextStyle(color: Colors.grey[400], fontSize: 13),
-                ),
               ],
-            ),
-            ElevatedButton.icon(
-              onPressed: () {},
-              icon: const Icon(Icons.arrow_forward, size: 16),
-              label: const Text('View Advanced Online Reports'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF3B82F6),
-                foregroundColor: Colors.white,
-              ),
-            ),
-          ],
+            );
+          },
         ),
       ),
     );

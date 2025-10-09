@@ -40,6 +40,13 @@ import '../../features/reservations/data/repositories/reservation_repository_imp
 import '../../features/reservations/domain/repositories/reservation_repository.dart';
 import '../../features/reservations/domain/usecases/get_reservations.dart';
 import '../../features/reservations/presentation/bloc/reservation_management_bloc.dart';
+import '../../features/reports/data/datasources/reports_data_source.dart';
+import '../../features/reports/data/datasources/reports_mock_datasource.dart';
+import '../../features/reports/data/repositories/reports_repository_impl.dart';
+import '../../features/reports/domain/repositories/reports_repository.dart';
+import '../../features/reports/domain/usecases/get_reports_data.dart';
+import '../../features/reports/presentation/bloc/reports_bloc.dart';
+import '../../features/reports/data/datasources/reports_remote_datasource.dart';
 
 final sl = GetIt.instance;
 
@@ -79,6 +86,7 @@ Future<void> init() async {
   await _initAddons(sl);
   await _initTables(sl);
   await _initReservations(sl);
+  await _initReports(sl);
 }
 
 /// Initialize menu feature dependencies
@@ -213,4 +221,32 @@ Future<void> _initReservations(GetIt sl) async {
 
   // BLoC (Factory - new instance each time)
   sl.registerFactory(() => ReservationManagementBloc(getReservations: sl()));
+}
+
+/// Initialize reports feature dependencies
+Future<void> _initReports(GetIt sl) async {
+  // Environment-based data source selection
+  sl.registerLazySingleton<ReportsDataSource>(() {
+    if (AppConfig.instance.environment == AppEnvironment.development) {
+      // Use mock data source for development
+      return ReportsMockDataSourceImpl();
+    } else {
+      // Use remote data source for production
+      return ReportsRemoteDataSourceImpl(
+        client: sl(),
+        baseUrl: AppConfig.instance.baseUrl,
+      );
+    }
+  });
+
+  // Repository
+  sl.registerLazySingleton<ReportsRepository>(
+    () => ReportsRepositoryImpl(reportsDataSource: sl(), networkInfo: sl()),
+  );
+
+  // Use cases
+  sl.registerLazySingleton(() => GetReportsData(sl()));
+
+  // BLoC (Factory - new instance each time)
+  sl.registerFactory(() => ReportsBloc(getReportsData: sl()));
 }

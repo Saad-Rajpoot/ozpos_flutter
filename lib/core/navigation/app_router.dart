@@ -19,8 +19,10 @@ import '../../features/tables/presentation/bloc/table_management_event.dart';
 import '../../features/delivery/presentation/screens/delivery_screen.dart';
 import '../../features/reservations/presentation/screens/reservations_screen.dart';
 import '../../features/reports/presentation/screens/reports_screen.dart';
+import '../../features/reports/presentation/bloc/reports_event.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
 import '../widgets/error_screen.dart';
+import '../../features/reports/presentation/bloc/reports_bloc.dart';
 
 /// Centralized route management
 ///
@@ -106,7 +108,10 @@ class AppRouter {
 
       case reports:
         return MaterialPageRoute(
-          builder: (_) => const ReportsScreen(),
+          builder: (_) => BlocProvider<ReportsBloc>.value(
+            value: di.sl<ReportsBloc>()..add(const LoadReportsDataEvent()),
+            child: const ReportsScreen(),
+          ),
           settings: settings,
         );
 
