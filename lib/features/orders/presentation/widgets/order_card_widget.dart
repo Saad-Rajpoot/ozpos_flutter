@@ -33,34 +33,38 @@ class OrderCardWidget extends StatelessWidget {
             ),
           ),
 
-          Padding(
-            padding: const EdgeInsets.all(OrdersConstants.paddingCard),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Header row: channel icon, queue number, status badge
-                _buildHeader(),
-                const SizedBox(height: 12),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(OrdersConstants.paddingCard),
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Header row: channel icon, queue number, status badge
+                    _buildHeader(),
+                    const SizedBox(height: 12),
 
-                // Order ID & Channel tags
-                _buildOrderInfo(),
-                const SizedBox(height: 12),
+                    // Order ID & Channel tags
+                    _buildOrderInfo(),
+                    const SizedBox(height: 12),
 
-                // Customer & Time
-                _buildCustomerAndTime(),
-                const SizedBox(height: 12),
+                    // Customer & Time
+                    _buildCustomerAndTime(),
+                    const SizedBox(height: 12),
 
-                // Items summary
-                _buildItemsSummary(),
-                const SizedBox(height: 12),
+                    // Items summary
+                    _buildItemsSummary(),
+                    const SizedBox(height: 12),
 
-                // Total bar
-                _buildTotalBar(),
-                const SizedBox(height: 12),
+                    // Total bar
+                    _buildTotalBar(),
+                    const SizedBox(height: 12),
 
-                // Action buttons
-                _buildActionButtons(context),
-              ],
+                    // Action buttons
+                    _buildActionButtons(context),
+                  ],
+                ),
+              ),
             ),
           ),
         ],

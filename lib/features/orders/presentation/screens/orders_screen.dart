@@ -24,7 +24,6 @@ class _OrdersScreenState extends State<OrdersScreen> {
   String _searchQuery = '';
   OrderStatus _activeTab = OrderStatus.active;
   final Set<OrderChannel> _selectedChannels = {};
-  bool _viewModeGrid = true;
 
   List<OrderEntity> get _filteredOrders {
     final bloc = context.watch<OrdersManagementBloc>();
@@ -156,47 +155,26 @@ class _OrdersScreenState extends State<OrdersScreen> {
                     ],
                   ),
                 ),
+                // Search bar
+                SizedBox(width: 300, child: _buildSearchBar()),
+                const SizedBox(width: 16),
 
-                // View toggle and refresh
-                Row(
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border.all(color: OrdersConstants.colorBorder),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        children: [
-                          _buildToggleButton(
-                            icon: Icons.grid_view,
-                            isActive: _viewModeGrid,
-                            onTap: () => setState(() => _viewModeGrid = true),
-                          ),
-                          _buildToggleButton(
-                            icon: Icons.view_list,
-                            isActive: !_viewModeGrid,
-                            onTap: () => setState(() => _viewModeGrid = false),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    IconButton(
-                      icon: const Icon(Icons.refresh),
-                      onPressed: () {
-                        context.read<OrdersManagementBloc>().add(
-                          const LoadOrdersEvent(),
-                        );
-                      },
-                      style: IconButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        side: const BorderSide(
-                          color: OrdersConstants.colorBorder,
-                        ),
-                      ),
-                    ),
-                  ],
+                // Tabs
+                _buildTabs(),
+                const SizedBox(width: 16),
+
+                // refresh orders
+                IconButton(
+                  icon: const Icon(Icons.refresh),
+                  onPressed: () {
+                    context.read<OrdersManagementBloc>().add(
+                      const LoadOrdersEvent(),
+                    );
+                  },
+                  style: IconButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    side: const BorderSide(color: OrdersConstants.colorBorder),
+                  ),
                 ),
               ],
             ),
@@ -204,14 +182,6 @@ class _OrdersScreenState extends State<OrdersScreen> {
 
             // KPI Cards
             _buildKPICards(context),
-            const SizedBox(height: 16),
-
-            // Search bar
-            _buildSearchBar(),
-            const SizedBox(height: 16),
-
-            // Tabs
-            _buildTabs(),
             const SizedBox(height: 16),
 
             // Filter chips
@@ -465,9 +435,11 @@ class _OrdersScreenState extends State<OrdersScreen> {
         Wrap(
           spacing: 8,
           runSpacing: 8,
+          crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             Text(
               'CHANNELS:',
+              textAlign: TextAlign.center,
               style: OrdersConstants.caption.copyWith(
                 color: OrdersConstants.colorTextMuted,
               ),
@@ -593,6 +565,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
         crossAxisCount: crossAxisCount,
         crossAxisSpacing: OrdersConstants.gapBetweenCards,
         mainAxisSpacing: OrdersConstants.gapBetweenCards,
+        childAspectRatio: 0.95,
       ),
       itemCount: orders.length,
       itemBuilder: (context, index) {
