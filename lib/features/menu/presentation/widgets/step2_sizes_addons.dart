@@ -376,7 +376,7 @@ class _Step2SizesAddOnsState extends State<Step2SizesAddOns> {
       builder: (dialogContext) => const ModifierStylePreviewDialog(),
     );
 
-    if (selectedStyle != null && mounted) {
+    if (selectedStyle != null && mounted && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Selected style: $selectedStyle'),

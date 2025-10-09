@@ -86,6 +86,7 @@ Future<void> init() async {
     sl.registerLazySingleton<Database>(() => database);
   } catch (e) {
     // For web, register a mock database or skip database operations
+    // ignore: avoid_print
     print('Database not available on web: $e');
   }
 

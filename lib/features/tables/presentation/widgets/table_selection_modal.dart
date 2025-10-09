@@ -603,7 +603,9 @@ class _TableListCard extends StatelessWidget {
             // Radio button
             Radio<bool>(
               value: true,
+              // ignore: deprecated_member_use
               groupValue: true,
+              // ignore: deprecated_member_use
               onChanged: isSelected ? null : (_) => onTap(),
               activeColor: const Color(0xFF3B82F6),
             ),

@@ -368,7 +368,7 @@ class _Step1ItemDetailsState extends State<Step1ItemDetails> {
                     maxHeight: 1080,
                     imageQuality: 85,
                   );
-                  if (image != null && mounted) {
+                  if (image != null && mounted && context.mounted) {
                     context.read<MenuEditBloc>().add(
                       UpdateImageFile(File(image.path)),
                     );
@@ -386,7 +386,7 @@ class _Step1ItemDetailsState extends State<Step1ItemDetails> {
                     maxHeight: 1080,
                     imageQuality: 85,
                   );
-                  if (image != null && mounted) {
+                  if (image != null && mounted && context.mounted) {
                     context.read<MenuEditBloc>().add(
                       UpdateImageFile(File(image.path)),
                     );

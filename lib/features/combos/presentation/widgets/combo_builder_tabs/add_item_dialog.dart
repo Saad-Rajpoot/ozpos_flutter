@@ -215,7 +215,9 @@ class _AddItemDialogState extends State<AddItemDialog> {
                                   'Choose individual menu items',
                                 ),
                                 value: 'specific',
+                                // ignore: deprecated_member_use
                                 groupValue: _sourceType,
+                                // ignore: deprecated_member_use
                                 onChanged: (value) =>
                                     setState(() => _sourceType = value!),
                               ),
@@ -227,7 +229,9 @@ class _AddItemDialogState extends State<AddItemDialog> {
                                   'Any item from a category',
                                 ),
                                 value: 'category',
+                                // ignore: deprecated_member_use
                                 groupValue: _sourceType,
+                                // ignore: deprecated_member_use
                                 onChanged: (value) =>
                                     setState(() => _sourceType = value!),
                               ),
@@ -266,11 +270,11 @@ class _AddItemDialogState extends State<AddItemDialog> {
                 const SizedBox(width: 12),
                 ElevatedButton(
                   onPressed: _canSave() ? _saveSlot : null,
-                  child: const Text('Add Item'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF8B5CF6),
                     foregroundColor: Colors.white,
                   ),
+                  child: Text('Add Item'),
                 ),
               ],
             ),

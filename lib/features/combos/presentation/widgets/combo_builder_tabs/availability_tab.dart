@@ -676,7 +676,7 @@ class _AvailabilityTabState extends State<AvailabilityTab> {
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 365)),
     );
-    if (date != null && mounted) {
+    if (date != null && mounted && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Start date: ${date.toString().split(' ')[0]}')),
       );
@@ -690,7 +690,7 @@ class _AvailabilityTabState extends State<AvailabilityTab> {
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 365)),
     );
-    if (date != null && mounted) {
+    if (date != null && mounted && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('End date: ${date.toString().split(' ')[0]}')),
       );

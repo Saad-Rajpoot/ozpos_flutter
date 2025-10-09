@@ -96,7 +96,9 @@ class _DashboardTileState extends State<DashboardTile>
                 duration: const Duration(milliseconds: 300),
                 curve: Curves.easeInOut,
                 transform: _isHovered
-                    ? (Matrix4.identity()..translate(0.0, -4.0))
+                    ? (Matrix4.identity()
+                        // ignore: deprecated_member_use
+                        ..translate(0.0, -4.0, 0.0))
                     : Matrix4.identity(),
                 decoration: BoxDecoration(
                   color: AppColors.bgSecondary,
@@ -143,7 +145,9 @@ class _DashboardTileState extends State<DashboardTile>
                         AnimatedContainer(
                           duration: const Duration(milliseconds: 300),
                           transform: _isHovered
-                              ? (Matrix4.identity()..scale(1.1, 1.1))
+                              ? (Matrix4.identity()
+                                  // ignore: deprecated_member_use
+                                  ..scale(1.1, 1.1, 1.0))
                               : Matrix4.identity(),
                           constraints: const BoxConstraints(
                             minWidth: 48,
