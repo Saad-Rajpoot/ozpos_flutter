@@ -12,6 +12,7 @@ import '../../features/dashboard/presentation/screens/dashboard_screen.dart';
 import '../../features/menu/presentation/screens/menu_screen.dart';
 import '../../features/checkout/presentation/screens/checkout_screen.dart';
 import '../../features/orders/presentation/screens/orders_screen.dart';
+import '../../features/orders/presentation/bloc/orders_management_event.dart';
 import '../../features/tables/presentation/screens/tables_screen.dart';
 import '../../features/tables/presentation/screens/move_table_screen.dart';
 import '../../features/tables/presentation/bloc/table_management_bloc.dart';
@@ -23,6 +24,7 @@ import '../../features/reports/presentation/bloc/reports_event.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
 import '../widgets/error_screen.dart';
 import '../../features/reports/presentation/bloc/reports_bloc.dart';
+import '../../features/orders/presentation/bloc/orders_management_bloc.dart';
 
 /// Centralized route management
 ///
@@ -81,7 +83,10 @@ class AppRouter {
 
       case orders:
         return MaterialPageRoute(
-          builder: (_) => const OrdersScreen(),
+          builder: (_) => BlocProvider<OrdersManagementBloc>.value(
+            value: di.sl<OrdersManagementBloc>()..add(const LoadOrdersEvent()),
+            child: const OrdersScreen(),
+          ),
           settings: settings,
         );
 

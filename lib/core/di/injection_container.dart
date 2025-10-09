@@ -47,6 +47,13 @@ import '../../features/reports/domain/repositories/reports_repository.dart';
 import '../../features/reports/domain/usecases/get_reports_data.dart';
 import '../../features/reports/presentation/bloc/reports_bloc.dart';
 import '../../features/reports/data/datasources/reports_remote_datasource.dart';
+import '../../features/orders/data/datasources/orders_data_source.dart';
+import '../../features/orders/data/datasources/orders_mock_datasource.dart';
+import '../../features/orders/data/datasources/orders_remote_datasource.dart';
+import '../../features/orders/data/repositories/orders_repository_impl.dart';
+import '../../features/orders/domain/repositories/orders_repository.dart';
+import '../../features/orders/domain/usecases/get_orders.dart';
+import '../../features/orders/presentation/bloc/orders_management_bloc.dart';
 
 final sl = GetIt.instance;
 
@@ -87,6 +94,32 @@ Future<void> init() async {
   await _initTables(sl);
   await _initReservations(sl);
   await _initReports(sl);
+  await _initOrders(sl);
+}
+
+/// Initialize orders feature dependencies
+Future<void> _initOrders(GetIt sl) async {
+  // Environment-based data source selection
+  sl.registerLazySingleton<OrdersDataSource>(() {
+    if (AppConfig.instance.environment == AppEnvironment.development) {
+      // Use mock data source for development
+      return OrdersMockDataSourceImpl();
+    } else {
+      // Use remote data source for production
+      return OrdersRemoteDataSourceImpl(apiClient: sl());
+    }
+  });
+
+  // Repository
+  sl.registerLazySingleton<OrdersRepository>(
+    () => OrdersRepositoryImpl(ordersDataSource: sl(), networkInfo: sl()),
+  );
+
+  // Use cases
+  sl.registerLazySingleton(() => GetOrders(sl()));
+
+  // BLoC (Factory - new instance each time)
+  sl.registerFactory(() => OrdersManagementBloc(getOrders: sl()));
 }
 
 /// Initialize menu feature dependencies

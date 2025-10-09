@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/navigation/app_router.dart';
 import '../../../../core/widgets/sidebar_nav.dart';
-import '../../../orders/data/datasources/mock_orders_data.dart';
-import '../../../orders/domain/entities/order_entity.dart';
+import '../../domain/entities/order_entity.dart';
+import '../bloc/orders_management_bloc.dart';
+import '../bloc/orders_management_event.dart';
+import '../bloc/orders_management_state.dart';
 import '../constants/orders_constants.dart';
 import '../widgets/order_card_widget.dart';
 
+/// Standalone screen for managing orders system-wide
+/// Accessible from main navigation for viewing all orders
+///
+/// Note: This screen is wrapped with BlocProvider in AppRouter
 class OrdersScreen extends StatefulWidget {
   const OrdersScreen({super.key});
 
@@ -14,82 +21,73 @@ class OrdersScreen extends StatefulWidget {
 }
 
 class _OrdersScreenState extends State<OrdersScreen> {
-  List<OrderEntity> _allOrders = [];
-  bool _isLoading = true;
-
   String _searchQuery = '';
   OrderStatus _activeTab = OrderStatus.active;
   final Set<OrderChannel> _selectedChannels = {};
   bool _viewModeGrid = true;
 
-  @override
-  void initState() {
-    super.initState();
-    _loadOrders();
-  }
-
-  Future<void> _loadOrders() async {
-    try {
-      _allOrders = await MockOrdersData.getMockOrders();
-      _isLoading = false;
-      setState(() {});
-    } catch (e) {
-      _isLoading = false;
-      // Handle error - you might want to show an error message to user
-      debugPrint('Error loading orders: $e');
-
-      setState(() {});
-    }
-  }
-
   List<OrderEntity> get _filteredOrders {
-    return _allOrders.where((order) {
-      // Tab filter
-      if (order.status != _activeTab) return false;
+    final bloc = context.watch<OrdersManagementBloc>();
+    final state = bloc.state;
 
-      // Channel filter
-      if (_selectedChannels.isNotEmpty &&
-          !_selectedChannels.contains(order.channel)) {
-        return false;
-      }
+    if (state is OrdersManagementLoaded) {
+      return state.orders.where((order) {
+        // Tab filter
+        if (order.status != _activeTab) return false;
 
-      // Search filter
-      if (_searchQuery.isNotEmpty) {
-        final query = _searchQuery.toLowerCase();
-        return order.id.toLowerCase().contains(query) ||
-            order.customerName.toLowerCase().contains(query) ||
-            (order.customerPhone?.contains(query) ?? false) ||
-            order.queueNumber.contains(query);
-      }
+        // Channel filter
+        if (_selectedChannels.isNotEmpty &&
+            !_selectedChannels.contains(order.channel)) {
+          return false;
+        }
 
-      return true;
-    }).toList();
+        // Search filter
+        if (_searchQuery.isNotEmpty) {
+          final query = _searchQuery.toLowerCase();
+          return order.id.toLowerCase().contains(query) ||
+              order.customerName.toLowerCase().contains(query) ||
+              (order.customerPhone?.contains(query) ?? false) ||
+              order.queueNumber.contains(query);
+        }
+
+        return true;
+      }).toList();
+    }
+
+    return [];
   }
 
   Map<String, dynamic> get _stats {
-    if (_allOrders.isEmpty) {
-      return {'active': 0, 'completed': 0, 'cancelled': 0, 'revenue': 0.0};
+    final bloc = context.watch<OrdersManagementBloc>();
+    final state = bloc.state;
+
+    if (state is OrdersManagementLoaded) {
+      final orders = state.orders;
+
+      if (orders.isEmpty) {
+        return {'active': 0, 'completed': 0, 'cancelled': 0, 'revenue': 0.0};
+      }
+
+      final active = orders.where((o) => o.status == OrderStatus.active).length;
+      final completed = orders
+          .where((o) => o.status == OrderStatus.completed)
+          .length;
+      final cancelled = orders
+          .where((o) => o.status == OrderStatus.cancelled)
+          .length;
+      final revenue = orders
+          .where((o) => o.status == OrderStatus.completed)
+          .fold<double>(0.0, (sum, o) => sum + o.total);
+
+      return {
+        'active': active,
+        'completed': completed,
+        'cancelled': cancelled,
+        'revenue': revenue,
+      };
     }
 
-    final active = _allOrders
-        .where((o) => o.status == OrderStatus.active)
-        .length;
-    final completed = _allOrders
-        .where((o) => o.status == OrderStatus.completed)
-        .length;
-    final cancelled = _allOrders
-        .where((o) => o.status == OrderStatus.cancelled)
-        .length;
-    final revenue = _allOrders
-        .where((o) => o.status == OrderStatus.completed)
-        .fold<double>(0.0, (sum, o) => sum + o.total);
-
-    return {
-      'active': active,
-      'completed': completed,
-      'cancelled': cancelled,
-      'revenue': revenue,
-    };
+    return {'active': 0, 'completed': 0, 'cancelled': 0, 'revenue': 0.0};
   }
 
   @override
@@ -113,8 +111,8 @@ class _OrdersScreenState extends State<OrdersScreen> {
             Expanded(
               child: Column(
                 children: [
-                  _buildHeader(),
-                  Expanded(child: _buildOrdersGrid()),
+                  _buildHeader(context),
+                  Expanded(child: _buildOrdersContent(context)),
                 ],
               ),
             ),
@@ -124,7 +122,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
@@ -186,7 +184,11 @@ class _OrdersScreenState extends State<OrdersScreen> {
                     const SizedBox(width: 12),
                     IconButton(
                       icon: const Icon(Icons.refresh),
-                      onPressed: () => setState(() {}),
+                      onPressed: () {
+                        context.read<OrdersManagementBloc>().add(
+                          const LoadOrdersEvent(),
+                        );
+                      },
                       style: IconButton.styleFrom(
                         backgroundColor: Colors.white,
                         side: const BorderSide(
@@ -201,7 +203,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
             const SizedBox(height: 16),
 
             // KPI Cards
-            _buildKPICards(),
+            _buildKPICards(context),
             const SizedBox(height: 16),
 
             // Search bar
@@ -217,6 +219,107 @@ class _OrdersScreenState extends State<OrdersScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildKPICards(BuildContext context) {
+    final stats = _stats;
+
+    return Row(
+      children: [
+        Expanded(
+          child: _buildKPICard(
+            label: 'Active Orders',
+            value: '${stats['active']}',
+            icon: Icons.access_time,
+            gradientColors: const [
+              OrdersConstants.colorKpiActiveStart,
+              OrdersConstants.colorKpiActiveEnd,
+            ],
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _buildKPICard(
+            label: 'Completed',
+            value: '${stats['completed']}',
+            icon: Icons.check_circle,
+            gradientColors: const [
+              OrdersConstants.colorKpiCompletedStart,
+              OrdersConstants.colorKpiCompletedEnd,
+            ],
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _buildKPICard(
+            label: 'Cancelled',
+            value: '${stats['cancelled']}',
+            icon: Icons.cancel,
+            gradientColors: const [
+              OrdersConstants.colorKpiCancelledStart,
+              OrdersConstants.colorKpiCancelledEnd,
+            ],
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _buildKPICard(
+            label: 'Revenue',
+            value: '\$${stats['revenue'].toStringAsFixed(0)}',
+            icon: Icons.trending_up,
+            gradientColors: const [
+              OrdersConstants.colorKpiRevenueStart,
+              OrdersConstants.colorKpiRevenueEnd,
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildOrdersContent(BuildContext context) {
+    return BlocBuilder<OrdersManagementBloc, OrdersManagementState>(
+      builder: (context, state) {
+        if (state is OrdersManagementLoading) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (state is OrdersManagementError) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.error_outline, size: 64, color: Colors.red.shade300),
+                const SizedBox(height: 16),
+                Text(
+                  'Error: ${state.message}',
+                  style: const TextStyle(fontSize: 16),
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () {
+                    context.read<OrdersManagementBloc>().add(
+                      const LoadOrdersEvent(),
+                    );
+                  },
+                  child: const Text('Retry'),
+                ),
+              ],
+            ),
+          );
+        }
+
+        if (state is OrdersManagementLoaded) {
+          if (_filteredOrders.isEmpty) {
+            return _buildEmptyState();
+          }
+
+          return _buildOrdersGrid(context, _filteredOrders);
+        }
+
+        return const SizedBox.shrink();
+      },
     );
   }
 
@@ -238,110 +341,6 @@ class _OrdersScreenState extends State<OrdersScreen> {
           size: 16,
           color: isActive ? Colors.white : OrdersConstants.colorTextMuted,
         ),
-      ),
-    );
-  }
-
-  Widget _buildKPICards() {
-    return Row(
-      children: [
-        Expanded(
-          child: _buildKPICard(
-            label: 'Active Orders',
-            value: '${_stats['active']}',
-            icon: Icons.access_time,
-            gradientColors: const [
-              OrdersConstants.colorKpiActiveStart,
-              OrdersConstants.colorKpiActiveEnd,
-            ],
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _buildKPICard(
-            label: 'Completed',
-            value: '${_stats['completed']}',
-            icon: Icons.check_circle,
-            gradientColors: const [
-              OrdersConstants.colorKpiCompletedStart,
-              OrdersConstants.colorKpiCompletedEnd,
-            ],
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _buildKPICard(
-            label: 'Cancelled',
-            value: '${_stats['cancelled']}',
-            icon: Icons.cancel,
-            gradientColors: const [
-              OrdersConstants.colorKpiCancelledStart,
-              OrdersConstants.colorKpiCancelledEnd,
-            ],
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _buildKPICard(
-            label: 'Revenue',
-            value: '\$${_stats['revenue'].toStringAsFixed(0)}',
-            icon: Icons.trending_up,
-            gradientColors: const [
-              OrdersConstants.colorKpiRevenueStart,
-              OrdersConstants.colorKpiRevenueEnd,
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildKPICard({
-    required String label,
-    required String value,
-    required IconData icon,
-    required List<Color> gradientColors,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(colors: gradientColors),
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: OrdersConstants.shadowCard,
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: OrdersConstants.caption.copyWith(
-                    color: Colors.white.withValues(alpha: 0.9),
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  value,
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(icon, size: 16, color: Colors.white),
-          ),
-        ],
       ),
     );
   }
@@ -393,21 +392,21 @@ class _OrdersScreenState extends State<OrdersScreen> {
           _buildTab(
             label: 'Active',
             icon: Icons.access_time,
-            count: _stats['active'],
+            count: _stats['active'] as int,
             status: OrderStatus.active,
           ),
           const SizedBox(width: 4),
           _buildTab(
             label: 'Completed',
             icon: Icons.check_circle,
-            count: _stats['completed'],
+            count: _stats['completed'] as int,
             status: OrderStatus.completed,
           ),
           const SizedBox(width: 4),
           _buildTab(
             label: 'Cancelled',
             icon: Icons.cancel,
-            count: _stats['cancelled'],
+            count: _stats['cancelled'] as int,
             status: OrderStatus.cancelled,
           ),
         ],
@@ -534,15 +533,57 @@ class _OrdersScreenState extends State<OrdersScreen> {
     );
   }
 
-  Widget _buildOrdersGrid() {
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
+  Widget _buildKPICard({
+    required String label,
+    required String value,
+    required IconData icon,
+    required List<Color> gradientColors,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(colors: gradientColors),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: OrdersConstants.shadowCard,
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: OrdersConstants.caption.copyWith(
+                    color: Colors.white.withValues(alpha: 0.9),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, size: 16, color: Colors.white),
+          ),
+        ],
+      ),
+    );
+  }
 
-    if (_filteredOrders.isEmpty) {
-      return _buildEmptyState();
-    }
-
+  Widget _buildOrdersGrid(BuildContext context, List<OrderEntity> orders) {
     final width = MediaQuery.of(context).size.width;
     final crossAxisCount = _getCrossAxisCount(width);
 
@@ -552,11 +593,10 @@ class _OrdersScreenState extends State<OrdersScreen> {
         crossAxisCount: crossAxisCount,
         crossAxisSpacing: OrdersConstants.gapBetweenCards,
         mainAxisSpacing: OrdersConstants.gapBetweenCards,
-        childAspectRatio: 0.75,
       ),
-      itemCount: _filteredOrders.length,
+      itemCount: orders.length,
       itemBuilder: (context, index) {
-        return OrderCardWidget(order: _filteredOrders[index]);
+        return OrderCardWidget(order: orders[index]);
       },
     );
   }

@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'order_item_entity.dart';
 
 /// Order status matching React implementation
 enum OrderStatus { active, completed, cancelled }
@@ -20,24 +21,6 @@ enum OrderChannel {
 
 /// Order type (service method)
 enum OrderType { delivery, takeaway, dinein }
-
-/// Order item entity
-class OrderItemEntity extends Equatable {
-  final String name;
-  final int quantity;
-  final double price;
-  final List<String>? modifiers;
-
-  const OrderItemEntity({
-    required this.name,
-    required this.quantity,
-    required this.price,
-    this.modifiers,
-  });
-
-  @override
-  List<Object?> get props => [name, quantity, price, modifiers];
-}
 
 /// Main order entity
 class OrderEntity extends Equatable {
