@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../checkout/presentation/bloc/checkout_bloc.dart';
-import '../checkout_tokens.dart';
+import '../constant/checkout_constants.dart';
 
 /// Compact summary card - shows subtotal, tax, and total
 /// Designed to be sticky at the bottom of order items panel
@@ -12,10 +12,12 @@ class CompactSummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(CheckoutTokens.cardPadding),
+      padding: const EdgeInsets.all(CheckoutConstants.cardPadding),
       decoration: BoxDecoration(
-        color: CheckoutTokens.surface,
-        border: Border(top: BorderSide(color: CheckoutTokens.border, width: 1)),
+        color: CheckoutConstants.surface,
+        border: Border(
+          top: BorderSide(color: CheckoutConstants.border, width: 1),
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.04),
@@ -41,7 +43,7 @@ class CompactSummaryCard extends StatelessWidget {
           const SizedBox(height: 8),
 
           // Divider
-          Container(height: 1, color: CheckoutTokens.border),
+          Container(height: 1, color: CheckoutConstants.border),
           const SizedBox(height: 8),
 
           // Total
@@ -69,14 +71,14 @@ class CompactSummaryCard extends StatelessWidget {
               Text(
                 label,
                 style: isTotal
-                    ? CheckoutTokens.textTitle.copyWith(
-                        fontWeight: CheckoutTokens.weightBold,
+                    ? CheckoutConstants.textTitle.copyWith(
+                        fontWeight: CheckoutConstants.weightBold,
                       )
-                    : CheckoutTokens.textLabel,
+                    : CheckoutConstants.textLabel,
               ),
               if (subtitle != null) ...[
                 const SizedBox(height: 2),
-                Text(subtitle, style: CheckoutTokens.textMutedSmall),
+                Text(subtitle, style: CheckoutConstants.textMutedSmall),
               ],
             ],
           ),
@@ -86,13 +88,13 @@ class CompactSummaryCard extends StatelessWidget {
         Text(
           '\$${amount.toStringAsFixed(2)}',
           style: isTotal
-              ? CheckoutTokens.textValue.copyWith(
-                  fontSize: CheckoutTokens.fontSizeLarge,
-                  fontWeight: CheckoutTokens.weightBold,
-                  color: CheckoutTokens.success,
+              ? CheckoutConstants.textValue.copyWith(
+                  fontSize: CheckoutConstants.fontSizeLarge,
+                  fontWeight: CheckoutConstants.weightBold,
+                  color: CheckoutConstants.success,
                 )
-              : CheckoutTokens.textBody.copyWith(
-                  fontWeight: CheckoutTokens.weightSemiBold,
+              : CheckoutConstants.textBody.copyWith(
+                  fontWeight: CheckoutConstants.weightSemiBold,
                 ),
         ),
       ],

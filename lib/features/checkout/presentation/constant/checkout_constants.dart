@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 /// Design tokens for Checkout screen - matches React prototype exactly
-class CheckoutTokens {
+class CheckoutConstants {
   // ============================================================================
   // BREAKPOINTS
   // ============================================================================

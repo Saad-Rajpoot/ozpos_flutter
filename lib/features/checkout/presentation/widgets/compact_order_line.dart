@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../checkout/presentation/bloc/cart_bloc.dart';
-import '../checkout_tokens.dart';
+import '../constant/checkout_constants.dart';
 
 /// Compact order line item - 2-row layout matching React prototype
 ///
@@ -15,13 +15,13 @@ class CompactOrderLine extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: CheckoutTokens.cardInnerPadding,
-        vertical: CheckoutTokens.cardInnerPadding,
+        horizontal: CheckoutConstants.cardInnerPadding,
+        vertical: CheckoutConstants.cardInnerPadding,
       ),
       decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(
-            color: CheckoutTokens.border.withValues(alpha: 0.5),
+            color: CheckoutConstants.border.withValues(alpha: 0.5),
             width: 1,
           ),
         ),
@@ -36,8 +36,8 @@ class CompactOrderLine extends StatelessWidget {
               Expanded(
                 child: Text(
                   item.menuItem.name,
-                  style: CheckoutTokens.textBody.copyWith(
-                    fontWeight: CheckoutTokens.weightMedium,
+                  style: CheckoutConstants.textBody.copyWith(
+                    fontWeight: CheckoutConstants.weightMedium,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -49,13 +49,13 @@ class CompactOrderLine extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: CheckoutTokens.textMuted.withValues(alpha: 0.1),
+                  color: CheckoutConstants.textMuted.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
                   '×${item.quantity}',
-                  style: CheckoutTokens.textMutedSmall.copyWith(
-                    fontWeight: CheckoutTokens.weightMedium,
+                  style: CheckoutConstants.textMutedSmall.copyWith(
+                    fontWeight: CheckoutConstants.weightMedium,
                   ),
                 ),
               ),
@@ -64,8 +64,8 @@ class CompactOrderLine extends StatelessWidget {
               // Line total (right-aligned)
               Text(
                 '\$${item.lineTotal.toStringAsFixed(2)}',
-                style: CheckoutTokens.textBody.copyWith(
-                  fontWeight: CheckoutTokens.weightSemiBold,
+                style: CheckoutConstants.textBody.copyWith(
+                  fontWeight: CheckoutConstants.weightSemiBold,
                 ),
               ),
             ],
@@ -91,14 +91,14 @@ class CompactOrderLine extends StatelessWidget {
         margin: const EdgeInsets.only(right: 6),
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
         decoration: BoxDecoration(
-          color: CheckoutTokens.primaryLight,
-          borderRadius: BorderRadius.circular(CheckoutTokens.radiusChip),
+          color: CheckoutConstants.primaryLight,
+          borderRadius: BorderRadius.circular(CheckoutConstants.radiusChip),
         ),
         child: Text(
           mod,
-          style: CheckoutTokens.textMutedSmall.copyWith(
-            color: CheckoutTokens.primary,
-            fontWeight: CheckoutTokens.weightMedium,
+          style: CheckoutConstants.textMutedSmall.copyWith(
+            color: CheckoutConstants.primary,
+            fontWeight: CheckoutConstants.weightMedium,
           ),
         ),
       );

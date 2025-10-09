@@ -7,7 +7,7 @@ import '../../../checkout/presentation/widgets/payment_keypad_panel.dart';
 import '../../../checkout/presentation/widgets/payment_options_panel.dart';
 import '../../../checkout/presentation/bloc/cart_bloc.dart';
 import '../../../checkout/presentation/bloc/checkout_bloc.dart';
-import '../checkout_tokens.dart';
+import '../constant/checkout_constants.dart';
 
 /// Checkout Screen - Compact layout matching React prototype
 ///
@@ -40,7 +40,7 @@ class _CheckoutScreenContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final isCompact = CheckoutTokens.isCompact(screenWidth);
+    final isCompact = CheckoutConstants.isCompact(screenWidth);
 
     // Get cart items from shared CartBloc using BlocBuilder for proper state access
     return BlocBuilder<CartBloc, CartState>(
@@ -60,7 +60,7 @@ class _CheckoutScreenContent extends StatelessWidget {
           create: (context) =>
               CheckoutBloc()..add(InitializeCheckout(items: items)),
           child: Scaffold(
-            backgroundColor: CheckoutTokens.background,
+            backgroundColor: CheckoutConstants.background,
             appBar: isCompact ? _buildCompactAppBar(context) : null,
             endDrawer: isCompact ? _buildOrderDrawer(context) : null,
             body: Row(
@@ -87,8 +87,8 @@ class _CheckoutScreenContent extends StatelessWidget {
   // DESKTOP LAYOUT (≥900dp) - Three columns, NO outer scroll
   // ============================================================================
   Widget _buildDesktopLayout(BuildContext context, double screenWidth) {
-    final leftWidth = CheckoutTokens.getLeftWidth(screenWidth);
-    final gap = CheckoutTokens.getGap(screenWidth);
+    final leftWidth = CheckoutConstants.getLeftWidth(screenWidth);
+    final gap = CheckoutConstants.getGap(screenWidth);
 
     return Column(
       children: [
@@ -99,10 +99,10 @@ class _CheckoutScreenContent extends StatelessWidget {
         Expanded(
           child: Padding(
             padding: const EdgeInsets.only(
-              left: CheckoutTokens.pageHorizontal,
-              right: CheckoutTokens.pageHorizontal,
-              top: CheckoutTokens.pageHorizontal,
-              bottom: CheckoutTokens.pageHorizontal,
+              left: CheckoutConstants.pageHorizontal,
+              right: CheckoutConstants.pageHorizontal,
+              top: CheckoutConstants.pageHorizontal,
+              bottom: CheckoutConstants.pageHorizontal,
             ),
             child: Row(
               // NO SingleChildScrollView wrapper!
@@ -126,7 +126,7 @@ class _CheckoutScreenContent extends StatelessWidget {
                 Flexible(
                   flex: 0,
                   child: SizedBox(
-                    width: CheckoutTokens.rightWidth,
+                    width: CheckoutConstants.rightWidth,
                     child: PaymentOptionsPanel(),
                   ),
                 ),
@@ -143,13 +143,13 @@ class _CheckoutScreenContent extends StatelessWidget {
   // ============================================================================
   Widget _buildCompactLayout(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(CheckoutTokens.pageHorizontal),
+      padding: const EdgeInsets.all(CheckoutConstants.pageHorizontal),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // Middle column: Payment Keypad
           Expanded(flex: 3, child: PaymentKeypadPanel()),
-          const SizedBox(width: CheckoutTokens.gapNormal),
+          const SizedBox(width: CheckoutConstants.gapNormal),
 
           // Right column: Payment Options
           Expanded(flex: 2, child: PaymentOptionsPanel()),
@@ -163,12 +163,12 @@ class _CheckoutScreenContent extends StatelessWidget {
   // ============================================================================
   AppBar _buildCompactAppBar(BuildContext context) {
     return AppBar(
-      backgroundColor: CheckoutTokens.surface,
+      backgroundColor: CheckoutConstants.surface,
       elevation: 0,
       title: Text(
         'Checkout',
-        style: CheckoutTokens.textTitle.copyWith(
-          fontSize: CheckoutTokens.fontSizeValue,
+        style: CheckoutConstants.textTitle.copyWith(
+          fontSize: CheckoutConstants.fontSizeValue,
         ),
       ),
       leading: IconButton(
@@ -196,7 +196,7 @@ class _CheckoutScreenContent extends StatelessWidget {
                     child: Container(
                       padding: const EdgeInsets.all(4),
                       decoration: BoxDecoration(
-                        color: CheckoutTokens.error,
+                        color: CheckoutConstants.error,
                         shape: BoxShape.circle,
                       ),
                       constraints: const BoxConstraints(
@@ -208,7 +208,7 @@ class _CheckoutScreenContent extends StatelessWidget {
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 10,
-                          fontWeight: CheckoutTokens.weightBold,
+                          fontWeight: CheckoutConstants.weightBold,
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -229,13 +229,13 @@ class _CheckoutScreenContent extends StatelessWidget {
     return Container(
       height: 64, // Fixed height to prevent overflow
       padding: const EdgeInsets.symmetric(
-        horizontal: CheckoutTokens.pageHorizontal,
+        horizontal: CheckoutConstants.pageHorizontal,
         vertical: 12,
       ),
       decoration: BoxDecoration(
-        color: CheckoutTokens.surface,
+        color: CheckoutConstants.surface,
         border: Border(
-          bottom: BorderSide(color: CheckoutTokens.border, width: 1),
+          bottom: BorderSide(color: CheckoutConstants.border, width: 1),
         ),
       ),
       child: Row(
@@ -256,9 +256,9 @@ class _CheckoutScreenContent extends StatelessWidget {
           Flexible(
             child: Text(
               'Checkout',
-              style: CheckoutTokens.textTitle.copyWith(
+              style: CheckoutConstants.textTitle.copyWith(
                 fontSize: 20,
-                fontWeight: CheckoutTokens.weightBold,
+                fontWeight: CheckoutConstants.weightBold,
               ),
               overflow: TextOverflow.ellipsis,
             ),
@@ -277,14 +277,14 @@ class _CheckoutScreenContent extends StatelessWidget {
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: CheckoutTokens.primaryLight,
+                  color: CheckoutConstants.primaryLight,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
                   '${state.items.length} ${state.items.length == 1 ? 'item' : 'items'}',
-                  style: CheckoutTokens.textBody.copyWith(
-                    color: CheckoutTokens.primary,
-                    fontWeight: CheckoutTokens.weightSemiBold,
+                  style: CheckoutConstants.textBody.copyWith(
+                    color: CheckoutConstants.primary,
+                    fontWeight: CheckoutConstants.weightSemiBold,
                     fontSize: 14,
                   ),
                 ),

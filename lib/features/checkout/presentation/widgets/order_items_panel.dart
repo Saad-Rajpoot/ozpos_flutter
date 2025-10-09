@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../checkout/presentation/bloc/checkout_bloc.dart';
-import '../checkout_tokens.dart';
+import '../constant/checkout_constants.dart';
 import 'compact_order_line.dart';
 import 'compact_summary_card.dart';
 
@@ -38,28 +38,28 @@ class OrderItemsPanel extends StatelessWidget {
     return Container(
       width: width,
       decoration: BoxDecoration(
-        color: CheckoutTokens.surface,
-        borderRadius: BorderRadius.circular(CheckoutTokens.radiusCard),
-        border: Border.all(color: CheckoutTokens.border),
-        boxShadow: CheckoutTokens.shadowCard,
+        color: CheckoutConstants.surface,
+        borderRadius: BorderRadius.circular(CheckoutConstants.radiusCard),
+        border: Border.all(color: CheckoutConstants.border),
+        boxShadow: CheckoutConstants.shadowCard,
       ),
       child: Column(
         children: [
           // Header
           Container(
-            padding: const EdgeInsets.all(CheckoutTokens.cardPadding),
+            padding: const EdgeInsets.all(CheckoutConstants.cardPadding),
             decoration: BoxDecoration(
               border: Border(
-                bottom: BorderSide(color: CheckoutTokens.border, width: 1),
+                bottom: BorderSide(color: CheckoutConstants.border, width: 1),
               ),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Order Items', style: CheckoutTokens.textTitle),
+                Text('Order Items', style: CheckoutConstants.textTitle),
                 Text(
                   '${state.items.length} ${state.items.length == 1 ? 'item' : 'items'}',
-                  style: CheckoutTokens.textLabel,
+                  style: CheckoutConstants.textLabel,
                 ),
               ],
             ),
@@ -87,9 +87,9 @@ class OrderItemsPanel extends StatelessWidget {
     return Container(
       width: width,
       decoration: BoxDecoration(
-        color: CheckoutTokens.surface,
-        borderRadius: BorderRadius.circular(CheckoutTokens.radiusCard),
-        border: Border.all(color: CheckoutTokens.border),
+        color: CheckoutConstants.surface,
+        borderRadius: BorderRadius.circular(CheckoutConstants.radiusCard),
+        border: Border.all(color: CheckoutConstants.border),
       ),
       child: Center(
         child: Padding(
@@ -100,19 +100,19 @@ class OrderItemsPanel extends StatelessWidget {
               Icon(
                 Icons.shopping_cart_outlined,
                 size: 64,
-                color: CheckoutTokens.textMuted.withValues(alpha: 0.5),
+                color: CheckoutConstants.textMuted.withValues(alpha: 0.5),
               ),
               const SizedBox(height: 16),
               Text(
                 'No items in cart',
-                style: CheckoutTokens.textBody.copyWith(
-                  color: CheckoutTokens.textMuted,
+                style: CheckoutConstants.textBody.copyWith(
+                  color: CheckoutConstants.textMuted,
                 ),
               ),
               const SizedBox(height: 8),
               Text(
                 'Add items from the menu to continue',
-                style: CheckoutTokens.textMutedSmall,
+                style: CheckoutConstants.textMutedSmall,
                 textAlign: TextAlign.center,
               ),
             ],
@@ -126,9 +126,9 @@ class OrderItemsPanel extends StatelessWidget {
     return Container(
       width: width,
       decoration: BoxDecoration(
-        color: CheckoutTokens.surface,
-        borderRadius: BorderRadius.circular(CheckoutTokens.radiusCard),
-        border: Border.all(color: CheckoutTokens.border),
+        color: CheckoutConstants.surface,
+        borderRadius: BorderRadius.circular(CheckoutConstants.radiusCard),
+        border: Border.all(color: CheckoutConstants.border),
       ),
       child: const Center(child: CircularProgressIndicator()),
     );

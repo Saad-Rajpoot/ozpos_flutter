@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../checkout/presentation/bloc/checkout_bloc.dart';
 import '../../../checkout/domain/entities/payment_method.dart';
-import '../checkout_tokens.dart';
+import '../constant/checkout_constants.dart';
 import 'compact_keypad.dart';
 
 /// Payment Keypad Panel - Middle column
@@ -31,13 +31,13 @@ class PaymentKeypadPanel extends StatelessWidget {
             // Cash display (only for cash payments)
             if (isCash) ...[
               _buildCashDisplay(state),
-              const SizedBox(height: CheckoutTokens.gapNormal),
+              const SizedBox(height: CheckoutConstants.gapNormal),
             ],
 
             // Keypad (only for cash)
             if (isCash) ...[
               const CompactKeypad(),
-              const SizedBox(height: CheckoutTokens.gapNormal),
+              const SizedBox(height: CheckoutConstants.gapNormal),
             ],
 
             // Totals card (always shown)
@@ -53,20 +53,22 @@ class PaymentKeypadPanel extends StatelessWidget {
     final isSufficient = state.cashReceivedNum >= state.grandTotal;
 
     return Container(
-      padding: const EdgeInsets.all(CheckoutTokens.cardPadding),
+      padding: const EdgeInsets.all(CheckoutConstants.cardPadding),
       decoration: BoxDecoration(
-        color: CheckoutTokens.surface,
-        borderRadius: BorderRadius.circular(CheckoutTokens.radiusCard),
+        color: CheckoutConstants.surface,
+        borderRadius: BorderRadius.circular(CheckoutConstants.radiusCard),
         border: Border.all(
-          color: isSufficient ? CheckoutTokens.success : CheckoutTokens.border,
+          color: isSufficient
+              ? CheckoutConstants.success
+              : CheckoutConstants.border,
           width: isSufficient ? 2 : 1,
         ),
-        boxShadow: CheckoutTokens.shadowCard,
+        boxShadow: CheckoutConstants.shadowCard,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Cash Received', style: CheckoutTokens.textLabel),
+          Text('Cash Received', style: CheckoutConstants.textLabel),
           const SizedBox(height: 4),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -77,8 +79,8 @@ class PaymentKeypadPanel extends StatelessWidget {
                 '\$$cashText',
                 style: const TextStyle(
                   fontSize: 32,
-                  fontWeight: CheckoutTokens.weightBold,
-                  color: CheckoutTokens.textPrimary,
+                  fontWeight: CheckoutConstants.weightBold,
+                  color: CheckoutConstants.textPrimary,
                 ),
               ),
               if (isSufficient && state.cashReceivedNum > 0)
@@ -88,9 +90,9 @@ class PaymentKeypadPanel extends StatelessWidget {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: CheckoutTokens.success,
+                    color: CheckoutConstants.success,
                     borderRadius: BorderRadius.circular(
-                      CheckoutTokens.radiusChip,
+                      CheckoutConstants.radiusChip,
                     ),
                   ),
                   child: Row(
@@ -100,9 +102,9 @@ class PaymentKeypadPanel extends StatelessWidget {
                       const SizedBox(width: 4),
                       Text(
                         'Sufficient',
-                        style: CheckoutTokens.textMutedSmall.copyWith(
+                        style: CheckoutConstants.textMutedSmall.copyWith(
                           color: Colors.white,
-                          fontWeight: CheckoutTokens.weightSemiBold,
+                          fontWeight: CheckoutConstants.weightSemiBold,
                         ),
                       ),
                     ],
@@ -116,9 +118,9 @@ class PaymentKeypadPanel extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: CheckoutTokens.successLight,
+                color: CheckoutConstants.successLight,
                 borderRadius: BorderRadius.circular(
-                  CheckoutTokens.radiusButton,
+                  CheckoutConstants.radiusButton,
                 ),
               ),
               child: Row(
@@ -126,16 +128,16 @@ class PaymentKeypadPanel extends StatelessWidget {
                 children: [
                   Text(
                     'Change Due',
-                    style: CheckoutTokens.textLabel.copyWith(
-                      color: CheckoutTokens.success,
-                      fontWeight: CheckoutTokens.weightSemiBold,
+                    style: CheckoutConstants.textLabel.copyWith(
+                      color: CheckoutConstants.success,
+                      fontWeight: CheckoutConstants.weightSemiBold,
                     ),
                   ),
                   Text(
                     '\$${state.cashChange.toStringAsFixed(2)}',
-                    style: CheckoutTokens.textValue.copyWith(
-                      color: CheckoutTokens.success,
-                      fontWeight: CheckoutTokens.weightBold,
+                    style: CheckoutConstants.textValue.copyWith(
+                      color: CheckoutConstants.success,
+                      fontWeight: CheckoutConstants.weightBold,
                     ),
                   ),
                 ],
@@ -149,12 +151,12 @@ class PaymentKeypadPanel extends StatelessWidget {
 
   Widget _buildTotalsCard(CheckoutLoaded state) {
     return Container(
-      padding: const EdgeInsets.all(CheckoutTokens.cardPadding),
+      padding: const EdgeInsets.all(CheckoutConstants.cardPadding),
       decoration: BoxDecoration(
-        color: CheckoutTokens.surface,
-        borderRadius: BorderRadius.circular(CheckoutTokens.radiusCard),
-        border: Border.all(color: CheckoutTokens.border),
-        boxShadow: CheckoutTokens.shadowCard,
+        color: CheckoutConstants.surface,
+        borderRadius: BorderRadius.circular(CheckoutConstants.radiusCard),
+        border: Border.all(color: CheckoutConstants.border),
+        boxShadow: CheckoutConstants.shadowCard,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -165,7 +167,7 @@ class PaymentKeypadPanel extends StatelessWidget {
             _buildTotalRow(
               'Tip',
               state.tipAmount,
-              color: CheckoutTokens.primary,
+              color: CheckoutConstants.primary,
             ),
           ],
           if (state.discountAmount > 0) ...[
@@ -173,7 +175,7 @@ class PaymentKeypadPanel extends StatelessWidget {
             _buildTotalRow(
               'Discount',
               -state.discountAmount,
-              color: CheckoutTokens.error,
+              color: CheckoutConstants.error,
             ),
           ],
           if (state.voucherTotal > 0) ...[
@@ -181,7 +183,7 @@ class PaymentKeypadPanel extends StatelessWidget {
             _buildTotalRow(
               'Vouchers',
               -state.voucherTotal,
-              color: CheckoutTokens.success,
+              color: CheckoutConstants.success,
             ),
           ],
           if (state.loyaltyRedemption > 0) ...[
@@ -189,13 +191,13 @@ class PaymentKeypadPanel extends StatelessWidget {
             _buildTotalRow(
               'Loyalty',
               -state.loyaltyRedemption,
-              color: CheckoutTokens.warning,
+              color: CheckoutConstants.warning,
             ),
           ],
           const SizedBox(height: 6),
           _buildTotalRow('Tax (10%)', state.tax),
           const SizedBox(height: 8),
-          Container(height: 1, color: CheckoutTokens.border),
+          Container(height: 1, color: CheckoutConstants.border),
           const SizedBox(height: 8),
           _buildTotalRow('TOTAL', state.grandTotal, isGrandTotal: true),
         ],
@@ -215,23 +217,23 @@ class PaymentKeypadPanel extends StatelessWidget {
         Text(
           label,
           style: isGrandTotal
-              ? CheckoutTokens.textTitle.copyWith(
-                  fontWeight: CheckoutTokens.weightBold,
+              ? CheckoutConstants.textTitle.copyWith(
+                  fontWeight: CheckoutConstants.weightBold,
                 )
-              : CheckoutTokens.textLabel,
+              : CheckoutConstants.textLabel,
         ),
         Text(
           amount < 0
               ? '-\$${(-amount).toStringAsFixed(2)}'
               : '\$${amount.toStringAsFixed(2)}',
           style: isGrandTotal
-              ? CheckoutTokens.textValue.copyWith(
-                  fontSize: CheckoutTokens.fontSizeLarge,
-                  fontWeight: CheckoutTokens.weightBold,
-                  color: CheckoutTokens.success,
+              ? CheckoutConstants.textValue.copyWith(
+                  fontSize: CheckoutConstants.fontSizeLarge,
+                  fontWeight: CheckoutConstants.weightBold,
+                  color: CheckoutConstants.success,
                 )
-              : CheckoutTokens.textBody.copyWith(
-                  fontWeight: CheckoutTokens.weightSemiBold,
+              : CheckoutConstants.textBody.copyWith(
+                  fontWeight: CheckoutConstants.weightSemiBold,
                   color: color,
                 ),
         ),

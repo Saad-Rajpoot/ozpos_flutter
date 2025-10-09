@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../checkout/presentation/bloc/checkout_bloc.dart';
-import '../checkout_tokens.dart';
+import '../constant/checkout_constants.dart';
 
 /// Compact Keypad - Fixed-height grid for cash input
 ///
@@ -20,7 +20,7 @@ class CompactKeypad extends StatelessWidget {
       children: [
         // Quick amounts row
         _buildQuickAmounts(context),
-        const SizedBox(height: CheckoutTokens.gapNormal),
+        const SizedBox(height: CheckoutConstants.gapNormal),
 
         // Keypad grid
         _buildKeypadGrid(context),
@@ -32,7 +32,7 @@ class CompactKeypad extends StatelessWidget {
     final amounts = [5, 10, 20, 50, 100];
 
     return SizedBox(
-      height: CheckoutTokens.quickAmountHeight,
+      height: CheckoutConstants.quickAmountHeight,
       child: Row(
         children: amounts.map((amount) {
           return Expanded(
@@ -48,16 +48,16 @@ class CompactKeypad extends StatelessWidget {
                   padding: EdgeInsets.zero,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(
-                      CheckoutTokens.radiusButton,
+                      CheckoutConstants.radiusButton,
                     ),
                   ),
-                  side: BorderSide(color: CheckoutTokens.border),
-                  foregroundColor: CheckoutTokens.textPrimary,
+                  side: BorderSide(color: CheckoutConstants.border),
+                  foregroundColor: CheckoutConstants.textPrimary,
                 ),
                 child: Text(
                   '+\$$amount',
-                  style: CheckoutTokens.textBody.copyWith(
-                    fontWeight: CheckoutTokens.weightSemiBold,
+                  style: CheckoutConstants.textBody.copyWith(
+                    fontWeight: CheckoutConstants.weightSemiBold,
                   ),
                 ),
               ),
@@ -80,7 +80,7 @@ class CompactKeypad extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: keys.map((row) {
         return Padding(
-          padding: const EdgeInsets.only(bottom: CheckoutTokens.keypadGap),
+          padding: const EdgeInsets.only(bottom: CheckoutConstants.keypadGap),
           child: Row(
             children: row.map((key) {
               return Expanded(
@@ -100,24 +100,26 @@ class CompactKeypad extends StatelessWidget {
     final isBackspace = key == '⌫';
 
     return SizedBox(
-      height: CheckoutTokens.keySize,
+      height: CheckoutConstants.keySize,
       child: ElevatedButton(
         onPressed: () {
           context.read<CheckoutBloc>().add(KeypadPress(key: key));
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: isBackspace
-              ? CheckoutTokens.error
-              : CheckoutTokens.surface,
+              ? CheckoutConstants.error
+              : CheckoutConstants.surface,
           foregroundColor: isBackspace
               ? Colors.white
-              : CheckoutTokens.textPrimary,
+              : CheckoutConstants.textPrimary,
           elevation: 0,
           shadowColor: Colors.transparent,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(CheckoutTokens.radiusButton),
+            borderRadius: BorderRadius.circular(CheckoutConstants.radiusButton),
             side: BorderSide(
-              color: isBackspace ? CheckoutTokens.error : CheckoutTokens.border,
+              color: isBackspace
+                  ? CheckoutConstants.error
+                  : CheckoutConstants.border,
               width: 1,
             ),
           ),
@@ -127,7 +129,7 @@ class CompactKeypad extends StatelessWidget {
           key,
           style: TextStyle(
             fontSize: isBackspace ? 24 : 20,
-            fontWeight: CheckoutTokens.weightSemiBold,
+            fontWeight: CheckoutConstants.weightSemiBold,
           ),
         ),
       ),

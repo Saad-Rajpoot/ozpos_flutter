@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../delivery_tokens.dart';
+import '../constants/delivery_constants.dart';
 
 enum VehicleType { bike, car, scooter, van }
 
@@ -49,7 +49,7 @@ class _AddDriverModalState extends State<AddDriverModal> {
   Widget build(BuildContext context) {
     return Dialog(
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(DeliveryTokens.radiusXl),
+        borderRadius: BorderRadius.circular(DeliveryConstants.radiusXl),
       ),
       child: Container(
         width: 600,
@@ -59,15 +59,18 @@ class _AddDriverModalState extends State<AddDriverModal> {
           children: [
             // Header
             Container(
-              padding: const EdgeInsets.all(DeliveryTokens.spacingXl),
+              padding: const EdgeInsets.all(DeliveryConstants.spacingXl),
               decoration: const BoxDecoration(
                 border: Border(
-                  bottom: BorderSide(color: DeliveryTokens.borderColor),
+                  bottom: BorderSide(color: DeliveryConstants.borderColor),
                 ),
               ),
               child: Row(
                 children: [
-                  const Text('Add Driver', style: DeliveryTokens.headingMedium),
+                  const Text(
+                    'Add Driver',
+                    style: DeliveryConstants.headingMedium,
+                  ),
                   const Spacer(),
                   IconButton(
                     icon: const Icon(Icons.close),
@@ -80,7 +83,7 @@ class _AddDriverModalState extends State<AddDriverModal> {
             // Form content
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(DeliveryTokens.spacingXl),
+                padding: const EdgeInsets.all(DeliveryConstants.spacingXl),
                 child: Form(
                   key: _formKey,
                   child: Column(
@@ -116,7 +119,7 @@ class _AddDriverModalState extends State<AddDriverModal> {
                       // Vehicle Type
                       const Text(
                         'Vehicle Type *',
-                        style: DeliveryTokens.labelMedium,
+                        style: DeliveryConstants.labelMedium,
                       ),
                       const SizedBox(height: 12),
                       Row(
@@ -159,7 +162,7 @@ class _AddDriverModalState extends State<AddDriverModal> {
                       // Login Credentials
                       const Text(
                         'Login Credentials',
-                        style: DeliveryTokens.headingSmall,
+                        style: DeliveryConstants.headingSmall,
                       ),
                       const SizedBox(height: 16),
                       Row(
@@ -184,27 +187,27 @@ class _AddDriverModalState extends State<AddDriverModal> {
                       const SizedBox(height: 8),
                       const Text(
                         'Credentials will be sent to the driver via SMS. They can change their password later.',
-                        style: DeliveryTokens.caption,
+                        style: DeliveryConstants.caption,
                       ),
                       const SizedBox(height: 24),
 
                       // Driver Role
                       const Text(
                         'Driver Role',
-                        style: DeliveryTokens.labelMedium,
+                        style: DeliveryConstants.labelMedium,
                       ),
                       const SizedBox(height: 12),
                       DropdownButtonFormField<String>(
                         initialValue: _selectedRole,
                         decoration: InputDecoration(
                           filled: true,
-                          fillColor: DeliveryTokens.dividerColor,
+                          fillColor: DeliveryConstants.dividerColor,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(
-                              DeliveryTokens.radiusMd,
+                              DeliveryConstants.radiusMd,
                             ),
                             borderSide: const BorderSide(
-                              color: DeliveryTokens.borderColor,
+                              color: DeliveryConstants.borderColor,
                             ),
                           ),
                           contentPadding: const EdgeInsets.symmetric(
@@ -232,20 +235,20 @@ class _AddDriverModalState extends State<AddDriverModal> {
                       // Zone Assignment
                       const Text(
                         'Zone Assignment',
-                        style: DeliveryTokens.labelMedium,
+                        style: DeliveryConstants.labelMedium,
                       ),
                       const SizedBox(height: 12),
                       DropdownButtonFormField<String>(
                         decoration: InputDecoration(
                           filled: true,
-                          fillColor: DeliveryTokens.dividerColor,
+                          fillColor: DeliveryConstants.dividerColor,
                           hintText: 'Select delivery zones',
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(
-                              DeliveryTokens.radiusMd,
+                              DeliveryConstants.radiusMd,
                             ),
                             borderSide: const BorderSide(
-                              color: DeliveryTokens.borderColor,
+                              color: DeliveryConstants.borderColor,
                             ),
                           ),
                           contentPadding: const EdgeInsets.symmetric(
@@ -294,7 +297,7 @@ class _AddDriverModalState extends State<AddDriverModal> {
                       const SizedBox(height: 8),
                       const Text(
                         'Drivers will receive orders primarily from their assigned zones',
-                        style: DeliveryTokens.caption,
+                        style: DeliveryConstants.caption,
                       ),
                       const SizedBox(height: 24),
 
@@ -304,7 +307,7 @@ class _AddDriverModalState extends State<AddDriverModal> {
                         decoration: BoxDecoration(
                           color: const Color(0xFFEFF6FF),
                           borderRadius: BorderRadius.circular(
-                            DeliveryTokens.radiusLg,
+                            DeliveryConstants.radiusLg,
                           ),
                         ),
                         child: Column(
@@ -325,7 +328,7 @@ class _AddDriverModalState extends State<AddDriverModal> {
                                   setState(() => _sendWelcomeSms = val!),
                               title: const Text(
                                 'Send welcome SMS with login details',
-                                style: DeliveryTokens.bodyMedium,
+                                style: DeliveryConstants.bodyMedium,
                               ),
                               controlAffinity: ListTileControlAffinity.leading,
                               contentPadding: EdgeInsets.zero,
@@ -337,7 +340,7 @@ class _AddDriverModalState extends State<AddDriverModal> {
                                   setState(() => _enableGpsTracking = val!),
                               title: const Text(
                                 'Enable GPS tracking',
-                                style: DeliveryTokens.bodyMedium,
+                                style: DeliveryConstants.bodyMedium,
                               ),
                               controlAffinity: ListTileControlAffinity.leading,
                               contentPadding: EdgeInsets.zero,
@@ -349,7 +352,7 @@ class _AddDriverModalState extends State<AddDriverModal> {
                                   setState(() => _allowCashPayments = val!),
                               title: const Text(
                                 'Allow cash payments',
-                                style: DeliveryTokens.bodyMedium,
+                                style: DeliveryConstants.bodyMedium,
                               ),
                               controlAffinity: ListTileControlAffinity.leading,
                               contentPadding: EdgeInsets.zero,
@@ -366,10 +369,10 @@ class _AddDriverModalState extends State<AddDriverModal> {
 
             // Footer
             Container(
-              padding: const EdgeInsets.all(DeliveryTokens.spacingXl),
+              padding: const EdgeInsets.all(DeliveryConstants.spacingXl),
               decoration: const BoxDecoration(
                 border: Border(
-                  top: BorderSide(color: DeliveryTokens.borderColor),
+                  top: BorderSide(color: DeliveryConstants.borderColor),
                 ),
               ),
               child: Row(
@@ -380,7 +383,7 @@ class _AddDriverModalState extends State<AddDriverModal> {
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         side: const BorderSide(
-                          color: DeliveryTokens.borderColor,
+                          color: DeliveryConstants.borderColor,
                         ),
                       ),
                       child: const Text('Cancel'),
@@ -413,10 +416,10 @@ class _AddDriverModalState extends State<AddDriverModal> {
           width: 100,
           height: 100,
           decoration: BoxDecoration(
-            color: DeliveryTokens.dividerColor,
-            borderRadius: BorderRadius.circular(DeliveryTokens.radiusLg),
+            color: DeliveryConstants.dividerColor,
+            borderRadius: BorderRadius.circular(DeliveryConstants.radiusLg),
             border: Border.all(
-              color: DeliveryTokens.borderColor,
+              color: DeliveryConstants.borderColor,
               style: BorderStyle.solid,
               width: 2,
             ),
@@ -424,7 +427,7 @@ class _AddDriverModalState extends State<AddDriverModal> {
           child: const Icon(
             Icons.person,
             size: 48,
-            color: DeliveryTokens.textTertiary,
+            color: DeliveryConstants.textTertiary,
           ),
         ),
         const SizedBox(height: 12),
@@ -442,7 +445,7 @@ class _AddDriverModalState extends State<AddDriverModal> {
         ),
         const Text(
           'Recommended: Square image, 200x200px minimum',
-          style: DeliveryTokens.caption,
+          style: DeliveryConstants.caption,
         ),
       ],
     );
@@ -457,7 +460,7 @@ class _AddDriverModalState extends State<AddDriverModal> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: DeliveryTokens.labelMedium),
+        Text(label, style: DeliveryConstants.labelMedium),
         const SizedBox(height: 8),
         TextFormField(
           controller: controller,
@@ -465,10 +468,12 @@ class _AddDriverModalState extends State<AddDriverModal> {
           decoration: InputDecoration(
             hintText: hint,
             filled: true,
-            fillColor: DeliveryTokens.dividerColor,
+            fillColor: DeliveryConstants.dividerColor,
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(DeliveryTokens.radiusMd),
-              borderSide: const BorderSide(color: DeliveryTokens.borderColor),
+              borderRadius: BorderRadius.circular(DeliveryConstants.radiusMd),
+              borderSide: const BorderSide(
+                color: DeliveryConstants.borderColor,
+              ),
             ),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,
@@ -491,18 +496,18 @@ class _AddDriverModalState extends State<AddDriverModal> {
 
     return InkWell(
       onTap: () => setState(() => _selectedVehicle = type),
-      borderRadius: BorderRadius.circular(DeliveryTokens.radiusLg),
+      borderRadius: BorderRadius.circular(DeliveryConstants.radiusLg),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 20),
         decoration: BoxDecoration(
           color: isSelected
               ? const Color(0xFFEFF6FF)
-              : DeliveryTokens.dividerColor,
-          borderRadius: BorderRadius.circular(DeliveryTokens.radiusLg),
+              : DeliveryConstants.dividerColor,
+          borderRadius: BorderRadius.circular(DeliveryConstants.radiusLg),
           border: Border.all(
             color: isSelected
                 ? const Color(0xFF3B82F6)
-                : DeliveryTokens.borderColor,
+                : DeliveryConstants.borderColor,
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -513,7 +518,7 @@ class _AddDriverModalState extends State<AddDriverModal> {
               size: 32,
               color: isSelected
                   ? const Color(0xFF3B82F6)
-                  : DeliveryTokens.textSecondary,
+                  : DeliveryConstants.textSecondary,
             ),
             const SizedBox(height: 8),
             Text(
@@ -523,7 +528,7 @@ class _AddDriverModalState extends State<AddDriverModal> {
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                 color: isSelected
                     ? const Color(0xFF3B82F6)
-                    : DeliveryTokens.textSecondary,
+                    : DeliveryConstants.textSecondary,
               ),
             ),
           ],
