@@ -32,6 +32,14 @@ class AppConstants {
   static const String moveTableEndpoint = '/tables/move';
   static const String mergeTableEndpoint = '/tables/merge';
 
+  // Combo endpoints
+  static const String getCombosEndpoint = '/combos';
+  static const String getComboSlotsEndpoint = '/combos/slots';
+  static const String getComboAvailabilityEndpoint = '/combos/availability';
+  static const String getComboLimitsEndpoint = '/combos/limits';
+  static const String getComboOptionsEndpoint = '/combos/options';
+  static const String getComboPricingEndpoint = '/combos/pricing';
+
   // Reservation endpoints
   static const String getReservationsEndpoint = '/reservations';
   static const String createReservationEndpoint = '/reservations';
