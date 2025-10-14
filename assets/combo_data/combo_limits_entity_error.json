@@ -1,0 +1,5 @@
+{
+  "error": "Failed to load combo limits entities",
+  "message": "Limit configuration validation failed - negative limit values not allowed",
+  "code": "INVALID_LIMITS_CONFIG"
+}

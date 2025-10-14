@@ -1,0 +1,185 @@
+[
+  {
+    "id": "slot_main_burger",
+    "name": "Main Burger",
+    "sourceType": "specific",
+    "specificItemIds": ["burger_beef_classic", "burger_cheese_classic", "burger_bacon_classic"],
+    "specificItemNames": ["Classic Beef Burger", "Classic Cheese Burger", "Classic Bacon Burger"],
+    "categoryId": null,
+    "categoryName": null,
+    "required": true,
+    "allowQuantityChange": false,
+    "maxQuantity": 1,
+    "defaultIncluded": true,
+    "allowedSizeIds": ["regular", "large"],
+    "defaultSizeId": "regular",
+    "defaultSizeName": "Regular",
+    "modifierGroupAllowed": {
+      "cheese": true,
+      "bacon": true,
+      "extra_patty": false
+    },
+    "modifierExclusions": {
+      "cheese": ["no_cheese"],
+      "bacon": ["no_bacon"]
+    },
+    "defaultPrice": 12.50,
+    "minPrice": 12.50,
+    "maxPrice": 15.00,
+    "sortOrder": 1
+  },
+  {
+    "id": "slot_side_fries",
+    "name": "French Fries",
+    "sourceType": "category",
+    "specificItemIds": [],
+    "specificItemNames": [],
+    "categoryId": "sides",
+    "categoryName": "Sides",
+    "required": true,
+    "allowQuantityChange": false,
+    "maxQuantity": 1,
+    "defaultIncluded": true,
+    "allowedSizeIds": ["small", "regular", "large"],
+    "defaultSizeId": "regular",
+    "defaultSizeName": "Regular",
+    "modifierGroupAllowed": {
+      "seasoning": true,
+      "cheese": true
+    },
+    "modifierExclusions": {},
+    "defaultPrice": 4.50,
+    "minPrice": 3.50,
+    "maxPrice": 6.00,
+    "sortOrder": 2
+  },
+  {
+    "id": "slot_drink_soda",
+    "name": "Soft Drink",
+    "sourceType": "category",
+    "specificItemIds": [],
+    "specificItemNames": [],
+    "categoryId": "beverages",
+    "categoryName": "Beverages",
+    "required": true,
+    "allowQuantityChange": false,
+    "maxQuantity": 1,
+    "defaultIncluded": true,
+    "allowedSizeIds": ["small", "medium", "large"],
+    "defaultSizeId": "medium",
+    "defaultSizeName": "Medium",
+    "modifierGroupAllowed": {
+      "flavors": true,
+      "ice_level": true
+    },
+    "modifierExclusions": {
+      "flavors": ["no_flavor"]
+    },
+    "defaultPrice": 3.00,
+    "minPrice": 2.50,
+    "maxPrice": 4.00,
+    "sortOrder": 3
+  },
+  {
+    "id": "slot_pizza_large",
+    "name": "Large Pizza",
+    "sourceType": "category",
+    "specificItemIds": [],
+    "specificItemNames": [],
+    "categoryId": "pizza",
+    "categoryName": "Pizza",
+    "required": true,
+    "allowQuantityChange": false,
+    "maxQuantity": 1,
+    "defaultIncluded": true,
+    "allowedSizeIds": ["large", "xlarge"],
+    "defaultSizeId": "large",
+    "defaultSizeName": "Large",
+    "modifierGroupAllowed": {
+      "toppings": true,
+      "crust": true,
+      "cheese": true
+    },
+    "modifierExclusions": {
+      "crust": ["thin_crust", "thick_crust"]
+    },
+    "defaultPrice": 18.00,
+    "minPrice": 18.00,
+    "maxPrice": 22.00,
+    "sortOrder": 1
+  },
+  {
+    "id": "slot_premium_items",
+    "name": "Premium Selection",
+    "sourceType": "category",
+    "specificItemIds": [],
+    "specificItemNames": [],
+    "categoryId": "premium_items",
+    "categoryName": "Premium Items",
+    "required": true,
+    "allowQuantityChange": true,
+    "maxQuantity": 3,
+    "defaultIncluded": true,
+    "allowedSizeIds": ["regular"],
+    "defaultSizeId": "regular",
+    "defaultSizeName": "Regular",
+    "modifierGroupAllowed": {
+      "premium_modifiers": true
+    },
+    "modifierExclusions": {},
+    "defaultPrice": 15.00,
+    "minPrice": 12.00,
+    "maxPrice": 18.00,
+    "sortOrder": 1
+  },
+  {
+    "id": "slot_optional_dessert",
+    "name": "Dessert (Optional)",
+    "sourceType": "category",
+    "specificItemIds": [],
+    "specificItemNames": [],
+    "categoryId": "desserts",
+    "categoryName": "Desserts",
+    "required": false,
+    "allowQuantityChange": false,
+    "maxQuantity": 1,
+    "defaultIncluded": false,
+    "allowedSizeIds": ["regular"],
+    "defaultSizeId": "regular",
+    "defaultSizeName": "Regular",
+    "modifierGroupAllowed": {},
+    "modifierExclusions": {},
+    "defaultPrice": 5.50,
+    "minPrice": 5.50,
+    "maxPrice": 7.00,
+    "sortOrder": 4
+  },
+  {
+    "id": "slot_specific_drink",
+    "name": "Premium Coffee",
+    "sourceType": "specific",
+    "specificItemIds": ["coffee_latte", "coffee_cappuccino", "coffee_americano"],
+    "specificItemNames": ["Latte", "Cappuccino", "Americano"],
+    "categoryId": null,
+    "categoryName": null,
+    "required": true,
+    "allowQuantityChange": true,
+    "maxQuantity": 2,
+    "defaultIncluded": true,
+    "allowedSizeIds": ["small", "medium", "large"],
+    "defaultSizeId": "medium",
+    "defaultSizeName": "Medium",
+    "modifierGroupAllowed": {
+      "milk": true,
+      "sweetener": true,
+      "shots": true
+    },
+    "modifierExclusions": {
+      "milk": ["black"]
+    },
+    "defaultPrice": 4.50,
+    "minPrice": 4.00,
+    "maxPrice": 6.00,
+    "sortOrder": 2
+  }
+]

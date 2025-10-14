@@ -1,0 +1,5 @@
+{
+  "error": "Failed to load combo availability entities",
+  "message": "Time window configuration conflict - overlapping time ranges",
+  "code": "AVAILABILITY_CONFIG_CONFLICT"
+}

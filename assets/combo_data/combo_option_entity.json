@@ -1,0 +1,62 @@
+[
+  {
+    "id": "option_regular_combo",
+    "name": "Regular Combo",
+    "description": "Add fries and a drink",
+    "priceDelta": 6.50
+  },
+  {
+    "id": "option_large_combo",
+    "name": "Large Combo",
+    "description": "Add large fries and large drink",
+    "priceDelta": 8.50
+  },
+  {
+    "id": "option_premium_combo",
+    "name": "Premium Combo",
+    "description": "Add premium sides and specialty drink",
+    "priceDelta": 12.00
+  },
+  {
+    "id": "option_family_combo",
+    "name": "Family Combo",
+    "description": "Add 2 large sides and 4 drinks",
+    "priceDelta": 18.00
+  },
+  {
+    "id": "option_healthy_combo",
+    "name": "Healthy Combo",
+    "description": "Add salad and fresh juice",
+    "priceDelta": 7.50
+  },
+  {
+    "id": "option_kids_combo",
+    "name": "Kids Combo",
+    "description": "Add small fries and kids drink with toy",
+    "priceDelta": 4.50
+  },
+  {
+    "id": "option_breakfast_combo",
+    "name": "Breakfast Combo",
+    "description": "Add hash browns and coffee",
+    "priceDelta": 5.00
+  },
+  {
+    "id": "option_vegetarian_combo",
+    "name": "Vegetarian Combo",
+    "description": "Add veggie patty, salad, and plant-based drink",
+    "priceDelta": 9.00
+  },
+  {
+    "id": "option_spicy_combo",
+    "name": "Spicy Combo",
+    "description": "Add spicy fries and spicy soda",
+    "priceDelta": 7.00
+  },
+  {
+    "id": "option_deluxe_combo",
+    "name": "Deluxe Combo",
+    "description": "Add onion rings, premium shake, and extra toppings",
+    "priceDelta": 15.00
+  }
+]

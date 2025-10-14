@@ -1,0 +1,81 @@
+[
+  {
+    "mode": "fixed",
+    "fixedPrice": 18.50,
+    "totalIfSeparate": 20.00,
+    "finalPrice": 18.50,
+    "savings": 1.50
+  },
+  {
+    "mode": "percentage",
+    "percentOff": 15,
+    "totalIfSeparate": 45.00,
+    "finalPrice": 38.25,
+    "savings": 6.75
+  },
+  {
+    "mode": "amount",
+    "amountOff": 5.00,
+    "totalIfSeparate": 32.00,
+    "finalPrice": 27.00,
+    "savings": 5.00
+  },
+  {
+    "mode": "mixAndMatch",
+    "mixCategoryId": "premium_items",
+    "mixCategoryName": "Premium Items",
+    "mixQuantity": 3,
+    "mixPrice": 35.00,
+    "totalIfSeparate": 45.00,
+    "finalPrice": 35.00,
+    "savings": 10.00
+  },
+  {
+    "mode": "mixAndMatch",
+    "mixCategoryId": "burgers",
+    "mixCategoryName": "Burgers",
+    "mixQuantity": 2,
+    "mixPercentOff": 10,
+    "totalIfSeparate": 25.00,
+    "finalPrice": 22.50,
+    "savings": 2.50
+  },
+  {
+    "mode": "fixed",
+    "fixedPrice": 12.99,
+    "totalIfSeparate": 15.50,
+    "finalPrice": 12.99,
+    "savings": 2.51
+  },
+  {
+    "mode": "percentage",
+    "percentOff": 20,
+    "totalIfSeparate": 28.00,
+    "finalPrice": 22.40,
+    "savings": 5.60
+  },
+  {
+    "mode": "amount",
+    "amountOff": 8.00,
+    "totalIfSeparate": 35.00,
+    "finalPrice": 27.00,
+    "savings": 8.00
+  },
+  {
+    "mode": "mixAndMatch",
+    "mixCategoryId": "pizza",
+    "mixCategoryName": "Pizza",
+    "mixQuantity": 2,
+    "mixPrice": 25.00,
+    "totalIfSeparate": 36.00,
+    "finalPrice": 25.00,
+    "savings": 11.00
+  },
+  {
+    "mode": "fixed",
+    "fixedPrice": 9.99,
+    "totalIfSeparate": 12.50,
+    "finalPrice": 9.99,
+    "savings": 2.51
+  }
+]
