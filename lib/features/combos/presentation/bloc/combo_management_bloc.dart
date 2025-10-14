@@ -8,12 +8,17 @@ import '../../domain/entities/combo_availability_entity.dart';
 import '../../domain/entities/combo_limits_entity.dart';
 import 'combo_management_event.dart';
 import 'combo_management_state.dart';
+import '../../domain/usecases/get_combos.dart';
+import '../../../../core/base/base_usecase.dart';
 
 class ComboManagementBloc
     extends Bloc<ComboManagementEvent, ComboManagementState> {
   final _uuid = const Uuid();
+  final GetCombos _getCombos;
 
-  ComboManagementBloc() : super(const ComboManagementState()) {
+  ComboManagementBloc({required GetCombos getCombos})
+    : _getCombos = getCombos,
+      super(const ComboManagementState()) {
     on<LoadCombos>(_onLoadCombos);
     on<RefreshCombos>(_onRefreshCombos);
     on<CreateCombo>(_onCreateCombo);
@@ -710,8 +715,8 @@ class ComboManagementBloc
 
   Future<List<ComboEntity>> _loadCombosFromRepository() async {
     // Simulate loading with sample data
-    await Future.delayed(const Duration(milliseconds: 500));
-    return _getSampleCombos();
+    final result = await _getCombos(const NoParams());
+    return result.fold((failure) => [], (combos) => combos);
   }
 
   Future<void> _saveComboToRepository(ComboEntity combo) async {
@@ -722,192 +727,5 @@ class ComboManagementBloc
   Future<void> _deleteComboFromRepository(String comboId) async {
     // Simulate deletion
     await Future.delayed(const Duration(milliseconds: 300));
-  }
-
-  List<ComboEntity> _getSampleCombos() {
-    final now = DateTime.now();
-    return [
-      ComboEntity(
-        id: '1',
-        name: 'Pizza + Chips + Drink Deal',
-        description:
-            'Perfect lunch combo with your choice of pizza slice (Margherita, Pepperoni, or Hawaiian), crispy golden chips, and any cold drink. Available Monday-Friday 11AM-3PM. Great value for a complete meal!',
-        categoryTag: 'Lunch Specials',
-        pointsReward: 220,
-        status: ComboStatus.active,
-        slots: _createSampleSlots('pizza-combo'),
-        pricing: ComboPricingEntity.fixed(
-          fixedPrice: 22.00,
-          totalIfSeparate: 28.50,
-        ),
-        availability: ComboAvailabilityEntity.lunchOnly(),
-        limits: ComboLimitsEntity.onePerOrder(),
-        createdAt: now.subtract(const Duration(days: 7)),
-        updatedAt: now.subtract(const Duration(days: 1)),
-      ),
-      ComboEntity(
-        id: '2',
-        name: 'Burger Feast',
-        description:
-            'Double the satisfaction! Two delicious beef burgers (Classic or BBQ), large portion of seasoned fries, and two drinks of your choice. Perfect for sharing or when you\'re extra hungry. Available all day.',
-        categoryTag: 'Popular Combos',
-        pointsReward: 300,
-        status: ComboStatus.active,
-        slots: _createSampleSlots('burger-combo'),
-        pricing: ComboPricingEntity.fixed(
-          fixedPrice: 29.98,
-          totalIfSeparate: 38.96,
-        ),
-        availability: const ComboAvailabilityEntity(),
-        limits: ComboLimitsEntity.noLimits(),
-        createdAt: now.subtract(const Duration(days: 5)),
-        updatedAt: now.subtract(const Duration(days: 2)),
-      ),
-      ComboEntity(
-        id: '3',
-        name: 'Weekend Wings Special',
-        description:
-            '🔥 WEEKEND ONLY! 12 pieces of our signature buffalo wings with choice of celery sticks or coleslaw, plus a cold beer or soft drink. Choose from Mild, Hot, or BBQ sauce. Limited to 50 orders per day - don\'t miss out!',
-        categoryTag: 'Weekend Specials',
-        pointsReward: 185,
-        status: ComboStatus.active,
-        slots: _createSampleSlots('wings-combo'),
-        pricing: ComboPricingEntity.fixed(
-          fixedPrice: 18.50,
-          totalIfSeparate: 25.50,
-        ),
-        availability: ComboAvailabilityEntity.weekendSpecial(),
-        limits: ComboLimitsEntity.limitedDaily(maxPerDay: 50, maxPerOrder: 2),
-        createdAt: now.subtract(const Duration(days: 3)),
-        updatedAt: now.subtract(const Duration(hours: 6)),
-      ),
-    ];
-  }
-
-  List<ComboSlotEntity> _createSampleSlots(String comboType) {
-    switch (comboType) {
-      case 'pizza-combo':
-        return [
-          ComboSlotEntity(
-            id: '1',
-            name: 'Pizza Slice',
-            required: true,
-            defaultIncluded: true,
-            sortOrder: 0,
-            sourceType: SlotSourceType.specific,
-            specificItemIds: ['pizza1', 'pizza2', 'pizza3'],
-            specificItemNames: ['Margherita', 'Pepperoni', 'Hawaiian'],
-            defaultPrice: 12.50,
-            maxQuantity: 1,
-          ),
-          ComboSlotEntity(
-            id: '2',
-            name: 'Chips',
-            required: true,
-            defaultIncluded: true,
-            sortOrder: 1,
-            sourceType: SlotSourceType.specific,
-            specificItemIds: ['chips1'],
-            specificItemNames: ['Regular Chips'],
-            defaultPrice: 6.50,
-            maxQuantity: 1,
-          ),
-          ComboSlotEntity(
-            id: '3',
-            name: 'Drink',
-            required: true,
-            defaultIncluded: true,
-            sortOrder: 2,
-            sourceType: SlotSourceType.category,
-            categoryId: 'drinks',
-            categoryName: 'Cold Drinks',
-            defaultPrice: 4.50,
-            maxQuantity: 1,
-          ),
-        ];
-
-      case 'burger-combo':
-        return [
-          ComboSlotEntity(
-            id: '4',
-            name: 'Burgers (2)',
-            required: true,
-            defaultIncluded: true,
-            sortOrder: 0,
-            sourceType: SlotSourceType.specific,
-            specificItemIds: ['burger1', 'burger2'],
-            specificItemNames: ['Classic Beef Burger', 'BBQ Burger'],
-            defaultPrice: 26.96,
-            maxQuantity: 2,
-          ),
-          ComboSlotEntity(
-            id: '5',
-            name: 'Large Fries',
-            required: true,
-            defaultIncluded: true,
-            sortOrder: 1,
-            sourceType: SlotSourceType.specific,
-            specificItemIds: ['fries1'],
-            specificItemNames: ['Large Fries'],
-            defaultPrice: 7.50,
-            maxQuantity: 1,
-          ),
-          ComboSlotEntity(
-            id: '6',
-            name: 'Drinks (2)',
-            required: true,
-            defaultIncluded: true,
-            sortOrder: 2,
-            sourceType: SlotSourceType.category,
-            categoryId: 'drinks',
-            categoryName: 'Drinks',
-            defaultPrice: 9.00,
-            maxQuantity: 2,
-          ),
-        ];
-
-      case 'wings-combo':
-        return [
-          ComboSlotEntity(
-            id: '7',
-            name: 'Buffalo Wings (12)',
-            required: true,
-            defaultIncluded: true,
-            sortOrder: 0,
-            sourceType: SlotSourceType.specific,
-            specificItemIds: ['wings1'],
-            specificItemNames: ['Buffalo Wings (12 pieces)'],
-            defaultPrice: 16.50,
-            maxQuantity: 1,
-          ),
-          ComboSlotEntity(
-            id: '8',
-            name: 'Side',
-            required: true,
-            defaultIncluded: true,
-            sortOrder: 1,
-            sourceType: SlotSourceType.specific,
-            specificItemIds: ['celery1', 'coleslaw1'],
-            specificItemNames: ['Celery Sticks', 'Coleslaw'],
-            defaultPrice: 4.50,
-            maxQuantity: 1,
-          ),
-          ComboSlotEntity(
-            id: '9',
-            name: 'Drink',
-            required: true,
-            defaultIncluded: true,
-            sortOrder: 2,
-            sourceType: SlotSourceType.category,
-            categoryId: 'drinks',
-            categoryName: 'Beverages',
-            defaultPrice: 4.50,
-            maxQuantity: 1,
-          ),
-        ];
-
-      default:
-        return [];
-    }
   }
 }

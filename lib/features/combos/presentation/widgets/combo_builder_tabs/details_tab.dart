@@ -69,7 +69,10 @@ class _DetailsTabState extends State<DetailsTab> {
     );
   }
 
-  Widget _buildComboInformationSection(BuildContext context, ComboManagementState state) {
+  Widget _buildComboInformationSection(
+    BuildContext context,
+    ComboManagementState state,
+  ) {
     final combo = state.editingCombo!;
 
     return Container(
@@ -106,10 +109,7 @@ class _DetailsTabState extends State<DetailsTab> {
                       color: Color(0xFF374151),
                     ),
                   ),
-                  const Text(
-                    ' *',
-                    style: TextStyle(color: Color(0xFFEF4444)),
-                  ),
+                  const Text(' *', style: TextStyle(color: Color(0xFFEF4444))),
                 ],
               ),
               const SizedBox(height: 8),
@@ -144,10 +144,7 @@ class _DetailsTabState extends State<DetailsTab> {
                   padding: const EdgeInsets.only(top: 4),
                   child: Text(
                     'Combo name is required',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.red[600],
-                    ),
+                    style: TextStyle(fontSize: 12, color: Colors.red[600]),
                   ),
                 ),
             ],
@@ -221,33 +218,60 @@ class _DetailsTabState extends State<DetailsTab> {
                       decoration: InputDecoration(
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
-                          borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
+                          borderSide: const BorderSide(
+                            color: Color(0xFFD1D5DB),
+                          ),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
-                          borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
+                          borderSide: const BorderSide(
+                            color: Color(0xFFD1D5DB),
+                          ),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
-                          borderSide: const BorderSide(color: Color(0xFF8B5CF6)),
+                          borderSide: const BorderSide(
+                            color: Color(0xFF8B5CF6),
+                          ),
                         ),
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: 12,
                           vertical: 12,
                         ),
                       ),
-                      items: const [
-                        DropdownMenuItem(value: null, child: Text('Select category')),
-                        DropdownMenuItem(value: 'Lunch Specials', child: Text('Lunch Specials')),
-                        DropdownMenuItem(value: 'Dinner Specials', child: Text('Dinner Specials')),
-                        DropdownMenuItem(value: 'Family Packs', child: Text('Family Packs')),
-                        DropdownMenuItem(value: 'Weekend Specials', child: Text('Weekend Specials')),
-                        DropdownMenuItem(value: 'Popular Combos', child: Text('Popular Combos')),
-                        DropdownMenuItem(value: 'Daily Deals', child: Text('Daily Deals')),
+                      items: [
+                        const DropdownMenuItem(
+                          value: null,
+                          child: Text('Select category'),
+                        ),
+                        // Add current combo's category if it's not already in the list and not null
+                        if (combo.categoryTag != null &&
+                            !state.availableCategories.contains(
+                              combo.categoryTag,
+                            ))
+                          DropdownMenuItem(
+                            value: combo.categoryTag,
+                            child: Text(
+                              _formatCategoryName(combo.categoryTag!),
+                            ),
+                          ),
+                        // Add all available categories from loaded combos, or show loading indicator if none available
+                        if (state.availableCategories.isNotEmpty)
+                          ...state.availableCategories.map(
+                            (category) => DropdownMenuItem(
+                              value: category,
+                              child: Text(_formatCategoryName(category)),
+                            ),
+                          )
+                        else
+                          const DropdownMenuItem(
+                            value: '',
+                            child: Text('Loading categories...'),
+                          ),
                       ],
-                      onChanged: (value) => context.read<ComboManagementBloc>().add(
-                        UpdateComboCategory(categoryTag: value),
-                      ),
+                      onChanged: (value) => context
+                          .read<ComboManagementBloc>()
+                          .add(UpdateComboCategory(categoryTag: value)),
                     ),
                   ],
                 ),
@@ -275,15 +299,21 @@ class _DetailsTabState extends State<DetailsTab> {
                         hintText: 'e.g. 150',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
-                          borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
+                          borderSide: const BorderSide(
+                            color: Color(0xFFD1D5DB),
+                          ),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
-                          borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
+                          borderSide: const BorderSide(
+                            color: Color(0xFFD1D5DB),
+                          ),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
-                          borderSide: const BorderSide(color: Color(0xFF8B5CF6)),
+                          borderSide: const BorderSide(
+                            color: Color(0xFF8B5CF6),
+                          ),
                         ),
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: 12,
@@ -308,7 +338,10 @@ class _DetailsTabState extends State<DetailsTab> {
     );
   }
 
-  Widget _buildGettingStartedSection(BuildContext context, ComboManagementState state) {
+  Widget _buildGettingStartedSection(
+    BuildContext context,
+    ComboManagementState state,
+  ) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -327,11 +360,7 @@ class _DetailsTabState extends State<DetailsTab> {
                   color: const Color(0xFF3B82F6),
                   borderRadius: BorderRadius.circular(6),
                 ),
-                child: const Icon(
-                  Icons.info,
-                  color: Colors.white,
-                  size: 16,
-                ),
+                child: const Icon(Icons.info, color: Colors.white, size: 16),
               ),
               const SizedBox(width: 12),
               const Text(
@@ -375,14 +404,22 @@ class _DetailsTabState extends State<DetailsTab> {
         Expanded(
           child: Text(
             description,
-            style: const TextStyle(
-              fontSize: 14,
-              color: Color(0xFF1E40AF),
-            ),
+            style: const TextStyle(fontSize: 14, color: Color(0xFF1E40AF)),
           ),
         ),
       ],
     );
   }
-  
+
+  String _formatCategoryName(String category) {
+    // Convert camelCase or snake_case to Title Case
+    return category
+        .split(RegExp(r'[-_\s]+'))
+        .map(
+          (word) => word.isNotEmpty
+              ? '${word[0].toUpperCase()}${word.substring(1).toLowerCase()}'
+              : '',
+        )
+        .join(' ');
+  }
 }

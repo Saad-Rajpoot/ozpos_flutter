@@ -68,6 +68,12 @@ import '../../features/docket/data/repositories/docket_repository_impl.dart';
 import '../../features/docket/domain/repositories/docket_repository.dart';
 import '../../features/docket/domain/usecases/get_dockets.dart';
 import '../../features/docket/presentation/bloc/docket_management_bloc.dart';
+import '../../features/combos/data/datasources/combo_data_source.dart';
+import '../../features/combos/data/datasources/combo_mock_datasource.dart';
+import '../../features/combos/data/datasources/combo_remote_datasource.dart';
+import '../../features/combos/data/repositories/combo_repository_impl.dart';
+import '../../features/combos/domain/repositories/combo_repository.dart';
+import '../../features/combos/domain/usecases/get_combos.dart';
 
 final sl = GetIt.instance;
 
@@ -188,8 +194,27 @@ Future<void> _initCart(GetIt sl) async {
 
 /// Initialize combo feature dependencies
 Future<void> _initCombos(GetIt sl) async {
+  // Environment-based data source selection
+  sl.registerLazySingleton<ComboDataSource>(() {
+    if (AppConfig.instance.environment == AppEnvironment.development) {
+      // Use mock data source for development
+      return ComboMockDataSourceImpl();
+    } else {
+      // Use remote data source for production
+      return ComboRemoteDataSourceImpl(apiClient: sl());
+    }
+  });
+
+  // Repository
+  sl.registerLazySingleton<ComboRepository>(
+    () => ComboRepositoryImpl(comboDataSource: sl(), networkInfo: sl()),
+  );
+
+  // Use cases
+  sl.registerLazySingleton(() => GetCombos(sl()));
+
   // BLoC (Factory - new instance each time)
-  sl.registerFactory(() => ComboManagementBloc());
+  sl.registerFactory(() => ComboManagementBloc(getCombos: sl()));
 }
 
 /// Initialize addon feature dependencies
