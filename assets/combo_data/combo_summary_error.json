@@ -1,5 +1,0 @@
-{
-  "error": "Failed to load combo summary data",
-  "message": "Data aggregation error - failed to combine combo entities with related data",
-  "code": "SUMMARY_AGGREGATION_FAILED"
-}
