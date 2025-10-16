@@ -58,8 +58,8 @@ class SplitPaymentSection extends StatelessWidget {
                       child: OutlinedButton(
                         onPressed: () {
                           context.read<CheckoutBloc>().add(
-                            SplitEvenly(ways: ways),
-                          );
+                                SplitEvenly(ways: ways),
+                              );
                         },
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 10),
@@ -90,8 +90,8 @@ class SplitPaymentSection extends StatelessWidget {
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: state.splitRemaining > 0
-                    ? const Color(0xFFFF9800).withValues(alpha: 0.1)
-                    : const Color(0xFF4CAF50).withValues(alpha: 0.1),
+                    ? const Color(0xFFFF9800).withOpacity(0.1)
+                    : const Color(0xFF4CAF50).withOpacity(0.1),
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
                   color: state.splitRemaining > 0
@@ -139,14 +139,14 @@ class SplitPaymentSection extends StatelessWidget {
                       Icon(
                         Icons.payment,
                         size: 48,
-                        color: Colors.black.withValues(alpha: 0.2),
+                        color: Colors.black.withOpacity(0.2),
                       ),
                       const SizedBox(height: 12),
                       Text(
                         'No tenders added yet',
                         style: TextStyle(
                           fontSize: 14,
-                          color: Colors.black.withValues(alpha: 0.4),
+                          color: Colors.black.withOpacity(0.4),
                         ),
                       ),
                     ],
@@ -195,14 +195,14 @@ class SplitPaymentSection extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: statusColor.withValues(alpha: 0.3)),
+        border: Border.all(color: statusColor.withOpacity(0.3)),
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: statusColor.withValues(alpha: 0.1),
+              color: statusColor.withOpacity(0.1),
               borderRadius: BorderRadius.circular(6),
             ),
             child: Icon(tender.method.icon, size: 20, color: statusColor),
@@ -304,7 +304,7 @@ class SplitPaymentSection extends StatelessWidget {
                       height: 70,
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? const Color(0xFF2196F3).withValues(alpha: 0.08)
+                            ? const Color(0xFF2196F3).withOpacity(0.08)
                             : Colors.white,
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
@@ -367,8 +367,8 @@ class SplitPaymentSection extends StatelessWidget {
                 final amount = double.tryParse(amountController.text) ?? 0.0;
                 if (amount > 0) {
                   context.read<CheckoutBloc>().add(
-                    AddTender(method: selectedMethod, amount: amount),
-                  );
+                        AddTender(method: selectedMethod, amount: amount),
+                      );
                   Navigator.of(dialogContext).pop();
                 }
               },

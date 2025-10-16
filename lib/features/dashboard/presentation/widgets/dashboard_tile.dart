@@ -97,23 +97,22 @@ class _DashboardTileState extends State<DashboardTile>
                 curve: Curves.easeInOut,
                 transform: _isHovered
                     ? (Matrix4.identity()
-                        // ignore: deprecated_member_use
-                        ..translate(0.0, -4.0, 0.0))
+                      // ignore: deprecated_member_use
+                      ..translate(0.0, -4.0, 0.0))
                     : Matrix4.identity(),
                 decoration: BoxDecoration(
                   color: AppColors.bgSecondary,
                   borderRadius: BorderRadius.circular(AppRadius.tile),
                   border: Border.all(
-                    color: _isHovered
-                        ? Colors.transparent
-                        : AppColors.borderLight,
+                    color:
+                        _isHovered ? Colors.transparent : AppColors.borderLight,
                     width: 2,
                   ),
                   boxShadow: _isHovered
                       ? AppShadows.hoverShadow
                       : (_isPressed
-                            ? AppShadows.tileShadow
-                            : AppShadows.cardShadow),
+                          ? AppShadows.tileShadow
+                          : AppShadows.cardShadow),
                 ),
                 child: Stack(
                   alignment: Alignment.center,
@@ -127,7 +126,7 @@ class _DashboardTileState extends State<DashboardTile>
                           borderRadius: BorderRadius.circular(AppRadius.tile),
                           gradient: LinearGradient(
                             colors: widget.gradient.colors
-                                .map((color) => color.withValues(alpha: 0.9))
+                                .map((color) => color.withOpacity(0.9))
                                 .toList(),
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
@@ -146,8 +145,8 @@ class _DashboardTileState extends State<DashboardTile>
                           duration: const Duration(milliseconds: 300),
                           transform: _isHovered
                               ? (Matrix4.identity()
-                                  // ignore: deprecated_member_use
-                                  ..scale(1.1, 1.1, 1.0))
+                                // ignore: deprecated_member_use
+                                ..scale(1.1, 1.1, 1.0))
                               : Matrix4.identity(),
                           constraints: const BoxConstraints(
                             minWidth: 48,
@@ -206,7 +205,7 @@ class _DashboardTileState extends State<DashboardTile>
                                   : AppTypography.labelMedium,
                               fontWeight: AppTypography.regular,
                               color: _isHovered
-                                  ? AppColors.textWhite.withValues(alpha: 0.8)
+                                  ? AppColors.textWhite.withOpacity(0.8)
                                   : AppColors.textSecondary,
                             ),
                             child: Text(

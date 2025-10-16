@@ -267,13 +267,13 @@ class _OrderCard extends StatelessWidget {
           border: Border.all(color: _borderColor, width: 2),
           boxShadow: [
             BoxShadow(
-              color: _borderColor.withValues(alpha: 0.15),
+              color: _borderColor.withOpacity(0.15),
               blurRadius: 12,
               offset: const Offset(0, 4),
               spreadRadius: 0,
             ),
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.08),
+              color: Colors.black.withOpacity(0.08),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -290,7 +290,7 @@ class _OrderCard extends StatelessWidget {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: order.iconColor.withValues(alpha: 0.1),
+                    color: order.iconColor.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(

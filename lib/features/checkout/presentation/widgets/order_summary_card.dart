@@ -130,7 +130,7 @@ class OrderSummaryCard extends StatelessWidget {
                   subtitle,
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.black.withValues(alpha: 0.5),
+                    color: Colors.black.withOpacity(0.5),
                   ),
                 ),
               ],
@@ -146,8 +146,7 @@ class OrderSummaryCard extends StatelessWidget {
             fontWeight: isGrandTotal
                 ? FontWeight.w700
                 : (isImportant ? FontWeight.w600 : FontWeight.w600),
-            color:
-                color ??
+            color: color ??
                 (isGrandTotal ? const Color(0xFF2196F3) : Colors.black87),
           ),
         ),

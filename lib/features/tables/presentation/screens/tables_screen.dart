@@ -259,7 +259,7 @@ class _TablesScreenState extends State<TablesScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
                 color: isActive
-                    ? Colors.white.withValues(alpha: 0.2)
+                    ? Colors.white.withOpacity(0.2)
                     : const Color(0xFFF3F4F6),
                 borderRadius: BorderRadius.circular(4),
               ),
@@ -372,8 +372,8 @@ class _TablesScreenState extends State<TablesScreen> {
                         ElevatedButton(
                           onPressed: () {
                             context.read<TableManagementBloc>().add(
-                              const LoadTablesEvent(),
-                            );
+                                  const LoadTablesEvent(),
+                                );
                           },
                           child: const Text('Retry'),
                         ),
@@ -400,11 +400,11 @@ class _TablesScreenState extends State<TablesScreen> {
                     padding: const EdgeInsets.all(16),
                     gridDelegate:
                         const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 3,
-                          crossAxisSpacing: 16,
-                          mainAxisSpacing: 16,
-                          childAspectRatio: 1.5,
-                        ),
+                      crossAxisCount: 3,
+                      crossAxisSpacing: 16,
+                      mainAxisSpacing: 16,
+                      childAspectRatio: 1.5,
+                    ),
                     itemCount: _filteredTables.length,
                     itemBuilder: (context, index) {
                       final table = _filteredTables[index];
@@ -432,9 +432,8 @@ class _TablesScreenState extends State<TablesScreen> {
           color: isSelected ? const Color(0xFF3B82F6) : Colors.white,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected
-                ? const Color(0xFF3B82F6)
-                : const Color(0xFFE5E7EB),
+            color:
+                isSelected ? const Color(0xFF3B82F6) : const Color(0xFFE5E7EB),
           ),
         ),
         child: Text(
@@ -474,10 +473,10 @@ class _TablesScreenState extends State<TablesScreen> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: cardColor.withValues(alpha: 0.1),
+          color: cardColor.withOpacity(0.1),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? cardColor : cardColor.withValues(alpha: 0.3),
+            color: isSelected ? cardColor : cardColor.withOpacity(0.3),
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -503,7 +502,7 @@ class _TablesScreenState extends State<TablesScreen> {
                       vertical: 2,
                     ),
                     decoration: BoxDecoration(
-                      color: cardColor.withValues(alpha: 0.2),
+                      color: cardColor.withOpacity(0.2),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
@@ -528,7 +527,7 @@ class _TablesScreenState extends State<TablesScreen> {
                 'Amount:',
                 style: TextStyle(
                   fontSize: 12,
-                  color: cardColor.withValues(alpha: 0.7),
+                  color: cardColor.withOpacity(0.7),
                 ),
               ),
               Text(
@@ -549,7 +548,7 @@ class _TablesScreenState extends State<TablesScreen> {
                     'Time:',
                     style: TextStyle(
                       fontSize: 12,
-                      color: cardColor.withValues(alpha: 0.7),
+                      color: cardColor.withOpacity(0.7),
                     ),
                   ),
                   const Spacer(),
@@ -571,7 +570,7 @@ class _TablesScreenState extends State<TablesScreen> {
                     'Guests:',
                     style: TextStyle(
                       fontSize: 12,
-                      color: cardColor.withValues(alpha: 0.7),
+                      color: cardColor.withOpacity(0.7),
                     ),
                   ),
                   const Spacer(),
@@ -791,19 +790,19 @@ class _TablesScreenState extends State<TablesScreen> {
           backgroundColor: isPrimary
               ? const Color(0xFF3B82F6)
               : isDanger
-              ? Colors.white
-              : Colors.white,
+                  ? Colors.white
+                  : Colors.white,
           foregroundColor: isPrimary
               ? Colors.white
               : isDanger
-              ? const Color(0xFFEF4444)
-              : const Color(0xFF111827),
+                  ? const Color(0xFFEF4444)
+                  : const Color(0xFF111827),
           side: BorderSide(
             color: isPrimary
                 ? const Color(0xFF3B82F6)
                 : isDanger
-                ? const Color(0xFFEF4444)
-                : const Color(0xFFE5E7EB),
+                    ? const Color(0xFFEF4444)
+                    : const Color(0xFFE5E7EB),
           ),
           padding: const EdgeInsets.symmetric(vertical: 12),
           elevation: 0,

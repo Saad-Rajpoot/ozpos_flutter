@@ -415,8 +415,8 @@ class _MenuEditorScreenState extends State<MenuEditorScreen> {
                 item.categoryId == _selectedCategoryId) {
               if (_searchQuery.isEmpty ||
                   item.name.toLowerCase().contains(
-                    _searchQuery.toLowerCase(),
-                  )) {
+                        _searchQuery.toLowerCase(),
+                      )) {
                 categoryGroups.putIfAbsent(item.categoryId, () => []).add(item);
               }
             }
@@ -465,7 +465,7 @@ class _MenuEditorScreenState extends State<MenuEditorScreen> {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF8B5CF6).withValues(alpha: 0.1),
+                      color: const Color(0xFF8B5CF6).withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: const Icon(
@@ -509,7 +509,7 @@ class _MenuEditorScreenState extends State<MenuEditorScreen> {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF10B981).withValues(alpha: 0.1),
+                      color: const Color(0xFF10B981).withOpacity(0.1),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: const Text(
@@ -602,7 +602,7 @@ class _MenuEditorScreenState extends State<MenuEditorScreen> {
                           decoration: BoxDecoration(
                             color: const Color(
                               0xFF8B5CF6,
-                            ).withValues(alpha: 0.1),
+                            ).withOpacity(0.1),
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(
@@ -707,8 +707,8 @@ class _MenuEditorScreenState extends State<MenuEditorScreen> {
         : ComboStatus.active;
 
     context.read<ComboManagementBloc>().add(
-      ToggleComboVisibility(comboId: combo.id, newStatus: newStatus),
-    );
+          ToggleComboVisibility(comboId: combo.id, newStatus: newStatus),
+        );
   }
 
   void _deleteCombo(BuildContext context, String comboId) {
@@ -728,8 +728,8 @@ class _MenuEditorScreenState extends State<MenuEditorScreen> {
             onPressed: () {
               Navigator.of(context).pop();
               context.read<ComboManagementBloc>().add(
-                DeleteCombo(comboId: comboId),
-              );
+                    DeleteCombo(comboId: comboId),
+                  );
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('Delete'),
@@ -1001,13 +1001,11 @@ class _MenuEditorScreenState extends State<MenuEditorScreen> {
       icon: Icon(icon, size: 16),
       label: Text(label),
       style: OutlinedButton.styleFrom(
-        foregroundColor: isDestructive
-            ? const Color(0xFFEF4444)
-            : const Color(0xFF6B7280),
+        foregroundColor:
+            isDestructive ? const Color(0xFFEF4444) : const Color(0xFF6B7280),
         side: BorderSide(
-          color: isDestructive
-              ? const Color(0xFFEF4444)
-              : const Color(0xFFE5E7EB),
+          color:
+              isDestructive ? const Color(0xFFEF4444) : const Color(0xFFE5E7EB),
         ),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         minimumSize: Size.zero,

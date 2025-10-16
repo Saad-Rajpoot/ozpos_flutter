@@ -135,8 +135,8 @@ class _DetailsTabState extends State<DetailsTab> {
                   ),
                 ),
                 onChanged: (value) => context.read<ComboManagementBloc>().add(
-                  UpdateComboName(name: value),
-                ),
+                      UpdateComboName(name: value),
+                    ),
               ),
               // Show validation error if name is empty
               if (_nameController.text.isEmpty)
@@ -188,8 +188,8 @@ class _DetailsTabState extends State<DetailsTab> {
                   ),
                 ),
                 onChanged: (value) => context.read<ComboManagementBloc>().add(
-                  UpdateComboDescription(description: value),
-                ),
+                      UpdateComboDescription(description: value),
+                    ),
               ),
             ],
           ),
@@ -214,7 +214,7 @@ class _DetailsTabState extends State<DetailsTab> {
                     ),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<String?>(
-                      initialValue: combo.categoryTag,
+                      value: combo.categoryTag,
                       decoration: InputDecoration(
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
@@ -324,8 +324,8 @@ class _DetailsTabState extends State<DetailsTab> {
                       onChanged: (value) {
                         final points = int.tryParse(value);
                         context.read<ComboManagementBloc>().add(
-                          UpdateComboPointsReward(pointsReward: points),
-                        );
+                              UpdateComboPointsReward(pointsReward: points),
+                            );
                       },
                     ),
                   ],

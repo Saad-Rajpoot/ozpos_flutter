@@ -30,14 +30,12 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
         bool matchesDate = true;
         if (_selectedDateFilter == 'Today') {
           final today = DateTime.now();
-          matchesDate =
-              res.timing.startAt.year == today.year &&
+          matchesDate = res.timing.startAt.year == today.year &&
               res.timing.startAt.month == today.month &&
               res.timing.startAt.day == today.day;
         } else if (_selectedDateFilter == 'Tomorrow') {
           final tomorrow = DateTime.now().add(const Duration(days: 1));
-          matchesDate =
-              res.timing.startAt.year == tomorrow.year &&
+          matchesDate = res.timing.startAt.year == tomorrow.year &&
               res.timing.startAt.month == tomorrow.month &&
               res.timing.startAt.day == tomorrow.day;
         }
@@ -46,8 +44,7 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
         bool matchesSearch = true;
         if (_searchQuery.isNotEmpty) {
           final query = _searchQuery.toLowerCase();
-          matchesSearch =
-              res.guest.name.toLowerCase().contains(query) ||
+          matchesSearch = res.guest.name.toLowerCase().contains(query) ||
               res.guest.phone.toLowerCase().contains(query) ||
               res.reservationId.toLowerCase().contains(query);
         }
@@ -79,25 +76,22 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
             if (isDesktop)
               const SidebarNav(activeRoute: AppRouter.reservations),
             Expanded(
-              child:
-                  BlocBuilder<
-                    ReservationManagementBloc,
-                    ReservationManagementState
-                  >(
-                    builder: (context, state) {
-                      return Column(
-                        children: [
-                          _buildHeader(),
-                          _buildToolbar(),
-                          Expanded(
-                            child: _isListView
-                                ? _buildListView(state)
-                                : _buildFloorView(),
-                          ),
-                        ],
-                      );
-                    },
-                  ),
+              child: BlocBuilder<ReservationManagementBloc,
+                  ReservationManagementState>(
+                builder: (context, state) {
+                  return Column(
+                    children: [
+                      _buildHeader(),
+                      _buildToolbar(),
+                      Expanded(
+                        child: _isListView
+                            ? _buildListView(state)
+                            : _buildFloorView(),
+                      ),
+                    ],
+                  );
+                },
+              ),
             ),
           ],
         ),
@@ -123,10 +117,8 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
                 'Reservations',
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
               ),
-              BlocBuilder<
-                ReservationManagementBloc,
-                ReservationManagementState
-              >(
+              BlocBuilder<ReservationManagementBloc,
+                  ReservationManagementState>(
                 builder: (context, state) {
                   return Text(
                     '${_getBookingsCount(state)} bookings',
@@ -291,9 +283,8 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
           color: isSelected ? const Color(0xFF3B82F6) : Colors.white,
           borderRadius: BorderRadius.circular(999),
           border: Border.all(
-            color: isSelected
-                ? const Color(0xFF3B82F6)
-                : const Color(0xFFE5E7EB),
+            color:
+                isSelected ? const Color(0xFF3B82F6) : const Color(0xFFE5E7EB),
           ),
         ),
         child: Text(
@@ -328,8 +319,8 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
             ElevatedButton(
               onPressed: () {
                 context.read<ReservationManagementBloc>().add(
-                  const LoadReservationsEvent(),
-                );
+                      const LoadReservationsEvent(),
+                    );
               },
               child: const Text('Retry'),
             ),
@@ -365,7 +356,7 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.04),
+                color: Colors.black.withOpacity(0.04),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -734,12 +725,11 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
             onPressed: () {
               Navigator.pop(context);
               setState(() {
-                final index =
-                    _getFilteredReservations(
-                      context.read<ReservationManagementBloc>().state,
-                    ).indexWhere(
-                      (r) => r.reservationId == reservation.reservationId,
-                    );
+                final index = _getFilteredReservations(
+                  context.read<ReservationManagementBloc>().state,
+                ).indexWhere(
+                  (r) => r.reservationId == reservation.reservationId,
+                );
                 if (index != -1) {
                   _getFilteredReservations(
                     context.read<ReservationManagementBloc>().state,

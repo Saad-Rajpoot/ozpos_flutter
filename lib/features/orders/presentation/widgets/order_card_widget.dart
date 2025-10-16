@@ -461,7 +461,7 @@ class OrderCardWidget extends StatelessWidget {
           color: filled ? color : Colors.transparent,
           borderRadius: BorderRadius.circular(OrdersConstants.buttonRadiusSm),
           border: Border.all(
-            color: filled ? color.withValues(alpha: 0.5) : color,
+            color: filled ? color.withOpacity(0.5) : color,
             width: 2,
           ),
         ),

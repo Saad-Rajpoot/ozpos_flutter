@@ -107,8 +107,8 @@ class Step4Availability extends StatelessWidget {
             value: state.item.dineInAvailable,
             onChanged: (value) {
               context.read<MenuEditBloc>().add(
-                UpdateChannelAvailability(dineInAvailable: value),
-              );
+                    UpdateChannelAvailability(dineInAvailable: value),
+                  );
             },
           ),
           const Divider(height: 32),
@@ -122,8 +122,8 @@ class Step4Availability extends StatelessWidget {
             value: state.item.takeawayAvailable,
             onChanged: (value) {
               context.read<MenuEditBloc>().add(
-                UpdateChannelAvailability(takeawayAvailable: value),
-              );
+                    UpdateChannelAvailability(takeawayAvailable: value),
+                  );
             },
           ),
           const Divider(height: 32),
@@ -137,8 +137,8 @@ class Step4Availability extends StatelessWidget {
             value: state.item.deliveryAvailable,
             onChanged: (value) {
               context.read<MenuEditBloc>().add(
-                UpdateChannelAvailability(deliveryAvailable: value),
-              );
+                    UpdateChannelAvailability(deliveryAvailable: value),
+                  );
             },
           ),
         ],
@@ -160,7 +160,7 @@ class Step4Availability extends StatelessWidget {
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
             color: value
-                ? const Color(0xFF2196F3).withValues(alpha: 0.1)
+                ? const Color(0xFF2196F3).withOpacity(0.1)
                 : Colors.grey.shade100,
             borderRadius: BorderRadius.circular(8),
           ),
@@ -194,7 +194,7 @@ class Step4Availability extends StatelessWidget {
         Switch(
           value: value,
           onChanged: onChanged,
-          activeThumbColor: const Color(0xFF2196F3),
+          activeColor: const Color(0xFF2196F3),
         ),
       ],
     );
@@ -235,8 +235,8 @@ class Step4Availability extends StatelessWidget {
             onChanged: (value) {
               final prepTime = int.tryParse(value) ?? 0;
               context.read<MenuEditBloc>().add(
-                UpdateKitchenSettings(prepTimeMinutes: prepTime),
-              );
+                    UpdateKitchenSettings(prepTimeMinutes: prepTime),
+                  );
             },
           ),
           const SizedBox(height: 20),
@@ -264,8 +264,8 @@ class Step4Availability extends StatelessWidget {
             ],
             onChanged: (value) {
               context.read<MenuEditBloc>().add(
-                UpdateKitchenSettings(kitchenStation: value),
-              );
+                    UpdateKitchenSettings(kitchenStation: value),
+                  );
             },
           ),
           const SizedBox(height: 20),
@@ -327,8 +327,8 @@ class Step4Availability extends StatelessWidget {
                 value: state.item.isVegetarian,
                 onChanged: (value) {
                   context.read<MenuEditBloc>().add(
-                    UpdateDietaryPreferences(isVegetarian: value),
-                  );
+                        UpdateDietaryPreferences(isVegetarian: value),
+                      );
                 },
               ),
               _buildCheckboxChip(
@@ -336,8 +336,8 @@ class Step4Availability extends StatelessWidget {
                 value: state.item.isVegan,
                 onChanged: (value) {
                   context.read<MenuEditBloc>().add(
-                    UpdateDietaryPreferences(isVegan: value),
-                  );
+                        UpdateDietaryPreferences(isVegan: value),
+                      );
                 },
               ),
               _buildCheckboxChip(
@@ -345,8 +345,8 @@ class Step4Availability extends StatelessWidget {
                 value: state.item.isGlutenFree,
                 onChanged: (value) {
                   context.read<MenuEditBloc>().add(
-                    UpdateDietaryPreferences(isGlutenFree: value),
-                  );
+                        UpdateDietaryPreferences(isGlutenFree: value),
+                      );
                 },
               ),
               _buildCheckboxChip(
@@ -354,8 +354,8 @@ class Step4Availability extends StatelessWidget {
                 value: state.item.isDairyFree,
                 onChanged: (value) {
                   context.read<MenuEditBloc>().add(
-                    UpdateDietaryPreferences(isDairyFree: value),
-                  );
+                        UpdateDietaryPreferences(isDairyFree: value),
+                      );
                 },
               ),
               _buildCheckboxChip(
@@ -363,8 +363,8 @@ class Step4Availability extends StatelessWidget {
                 value: state.item.isNutFree,
                 onChanged: (value) {
                   context.read<MenuEditBloc>().add(
-                    UpdateDietaryPreferences(isNutFree: value),
-                  );
+                        UpdateDietaryPreferences(isNutFree: value),
+                      );
                 },
               ),
               _buildCheckboxChip(
@@ -372,8 +372,8 @@ class Step4Availability extends StatelessWidget {
                 value: state.item.isHalal,
                 onChanged: (value) {
                   context.read<MenuEditBloc>().add(
-                    UpdateDietaryPreferences(isHalal: value),
-                  );
+                        UpdateDietaryPreferences(isHalal: value),
+                      );
                 },
               ),
             ],
@@ -458,7 +458,7 @@ class Step4Availability extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         DropdownButtonFormField<String>(
-          initialValue: value.isEmpty ? null : value,
+          value: value.isEmpty ? null : value,
           hint: Text(hint),
           decoration: InputDecoration(
             filled: true,
@@ -505,7 +505,7 @@ class Step4Availability extends StatelessWidget {
       label: Text(label),
       selected: value,
       onSelected: onChanged,
-      selectedColor: const Color(0xFF2196F3).withValues(alpha: 0.2),
+      selectedColor: const Color(0xFF2196F3).withOpacity(0.2),
       checkmarkColor: const Color(0xFF2196F3),
       backgroundColor: Colors.grey.shade100,
       labelStyle: TextStyle(

@@ -300,8 +300,8 @@ class _MoveTableScreenState extends State<MoveTableScreen> {
                         ElevatedButton(
                           onPressed: () {
                             context.read<TableManagementBloc>().add(
-                              const LoadMoveAvailableTablesEvent(),
-                            );
+                                  const LoadMoveAvailableTablesEvent(),
+                                );
                           },
                           child: const Text('Retry'),
                         ),
@@ -328,11 +328,11 @@ class _MoveTableScreenState extends State<MoveTableScreen> {
                     padding: const EdgeInsets.all(16),
                     gridDelegate:
                         const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 4,
-                          crossAxisSpacing: 16,
-                          mainAxisSpacing: 16,
-                          childAspectRatio: 1.2,
-                        ),
+                      crossAxisCount: 4,
+                      crossAxisSpacing: 16,
+                      mainAxisSpacing: 16,
+                      childAspectRatio: 1.2,
+                    ),
                     itemCount: _filteredTables.length,
                     itemBuilder: (context, index) {
                       final table = _filteredTables[index];
@@ -407,19 +407,18 @@ class _MoveTableScreenState extends State<MoveTableScreen> {
     }
 
     return InkWell(
-      onTap: canSelect
-          ? () => setState(() => _selectedDestination = table)
-          : null,
+      onTap:
+          canSelect ? () => setState(() => _selectedDestination = table) : null,
       borderRadius: BorderRadius.circular(12),
       child: Opacity(
         opacity: canSelect ? 1.0 : 0.5,
         child: Container(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: cardColor.withValues(alpha: 0.1),
+            color: cardColor.withOpacity(0.1),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: isSelected ? cardColor : cardColor.withValues(alpha: 0.3),
+              color: isSelected ? cardColor : cardColor.withOpacity(0.3),
               width: isSelected ? 2 : 1,
             ),
           ),
@@ -472,7 +471,7 @@ class _MoveTableScreenState extends State<MoveTableScreen> {
                   '${table.guests} guests',
                   style: TextStyle(
                     fontSize: 11,
-                    color: cardColor.withValues(alpha: 0.7),
+                    color: cardColor.withOpacity(0.7),
                   ),
                 ),
             ],

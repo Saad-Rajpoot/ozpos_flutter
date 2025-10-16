@@ -128,7 +128,6 @@ class _ReservationFormModalState extends State<ReservationFormModal> {
                               ],
                             ),
                             const SizedBox(height: 32),
-
                             _buildSectionTitle('Reservation Details'),
                             const SizedBox(height: 16),
                             Row(
@@ -157,7 +156,6 @@ class _ReservationFormModalState extends State<ReservationFormModal> {
                             const SizedBox(height: 16),
                             _buildTagsSection(),
                             const SizedBox(height: 32),
-
                             _buildSectionTitle('Additional Notes'),
                             const SizedBox(height: 16),
                             TextFormField(
@@ -382,7 +380,7 @@ class _ReservationFormModalState extends State<ReservationFormModal> {
         ),
         const SizedBox(height: 8),
         DropdownButtonFormField<int>(
-          initialValue: _durationMinutes,
+          value: _durationMinutes,
           decoration: InputDecoration(
             filled: true,
             fillColor: const Color(0xFFF9FAFB),

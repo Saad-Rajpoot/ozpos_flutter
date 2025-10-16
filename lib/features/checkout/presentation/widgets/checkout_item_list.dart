@@ -18,14 +18,14 @@ class CheckoutItemList extends StatelessWidget {
               Icon(
                 Icons.shopping_cart_outlined,
                 size: 64,
-                color: Colors.black.withValues(alpha: 0.2),
+                color: Colors.black.withOpacity(0.2),
               ),
               const SizedBox(height: 16),
               Text(
                 'No items in cart',
                 style: TextStyle(
                   fontSize: 16,
-                  color: Colors.black.withValues(alpha: 0.4),
+                  color: Colors.black.withOpacity(0.4),
                 ),
               ),
             ],
@@ -61,7 +61,7 @@ class CheckoutItemList extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
-                    color: Colors.black.withValues(alpha: 0.6),
+                    color: Colors.black.withOpacity(0.6),
                   ),
                 ),
               ],
@@ -128,7 +128,7 @@ class CheckoutItemList extends StatelessWidget {
                       item.modifierSummary,
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.black.withValues(alpha: 0.6),
+                        color: Colors.black.withOpacity(0.6),
                       ),
                     ),
                   ],
@@ -139,7 +139,7 @@ class CheckoutItemList extends StatelessWidget {
                     '\$${item.unitPrice.toStringAsFixed(2)} each',
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.black.withValues(alpha: 0.5),
+                      color: Colors.black.withOpacity(0.5),
                     ),
                   ),
                 ],

@@ -108,7 +108,7 @@ class CheckoutConstants {
   // ============================================================================
   static List<BoxShadow> shadowCard = [
     BoxShadow(
-      color: Colors.black.withValues(alpha: 0.04),
+      color: Colors.black.withOpacity(0.04),
       blurRadius: 6,
       offset: const Offset(0, 2),
     ),
@@ -116,7 +116,7 @@ class CheckoutConstants {
 
   static List<BoxShadow> shadowSelected = [
     BoxShadow(
-      color: primary.withValues(alpha: 0.12),
+      color: primary.withOpacity(0.12),
       blurRadius: 8,
       offset: const Offset(0, 2),
     ),

@@ -68,12 +68,10 @@ class _OrdersScreenState extends State<OrdersScreen> {
       }
 
       final active = orders.where((o) => o.status == OrderStatus.active).length;
-      final completed = orders
-          .where((o) => o.status == OrderStatus.completed)
-          .length;
-      final cancelled = orders
-          .where((o) => o.status == OrderStatus.cancelled)
-          .length;
+      final completed =
+          orders.where((o) => o.status == OrderStatus.completed).length;
+      final cancelled =
+          orders.where((o) => o.status == OrderStatus.cancelled).length;
       final revenue = orders
           .where((o) => o.status == OrderStatus.completed)
           .fold<double>(0.0, (sum, o) => sum + o.total);
@@ -168,8 +166,8 @@ class _OrdersScreenState extends State<OrdersScreen> {
                   icon: const Icon(Icons.refresh),
                   onPressed: () {
                     context.read<OrdersManagementBloc>().add(
-                      const LoadOrdersEvent(),
-                    );
+                          const LoadOrdersEvent(),
+                        );
                   },
                   style: IconButton.styleFrom(
                     backgroundColor: Colors.white,
@@ -270,8 +268,8 @@ class _OrdersScreenState extends State<OrdersScreen> {
                 ElevatedButton(
                   onPressed: () {
                     context.read<OrdersManagementBloc>().add(
-                      const LoadOrdersEvent(),
-                    );
+                          const LoadOrdersEvent(),
+                        );
                   },
                   child: const Text('Retry'),
                 ),
@@ -466,9 +464,8 @@ class _OrdersScreenState extends State<OrdersScreen> {
           color: isSelected ? null : Colors.white,
           borderRadius: BorderRadius.circular(OrdersConstants.chipRadius),
           border: Border.all(
-            color: isSelected
-                ? Colors.transparent
-                : OrdersConstants.colorBorder,
+            color:
+                isSelected ? Colors.transparent : OrdersConstants.colorBorder,
           ),
           boxShadow: OrdersConstants.shadowCard,
         ),
@@ -505,7 +502,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                 Text(
                   label,
                   style: OrdersConstants.caption.copyWith(
-                    color: Colors.white.withValues(alpha: 0.9),
+                    color: Colors.white.withOpacity(0.9),
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -523,7 +520,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
+              color: Colors.white.withOpacity(0.2),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(icon, size: 16, color: Colors.white),

@@ -105,8 +105,8 @@ class _Step1ItemDetailsState extends State<Step1ItemDetails> {
                   maxLines: 4,
                   onChanged: (value) {
                     context.read<MenuEditBloc>().add(
-                      UpdateItemDescription(value),
-                    );
+                          UpdateItemDescription(value),
+                        );
                   },
                 ),
                 const SizedBox(height: 24),
@@ -148,9 +148,8 @@ class _Step1ItemDetailsState extends State<Step1ItemDetails> {
     }
 
     final hasErrors = state.validation.errors.isNotEmpty;
-    final messages = hasErrors
-        ? state.validation.errors
-        : state.validation.warnings;
+    final messages =
+        hasErrors ? state.validation.errors : state.validation.warnings;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -260,8 +259,8 @@ class _Step1ItemDetailsState extends State<Step1ItemDetails> {
                           IconButton(
                             onPressed: () {
                               context.read<MenuEditBloc>().add(
-                                const RemoveImage(),
-                              );
+                                    const RemoveImage(),
+                                  );
                             },
                             icon: const Icon(Icons.close, color: Colors.white),
                             style: IconButton.styleFrom(
@@ -306,7 +305,7 @@ class _Step1ItemDetailsState extends State<Step1ItemDetails> {
             child: CircularProgressIndicator(
               value: loadingProgress.expectedTotalBytes != null
                   ? loadingProgress.cumulativeBytesLoaded /
-                        loadingProgress.expectedTotalBytes!
+                      loadingProgress.expectedTotalBytes!
                   : null,
             ),
           );
@@ -370,8 +369,8 @@ class _Step1ItemDetailsState extends State<Step1ItemDetails> {
                   );
                   if (image != null && mounted && context.mounted) {
                     context.read<MenuEditBloc>().add(
-                      UpdateImageFile(File(image.path)),
-                    );
+                          UpdateImageFile(File(image.path)),
+                        );
                   }
                 },
               ),
@@ -388,8 +387,8 @@ class _Step1ItemDetailsState extends State<Step1ItemDetails> {
                   );
                   if (image != null && mounted && context.mounted) {
                     context.read<MenuEditBloc>().add(
-                      UpdateImageFile(File(image.path)),
-                    );
+                          UpdateImageFile(File(image.path)),
+                        );
                   }
                 },
               ),
@@ -432,8 +431,8 @@ class _Step1ItemDetailsState extends State<Step1ItemDetails> {
               onPressed: () {
                 if (urlController.text.isNotEmpty) {
                   context.read<MenuEditBloc>().add(
-                    UpdateImageUrl(urlController.text),
-                  );
+                        UpdateImageUrl(urlController.text),
+                      );
                   Navigator.pop(dialogContext);
                 }
               },
@@ -472,9 +471,7 @@ class _Step1ItemDetailsState extends State<Step1ItemDetails> {
             ),
           ),
           child: DropdownButtonFormField<String>(
-            initialValue: selectedCategoryId.isNotEmpty
-                ? selectedCategoryId
-                : null,
+            value: selectedCategoryId.isNotEmpty ? selectedCategoryId : null,
             decoration: const InputDecoration(
               contentPadding: EdgeInsets.symmetric(
                 horizontal: 16,
@@ -564,7 +561,7 @@ class _Step1ItemDetailsState extends State<Step1ItemDetails> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? color.withValues(alpha: 0.15) : Colors.white,
+          color: isSelected ? color.withOpacity(0.15) : Colors.white,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isSelected ? color : Colors.grey.shade300,
@@ -699,10 +696,9 @@ class _Step1ItemDetailsState extends State<Step1ItemDetails> {
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                       borderSide: BorderSide(
-                        color:
-                            state.validation.errors.any(
-                              (e) => e.contains('price'),
-                            )
+                        color: state.validation.errors.any(
+                          (e) => e.contains('price'),
+                        )
                             ? Colors.red.shade300
                             : Colors.grey.shade300,
                       ),
@@ -710,10 +706,9 @@ class _Step1ItemDetailsState extends State<Step1ItemDetails> {
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                       borderSide: BorderSide(
-                        color:
-                            state.validation.errors.any(
-                              (e) => e.contains('price'),
-                            )
+                        color: state.validation.errors.any(
+                          (e) => e.contains('price'),
+                        )
                             ? Colors.red.shade300
                             : Colors.grey.shade300,
                       ),

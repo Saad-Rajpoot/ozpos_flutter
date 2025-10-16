@@ -198,7 +198,7 @@ class _AddDriverModalState extends State<AddDriverModal> {
                       ),
                       const SizedBox(height: 12),
                       DropdownButtonFormField<String>(
-                        initialValue: _selectedRole,
+                        value: _selectedRole,
                         decoration: InputDecoration(
                           filled: true,
                           fillColor: DeliveryConstants.dividerColor,
@@ -215,18 +215,17 @@ class _AddDriverModalState extends State<AddDriverModal> {
                             vertical: 12,
                           ),
                         ),
-                        items:
-                            [
-                              'Self-managed',
-                              'Company',
-                              'Partner',
-                              'Contractor',
-                            ].map((role) {
-                              return DropdownMenuItem(
-                                value: role,
-                                child: Text(role),
-                              );
-                            }).toList(),
+                        items: [
+                          'Self-managed',
+                          'Company',
+                          'Partner',
+                          'Contractor',
+                        ].map((role) {
+                          return DropdownMenuItem(
+                            value: role,
+                            child: Text(role),
+                          );
+                        }).toList(),
                         onChanged: (value) =>
                             setState(() => _selectedRole = value!),
                       ),
@@ -256,19 +255,18 @@ class _AddDriverModalState extends State<AddDriverModal> {
                             vertical: 12,
                           ),
                         ),
-                        items:
-                            [
-                              'Downtown',
-                              'Uptown',
-                              'Suburbs',
-                              'CBD',
-                              'All Zones',
-                            ].map((zone) {
-                              return DropdownMenuItem(
-                                value: zone,
-                                child: Text(zone),
-                              );
-                            }).toList(),
+                        items: [
+                          'Downtown',
+                          'Uptown',
+                          'Suburbs',
+                          'CBD',
+                          'All Zones',
+                        ].map((zone) {
+                          return DropdownMenuItem(
+                            value: zone,
+                            child: Text(zone),
+                          );
+                        }).toList(),
                         onChanged: (value) {
                           if (value != null &&
                               !_selectedZones.contains(value)) {

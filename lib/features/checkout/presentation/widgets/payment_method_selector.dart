@@ -21,15 +21,15 @@ class PaymentMethodSelector extends StatelessWidget {
         return GestureDetector(
           onTap: () {
             context.read<CheckoutBloc>().add(
-              SelectPaymentMethod(method: method),
-            );
+                  SelectPaymentMethod(method: method),
+                );
           },
           child: Container(
             width: (MediaQuery.of(context).size.width >= 768) ? 160 : 140,
             height: 100,
             decoration: BoxDecoration(
               color: isSelected
-                  ? const Color(0xFF2196F3).withValues(alpha: 0.08)
+                  ? const Color(0xFF2196F3).withOpacity(0.08)
                   : Colors.white,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
@@ -53,9 +53,8 @@ class PaymentMethodSelector extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                    color: isSelected
-                        ? const Color(0xFF2196F3)
-                        : Colors.black87,
+                    color:
+                        isSelected ? const Color(0xFF2196F3) : Colors.black87,
                   ),
                 ),
               ],

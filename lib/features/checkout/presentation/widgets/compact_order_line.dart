@@ -21,7 +21,7 @@ class CompactOrderLine extends StatelessWidget {
       decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(
-            color: CheckoutConstants.border.withValues(alpha: 0.5),
+            color: CheckoutConstants.border.withOpacity(0.5),
             width: 1,
           ),
         ),
@@ -49,7 +49,7 @@ class CompactOrderLine extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: CheckoutConstants.textMuted.withValues(alpha: 0.1),
+                  color: CheckoutConstants.textMuted.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(

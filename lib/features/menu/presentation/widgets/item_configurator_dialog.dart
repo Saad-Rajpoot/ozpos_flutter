@@ -38,7 +38,7 @@ class ItemConfiguratorDialog extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.2),
+                color: Colors.black.withOpacity(0.2),
                 blurRadius: 24,
                 offset: const Offset(0, 8),
               ),
@@ -302,12 +302,12 @@ class ItemConfiguratorDialog extends StatelessWidget {
       child: InkWell(
         onTap: () {
           context.read<ItemConfigBloc>().add(
-            SelectModifierOption(
-              groupId: group.id,
-              optionId: optionId,
-              selected: isRadio ? true : !isSelected,
-            ),
-          );
+                SelectModifierOption(
+                  groupId: group.id,
+                  optionId: optionId,
+                  selected: isRadio ? true : !isSelected,
+                ),
+              );
         },
         borderRadius: BorderRadius.circular(8),
         child: Container(
@@ -324,7 +324,7 @@ class ItemConfiguratorDialog extends StatelessWidget {
             boxShadow: isSelected
                 ? [
                     BoxShadow(
-                      color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
+                      color: const Color(0xFF3B82F6).withOpacity(0.1),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -336,11 +336,11 @@ class ItemConfiguratorDialog extends StatelessWidget {
               Icon(
                 isSelected
                     ? (isRadio
-                          ? Icons.radio_button_checked
-                          : Icons.check_circle)
+                        ? Icons.radio_button_checked
+                        : Icons.check_circle)
                     : (isRadio
-                          ? Icons.radio_button_unchecked
-                          : Icons.circle_outlined),
+                        ? Icons.radio_button_unchecked
+                        : Icons.circle_outlined),
                 color: isSelected
                     ? const Color(0xFF3B82F6)
                     : const Color(0xFF9CA3AF),
@@ -352,9 +352,8 @@ class ItemConfiguratorDialog extends StatelessWidget {
                   name,
                   style: TextStyle(
                     fontSize: 14,
-                    fontWeight: isSelected
-                        ? FontWeight.w600
-                        : FontWeight.normal,
+                    fontWeight:
+                        isSelected ? FontWeight.w600 : FontWeight.normal,
                     color: AppColors.textPrimary,
                   ),
                 ),
@@ -452,8 +451,8 @@ class ItemConfiguratorDialog extends StatelessWidget {
       child: InkWell(
         onTap: () {
           context.read<ItemConfigBloc>().add(
-            SelectComboOption(comboId: isSelected ? null : comboId),
-          );
+                SelectComboOption(comboId: isSelected ? null : comboId),
+              );
         },
         borderRadius: BorderRadius.circular(8),
         child: Container(
@@ -484,9 +483,8 @@ class ItemConfiguratorDialog extends StatelessWidget {
                   name,
                   style: TextStyle(
                     fontSize: 14,
-                    fontWeight: isSelected
-                        ? FontWeight.w600
-                        : FontWeight.normal,
+                    fontWeight:
+                        isSelected ? FontWeight.w600 : FontWeight.normal,
                   ),
                 ),
               ),
@@ -532,8 +530,8 @@ class ItemConfiguratorDialog extends StatelessWidget {
                     IconButton(
                       onPressed: state.quantity > 1
                           ? () => context.read<ItemConfigBloc>().add(
-                              UpdateQuantity(quantity: state.quantity - 1),
-                            )
+                                UpdateQuantity(quantity: state.quantity - 1),
+                              )
                           : null,
                       icon: const Icon(Icons.remove),
                       iconSize: 18,
@@ -551,8 +549,8 @@ class ItemConfiguratorDialog extends StatelessWidget {
                     ),
                     IconButton(
                       onPressed: () => context.read<ItemConfigBloc>().add(
-                        UpdateQuantity(quantity: state.quantity + 1),
-                      ),
+                            UpdateQuantity(quantity: state.quantity + 1),
+                          ),
                       icon: const Icon(Icons.add),
                       iconSize: 18,
                     ),
@@ -564,8 +562,8 @@ class ItemConfiguratorDialog extends StatelessWidget {
               TextButton(
                 onPressed: () {
                   context.read<ItemConfigBloc>().add(
-                    const ResetConfiguration(),
-                  );
+                        const ResetConfiguration(),
+                      );
                 },
                 child: const Text('Reset'),
               ),
@@ -630,15 +628,15 @@ class ItemConfiguratorDialog extends StatelessWidget {
 
     // Add to cart using CartBloc
     context.read<CartBloc>().add(
-      AddItemToCart(
-        menuItem: state.item,
-        quantity: state.quantity,
-        unitPrice: state.totalPrice / state.quantity,
-        selectedComboId: state.selectedComboId,
-        selectedModifiers: state.selectedOptions,
-        modifierSummary: modifierStrings.join(', '),
-      ),
-    );
+          AddItemToCart(
+            menuItem: state.item,
+            quantity: state.quantity,
+            unitPrice: state.totalPrice / state.quantity,
+            selectedComboId: state.selectedComboId,
+            selectedModifiers: state.selectedOptions,
+            modifierSummary: modifierStrings.join(', '),
+          ),
+        );
 
     Navigator.pop(context);
 

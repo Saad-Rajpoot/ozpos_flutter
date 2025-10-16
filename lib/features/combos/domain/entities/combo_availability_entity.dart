@@ -309,12 +309,12 @@ class ComboAvailabilityEntity extends Equatable {
 
   @override
   List<Object?> get props => [
-    posSystem,
-    onlineMenu,
-    orderTypes,
-    timeWindows,
-    daysOfWeek,
-    startDate,
-    endDate,
-  ];
+        posSystem,
+        onlineMenu,
+        orderTypes,
+        timeWindows,
+        daysOfWeek,
+        startDate,
+        endDate,
+      ];
 }

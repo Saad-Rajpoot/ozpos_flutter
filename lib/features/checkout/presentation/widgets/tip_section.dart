@@ -48,8 +48,7 @@ class TipSection extends StatelessWidget {
             // Percentage buttons
             Row(
               children: [0, 5, 10, 15].map((percent) {
-                final isSelected =
-                    state.tipPercent == percent &&
+                final isSelected = state.tipPercent == percent &&
                     state.customTipAmount.isEmpty;
                 return Expanded(
                   child: Padding(
@@ -57,12 +56,12 @@ class TipSection extends StatelessWidget {
                     child: OutlinedButton(
                       onPressed: () {
                         context.read<CheckoutBloc>().add(
-                          SelectTipPercent(percent: percent),
-                        );
+                              SelectTipPercent(percent: percent),
+                            );
                       },
                       style: OutlinedButton.styleFrom(
                         backgroundColor: isSelected
-                            ? const Color(0xFF2196F3).withValues(alpha: 0.08)
+                            ? const Color(0xFF2196F3).withOpacity(0.08)
                             : Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(
@@ -82,9 +81,8 @@ class TipSection extends StatelessWidget {
                         '$percent%',
                         style: TextStyle(
                           fontSize: 14,
-                          fontWeight: isSelected
-                              ? FontWeight.w600
-                              : FontWeight.w500,
+                          fontWeight:
+                              isSelected ? FontWeight.w600 : FontWeight.w500,
                         ),
                       ),
                     ),

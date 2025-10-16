@@ -8,13 +8,12 @@ import 'add_item_dialog.dart';
 
 class ItemsTab extends StatefulWidget {
   const ItemsTab({super.key});
-  
+
   @override
   State<ItemsTab> createState() => _ItemsTabState();
 }
 
 class _ItemsTabState extends State<ItemsTab> {
-
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<ComboManagementBloc, ComboManagementState>(
@@ -46,7 +45,8 @@ class _ItemsTabState extends State<ItemsTab> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF8B5CF6),
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 8),
                     ),
                   ),
                 ],
@@ -60,25 +60,24 @@ class _ItemsTabState extends State<ItemsTab> {
                 ),
               ),
               const SizedBox(height: 32),
-              
+
               // Existing slots
-              if (combo.slots.isNotEmpty) ...
-                combo.slots.asMap().entries.map((entry) {
+              if (combo.slots.isNotEmpty)
+                ...combo.slots.asMap().entries.map((entry) {
                   final index = entry.key;
                   final slot = entry.value;
                   return _buildSlotCard(context, slot, index);
                 }),
-                
+
               // Empty state or add first item
-              if (combo.slots.isEmpty)
-                _buildEmptyState(context),
+              if (combo.slots.isEmpty) _buildEmptyState(context),
             ],
           ),
         );
       },
     );
   }
-  
+
   Widget _buildSlotCard(BuildContext context, ComboSlotEntity slot, int index) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -97,7 +96,9 @@ class _ItemsTabState extends State<ItemsTab> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: slot.required ? const Color(0xFFEF4444) : const Color(0xFF10B981),
+                  color: slot.required
+                      ? const Color(0xFFEF4444)
+                      : const Color(0xFF10B981),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
@@ -112,7 +113,8 @@ class _ItemsTabState extends State<ItemsTab> {
               const SizedBox(width: 8),
               if (slot.defaultIncluded)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: const Color(0xFF8B5CF6),
                     borderRadius: BorderRadius.circular(4),
@@ -143,8 +145,10 @@ class _ItemsTabState extends State<ItemsTab> {
                   }
                 },
                 itemBuilder: (context) => <PopupMenuEntry<String>>[
-                  const PopupMenuItem<String>(value: 'edit', child: Text('Edit')),
-                  const PopupMenuItem<String>(value: 'duplicate', child: Text('Duplicate')),
+                  const PopupMenuItem<String>(
+                      value: 'edit', child: Text('Edit')),
+                  const PopupMenuItem<String>(
+                      value: 'duplicate', child: Text('Duplicate')),
                   const PopupMenuDivider(),
                   const PopupMenuItem<String>(
                     value: 'delete',
@@ -155,7 +159,7 @@ class _ItemsTabState extends State<ItemsTab> {
             ],
           ),
           const SizedBox(height: 12),
-          
+
           // Slot Details
           Text(
             slot.name,
@@ -174,7 +178,7 @@ class _ItemsTabState extends State<ItemsTab> {
             ),
           ),
           const SizedBox(height: 12),
-          
+
           // Slot Configuration
           Wrap(
             spacing: 8,
@@ -182,7 +186,7 @@ class _ItemsTabState extends State<ItemsTab> {
             children: [
               _buildInfoChip('Max: ${slot.maxQuantity}'),
               _buildInfoChip('\$${slot.defaultPrice.toStringAsFixed(2)}'),
-              if (slot.allowedSizeIds.isNotEmpty) 
+              if (slot.allowedSizeIds.isNotEmpty)
                 _buildInfoChip('${slot.allowedSizeIds.length} sizes'),
               if (slot.modifierGroupAllowed.isNotEmpty)
                 _buildInfoChip('${slot.modifierGroupAllowed.length} modifiers'),
@@ -192,7 +196,7 @@ class _ItemsTabState extends State<ItemsTab> {
       ),
     );
   }
-  
+
   Widget _buildInfoChip(String text) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -209,7 +213,7 @@ class _ItemsTabState extends State<ItemsTab> {
       ),
     );
   }
-  
+
   Widget _buildEmptyState(BuildContext context) {
     return Container(
       width: double.infinity,
@@ -227,7 +231,7 @@ class _ItemsTabState extends State<ItemsTab> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: const Color(0xFF8B5CF6).withValues(alpha: 0.1),
+              color: const Color(0xFF8B5CF6).withOpacity(0.1),
               shape: BoxShape.circle,
             ),
             child: const Icon(
@@ -267,14 +271,14 @@ class _ItemsTabState extends State<ItemsTab> {
       ),
     );
   }
-  
+
   void _showAddItemDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (context) => const AddItemDialog(),
     );
   }
-  
+
   void _editSlot(BuildContext context, ComboSlotEntity slot, int index) {
     // For now, show the same dialog as add - in real implementation this would be an edit dialog
     showDialog(
@@ -282,16 +286,16 @@ class _ItemsTabState extends State<ItemsTab> {
       builder: (context) => const AddItemDialog(),
     );
   }
-  
+
   void _duplicateSlot(BuildContext context, ComboSlotEntity slot) {
     context.read<ComboManagementBloc>().add(
-      DuplicateComboSlot(slotId: slot.id),
-    );
+          DuplicateComboSlot(slotId: slot.id),
+        );
   }
-  
+
   void _deleteSlot(BuildContext context, ComboSlotEntity slot) {
     context.read<ComboManagementBloc>().add(
-      RemoveComboSlot(slotId: slot.id),
-    );
+          RemoveComboSlot(slotId: slot.id),
+        );
   }
 }

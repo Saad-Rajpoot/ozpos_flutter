@@ -58,7 +58,7 @@ class _PricingTabState extends State<PricingTab> {
                 ),
               ),
               const SizedBox(height: 24),
-              
+
               // Pricing mode selection - 2x2 grid
               Column(
                 children: [
@@ -76,7 +76,8 @@ class _PricingTabState extends State<PricingTab> {
                         title: 'Percentage Off',
                         subtitle: 'Discount by percentage',
                         icon: Icons.percent,
-                        isSelected: combo.pricing.mode == PricingMode.percentage,
+                        isSelected:
+                            combo.pricing.mode == PricingMode.percentage,
                         onTap: () => _selectPricingMode(PricingMode.percentage),
                       ),
                     ],
@@ -96,8 +97,10 @@ class _PricingTabState extends State<PricingTab> {
                         title: 'Mix & Match',
                         subtitle: 'Set quantity + price deal',
                         icon: Icons.shopping_basket,
-                        isSelected: combo.pricing.mode == PricingMode.mixAndMatch,
-                        onTap: () => _selectPricingMode(PricingMode.mixAndMatch),
+                        isSelected:
+                            combo.pricing.mode == PricingMode.mixAndMatch,
+                        onTap: () =>
+                            _selectPricingMode(PricingMode.mixAndMatch),
                       ),
                     ],
                   ),
@@ -135,14 +138,16 @@ class _PricingTabState extends State<PricingTab> {
           decoration: BoxDecoration(
             color: Colors.white,
             border: Border.all(
-              color: isSelected ? const Color(0xFF8B5CF6) : const Color(0xFFE5E7EB),
+              color: isSelected
+                  ? const Color(0xFF8B5CF6)
+                  : const Color(0xFFE5E7EB),
               width: isSelected ? 2 : 1,
             ),
             borderRadius: BorderRadius.circular(12),
             boxShadow: isSelected
                 ? [
                     BoxShadow(
-                      color: const Color(0xFF8B5CF6).withValues(alpha: 0.1),
+                      color: const Color(0xFF8B5CF6).withOpacity(0.1),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -157,14 +162,16 @@ class _PricingTabState extends State<PricingTab> {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: isSelected 
-                        ? const Color(0xFF8B5CF6).withValues(alpha: 0.1) 
-                        : Colors.grey.withValues(alpha: 0.1),
+                      color: isSelected
+                          ? const Color(0xFF8B5CF6).withOpacity(0.1)
+                          : Colors.grey.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Icon(
                       icon,
-                      color: isSelected ? const Color(0xFF8B5CF6) : const Color(0xFF9CA3AF),
+                      color: isSelected
+                          ? const Color(0xFF8B5CF6)
+                          : const Color(0xFF9CA3AF),
                       size: 20,
                     ),
                   ),
@@ -175,7 +182,9 @@ class _PricingTabState extends State<PricingTab> {
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
-                        color: isSelected ? const Color(0xFF8B5CF6) : const Color(0xFF111827),
+                        color: isSelected
+                            ? const Color(0xFF8B5CF6)
+                            : const Color(0xFF111827),
                       ),
                     ),
                   ),
@@ -244,7 +253,8 @@ class _PricingTabState extends State<PricingTab> {
                   width: 120,
                   child: TextField(
                     controller: _priceController,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
                     decoration: InputDecoration(
                       hintText: '22',
                       border: OutlineInputBorder(
@@ -279,7 +289,8 @@ class _PricingTabState extends State<PricingTab> {
                   width: 120,
                   child: TextField(
                     controller: _percentageController,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
                     decoration: InputDecoration(
                       hintText: '20',
                       border: OutlineInputBorder(
@@ -292,12 +303,14 @@ class _PricingTabState extends State<PricingTab> {
                     ),
                     onChanged: (value) {
                       final percent = double.tryParse(value) ?? 0.0;
-                      _updatePricing(PricingMode.percentage, percentOff: percent);
+                      _updatePricing(PricingMode.percentage,
+                          percentOff: percent);
                     },
                   ),
                 ),
                 const SizedBox(width: 8),
-                const Text('% OFF', style: TextStyle(fontWeight: FontWeight.w600)),
+                const Text('% OFF',
+                    style: TextStyle(fontWeight: FontWeight.w600)),
               ],
             ),
           ] else if (combo.pricing.mode == PricingMode.amount) ...[
@@ -318,7 +331,8 @@ class _PricingTabState extends State<PricingTab> {
                   width: 120,
                   child: TextField(
                     controller: _amountController,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
                     decoration: InputDecoration(
                       hintText: '7.50',
                       border: OutlineInputBorder(
@@ -336,7 +350,8 @@ class _PricingTabState extends State<PricingTab> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                const Text('OFF', style: TextStyle(fontWeight: FontWeight.w600)),
+                const Text('OFF',
+                    style: TextStyle(fontWeight: FontWeight.w600)),
               ],
             ),
           ] else if (combo.pricing.mode == PricingMode.mixAndMatch) ...[
@@ -379,8 +394,10 @@ class _PricingTabState extends State<PricingTab> {
                         ),
                         onChanged: (value) {
                           final quantity = int.tryParse(value) ?? 0;
-                          final price = double.tryParse(_mixPriceController.text) ?? 0.0;
-                          _updatePricing(PricingMode.mixAndMatch, mixQuantity: quantity, mixPrice: price);
+                          final price =
+                              double.tryParse(_mixPriceController.text) ?? 0.0;
+                          _updatePricing(PricingMode.mixAndMatch,
+                              mixQuantity: quantity, mixPrice: price);
                         },
                       ),
                     ],
@@ -411,7 +428,8 @@ class _PricingTabState extends State<PricingTab> {
                       const SizedBox(height: 4),
                       TextField(
                         controller: _mixPriceController,
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true),
                         decoration: InputDecoration(
                           hintText: '25.00',
                           prefixIcon: const Icon(Icons.attach_money, size: 16),
@@ -425,8 +443,10 @@ class _PricingTabState extends State<PricingTab> {
                         ),
                         onChanged: (value) {
                           final price = double.tryParse(value) ?? 0.0;
-                          final quantity = int.tryParse(_mixQuantityController.text) ?? 0;
-                          _updatePricing(PricingMode.mixAndMatch, mixQuantity: quantity, mixPrice: price);
+                          final quantity =
+                              int.tryParse(_mixQuantityController.text) ?? 0;
+                          _updatePricing(PricingMode.mixAndMatch,
+                              mixQuantity: quantity, mixPrice: price);
                         },
                       ),
                     ],
@@ -438,7 +458,7 @@ class _PricingTabState extends State<PricingTab> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: const Color(0xFF8B5CF6).withValues(alpha: 0.1),
+                color: const Color(0xFF8B5CF6).withOpacity(0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
@@ -473,7 +493,7 @@ class _PricingTabState extends State<PricingTab> {
       decoration: BoxDecoration(
         color: const Color(0xFFF0FDF4),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.2)),
+        border: Border.all(color: const Color(0xFF10B981).withOpacity(0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -559,10 +579,11 @@ class _PricingTabState extends State<PricingTab> {
   }
 
   void _selectPricingMode(PricingMode mode) {
-    final totalSeparate = 38.96; // Mock value - in real app, calculate from slots
-    
+    final totalSeparate =
+        38.96; // Mock value - in real app, calculate from slots
+
     ComboPricingEntity newPricing;
-    
+
     switch (mode) {
       case PricingMode.fixed:
         newPricing = ComboPricingEntity.fixed(
@@ -595,10 +616,10 @@ class _PricingTabState extends State<PricingTab> {
         _mixPriceController.text = '25.00';
         break;
     }
-    
+
     context.read<ComboManagementBloc>().add(
-      UpdateComboPricing(pricing: newPricing),
-    );
+          UpdateComboPricing(pricing: newPricing),
+        );
   }
 
   void _updatePricing(
@@ -609,10 +630,11 @@ class _PricingTabState extends State<PricingTab> {
     int? mixQuantity,
     double? mixPrice,
   }) {
-    final totalSeparate = 38.96; // Mock value - in real app, calculate from slots
-    
+    final totalSeparate =
+        38.96; // Mock value - in real app, calculate from slots
+
     ComboPricingEntity newPricing;
-    
+
     switch (mode) {
       case PricingMode.fixed:
         newPricing = ComboPricingEntity.fixed(
@@ -642,7 +664,7 @@ class _PricingTabState extends State<PricingTab> {
     }
 
     context.read<ComboManagementBloc>().add(
-      UpdateComboPricing(pricing: newPricing),
-    );
+          UpdateComboPricing(pricing: newPricing),
+        );
   }
 }

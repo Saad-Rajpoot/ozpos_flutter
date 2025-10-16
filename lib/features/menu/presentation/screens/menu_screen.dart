@@ -38,9 +38,8 @@ class _MenuScreenState extends State<MenuScreen> {
 
     // Apply category filter
     if (_selectedCategory != 'all') {
-      items = items
-          .where((item) => item.categoryId == _selectedCategory)
-          .toList();
+      items =
+          items.where((item) => item.categoryId == _selectedCategory).toList();
     }
 
     // Apply search filter
@@ -84,8 +83,8 @@ class _MenuScreenState extends State<MenuScreen> {
       if (orderType != null) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           context.read<cart_bloc.CartBloc>().add(
-            cart_bloc.ChangeOrderType(orderType: orderType!),
-          );
+                cart_bloc.ChangeOrderType(orderType: orderType!),
+              );
         });
       }
     }
@@ -136,7 +135,7 @@ class _MenuScreenState extends State<MenuScreen> {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withOpacity(0.05),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -157,9 +156,8 @@ class _MenuScreenState extends State<MenuScreen> {
           if (MediaQuery.of(context).size.width <= 1024)
             BlocBuilder<cart_bloc.CartBloc, cart_bloc.CartState>(
               builder: (context, state) {
-                final itemCount = state is cart_bloc.CartLoaded
-                    ? state.itemCount
-                    : 0;
+                final itemCount =
+                    state is cart_bloc.CartLoaded ? state.itemCount : 0;
                 return Stack(
                   children: [
                     IconButton(
@@ -357,14 +355,14 @@ class _MenuScreenState extends State<MenuScreen> {
             // Fast add for items without required modifiers
             if (item.isFastAdd) {
               context.read<cart_bloc.CartBloc>().add(
-                cart_bloc.AddItemToCart(
-                  menuItem: item,
-                  quantity: 1,
-                  unitPrice: item.basePrice,
-                  selectedModifiers: {},
-                  modifierSummary: '',
-                ),
-              );
+                    cart_bloc.AddItemToCart(
+                      menuItem: item,
+                      quantity: 1,
+                      unitPrice: item.basePrice,
+                      selectedModifiers: {},
+                      modifierSummary: '',
+                    ),
+                  );
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text('Added ${item.name} to cart'),

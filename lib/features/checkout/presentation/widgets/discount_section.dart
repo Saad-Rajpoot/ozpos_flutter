@@ -79,12 +79,12 @@ class _DiscountSectionState extends State<DiscountSection> {
                     child: OutlinedButton(
                       onPressed: () {
                         context.read<CheckoutBloc>().add(
-                          SetDiscountPercent(percent: percent),
-                        );
+                              SetDiscountPercent(percent: percent),
+                            );
                       },
                       style: OutlinedButton.styleFrom(
                         backgroundColor: isSelected
-                            ? const Color(0xFFD32F2F).withValues(alpha: 0.08)
+                            ? const Color(0xFFD32F2F).withOpacity(0.08)
                             : Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(
@@ -104,9 +104,8 @@ class _DiscountSectionState extends State<DiscountSection> {
                         '$percent%',
                         style: TextStyle(
                           fontSize: 14,
-                          fontWeight: isSelected
-                              ? FontWeight.w600
-                              : FontWeight.w500,
+                          fontWeight:
+                              isSelected ? FontWeight.w600 : FontWeight.w500,
                         ),
                       ),
                     ),
@@ -149,8 +148,8 @@ class _DiscountSectionState extends State<DiscountSection> {
                   onPressed: () {
                     if (_voucherController.text.isNotEmpty) {
                       context.read<CheckoutBloc>().add(
-                        ApplyVoucher(code: _voucherController.text),
-                      );
+                            ApplyVoucher(code: _voucherController.text),
+                          );
                       _voucherController.clear();
                     }
                   },
@@ -179,7 +178,7 @@ class _DiscountSectionState extends State<DiscountSection> {
                   child: Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF4CAF50).withValues(alpha: 0.1),
+                      color: const Color(0xFF4CAF50).withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
                         color: const Color(0xFF4CAF50),
@@ -224,8 +223,8 @@ class _DiscountSectionState extends State<DiscountSection> {
                           icon: const Icon(Icons.close, size: 18),
                           onPressed: () {
                             context.read<CheckoutBloc>().add(
-                              RemoveVoucher(id: voucher.id),
-                            );
+                                  RemoveVoucher(id: voucher.id),
+                                );
                           },
                           color: Colors.black54,
                           padding: EdgeInsets.zero,
@@ -270,7 +269,7 @@ class _DiscountSectionState extends State<DiscountSection> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFF9800).withValues(alpha: 0.1),
+                  color: const Color(0xFFFF9800).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: const Color(0xFFFF9800), width: 1),
                 ),
@@ -312,8 +311,8 @@ class _DiscountSectionState extends State<DiscountSection> {
                       icon: const Icon(Icons.close, size: 18),
                       onPressed: () {
                         context.read<CheckoutBloc>().add(
-                          UndoLoyaltyRedemption(),
-                        );
+                              UndoLoyaltyRedemption(),
+                            );
                       },
                       color: Colors.black54,
                       padding: EdgeInsets.zero,
@@ -380,8 +379,8 @@ class _DiscountSectionState extends State<DiscountSection> {
               final amount = double.tryParse(amountController.text) ?? 0.0;
               if (amount > 0) {
                 context.read<CheckoutBloc>().add(
-                  RedeemLoyaltyPoints(amount: amount),
-                );
+                      RedeemLoyaltyPoints(amount: amount),
+                    );
                 Navigator.of(dialogContext).pop();
               }
             },

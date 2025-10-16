@@ -18,7 +18,7 @@ class CartPane extends StatelessWidget {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
+            color: Colors.black.withOpacity(0.1),
             blurRadius: 10,
             offset: const Offset(-2, 0),
           ),
@@ -100,8 +100,8 @@ class CartPane extends StatelessWidget {
               isSelected: state.orderType == OrderType.dineIn,
               onTap: () {
                 context.read<CartBloc>().add(
-                  const ChangeOrderType(orderType: OrderType.dineIn),
-                );
+                      const ChangeOrderType(orderType: OrderType.dineIn),
+                    );
               },
             ),
           ),
@@ -113,8 +113,8 @@ class CartPane extends StatelessWidget {
               isSelected: state.orderType == OrderType.takeaway,
               onTap: () {
                 context.read<CartBloc>().add(
-                  const ChangeOrderType(orderType: OrderType.takeaway),
-                );
+                      const ChangeOrderType(orderType: OrderType.takeaway),
+                    );
               },
             ),
           ),
@@ -126,8 +126,8 @@ class CartPane extends StatelessWidget {
               isSelected: state.orderType == OrderType.delivery,
               onTap: () {
                 context.read<CartBloc>().add(
-                  const ChangeOrderType(orderType: OrderType.delivery),
-                );
+                      const ChangeOrderType(orderType: OrderType.delivery),
+                    );
               },
             ),
           ),
@@ -351,7 +351,7 @@ class CartPane extends StatelessWidget {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withOpacity(0.05),
             blurRadius: 10,
             offset: const Offset(0, -2),
           ),
@@ -569,8 +569,8 @@ class _LineItemCard extends StatelessWidget {
               InkWell(
                 onTap: () {
                   context.read<CartBloc>().add(
-                    RemoveLineItem(lineItemId: lineItem.id),
-                  );
+                        RemoveLineItem(lineItemId: lineItem.id),
+                      );
                 },
                 child: const Icon(
                   Icons.delete_outline,
@@ -646,11 +646,11 @@ class _LineItemCard extends StatelessWidget {
           InkWell(
             onTap: () {
               context.read<CartBloc>().add(
-                UpdateLineItemQuantity(
-                  lineItemId: lineItem.id,
-                  newQuantity: lineItem.quantity - 1,
-                ),
-              );
+                    UpdateLineItemQuantity(
+                      lineItemId: lineItem.id,
+                      newQuantity: lineItem.quantity - 1,
+                    ),
+                  );
             },
             child: Container(
               padding: const EdgeInsets.all(4),
@@ -675,11 +675,11 @@ class _LineItemCard extends StatelessWidget {
           InkWell(
             onTap: () {
               context.read<CartBloc>().add(
-                UpdateLineItemQuantity(
-                  lineItemId: lineItem.id,
-                  newQuantity: lineItem.quantity + 1,
-                ),
-              );
+                    UpdateLineItemQuantity(
+                      lineItemId: lineItem.id,
+                      newQuantity: lineItem.quantity + 1,
+                    ),
+                  );
             },
             child: Container(
               padding: const EdgeInsets.all(4),

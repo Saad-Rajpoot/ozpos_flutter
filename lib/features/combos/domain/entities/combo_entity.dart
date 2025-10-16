@@ -233,19 +233,19 @@ class ComboEntity extends Equatable {
 
   @override
   List<Object?> get props => [
-    id,
-    name,
-    description,
-    image,
-    categoryTag,
-    pointsReward,
-    status,
-    slots,
-    pricing,
-    availability,
-    limits,
-    createdAt,
-    updatedAt,
-    hasUnsavedChanges,
-  ];
+        id,
+        name,
+        description,
+        image,
+        categoryTag,
+        pointsReward,
+        status,
+        slots,
+        pricing,
+        availability,
+        limits,
+        createdAt,
+        updatedAt,
+        hasUnsavedChanges,
+      ];
 }

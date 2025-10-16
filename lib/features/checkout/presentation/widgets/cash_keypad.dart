@@ -45,9 +45,8 @@ class CashKeypad extends StatelessWidget {
         color: const Color(0xFFF5F5F5),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: isSufficient
-              ? const Color(0xFF4CAF50)
-              : const Color(0xFFE0E0E0),
+          color:
+              isSufficient ? const Color(0xFF4CAF50) : const Color(0xFFE0E0E0),
           width: isSufficient ? 2 : 1,
         ),
       ),
@@ -58,7 +57,7 @@ class CashKeypad extends StatelessWidget {
             'Cash Received',
             style: TextStyle(
               fontSize: 12,
-              color: Colors.black.withValues(alpha: 0.6),
+              color: Colors.black.withOpacity(0.6),
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -117,8 +116,8 @@ class CashKeypad extends StatelessWidget {
             child: OutlinedButton(
               onPressed: () {
                 context.read<CheckoutBloc>().add(
-                  QuickAmountPress(amount: amount),
-                );
+                      QuickAmountPress(amount: amount),
+                    );
               },
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 12),
@@ -220,7 +219,7 @@ class CashKeypad extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFF4CAF50).withValues(alpha: 0.1),
+        color: const Color(0xFF4CAF50).withOpacity(0.1),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: const Color(0xFF4CAF50), width: 1),
       ),

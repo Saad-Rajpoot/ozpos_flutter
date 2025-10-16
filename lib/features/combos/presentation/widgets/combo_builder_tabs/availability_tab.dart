@@ -106,7 +106,6 @@ class _AvailabilityTabState extends State<AvailabilityTab> {
             style: TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
           ),
           const SizedBox(height: 20),
-
           GridView.count(
             crossAxisCount: 2,
             shrinkWrap: true,
@@ -161,8 +160,8 @@ class _AvailabilityTabState extends State<AvailabilityTab> {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: isEnabled
-            ? const Color(0xFF10B981).withValues(alpha: 0.1)
-            : Colors.grey.withValues(alpha: 0.05),
+            ? const Color(0xFF10B981).withOpacity(0.1)
+            : Colors.grey.withOpacity(0.05),
         border: Border.all(
           color: isEnabled ? const Color(0xFF10B981) : const Color(0xFFE5E7EB),
           width: isEnabled ? 2 : 1,
@@ -173,9 +172,8 @@ class _AvailabilityTabState extends State<AvailabilityTab> {
         children: [
           Icon(
             icon,
-            color: isEnabled
-                ? const Color(0xFF10B981)
-                : const Color(0xFF9CA3AF),
+            color:
+                isEnabled ? const Color(0xFF10B981) : const Color(0xFF9CA3AF),
             size: 18,
           ),
           const SizedBox(width: 8),
@@ -241,7 +239,6 @@ class _AvailabilityTabState extends State<AvailabilityTab> {
             style: TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
           ),
           const SizedBox(height: 20),
-
           GridView.count(
             crossAxisCount: 2,
             shrinkWrap: true,
@@ -298,12 +295,11 @@ class _AvailabilityTabState extends State<AvailabilityTab> {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: isSelected
-              ? const Color(0xFF8B5CF6).withValues(alpha: 0.1)
+              ? const Color(0xFF8B5CF6).withOpacity(0.1)
               : Colors.white,
           border: Border.all(
-            color: isSelected
-                ? const Color(0xFF8B5CF6)
-                : const Color(0xFFE5E7EB),
+            color:
+                isSelected ? const Color(0xFF8B5CF6) : const Color(0xFFE5E7EB),
             width: isSelected ? 2 : 1,
           ),
           borderRadius: BorderRadius.circular(8),
@@ -379,7 +375,6 @@ class _AvailabilityTabState extends State<AvailabilityTab> {
             style: TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
           ),
           const SizedBox(height: 20),
-
           Row(
             children: weekdays.asMap().entries.map((entry) {
               final index = entry.key;
@@ -396,9 +391,8 @@ class _AvailabilityTabState extends State<AvailabilityTab> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       decoration: BoxDecoration(
-                        color: isSelected
-                            ? const Color(0xFF8B5CF6)
-                            : Colors.white,
+                        color:
+                            isSelected ? const Color(0xFF8B5CF6) : Colors.white,
                         border: Border.all(
                           color: isSelected
                               ? const Color(0xFF8B5CF6)
@@ -453,7 +447,6 @@ class _AvailabilityTabState extends State<AvailabilityTab> {
             style: TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
           ),
           const SizedBox(height: 20),
-
           Row(
             children: [
               Expanded(
@@ -539,9 +532,7 @@ class _AvailabilityTabState extends State<AvailabilityTab> {
               ),
             ],
           ),
-
           const SizedBox(height: 16),
-
           Row(
             children: [
               Checkbox(

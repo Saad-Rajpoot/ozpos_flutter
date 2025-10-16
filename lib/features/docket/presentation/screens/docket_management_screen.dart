@@ -51,8 +51,8 @@ class DocketManagementScreen extends StatelessWidget {
                         ElevatedButton(
                           onPressed: () {
                             context.read<DocketManagementBloc>().add(
-                              const LoadDocketsEvent(),
-                            );
+                                  const LoadDocketsEvent(),
+                                );
                           },
                           child: const Text('Retry'),
                         ),
@@ -315,7 +315,7 @@ class DocketManagementScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
               decoration: BoxDecoration(
-                color: _getStatusColor(docket.status).withValues(alpha: 0.1),
+                color: _getStatusColor(docket.status).withOpacity(0.1),
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(color: _getStatusColor(docket.status)),
               ),
@@ -340,7 +340,6 @@ class DocketManagementScreen extends StatelessWidget {
             ),
           ],
         ),
-
         children: [
           const Divider(height: 24),
           ...docket.items.map((item) => _buildDocketItem(item)),

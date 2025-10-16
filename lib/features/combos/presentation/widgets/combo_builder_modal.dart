@@ -31,7 +31,7 @@ class ComboBuilderModal extends StatelessWidget {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1),
+                  color: Colors.black.withOpacity(0.1),
                   blurRadius: 20,
                   offset: const Offset(0, 10),
                 ),
@@ -55,7 +55,7 @@ class ComboBuilderModal extends StatelessWidget {
 
   Widget _buildHeader(BuildContext context, ComboManagementState state) {
     final isEditing = state.editMode == ComboEditMode.edit;
-    
+
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -103,7 +103,7 @@ class ComboBuilderModal extends StatelessWidget {
               size: 24,
             ),
             style: IconButton.styleFrom(
-              backgroundColor: Colors.white.withValues(alpha: 0.2),
+              backgroundColor: Colors.white.withOpacity(0.2),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
@@ -137,18 +137,22 @@ class ComboBuilderModal extends StatelessWidget {
           return Expanded(
             child: InkWell(
               onTap: () => context.read<ComboManagementBloc>().add(
-                SelectTab(tabId: tab['id'] as String),
-              ),
+                    SelectTab(tabId: tab['id'] as String),
+                  ),
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 decoration: BoxDecoration(
                   border: Border(
                     bottom: BorderSide(
-                      color: isSelected ? const Color(0xFF8B5CF6) : Colors.transparent,
+                      color: isSelected
+                          ? const Color(0xFF8B5CF6)
+                          : Colors.transparent,
                       width: 2,
                     ),
                   ),
-                  color: isSelected ? const Color(0xFF8B5CF6).withValues(alpha: 0.05) : null,
+                  color: isSelected
+                      ? const Color(0xFF8B5CF6).withOpacity(0.05)
+                      : null,
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -159,7 +163,9 @@ class ComboBuilderModal extends StatelessWidget {
                         Icon(
                           tab['icon'] as IconData,
                           size: 20,
-                          color: isSelected ? const Color(0xFF8B5CF6) : const Color(0xFF6B7280),
+                          color: isSelected
+                              ? const Color(0xFF8B5CF6)
+                              : const Color(0xFF6B7280),
                         ),
                         if (hasErrors)
                           Positioned(
@@ -181,8 +187,11 @@ class ComboBuilderModal extends StatelessWidget {
                       tab['label'] as String,
                       style: TextStyle(
                         fontSize: 12,
-                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                        color: isSelected ? const Color(0xFF8B5CF6) : const Color(0xFF6B7280),
+                        fontWeight:
+                            isSelected ? FontWeight.w600 : FontWeight.w500,
+                        color: isSelected
+                            ? const Color(0xFF8B5CF6)
+                            : const Color(0xFF6B7280),
                       ),
                     ),
                   ],
@@ -265,7 +274,8 @@ class ComboBuilderModal extends StatelessWidget {
           ),
           const SizedBox(width: 12),
           ElevatedButton.icon(
-            onPressed: state.isSaving || hasErrors ? null : () => _onSave(context),
+            onPressed:
+                state.isSaving || hasErrors ? null : () => _onSave(context),
             icon: state.isSaving
                 ? const SizedBox(
                     width: 16,
@@ -278,7 +288,8 @@ class ComboBuilderModal extends StatelessWidget {
                 : const Icon(Icons.save, size: 18),
             label: Text(state.isSaving ? 'Saving...' : 'Save Combo'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: hasErrors ? Colors.grey[400] : const Color(0xFF8B5CF6),
+              backgroundColor:
+                  hasErrors ? Colors.grey[400] : const Color(0xFF8B5CF6),
               foregroundColor: Colors.white,
               elevation: 0,
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
@@ -294,7 +305,7 @@ class ComboBuilderModal extends StatelessWidget {
 
   bool _tabHasErrors(String tabId, ComboManagementState state) {
     if (state.validationErrors.isEmpty) return false;
-    
+
     // Define which validation errors belong to which tabs
     final tabErrorKeywords = {
       'details': ['name', 'description'],
@@ -311,8 +322,8 @@ class ComboBuilderModal extends StatelessWidget {
 
   void _onSave(BuildContext context) {
     context.read<ComboManagementBloc>().add(
-      const SaveComboChanges(exitAfterSave: true),
-    );
+          const SaveComboChanges(exitAfterSave: true),
+        );
   }
 
   void _onClose(BuildContext context) {

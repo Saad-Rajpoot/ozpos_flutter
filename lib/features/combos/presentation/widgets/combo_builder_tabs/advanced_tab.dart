@@ -109,7 +109,7 @@ class _AdvancedTabState extends State<AdvancedTab> {
                     ),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<ComboStatus>(
-                      initialValue: combo.status,
+                      value: combo.status,
                       decoration: InputDecoration(
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
@@ -378,7 +378,6 @@ class _AdvancedTabState extends State<AdvancedTab> {
             style: TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
           ),
           const SizedBox(height: 20),
-
           Column(
             children: [
               Row(
@@ -513,7 +512,6 @@ class _AdvancedTabState extends State<AdvancedTab> {
             style: TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
           ),
           const SizedBox(height: 20),
-
           Row(
             children: [
               Expanded(
@@ -530,7 +528,7 @@ class _AdvancedTabState extends State<AdvancedTab> {
                     ),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<String>(
-                      initialValue: 'Medium',
+                      value: 'Medium',
                       decoration: InputDecoration(
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
@@ -597,9 +595,7 @@ class _AdvancedTabState extends State<AdvancedTab> {
               ),
             ],
           ),
-
           const SizedBox(height: 20),
-
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(

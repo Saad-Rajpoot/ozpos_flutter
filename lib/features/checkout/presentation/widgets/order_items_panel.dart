@@ -100,7 +100,7 @@ class OrderItemsPanel extends StatelessWidget {
               Icon(
                 Icons.shopping_cart_outlined,
                 size: 64,
-                color: CheckoutConstants.textMuted.withValues(alpha: 0.5),
+                color: CheckoutConstants.textMuted.withOpacity(0.5),
               ),
               const SizedBox(height: 16),
               Text(

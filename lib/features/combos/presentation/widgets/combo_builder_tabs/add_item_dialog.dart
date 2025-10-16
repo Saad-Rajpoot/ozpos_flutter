@@ -475,7 +475,7 @@ class _AddItemDialogState extends State<AddItemDialog> {
             border: OutlineInputBorder(),
             hintText: 'Choose a category',
           ),
-          initialValue: _selectedCategory,
+          value: _selectedCategory,
           items: _availableCategories.map((category) {
             return DropdownMenuItem(
               value: category['id'] as String,
@@ -491,7 +491,6 @@ class _AddItemDialogState extends State<AddItemDialog> {
             });
           },
         ),
-
         if (_selectedCategory != null && _categoryItems.isNotEmpty) ...[
           const SizedBox(height: 16),
           const Text(
@@ -539,9 +538,8 @@ class _AddItemDialogState extends State<AddItemDialog> {
                   subtitle: Text(
                     '\$${(item['price'] as double).toStringAsFixed(2)}',
                   ),
-                  children: isSelected
-                      ? [_buildItemSizesAndModifiers(item)]
-                      : [],
+                  children:
+                      isSelected ? [_buildItemSizesAndModifiers(item)] : [],
                 );
               },
             ),
@@ -593,7 +591,6 @@ class _AddItemDialogState extends State<AddItemDialog> {
             ),
             const SizedBox(height: 12),
           ],
-
           if (modifiers.isNotEmpty) ...[
             const Text(
               'Available Modifiers:',
@@ -774,11 +771,9 @@ class _AddItemDialogState extends State<AddItemDialog> {
 
     String? categoryName;
     if (_sourceType == 'category' && _selectedCategory != null) {
-      categoryName =
-          _availableCategories.firstWhere(
-                (cat) => cat['id'] == _selectedCategory,
-              )['name']
-              as String;
+      categoryName = _availableCategories.firstWhere(
+        (cat) => cat['id'] == _selectedCategory,
+      )['name'] as String;
     }
 
     final slot = ComboSlotEntity(
@@ -801,9 +796,9 @@ class _AddItemDialogState extends State<AddItemDialog> {
       modifierGroupAllowed: _selectedModifiers.values
           .expand((mods) => mods)
           .fold<Map<String, bool>>({}, (map, modId) {
-            map[modId] = true;
-            return map;
-          }),
+        map[modId] = true;
+        return map;
+      }),
     );
 
     context.read<ComboManagementBloc>().add(AddComboSlot(slot: slot));

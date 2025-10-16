@@ -27,12 +27,12 @@ class ComboCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: Colors.black.withOpacity(0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
+            color: Colors.black.withOpacity(0.02),
             blurRadius: 2,
             offset: const Offset(0, 1),
           ),
@@ -115,7 +115,7 @@ class ComboCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(4),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
+              color: Colors.black.withOpacity(0.1),
               blurRadius: 4,
               offset: const Offset(0, 2),
             ),
@@ -174,7 +174,8 @@ class ComboCard extends StatelessWidget {
               // Savings badge
               if (combo.savingsText != null)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
                     color: const Color(0xFF10B981),
                     borderRadius: BorderRadius.circular(6),
@@ -255,7 +256,7 @@ class ComboCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: const Color(0xFF6B7280).withValues(alpha: 0.1),
+                color: const Color(0xFF6B7280).withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
@@ -320,7 +321,7 @@ class ComboCard extends StatelessWidget {
               ),
             ),
           ),
-          
+
           const SizedBox(width: 12),
 
           // Points indicator
@@ -379,9 +380,9 @@ class ComboCard extends StatelessWidget {
               tooltip: 'Edit Combo',
             ),
           ),
-          
+
           const SizedBox(width: 8),
-          
+
           SizedBox(
             height: 44,
             width: 44,
@@ -401,37 +402,39 @@ class ComboCard extends StatelessWidget {
               tooltip: 'Duplicate Combo',
             ),
           ),
-          
+
           const SizedBox(width: 8),
-          
+
           SizedBox(
             height: 44,
             width: 44,
             child: IconButton(
               onPressed: onToggleVisibility,
               icon: Icon(
-                combo.status == ComboStatus.active 
-                  ? Icons.visibility_outlined 
-                  : Icons.visibility_off_outlined,
-                color: combo.status == ComboStatus.active 
-                  ? Colors.green[600]
-                  : Colors.grey[600],
+                combo.status == ComboStatus.active
+                    ? Icons.visibility_outlined
+                    : Icons.visibility_off_outlined,
+                color: combo.status == ComboStatus.active
+                    ? Colors.green[600]
+                    : Colors.grey[600],
                 size: 18,
               ),
               style: IconButton.styleFrom(
-                backgroundColor: combo.status == ComboStatus.active 
-                  ? Colors.green[50]
-                  : Colors.grey[100],
+                backgroundColor: combo.status == ComboStatus.active
+                    ? Colors.green[50]
+                    : Colors.grey[100],
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
-              tooltip: combo.status == ComboStatus.active ? 'Hide Combo' : 'Show Combo',
+              tooltip: combo.status == ComboStatus.active
+                  ? 'Hide Combo'
+                  : 'Show Combo',
             ),
           ),
-          
+
           const SizedBox(width: 8),
-          
+
           SizedBox(
             height: 44,
             width: 44,

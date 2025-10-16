@@ -32,8 +32,8 @@ class _ComboDashboardScreenState extends State<ComboDashboardScreen> {
 
   void _onSearchChanged() {
     context.read<ComboManagementBloc>().add(
-      SearchCombos(query: _searchController.text),
-    );
+          SearchCombos(query: _searchController.text),
+        );
   }
 
   @override
@@ -172,8 +172,8 @@ class _ComboDashboardScreenState extends State<ComboDashboardScreen> {
             label: 'Save All',
             onPressed: state.hasUnsavedChanges
                 ? () => context.read<ComboManagementBloc>().add(
-                    const SaveAllCombos(),
-                  )
+                      const SaveAllCombos(),
+                    )
                 : null,
           ),
         ],
@@ -218,7 +218,7 @@ class _ComboDashboardScreenState extends State<ComboDashboardScreen> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: const Color(0xFF8B5CF6).withValues(alpha: 0.1),
+              color: const Color(0xFF8B5CF6).withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: const Icon(Icons.star, color: Color(0xFF8B5CF6), size: 20),
@@ -252,7 +252,7 @@ class _ComboDashboardScreenState extends State<ComboDashboardScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: const Color(0xFF10B981).withValues(alpha: 0.1),
+              color: const Color(0xFF10B981).withOpacity(0.1),
               borderRadius: BorderRadius.circular(4),
             ),
             child: const Text(
@@ -322,8 +322,8 @@ class _ComboDashboardScreenState extends State<ComboDashboardScreen> {
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: () => context.read<ComboManagementBloc>().add(
-                const RefreshCombos(),
-              ),
+                    const RefreshCombos(),
+                  ),
               child: const Text('Try Again'),
             ),
           ],
@@ -368,7 +368,7 @@ class _ComboDashboardScreenState extends State<ComboDashboardScreen> {
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: const Color(0xFF8B5CF6).withValues(alpha: 0.1),
+              color: const Color(0xFF8B5CF6).withOpacity(0.1),
               shape: BoxShape.circle,
             ),
             child: const Icon(
@@ -445,8 +445,8 @@ class _ComboDashboardScreenState extends State<ComboDashboardScreen> {
         : ComboStatus.active;
 
     context.read<ComboManagementBloc>().add(
-      ToggleComboVisibility(comboId: combo.id, newStatus: newStatus),
-    );
+          ToggleComboVisibility(comboId: combo.id, newStatus: newStatus),
+        );
   }
 
   void _deleteCombo(BuildContext context, String comboId) {
@@ -466,8 +466,8 @@ class _ComboDashboardScreenState extends State<ComboDashboardScreen> {
             onPressed: () {
               Navigator.of(context).pop();
               context.read<ComboManagementBloc>().add(
-                DeleteCombo(comboId: comboId),
-              );
+                    DeleteCombo(comboId: comboId),
+                  );
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('Delete'),

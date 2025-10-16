@@ -341,8 +341,8 @@ class _TableSelectionModalState extends State<TableSelectionModal> {
           onPressed: _selectedTable != null
               ? () {
                   context.read<CartBloc>().add(
-                    SelectTable(table: _selectedTable!),
-                  );
+                        SelectTable(table: _selectedTable!),
+                      );
                   Navigator.pop(context);
                 }
               : null,
@@ -498,16 +498,15 @@ class _TableListCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           border: Border.all(
-            color: isSelected
-                ? const Color(0xFF3B82F6)
-                : const Color(0xFFE5E7EB),
+            color:
+                isSelected ? const Color(0xFF3B82F6) : const Color(0xFFE5E7EB),
             width: isSelected ? 2 : 1,
           ),
           borderRadius: BorderRadius.circular(12),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
+                    color: const Color(0xFF3B82F6).withOpacity(0.1),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -521,7 +520,7 @@ class _TableListCard extends StatelessWidget {
               width: 60,
               height: 60,
               decoration: BoxDecoration(
-                color: _statusColor.withValues(alpha: 0.1),
+                color: _statusColor.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Column(
@@ -564,7 +563,7 @@ class _TableListCard extends StatelessWidget {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: _statusColor.withValues(alpha: 0.1),
+                          color: _statusColor.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
@@ -653,15 +652,13 @@ class _FloorTableNode extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         child: Container(
           decoration: BoxDecoration(
-            color: isSelected
-                ? _statusColor
-                : _statusColor.withValues(alpha: 0.1),
+            color: isSelected ? _statusColor : _statusColor.withOpacity(0.1),
             shape: BoxShape.circle,
             border: Border.all(color: _statusColor, width: isSelected ? 3 : 2),
             boxShadow: isSelected
                 ? [
                     BoxShadow(
-                      color: _statusColor.withValues(alpha: 0.3),
+                      color: _statusColor.withOpacity(0.3),
                       blurRadius: 12,
                       offset: const Offset(0, 4),
                     ),

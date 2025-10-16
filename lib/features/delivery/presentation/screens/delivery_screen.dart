@@ -85,8 +85,8 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                     child: isDesktop
                         ? _build3ColumnLayout()
                         : isTablet
-                        ? _build2ColumnLayout()
-                        : _build1ColumnLayout(),
+                            ? _build2ColumnLayout()
+                            : _build1ColumnLayout(),
                   ),
                 ],
               ),
@@ -162,9 +162,8 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
       label: Text(label),
       style: ElevatedButton.styleFrom(
         backgroundColor: isPrimary ? const Color(0xFFF97316) : Colors.white,
-        foregroundColor: isPrimary
-            ? Colors.white
-            : DeliveryConstants.textPrimary,
+        foregroundColor:
+            isPrimary ? Colors.white : DeliveryConstants.textPrimary,
         side: isPrimary
             ? null
             : const BorderSide(color: DeliveryConstants.borderColor),
@@ -201,8 +200,8 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () => context.read<DeliveryBloc>().add(
-                      const LoadDeliveryDataEvent(),
-                    ),
+                          const LoadDeliveryDataEvent(),
+                        ),
                     child: const Text('Retry'),
                   ),
                 ],
@@ -293,7 +292,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
             children: [
               Text(label, style: DeliveryConstants.kpiLabel),
               const Spacer(),
-              Icon(icon, color: Colors.white.withValues(alpha: 0.8), size: 28),
+              Icon(icon, color: Colors.white.withOpacity(0.8), size: 28),
             ],
           ),
           const Spacer(),
@@ -507,9 +506,9 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                   // Driver markers
                   ...context.read<DeliveryBloc>().state is DeliveryLoaded
                       ? (context.read<DeliveryBloc>().state as DeliveryLoaded)
-                            .deliveryData
-                            .drivers
-                            .map((driver) => _buildDriverMarker(driver))
+                          .deliveryData
+                          .drivers
+                          .map((driver) => _buildDriverMarker(driver))
                       : [],
 
                   // Selected order route (if any)
@@ -547,7 +546,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
             border: Border.all(color: Colors.white, width: 3),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.2),
+                color: Colors.black.withOpacity(0.2),
                 blurRadius: 6,
                 offset: const Offset(0, 2),
               ),
@@ -708,7 +707,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
           color: isSelected
-              ? DeliveryConstants.statusInProgress.withValues(alpha: 0.1)
+              ? DeliveryConstants.statusInProgress.withOpacity(0.1)
               : DeliveryConstants.dividerColor,
           borderRadius: BorderRadius.circular(DeliveryConstants.radiusFull),
         ),
@@ -886,9 +885,8 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
       label: Text(label),
       style: ElevatedButton.styleFrom(
         backgroundColor: isPrimary ? const Color(0xFFF97316) : Colors.white,
-        foregroundColor: isPrimary
-            ? Colors.white
-            : DeliveryConstants.textPrimary,
+        foregroundColor:
+            isPrimary ? Colors.white : DeliveryConstants.textPrimary,
         side: isPrimary
             ? null
             : const BorderSide(color: DeliveryConstants.borderColor),
@@ -1005,7 +1003,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
               children: [
                 CircleAvatar(
                   radius: 20,
-                  backgroundColor: statusColor.withValues(alpha: 0.1),
+                  backgroundColor: statusColor.withOpacity(0.1),
                   child: Text(
                     driver.name[0],
                     style: TextStyle(
@@ -1209,7 +1207,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
+        color: color.withOpacity(0.1),
         borderRadius: BorderRadius.circular(DeliveryConstants.radiusSm),
       ),
       child: Text(
@@ -1439,9 +1437,8 @@ class _AssignDriverModalState extends State<_AssignDriverModal> {
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? DeliveryConstants.statusInProgress.withValues(
-                                alpha: 0.1,
-                              )
+                            ? DeliveryConstants.statusInProgress
+                                .withOpacity(0.1)
                             : DeliveryConstants.dividerColor,
                         borderRadius: BorderRadius.circular(
                           DeliveryConstants.radiusMd,
@@ -1459,7 +1456,7 @@ class _AssignDriverModalState extends State<_AssignDriverModal> {
                             radius: 16,
                             backgroundColor: _getDriverStatusColor(
                               driver.status,
-                            ).withValues(alpha: 0.1),
+                            ).withOpacity(0.1),
                             child: Text(
                               driver.name[0],
                               style: TextStyle(
@@ -1558,7 +1555,7 @@ class _MapGridPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.3)
+      ..color = Colors.white.withOpacity(0.3)
       ..strokeWidth = 1.0
       ..style = PaintingStyle.stroke;
 
@@ -1577,7 +1574,7 @@ class _MapGridPainter extends CustomPainter {
 
     // Draw some mock roads/paths
     final roadPaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.5)
+      ..color = Colors.white.withOpacity(0.5)
       ..strokeWidth = 3.0
       ..style = PaintingStyle.stroke;
 

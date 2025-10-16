@@ -81,9 +81,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
       child: LayoutBuilder(
         builder: (context, constraints) {
           // Content with max width 1440dp on ultra-wide
-          final maxWidth = context.isWide
-              ? AppSizes.maxContentWidth
-              : double.infinity;
+          final maxWidth =
+              context.isWide ? AppSizes.maxContentWidth : double.infinity;
 
           return Center(
             child: Container(
@@ -201,7 +200,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     const SizedBox(width: 8),
                     CircleAvatar(
                       radius: 18,
-                      backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+                      backgroundColor: AppColors.primary.withOpacity(0.1),
                       child: const Icon(
                         Icons.person,
                         size: 20,

@@ -35,7 +35,7 @@ class SummarySidebar extends StatelessWidget {
                   ),
                   decoration: BoxDecoration(
                     color: state.item.dineInAvailable
-                        ? const Color(0xFF10B981).withValues(alpha: 0.1)
+                        ? const Color(0xFF10B981).withOpacity(0.1)
                         : Colors.grey.shade200,
                     borderRadius: BorderRadius.circular(12),
                   ),

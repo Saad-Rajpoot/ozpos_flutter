@@ -235,7 +235,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [color.withValues(alpha: 0.1), Colors.white],
+                colors: [color.withOpacity(0.1), Colors.white],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -844,7 +844,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
               dotData: const FlDotData(show: false),
               belowBarData: BarAreaData(
                 show: true,
-                color: const Color(0xFF3B82F6).withValues(alpha: 0.2),
+                color: const Color(0xFF3B82F6).withOpacity(0.2),
               ),
             ),
           ],
@@ -1256,9 +1256,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
       width: 110,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
+        color: color.withOpacity(0.1),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
+        border: Border.all(color: color.withOpacity(0.3)),
       ),
       child: Column(
         children: [

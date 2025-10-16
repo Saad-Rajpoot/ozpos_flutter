@@ -18,7 +18,8 @@ class ComboLimitsEntity extends Equatable {
   // Stacking rules
   final bool allowStackingWithOtherPromos;
   final bool allowStackingWithItemDiscounts;
-  final List<String> excludeComboIds; // Cannot be combined with these specific combos
+  final List<String>
+      excludeComboIds; // Cannot be combined with these specific combos
 
   // Auto-apply behavior
   final bool autoApplyOnEligibility;
@@ -104,16 +105,16 @@ class ComboLimitsEntity extends Equatable {
   bool get hasCustomerLimit => maxPerCustomer != null;
   bool get hasDeviceLimit => maxPerDevice != null;
 
-  bool get hasAnyLimit => 
-    hasOrderLimit || hasDailyLimit || hasCustomerLimit || hasDeviceLimit;
+  bool get hasAnyLimit =>
+      hasOrderLimit || hasDailyLimit || hasCustomerLimit || hasDeviceLimit;
 
-  bool get hasStackingRestrictions => 
-    !allowStackingWithOtherPromos || 
-    !allowStackingWithItemDiscounts || 
-    excludeComboIds.isNotEmpty;
+  bool get hasStackingRestrictions =>
+      !allowStackingWithOtherPromos ||
+      !allowStackingWithItemDiscounts ||
+      excludeComboIds.isNotEmpty;
 
-  bool get hasBranchRestrictions => 
-    allowedBranchIds.isNotEmpty || excludedBranchIds.isNotEmpty;
+  bool get hasBranchRestrictions =>
+      allowedBranchIds.isNotEmpty || excludedBranchIds.isNotEmpty;
 
   String get limitsSummary {
     final parts = <String>[];
@@ -183,7 +184,8 @@ class ComboLimitsEntity extends Equatable {
 
     // Validate periods exist when needed
     if (maxPerCustomer != null && customerLimitPeriod == null) {
-      errors.add('Customer limit period is required when max per customer is set');
+      errors.add(
+          'Customer limit period is required when max per customer is set');
     }
 
     if (maxPerDevice != null && deviceLimitPeriod == null) {
@@ -196,7 +198,8 @@ class ComboLimitsEntity extends Equatable {
     }
 
     // Branch restrictions validation
-    final commonBranches = allowedBranchIds.toSet().intersection(excludedBranchIds.toSet());
+    final commonBranches =
+        allowedBranchIds.toSet().intersection(excludedBranchIds.toSet());
     if (commonBranches.isNotEmpty) {
       errors.add('Branches cannot be both allowed and excluded');
     }
@@ -296,10 +299,13 @@ class ComboLimitsEntity extends Equatable {
       customerLimitPeriod: customerLimitPeriod ?? this.customerLimitPeriod,
       maxPerDevice: maxPerDevice ?? this.maxPerDevice,
       deviceLimitPeriod: deviceLimitPeriod ?? this.deviceLimitPeriod,
-      allowStackingWithOtherPromos: allowStackingWithOtherPromos ?? this.allowStackingWithOtherPromos,
-      allowStackingWithItemDiscounts: allowStackingWithItemDiscounts ?? this.allowStackingWithItemDiscounts,
+      allowStackingWithOtherPromos:
+          allowStackingWithOtherPromos ?? this.allowStackingWithOtherPromos,
+      allowStackingWithItemDiscounts:
+          allowStackingWithItemDiscounts ?? this.allowStackingWithItemDiscounts,
       excludeComboIds: excludeComboIds ?? this.excludeComboIds,
-      autoApplyOnEligibility: autoApplyOnEligibility ?? this.autoApplyOnEligibility,
+      autoApplyOnEligibility:
+          autoApplyOnEligibility ?? this.autoApplyOnEligibility,
       showAsSuggestion: showAsSuggestion ?? this.showAsSuggestion,
       allowedBranchIds: allowedBranchIds ?? this.allowedBranchIds,
       excludedBranchIds: excludedBranchIds ?? this.excludedBranchIds,
