@@ -8,7 +8,8 @@ import 'menu_edit_state.dart';
 class MenuEditBloc extends Bloc<MenuEditEvent, MenuEditState> {
   final MenuRepository menuRepository;
 
-  MenuEditBloc({required this.menuRepository}) : super(MenuEditState.initial()) {
+  MenuEditBloc({required this.menuRepository})
+      : super(MenuEditState.initial()) {
     on<InitializeMenuEdit>(_onInitialize);
     on<LoadCategoriesAndBadges>(_onLoadCategoriesAndBadges);
     on<LoadAvailableItems>(_onLoadAvailableItems);
@@ -45,12 +46,13 @@ class MenuEditBloc extends Bloc<MenuEditEvent, MenuEditState> {
     on<DuplicateItem>(_onDuplicateItem);
   }
 
-  void _onInitialize(InitializeMenuEdit event, Emitter<MenuEditState> emit) async {
+  void _onInitialize(
+      InitializeMenuEdit event, Emitter<MenuEditState> emit) async {
     emit(state.copyWith(status: MenuEditStatus.loading));
-    
+
     final categoriesResult = await menuRepository.getMenuCategories();
     final itemsResult = await menuRepository.getMenuItems();
-    
+
     categoriesResult.fold(
       (failure) => emit(state.copyWith(
         status: MenuEditStatus.error,
@@ -65,7 +67,7 @@ class MenuEditBloc extends Bloc<MenuEditEvent, MenuEditState> {
           (items) {
             final item = event.existingItem ?? MenuItemEditEntity.empty();
             final validation = MenuEditState.validateItem(item);
-            
+
             emit(state.copyWith(
               status: MenuEditStatus.editing,
               item: item,
@@ -83,7 +85,8 @@ class MenuEditBloc extends Bloc<MenuEditEvent, MenuEditState> {
     );
   }
 
-  void _onLoadCategoriesAndBadges(LoadCategoriesAndBadges event, Emitter<MenuEditState> emit) async {
+  void _onLoadCategoriesAndBadges(
+      LoadCategoriesAndBadges event, Emitter<MenuEditState> emit) async {
     final result = await menuRepository.getMenuCategories();
     result.fold(
       (failure) => emit(state.copyWith(
@@ -98,7 +101,8 @@ class MenuEditBloc extends Bloc<MenuEditEvent, MenuEditState> {
     );
   }
 
-  void _onLoadAvailableItems(LoadAvailableItems event, Emitter<MenuEditState> emit) async {
+  void _onLoadAvailableItems(
+      LoadAvailableItems event, Emitter<MenuEditState> emit) async {
     final result = await menuRepository.getMenuItems();
     result.fold(
       (failure) => emit(state.copyWith(
@@ -112,52 +116,63 @@ class MenuEditBloc extends Bloc<MenuEditEvent, MenuEditState> {
   void _onUpdateName(UpdateItemName event, Emitter<MenuEditState> emit) {
     final updatedItem = state.item.copyWith(name: event.name);
     final validation = MenuEditState.validateItem(updatedItem);
-    emit(state.copyWith(item: updatedItem, validation: validation, hasUnsavedChanges: true));
+    emit(state.copyWith(
+        item: updatedItem, validation: validation, hasUnsavedChanges: true));
   }
 
-  void _onUpdateDescription(UpdateItemDescription event, Emitter<MenuEditState> emit) {
+  void _onUpdateDescription(
+      UpdateItemDescription event, Emitter<MenuEditState> emit) {
     final updatedItem = state.item.copyWith(description: event.description);
     final validation = MenuEditState.validateItem(updatedItem);
-    emit(state.copyWith(item: updatedItem, validation: validation, hasUnsavedChanges: true));
+    emit(state.copyWith(
+        item: updatedItem, validation: validation, hasUnsavedChanges: true));
   }
 
-  void _onUpdateCategory(UpdateItemCategory event, Emitter<MenuEditState> emit) {
+  void _onUpdateCategory(
+      UpdateItemCategory event, Emitter<MenuEditState> emit) {
     final updatedItem = state.item.copyWith(categoryId: event.categoryId);
     final validation = MenuEditState.validateItem(updatedItem);
-    emit(state.copyWith(item: updatedItem, validation: validation, hasUnsavedChanges: true));
+    emit(state.copyWith(
+        item: updatedItem, validation: validation, hasUnsavedChanges: true));
   }
 
   void _onUpdateImageUrl(UpdateImageUrl event, Emitter<MenuEditState> emit) {
-    final updatedItem = state.item.copyWith(imageUrl: event.imageUrl, imageFile: null);
+    final updatedItem =
+        state.item.copyWith(imageUrl: event.imageUrl, imageFile: null);
     final validation = MenuEditState.validateItem(updatedItem);
-    emit(state.copyWith(item: updatedItem, validation: validation, hasUnsavedChanges: true));
+    emit(state.copyWith(
+        item: updatedItem, validation: validation, hasUnsavedChanges: true));
   }
 
   void _onUpdateImageFile(UpdateImageFile event, Emitter<MenuEditState> emit) {
-    final updatedItem = state.item.copyWith(imageFile: event.imageFile, imageUrl: null);
+    final updatedItem =
+        state.item.copyWith(imageFile: event.imageFile, imageUrl: null);
     final validation = MenuEditState.validateItem(updatedItem);
-    emit(state.copyWith(item: updatedItem, validation: validation, hasUnsavedChanges: true));
+    emit(state.copyWith(
+        item: updatedItem, validation: validation, hasUnsavedChanges: true));
   }
 
   void _onRemoveImage(RemoveImage event, Emitter<MenuEditState> emit) {
     final updatedItem = state.item.copyWith(imageUrl: null, imageFile: null);
     final validation = MenuEditState.validateItem(updatedItem);
-    emit(state.copyWith(item: updatedItem, validation: validation, hasUnsavedChanges: true));
+    emit(state.copyWith(
+        item: updatedItem, validation: validation, hasUnsavedChanges: true));
   }
 
   void _onToggleBadge(ToggleBadge event, Emitter<MenuEditState> emit) {
     final currentBadges = List<BadgeEntity>.from(state.item.badges);
     final exists = currentBadges.any((b) => b.id == event.badge.id);
-    
+
     if (exists) {
       currentBadges.removeWhere((b) => b.id == event.badge.id);
     } else {
       currentBadges.add(event.badge);
     }
-    
+
     final updatedItem = state.item.copyWith(badges: currentBadges);
     final validation = MenuEditState.validateItem(updatedItem);
-    emit(state.copyWith(item: updatedItem, validation: validation, hasUnsavedChanges: true));
+    emit(state.copyWith(
+        item: updatedItem, validation: validation, hasUnsavedChanges: true));
   }
 
   void _onSetHasSizes(SetHasSizes event, Emitter<MenuEditState> emit) {
@@ -166,23 +181,25 @@ class MenuEditBloc extends Bloc<MenuEditEvent, MenuEditState> {
       sizes: event.hasSizes ? state.item.sizes : [],
     );
     final validation = MenuEditState.validateItem(updatedItem);
-    emit(state.copyWith(item: updatedItem, validation: validation, hasUnsavedChanges: true));
+    emit(state.copyWith(
+        item: updatedItem, validation: validation, hasUnsavedChanges: true));
   }
 
   void _onAddSize(AddSize event, Emitter<MenuEditState> emit) {
     final newSizes = List<SizeEditEntity>.from(state.item.sizes);
     final isFirstSize = newSizes.isEmpty;
-    
+
     newSizes.add(SizeEditEntity(
       name: '',
       dineInPrice: 0.0,
       isDefault: isFirstSize,
       addOnItems: const [],
     ));
-    
+
     final updatedItem = state.item.copyWith(sizes: newSizes);
     final validation = MenuEditState.validateItem(updatedItem);
-    emit(state.copyWith(item: updatedItem, validation: validation, hasUnsavedChanges: true));
+    emit(state.copyWith(
+        item: updatedItem, validation: validation, hasUnsavedChanges: true));
   }
 
   void _onUpdateSize(UpdateSize event, Emitter<MenuEditState> emit) {
@@ -191,7 +208,8 @@ class MenuEditBloc extends Bloc<MenuEditEvent, MenuEditState> {
       newSizes[event.index] = event.size;
       final updatedItem = state.item.copyWith(sizes: newSizes);
       final validation = MenuEditState.validateItem(updatedItem);
-      emit(state.copyWith(item: updatedItem, validation: validation, hasUnsavedChanges: true));
+      emit(state.copyWith(
+          item: updatedItem, validation: validation, hasUnsavedChanges: true));
     }
   }
 
@@ -205,7 +223,8 @@ class MenuEditBloc extends Bloc<MenuEditEvent, MenuEditState> {
       }
       final updatedItem = state.item.copyWith(sizes: newSizes);
       final validation = MenuEditState.validateItem(updatedItem);
-      emit(state.copyWith(item: updatedItem, validation: validation, hasUnsavedChanges: true));
+      emit(state.copyWith(
+          item: updatedItem, validation: validation, hasUnsavedChanges: true));
     }
   }
 
@@ -217,63 +236,91 @@ class MenuEditBloc extends Bloc<MenuEditEvent, MenuEditState> {
       }
       final updatedItem = state.item.copyWith(sizes: newSizes);
       final validation = MenuEditState.validateItem(updatedItem);
-      emit(state.copyWith(item: updatedItem, validation: validation, hasUnsavedChanges: true));
+      emit(state.copyWith(
+          item: updatedItem, validation: validation, hasUnsavedChanges: true));
     }
   }
 
-  void _onAddAddOnItemToSize(AddAddOnItemToSize event, Emitter<MenuEditState> emit) {
+  void _onAddAddOnItemToSize(
+      AddAddOnItemToSize event, Emitter<MenuEditState> emit) {
     final newSizes = List<SizeEditEntity>.from(state.item.sizes);
     if (event.sizeIndex >= 0 && event.sizeIndex < newSizes.length) {
-      final currentAddOns = List<AddOnItemEditEntity>.from(newSizes[event.sizeIndex].addOnItems);
-      final exists = currentAddOns.any((item) => item.itemId == event.addOnItem.itemId);
+      final currentAddOns =
+          List<AddOnItemEditEntity>.from(newSizes[event.sizeIndex].addOnItems);
+      final exists =
+          currentAddOns.any((item) => item.itemId == event.addOnItem.itemId);
       if (!exists) {
         currentAddOns.add(event.addOnItem);
-        newSizes[event.sizeIndex] = newSizes[event.sizeIndex].copyWith(addOnItems: currentAddOns);
+        newSizes[event.sizeIndex] =
+            newSizes[event.sizeIndex].copyWith(addOnItems: currentAddOns);
         final updatedItem = state.item.copyWith(sizes: newSizes);
         final validation = MenuEditState.validateItem(updatedItem);
-        emit(state.copyWith(item: updatedItem, validation: validation, hasUnsavedChanges: true));
+        emit(state.copyWith(
+            item: updatedItem,
+            validation: validation,
+            hasUnsavedChanges: true));
       }
     }
   }
 
-  void _onRemoveAddOnItemFromSize(RemoveAddOnItemFromSize event, Emitter<MenuEditState> emit) {
+  void _onRemoveAddOnItemFromSize(
+      RemoveAddOnItemFromSize event, Emitter<MenuEditState> emit) {
     final newSizes = List<SizeEditEntity>.from(state.item.sizes);
     if (event.sizeIndex >= 0 && event.sizeIndex < newSizes.length) {
-      final currentAddOns = List<AddOnItemEditEntity>.from(newSizes[event.sizeIndex].addOnItems);
+      final currentAddOns =
+          List<AddOnItemEditEntity>.from(newSizes[event.sizeIndex].addOnItems);
       currentAddOns.removeWhere((item) => item.itemId == event.itemId);
-      newSizes[event.sizeIndex] = newSizes[event.sizeIndex].copyWith(addOnItems: currentAddOns);
+      newSizes[event.sizeIndex] =
+          newSizes[event.sizeIndex].copyWith(addOnItems: currentAddOns);
       final updatedItem = state.item.copyWith(sizes: newSizes);
       final validation = MenuEditState.validateItem(updatedItem);
-      emit(state.copyWith(item: updatedItem, validation: validation, hasUnsavedChanges: true));
+      emit(state.copyWith(
+          item: updatedItem, validation: validation, hasUnsavedChanges: true));
     }
   }
 
-  void _onUpdateAddOnItemPrice(UpdateAddOnItemPrice event, Emitter<MenuEditState> emit) {
+  void _onUpdateAddOnItemPrice(
+      UpdateAddOnItemPrice event, Emitter<MenuEditState> emit) {
     final newSizes = List<SizeEditEntity>.from(state.item.sizes);
     if (event.sizeIndex >= 0 && event.sizeIndex < newSizes.length) {
-      final currentAddOns = List<AddOnItemEditEntity>.from(newSizes[event.sizeIndex].addOnItems);
-      final itemIndex = currentAddOns.indexWhere((item) => item.itemId == event.itemId);
+      final currentAddOns =
+          List<AddOnItemEditEntity>.from(newSizes[event.sizeIndex].addOnItems);
+      final itemIndex =
+          currentAddOns.indexWhere((item) => item.itemId == event.itemId);
       if (itemIndex != -1) {
-        currentAddOns[itemIndex] = currentAddOns[itemIndex].copyWith(price: event.price);
-        newSizes[event.sizeIndex] = newSizes[event.sizeIndex].copyWith(addOnItems: currentAddOns);
+        currentAddOns[itemIndex] =
+            currentAddOns[itemIndex].copyWith(price: event.price);
+        newSizes[event.sizeIndex] =
+            newSizes[event.sizeIndex].copyWith(addOnItems: currentAddOns);
         final updatedItem = state.item.copyWith(sizes: newSizes);
         final validation = MenuEditState.validateItem(updatedItem);
-        emit(state.copyWith(item: updatedItem, validation: validation, hasUnsavedChanges: true));
+        emit(state.copyWith(
+            item: updatedItem,
+            validation: validation,
+            hasUnsavedChanges: true));
       }
     }
   }
 
-  void _onToggleAddOnItemEnabled(ToggleAddOnItemEnabled event, Emitter<MenuEditState> emit) {
+  void _onToggleAddOnItemEnabled(
+      ToggleAddOnItemEnabled event, Emitter<MenuEditState> emit) {
     final newSizes = List<SizeEditEntity>.from(state.item.sizes);
     if (event.sizeIndex >= 0 && event.sizeIndex < newSizes.length) {
-      final currentAddOns = List<AddOnItemEditEntity>.from(newSizes[event.sizeIndex].addOnItems);
-      final itemIndex = currentAddOns.indexWhere((item) => item.itemId == event.itemId);
+      final currentAddOns =
+          List<AddOnItemEditEntity>.from(newSizes[event.sizeIndex].addOnItems);
+      final itemIndex =
+          currentAddOns.indexWhere((item) => item.itemId == event.itemId);
       if (itemIndex != -1) {
-        currentAddOns[itemIndex] = currentAddOns[itemIndex].copyWith(isEnabled: !currentAddOns[itemIndex].isEnabled);
-        newSizes[event.sizeIndex] = newSizes[event.sizeIndex].copyWith(addOnItems: currentAddOns);
+        currentAddOns[itemIndex] = currentAddOns[itemIndex]
+            .copyWith(isEnabled: !currentAddOns[itemIndex].isEnabled);
+        newSizes[event.sizeIndex] =
+            newSizes[event.sizeIndex].copyWith(addOnItems: currentAddOns);
         final updatedItem = state.item.copyWith(sizes: newSizes);
         final validation = MenuEditState.validateItem(updatedItem);
-        emit(state.copyWith(item: updatedItem, validation: validation, hasUnsavedChanges: true));
+        emit(state.copyWith(
+            item: updatedItem,
+            validation: validation,
+            hasUnsavedChanges: true));
       }
     }
   }
@@ -281,7 +328,8 @@ class MenuEditBloc extends Bloc<MenuEditEvent, MenuEditState> {
   void _onUpdateBasePrice(UpdateBasePrice event, Emitter<MenuEditState> emit) {
     final updatedItem = state.item.copyWith(basePrice: event.basePrice);
     final validation = MenuEditState.validateItem(updatedItem);
-    emit(state.copyWith(item: updatedItem, validation: validation, hasUnsavedChanges: true));
+    emit(state.copyWith(
+        item: updatedItem, validation: validation, hasUnsavedChanges: true));
   }
 
   void _onAddUpsellItem(AddUpsellItem event, Emitter<MenuEditState> emit) {
@@ -290,16 +338,19 @@ class MenuEditBloc extends Bloc<MenuEditEvent, MenuEditState> {
       currentUpsells.add(event.itemId);
       final updatedItem = state.item.copyWith(upsellItemIds: currentUpsells);
       final validation = MenuEditState.validateItem(updatedItem);
-      emit(state.copyWith(item: updatedItem, validation: validation, hasUnsavedChanges: true));
+      emit(state.copyWith(
+          item: updatedItem, validation: validation, hasUnsavedChanges: true));
     }
   }
 
-  void _onRemoveUpsellItem(RemoveUpsellItem event, Emitter<MenuEditState> emit) {
+  void _onRemoveUpsellItem(
+      RemoveUpsellItem event, Emitter<MenuEditState> emit) {
     final currentUpsells = List<String>.from(state.item.upsellItemIds);
     currentUpsells.remove(event.itemId);
     final updatedItem = state.item.copyWith(upsellItemIds: currentUpsells);
     final validation = MenuEditState.validateItem(updatedItem);
-    emit(state.copyWith(item: updatedItem, validation: validation, hasUnsavedChanges: true));
+    emit(state.copyWith(
+        item: updatedItem, validation: validation, hasUnsavedChanges: true));
   }
 
   void _onAddRelatedItem(AddRelatedItem event, Emitter<MenuEditState> emit) {
@@ -308,57 +359,74 @@ class MenuEditBloc extends Bloc<MenuEditEvent, MenuEditState> {
       currentRelated.add(event.itemId);
       final updatedItem = state.item.copyWith(relatedItemIds: currentRelated);
       final validation = MenuEditState.validateItem(updatedItem);
-      emit(state.copyWith(item: updatedItem, validation: validation, hasUnsavedChanges: true));
+      emit(state.copyWith(
+          item: updatedItem, validation: validation, hasUnsavedChanges: true));
     }
   }
 
-  void _onRemoveRelatedItem(RemoveRelatedItem event, Emitter<MenuEditState> emit) {
+  void _onRemoveRelatedItem(
+      RemoveRelatedItem event, Emitter<MenuEditState> emit) {
     final currentRelated = List<String>.from(state.item.relatedItemIds);
     currentRelated.remove(event.itemId);
     final updatedItem = state.item.copyWith(relatedItemIds: currentRelated);
     final validation = MenuEditState.validateItem(updatedItem);
-    emit(state.copyWith(item: updatedItem, validation: validation, hasUnsavedChanges: true));
+    emit(state.copyWith(
+        item: updatedItem, validation: validation, hasUnsavedChanges: true));
   }
 
-  void _onUpdateChannelAvailability(UpdateChannelAvailability event, Emitter<MenuEditState> emit) {
+  void _onUpdateChannelAvailability(
+      UpdateChannelAvailability event, Emitter<MenuEditState> emit) {
     final updatedItem = state.item.copyWith(
       dineInAvailable: event.dineInAvailable ?? state.item.dineInAvailable,
-      takeawayAvailable: event.takeawayAvailable ?? state.item.takeawayAvailable,
-      deliveryAvailable: event.deliveryAvailable ?? state.item.deliveryAvailable,
+      takeawayAvailable:
+          event.takeawayAvailable ?? state.item.takeawayAvailable,
+      deliveryAvailable:
+          event.deliveryAvailable ?? state.item.deliveryAvailable,
     );
     final validation = MenuEditState.validateItem(updatedItem);
-    emit(state.copyWith(item: updatedItem, validation: validation, hasUnsavedChanges: true));
+    emit(state.copyWith(
+        item: updatedItem, validation: validation, hasUnsavedChanges: true));
   }
 
-  void _onUpdateKitchenSettings(UpdateKitchenSettings event, Emitter<MenuEditState> emit) {
+  void _onUpdateKitchenSettings(
+      UpdateKitchenSettings event, Emitter<MenuEditState> emit) {
     final updatedItem = state.item.copyWith(
       kitchenStation: event.kitchenStation ?? state.item.kitchenStation,
       prepTimeMinutes: event.prepTimeMinutes ?? state.item.prepTimeMinutes,
-      specialInstructions: event.specialInstructions ?? state.item.specialInstructions,
+      specialInstructions:
+          event.specialInstructions ?? state.item.specialInstructions,
     );
     final validation = MenuEditState.validateItem(updatedItem);
-    emit(state.copyWith(item: updatedItem, validation: validation, hasUnsavedChanges: true));
+    emit(state.copyWith(
+        item: updatedItem, validation: validation, hasUnsavedChanges: true));
   }
 
-  void _onUpdateTaxCategory(UpdateTaxCategory event, Emitter<MenuEditState> emit) {
+  void _onUpdateTaxCategory(
+      UpdateTaxCategory event, Emitter<MenuEditState> emit) {
     final updatedItem = state.item.copyWith(taxCategory: event.taxCategory);
     final validation = MenuEditState.validateItem(updatedItem);
-    emit(state.copyWith(item: updatedItem, validation: validation, hasUnsavedChanges: true));
+    emit(state.copyWith(
+        item: updatedItem, validation: validation, hasUnsavedChanges: true));
   }
 
   void _onUpdateSKU(UpdateSKU event, Emitter<MenuEditState> emit) {
     final updatedItem = state.item.copyWith(sku: event.sku);
     final validation = MenuEditState.validateItem(updatedItem);
-    emit(state.copyWith(item: updatedItem, validation: validation, hasUnsavedChanges: true));
+    emit(state.copyWith(
+        item: updatedItem, validation: validation, hasUnsavedChanges: true));
   }
 
-  void _onToggleStockTracking(ToggleStockTracking event, Emitter<MenuEditState> emit) {
-    final updatedItem = state.item.copyWith(stockTracking: !state.item.stockTracking);
+  void _onToggleStockTracking(
+      ToggleStockTracking event, Emitter<MenuEditState> emit) {
+    final updatedItem =
+        state.item.copyWith(stockTracking: !state.item.stockTracking);
     final validation = MenuEditState.validateItem(updatedItem);
-    emit(state.copyWith(item: updatedItem, validation: validation, hasUnsavedChanges: true));
+    emit(state.copyWith(
+        item: updatedItem, validation: validation, hasUnsavedChanges: true));
   }
 
-  void _onUpdateDietaryPreferences(UpdateDietaryPreferences event, Emitter<MenuEditState> emit) {
+  void _onUpdateDietaryPreferences(
+      UpdateDietaryPreferences event, Emitter<MenuEditState> emit) {
     final updatedItem = state.item.copyWith(
       isVegetarian: event.isVegetarian ?? state.item.isVegetarian,
       isVegan: event.isVegan ?? state.item.isVegan,
@@ -368,7 +436,8 @@ class MenuEditBloc extends Bloc<MenuEditEvent, MenuEditState> {
       isHalal: event.isHalal ?? state.item.isHalal,
     );
     final validation = MenuEditState.validateItem(updatedItem);
-    emit(state.copyWith(item: updatedItem, validation: validation, hasUnsavedChanges: true));
+    emit(state.copyWith(
+        item: updatedItem, validation: validation, hasUnsavedChanges: true));
   }
 
   void _onNavigateToStep(NavigateToStep event, Emitter<MenuEditState> emit) {
@@ -380,14 +449,16 @@ class MenuEditBloc extends Bloc<MenuEditEvent, MenuEditState> {
   void _onSaveDraft(SaveDraft event, Emitter<MenuEditState> emit) async {
     emit(state.copyWith(status: MenuEditStatus.saving));
     await Future.delayed(const Duration(milliseconds: 500));
-    emit(state.copyWith(status: MenuEditStatus.saved, hasUnsavedChanges: false));
+    emit(
+        state.copyWith(status: MenuEditStatus.saved, hasUnsavedChanges: false));
   }
 
   void _onSaveItem(SaveItem event, Emitter<MenuEditState> emit) async {
     if (state.validation.isValid) {
       emit(state.copyWith(status: MenuEditStatus.saving));
       await Future.delayed(const Duration(seconds: 1));
-      emit(state.copyWith(status: MenuEditStatus.saved, hasUnsavedChanges: false));
+      emit(state.copyWith(
+          status: MenuEditStatus.saved, hasUnsavedChanges: false));
     } else {
       emit(state.copyWith(
         status: MenuEditStatus.error,
@@ -399,7 +470,7 @@ class MenuEditBloc extends Bloc<MenuEditEvent, MenuEditState> {
   void _onDuplicateItem(DuplicateItem event, Emitter<MenuEditState> emit) {
     final duplicatedItem = state.item.copyWith(
       id: null,
-      name: '${state.item.name} (Copy)',
+      name: state.item.name,
     );
     final validation = MenuEditState.validateItem(duplicatedItem);
     emit(state.copyWith(
@@ -413,13 +484,44 @@ class MenuEditBloc extends Bloc<MenuEditEvent, MenuEditState> {
   List<BadgeEntity> _getMockBadges() {
     return const [
       BadgeEntity(id: 'new', label: 'New', color: '#4CAF50', isSystem: true),
-      BadgeEntity(id: 'popular', label: 'Popular', color: '#FF9800', isSystem: true),
-      BadgeEntity(id: 'spicy', label: 'Spicy', color: '#F44336', icon: '🌶️', isSystem: false),
-      BadgeEntity(id: 'vegan', label: 'Vegan', color: '#8BC34A', icon: '🌱', isSystem: false),
-      BadgeEntity(id: 'vegetarian', label: 'Vegetarian', color: '#8BC34A', icon: '🥗', isSystem: false),
-      BadgeEntity(id: 'gluten-free', label: 'Gluten Free', color: '#2196F3', icon: '🌾', isSystem: false),
-      BadgeEntity(id: 'halal', label: 'Halal', color: '#009688', icon: '☪️', isSystem: false),
-      BadgeEntity(id: 'best-seller', label: 'Best Seller', color: '#FFD700', icon: '⭐', isSystem: true),
+      BadgeEntity(
+          id: 'popular', label: 'Popular', color: '#FF9800', isSystem: true),
+      BadgeEntity(
+          id: 'spicy',
+          label: 'Spicy',
+          color: '#F44336',
+          icon: '🌶️',
+          isSystem: false),
+      BadgeEntity(
+          id: 'vegan',
+          label: 'Vegan',
+          color: '#8BC34A',
+          icon: '🌱',
+          isSystem: false),
+      BadgeEntity(
+          id: 'vegetarian',
+          label: 'Vegetarian',
+          color: '#8BC34A',
+          icon: '🥗',
+          isSystem: false),
+      BadgeEntity(
+          id: 'gluten-free',
+          label: 'Gluten Free',
+          color: '#2196F3',
+          icon: '🌾',
+          isSystem: false),
+      BadgeEntity(
+          id: 'halal',
+          label: 'Halal',
+          color: '#009688',
+          icon: '☪️',
+          isSystem: false),
+      BadgeEntity(
+          id: 'best-seller',
+          label: 'Best Seller',
+          color: '#FFD700',
+          icon: '⭐',
+          isSystem: true),
     ];
   }
 

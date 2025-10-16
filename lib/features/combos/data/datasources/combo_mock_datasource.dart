@@ -215,4 +215,58 @@ class ComboMockDataSourceImpl implements ComboDataSource {
       }
     }
   }
+
+  @override
+  Future<ComboEntity> createCombo(ComboEntity combo) {
+    return Future.value(combo);
+  }
+
+  @override
+  Future<ComboEntity> updateCombo(ComboEntity combo) {
+    return Future.value(combo);
+  }
+
+  @override
+  Future<void> deleteCombo(String comboId) {
+    return Future.value();
+  }
+
+  @override
+  Future<ComboEntity> duplicateCombo(String comboId, {String? newName}) {
+    return Future.value(ComboEntity(
+        id: comboId,
+        name: newName ?? '',
+        description: '',
+        status: ComboStatus.active,
+        slots: [],
+        pricing: ComboPricingEntity(
+            mode: PricingMode.fixed,
+            fixedPrice: 0,
+            percentOff: 0,
+            amountOff: 0,
+            mixCategoryId: '',
+            mixCategoryName: '',
+            mixQuantity: 0,
+            mixPrice: 0,
+            mixPercentOff: 0,
+            totalIfSeparate: 0,
+            finalPrice: 0,
+            savings: 0,
+            calculatedAt: DateTime.now()),
+        availability: ComboAvailabilityEntity(
+            startDate: DateTime.now(),
+            endDate: DateTime.now(),
+            daysOfWeek: [],
+            posSystem: false,
+            onlineMenu: false),
+        limits: ComboLimitsEntity(
+            maxPerCustomer: 0,
+            customerLimitPeriod: Duration.zero,
+            maxPerOrder: 0,
+            allowStackingWithOtherPromos: false,
+            allowStackingWithItemDiscounts: false),
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+        hasUnsavedChanges: false));
+  }
 }

@@ -39,6 +39,10 @@ class AppConstants {
   static const String getComboLimitsEndpoint = '/combos/limits';
   static const String getComboOptionsEndpoint = '/combos/options';
   static const String getComboPricingEndpoint = '/combos/pricing';
+  static const String createComboEndpoint = '/combos';
+  static const String updateComboEndpoint = '/combos';
+  static const String deleteComboEndpoint = '/combos';
+  static const String duplicateComboEndpoint = '/combos/duplicate';
 
   // Reservation endpoints
   static const String getReservationsEndpoint = '/reservations';

@@ -22,38 +22,38 @@ class RefreshCombos extends ComboManagementEvent {
 }
 
 // Combo CRUD events
-class CreateCombo extends ComboManagementEvent {
+class CreateComboEvent extends ComboManagementEvent {
   final ComboEntity combo;
 
-  const CreateCombo({required this.combo});
+  const CreateComboEvent({required this.combo});
 
   @override
   List<Object?> get props => [combo];
 }
 
-class UpdateCombo extends ComboManagementEvent {
+class UpdateComboEvent extends ComboManagementEvent {
   final ComboEntity combo;
 
-  const UpdateCombo({required this.combo});
+  const UpdateComboEvent({required this.combo});
 
   @override
   List<Object?> get props => [combo];
 }
 
-class DeleteCombo extends ComboManagementEvent {
+class DeleteComboEvent extends ComboManagementEvent {
   final String comboId;
 
-  const DeleteCombo({required this.comboId});
+  const DeleteComboEvent({required this.comboId});
 
   @override
   List<Object?> get props => [comboId];
 }
 
-class DuplicateCombo extends ComboManagementEvent {
+class DuplicateComboEvent extends ComboManagementEvent {
   final String comboId;
   final String? newName;
 
-  const DuplicateCombo({required this.comboId, this.newName});
+  const DuplicateComboEvent({required this.comboId, this.newName});
 
   @override
   List<Object?> get props => [comboId, newName];

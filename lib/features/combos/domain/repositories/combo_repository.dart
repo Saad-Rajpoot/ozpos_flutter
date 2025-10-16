@@ -26,4 +26,24 @@ abstract class ComboRepository {
 
   /// Get combo pricing data
   Future<Either<Failure, List<ComboPricingEntity>>> getComboPricing();
+
+  /// Create a new combo
+  Future<Either<Failure, ComboEntity>> createCombo(ComboEntity combo);
+
+  /// Update an existing combo
+  Future<Either<Failure, ComboEntity>> updateCombo(ComboEntity combo);
+
+  /// Delete a combo
+  Future<Either<Failure, void>> deleteCombo(String comboId);
+
+  /// Duplicate a combo
+  Future<Either<Failure, ComboEntity>> duplicateCombo(String comboId,
+      {String? newName});
+
+  /// Validate a combo
+  Future<Either<Failure, List<String>>> validateCombo(ComboEntity combo);
+
+  /// Calculate pricing for a combo
+  Future<Either<Failure, ComboPricingEntity>> calculatePricing(
+      ComboEntity combo);
 }

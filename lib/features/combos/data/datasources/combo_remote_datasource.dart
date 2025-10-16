@@ -19,7 +19,7 @@ class ComboRemoteDataSourceImpl implements ComboDataSource {
   final ApiClient _apiClient;
 
   ComboRemoteDataSourceImpl({required ApiClient apiClient})
-    : _apiClient = apiClient;
+      : _apiClient = apiClient;
 
   @override
   Future<List<ComboEntity>> getCombos() async {
@@ -102,6 +102,54 @@ class ComboRemoteDataSourceImpl implements ComboDataSource {
           .toList();
     } catch (e) {
       throw ServerException(message: 'Failed to fetch combo pricing');
+    }
+  }
+
+  @override
+  Future<ComboEntity> createCombo(ComboEntity combo) async {
+    try {
+      final response = await _apiClient.post(
+        AppConstants.createComboEndpoint,
+        data: ComboModel.fromEntity(combo).toJson(),
+      );
+      return ComboModel.fromJson(response.data['data']).toEntity();
+    } catch (e) {
+      throw ServerException(message: 'Failed to create combo');
+    }
+  }
+
+  @override
+  Future<ComboEntity> updateCombo(ComboEntity combo) async {
+    try {
+      final response = await _apiClient.put(
+        '${AppConstants.updateComboEndpoint}/${combo.id}',
+        data: ComboModel.fromEntity(combo).toJson(),
+      );
+      return ComboModel.fromJson(response.data['data']).toEntity();
+    } catch (e) {
+      throw ServerException(message: 'Failed to update combo');
+    }
+  }
+
+  @override
+  Future<void> deleteCombo(String comboId) async {
+    try {
+      await _apiClient.delete('${AppConstants.deleteComboEndpoint}/$comboId');
+    } catch (e) {
+      throw ServerException(message: 'Failed to delete combo');
+    }
+  }
+
+  @override
+  Future<ComboEntity> duplicateCombo(String comboId, {String? newName}) async {
+    try {
+      final response = await _apiClient.post(
+        '${AppConstants.duplicateComboEndpoint}/$comboId',
+        data: {'newName': newName},
+      );
+      return ComboModel.fromJson(response.data['data']).toEntity();
+    } catch (e) {
+      throw ServerException(message: 'Failed to duplicate combo');
     }
   }
 }

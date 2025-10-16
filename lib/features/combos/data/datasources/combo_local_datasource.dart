@@ -111,4 +111,39 @@ class ComboLocalDataSourceImpl implements ComboDataSource {
       );
     }
   }
+
+  @override
+  Future<ComboEntity> createCombo(ComboEntity combo) {
+    return database
+        .insert('combos', ComboModel.fromEntity(combo).toJson())
+        .then((value) =>
+            ComboModel.fromJson(value as Map<String, dynamic>).toEntity());
+  }
+
+  @override
+  Future<ComboEntity> updateCombo(ComboEntity combo) {
+    return database.update('combos', ComboModel.fromEntity(combo).toJson(),
+        where: 'id = ?',
+        whereArgs: [
+          combo.id
+        ]).then((value) =>
+        ComboModel.fromJson(value as Map<String, dynamic>).toEntity());
+  }
+
+  @override
+  Future<void> deleteCombo(String comboId) {
+    return database.delete('combos', where: 'id = ?', whereArgs: [comboId]);
+  }
+
+  @override
+  Future<ComboEntity> duplicateCombo(String comboId, {String? newName}) {
+    return database
+        .query('combos', where: 'id = ?', whereArgs: [comboId])
+        .then((value) =>
+            ComboModel.fromJson(value.first as Map<String, dynamic>).toEntity())
+        .then((combo) => database
+            .insert('combos', ComboModel.fromEntity(combo).toJson())
+            .then((value) =>
+                ComboModel.fromJson(value as Map<String, dynamic>).toEntity()));
+  }
 }

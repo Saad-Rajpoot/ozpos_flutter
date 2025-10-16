@@ -24,4 +24,16 @@ abstract class ComboDataSource {
 
   /// Get combo pricing data
   Future<List<ComboPricingEntity>> getComboPricing();
+
+  /// Create a new combo
+  Future<ComboEntity> createCombo(ComboEntity combo);
+
+  /// Update an existing combo
+  Future<ComboEntity> updateCombo(ComboEntity combo);
+
+  /// Delete a combo
+  Future<void> deleteCombo(String comboId);
+
+  /// Duplicate a combo
+  Future<ComboEntity> duplicateCombo(String comboId, {String? newName});
 }

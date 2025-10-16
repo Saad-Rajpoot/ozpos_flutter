@@ -436,7 +436,9 @@ class _ComboDashboardScreenState extends State<ComboDashboardScreen> {
   }
 
   void _duplicateCombo(BuildContext context, String comboId) {
-    context.read<ComboManagementBloc>().add(DuplicateCombo(comboId: comboId));
+    context
+        .read<ComboManagementBloc>()
+        .add(DuplicateComboEvent(comboId: comboId));
   }
 
   void _toggleComboVisibility(BuildContext context, ComboEntity combo) {
@@ -466,7 +468,7 @@ class _ComboDashboardScreenState extends State<ComboDashboardScreen> {
             onPressed: () {
               Navigator.of(context).pop();
               context.read<ComboManagementBloc>().add(
-                    DeleteCombo(comboId: comboId),
+                    DeleteComboEvent(comboId: comboId),
                   );
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),

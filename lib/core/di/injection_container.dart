@@ -2,6 +2,7 @@ import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:uuid/uuid.dart';
 
 import '../config/app_config.dart';
 import '../network/api_client.dart';
@@ -74,6 +75,11 @@ import '../../features/combos/data/datasources/combo_remote_datasource.dart';
 import '../../features/combos/data/repositories/combo_repository_impl.dart';
 import '../../features/combos/domain/repositories/combo_repository.dart';
 import '../../features/combos/domain/usecases/get_combos.dart';
+import '../../features/combos/domain/usecases/create_combo.dart';
+import '../../features/combos/domain/usecases/update_combo.dart';
+import '../../features/combos/domain/usecases/delete_combo.dart';
+import '../../features/combos/domain/usecases/validate_combo.dart';
+import '../../features/combos/domain/usecases/calculate_pricing.dart';
 
 final sl = GetIt.instance;
 
@@ -212,9 +218,22 @@ Future<void> _initCombos(GetIt sl) async {
 
   // Use cases
   sl.registerLazySingleton(() => GetCombos(sl()));
+  sl.registerLazySingleton(() => CreateCombo(repository: sl()));
+  sl.registerLazySingleton(() => UpdateCombo(repository: sl()));
+  sl.registerLazySingleton(() => DeleteCombo(repository: sl()));
+  sl.registerLazySingleton(() => ValidateCombo(repository: sl()));
+  sl.registerLazySingleton(() => CalculatePricing(repository: sl()));
 
   // BLoC (Factory - new instance each time)
-  sl.registerFactory(() => ComboManagementBloc(getCombos: sl()));
+  sl.registerFactory(() => ComboManagementBloc(
+        uuid: const Uuid(),
+        getCombos: sl(),
+        createCombo: sl(),
+        updateCombo: sl(),
+        deleteCombo: sl(),
+        validateCombo: sl(),
+        calculatePricing: sl(),
+      ));
 }
 
 /// Initialize addon feature dependencies

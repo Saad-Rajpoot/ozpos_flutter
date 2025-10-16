@@ -1,35 +1,37 @@
 import 'package:equatable/equatable.dart';
 
 enum PricingMode {
-  fixed,        // Set a specific combo price
-  percentage,   // Percentage off sum of components
-  amount,       // Fixed amount off sum of components
-  mixAndMatch,  // Special rules like "2 for $10" or "Save 15% on any 2"
+  fixed, // Set a specific combo price
+  percentage, // Percentage off sum of components
+  amount, // Fixed amount off sum of components
+  mixAndMatch, // Special rules like "2 for $10" or "Save 15% on any 2"
 }
 
 class ComboPricingEntity extends Equatable {
   final PricingMode mode;
-  
+
   // For fixed pricing
   final double? fixedPrice;
-  
+
   // For percentage off
   final double? percentOff; // 0-100
-  
+
   // For amount off
   final double? amountOff;
-  
+
   // For mix-and-match
-  final String? mixCategoryId;    // Category for mix rules (e.g., "pizzas")
-  final String? mixCategoryName;  // Cached name for display
-  final int? mixQuantity;         // Quantity needed (e.g., 2 in "2 for $10")
-  final double? mixPrice;         // Price for the bundle (e.g., $10 in "2 for $10")
-  final double? mixPercentOff;    // Alternative: percent off for mix (e.g., 15% in "Save 15% on any 2")
-  
+  final String? mixCategoryId; // Category for mix rules (e.g., "pizzas")
+  final String? mixCategoryName; // Cached name for display
+  final int? mixQuantity; // Quantity needed (e.g., 2 in "2 for $10")
+  final double? mixPrice; // Price for the bundle (e.g., $10 in "2 for $10")
+  final double?
+      mixPercentOff; // Alternative: percent off for mix (e.g., 15% in "Save 15% on any 2")
+
   // Computed at creation
-  final double totalIfSeparate;   // Sum of component prices
-  final double finalPrice;        // Price after discount
-  final double savings;           // Amount saved
+  final double totalIfSeparate; // Sum of component prices
+  final double finalPrice; // Price after discount
+  final double savings; // Amount saved
+  final DateTime? calculatedAt; // When pricing was last calculated
 
   const ComboPricingEntity({
     required this.mode,
@@ -44,13 +46,15 @@ class ComboPricingEntity extends Equatable {
     required this.totalIfSeparate,
     required this.finalPrice,
     required this.savings,
+    this.calculatedAt,
   });
 
   // Factory constructors for each pricing mode
-  
+
   static ComboPricingEntity fixed({
     required double fixedPrice,
     required double totalIfSeparate,
+    DateTime? calculatedAt,
   }) {
     final savings = (totalIfSeparate - fixedPrice).clamp(0.0, double.infinity);
     return ComboPricingEntity(
@@ -59,12 +63,14 @@ class ComboPricingEntity extends Equatable {
       totalIfSeparate: totalIfSeparate,
       finalPrice: fixedPrice,
       savings: savings,
+      calculatedAt: calculatedAt ?? DateTime.now(),
     );
   }
-  
+
   static ComboPricingEntity percentage({
     required double percentOff,
     required double totalIfSeparate,
+    DateTime? calculatedAt,
   }) {
     final discount = totalIfSeparate * (percentOff / 100);
     final finalPrice = (totalIfSeparate - discount).clamp(0.0, double.infinity);
@@ -74,12 +80,14 @@ class ComboPricingEntity extends Equatable {
       totalIfSeparate: totalIfSeparate,
       finalPrice: finalPrice,
       savings: discount,
+      calculatedAt: calculatedAt ?? DateTime.now(),
     );
   }
-  
+
   static ComboPricingEntity amount({
     required double amountOff,
     required double totalIfSeparate,
+    DateTime? calculatedAt,
   }) {
     final discount = amountOff.clamp(0.0, totalIfSeparate);
     final finalPrice = totalIfSeparate - discount;
@@ -89,9 +97,10 @@ class ComboPricingEntity extends Equatable {
       totalIfSeparate: totalIfSeparate,
       finalPrice: finalPrice,
       savings: discount,
+      calculatedAt: calculatedAt ?? DateTime.now(),
     );
   }
-  
+
   static ComboPricingEntity mixAndMatch({
     String? categoryId,
     String? categoryName,
@@ -99,10 +108,11 @@ class ComboPricingEntity extends Equatable {
     double? fixedPrice,
     double? percentOff,
     required double totalIfSeparate,
+    DateTime? calculatedAt,
   }) {
     double finalPrice;
     double savings;
-    
+
     if (fixedPrice != null) {
       // "2 for $10" style
       finalPrice = fixedPrice;
@@ -117,7 +127,7 @@ class ComboPricingEntity extends Equatable {
       finalPrice = totalIfSeparate;
       savings = 0.0;
     }
-    
+
     return ComboPricingEntity(
       mode: PricingMode.mixAndMatch,
       mixCategoryId: categoryId,
@@ -128,36 +138,37 @@ class ComboPricingEntity extends Equatable {
       totalIfSeparate: totalIfSeparate,
       finalPrice: finalPrice,
       savings: savings,
+      calculatedAt: calculatedAt ?? DateTime.now(),
     );
   }
 
   // Computed properties
-  
+
   bool get hasDiscount => savings > 0;
-  
+
   double get discountPercentage {
     if (totalIfSeparate == 0) return 0.0;
     return (savings / totalIfSeparate) * 100;
   }
-  
+
   String get savingsText {
     if (savings > 0) {
       return 'SAVE \$${savings.toStringAsFixed(2)}';
     }
     return '';
   }
-  
+
   String get pricingDescription {
     switch (mode) {
       case PricingMode.fixed:
         return 'Fixed Price: \$${fixedPrice!.toStringAsFixed(2)}';
-        
+
       case PricingMode.percentage:
         return '${percentOff!.toInt()}% Off (Save \$${savings.toStringAsFixed(2)})';
-        
+
       case PricingMode.amount:
         return '\$${amountOff!.toStringAsFixed(2)} Off';
-        
+
       case PricingMode.mixAndMatch:
         if (mixPrice != null) {
           return '$mixQuantity for \$${mixPrice!.toStringAsFixed(2)}';
@@ -168,29 +179,29 @@ class ComboPricingEntity extends Equatable {
         }
     }
   }
-  
+
   String get breakdownText {
     return 'Total separately: \$${totalIfSeparate.toStringAsFixed(2)}\n'
-           'Combo price: \$${finalPrice.toStringAsFixed(2)}\n'
-           'You save: \$${savings.toStringAsFixed(2)}';
+        'Combo price: \$${finalPrice.toStringAsFixed(2)}\n'
+        'You save: \$${savings.toStringAsFixed(2)}';
   }
 
   List<String> get validationErrors {
     final List<String> errors = [];
-    
+
     switch (mode) {
       case PricingMode.fixed:
         if (fixedPrice == null || fixedPrice! <= 0) {
           errors.add('Fixed price must be greater than 0');
         }
         break;
-        
+
       case PricingMode.percentage:
         if (percentOff == null || percentOff! <= 0 || percentOff! >= 100) {
           errors.add('Percentage must be between 1-99%');
         }
         break;
-        
+
       case PricingMode.amount:
         if (amountOff == null || amountOff! <= 0) {
           errors.add('Amount off must be greater than 0');
@@ -199,26 +210,28 @@ class ComboPricingEntity extends Equatable {
           errors.add('Amount off cannot exceed total component price');
         }
         break;
-        
+
       case PricingMode.mixAndMatch:
         if (mixQuantity == null || mixQuantity! < 2) {
           errors.add('Mix quantity must be at least 2');
         }
-        
+
         if (mixPrice == null && mixPercentOff == null) {
-          errors.add('Mix pricing must specify either fixed price or percentage off');
+          errors.add(
+              'Mix pricing must specify either fixed price or percentage off');
         }
-        
+
         if (mixPrice != null && mixPrice! <= 0) {
           errors.add('Mix price must be greater than 0');
         }
-        
-        if (mixPercentOff != null && (mixPercentOff! <= 0 || mixPercentOff! >= 100)) {
+
+        if (mixPercentOff != null &&
+            (mixPercentOff! <= 0 || mixPercentOff! >= 100)) {
           errors.add('Mix percentage must be between 1-99%');
         }
         break;
     }
-    
+
     return errors;
   }
 
@@ -235,6 +248,7 @@ class ComboPricingEntity extends Equatable {
     double? totalIfSeparate,
     double? finalPrice,
     double? savings,
+    DateTime? calculatedAt,
   }) {
     return ComboPricingEntity(
       mode: mode ?? this.mode,
@@ -249,6 +263,7 @@ class ComboPricingEntity extends Equatable {
       totalIfSeparate: totalIfSeparate ?? this.totalIfSeparate,
       finalPrice: finalPrice ?? this.finalPrice,
       savings: savings ?? this.savings,
+      calculatedAt: calculatedAt ?? this.calculatedAt,
     );
   }
 
@@ -266,5 +281,6 @@ class ComboPricingEntity extends Equatable {
         totalIfSeparate,
         finalPrice,
         savings,
+        calculatedAt,
       ];
 }

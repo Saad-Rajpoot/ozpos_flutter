@@ -9,22 +9,45 @@ import '../../domain/entities/combo_limits_entity.dart';
 import 'combo_management_event.dart';
 import 'combo_management_state.dart';
 import '../../domain/usecases/get_combos.dart';
+import '../../domain/usecases/create_combo.dart';
+import '../../domain/usecases/update_combo.dart';
+import '../../domain/usecases/delete_combo.dart';
+import '../../domain/usecases/validate_combo.dart';
+import '../../domain/usecases/calculate_pricing.dart';
 import '../../../../core/base/base_usecase.dart';
 
 class ComboManagementBloc
     extends Bloc<ComboManagementEvent, ComboManagementState> {
-  final _uuid = const Uuid();
+  final Uuid _uuid;
   final GetCombos _getCombos;
+  final CreateCombo _createCombo;
+  final UpdateCombo _updateCombo;
+  final DeleteCombo _deleteCombo;
+  final ValidateCombo _validateCombo;
+  final CalculatePricing _calculatePricing;
 
-  ComboManagementBloc({required GetCombos getCombos})
-    : _getCombos = getCombos,
-      super(const ComboManagementState()) {
+  ComboManagementBloc({
+    required Uuid uuid,
+    required GetCombos getCombos,
+    required CreateCombo createCombo,
+    required UpdateCombo updateCombo,
+    required DeleteCombo deleteCombo,
+    required ValidateCombo validateCombo,
+    required CalculatePricing calculatePricing,
+  })  : _uuid = uuid,
+        _getCombos = getCombos,
+        _createCombo = createCombo,
+        _updateCombo = updateCombo,
+        _deleteCombo = deleteCombo,
+        _validateCombo = validateCombo,
+        _calculatePricing = calculatePricing,
+        super(const ComboManagementState()) {
     on<LoadCombos>(_onLoadCombos);
     on<RefreshCombos>(_onRefreshCombos);
-    on<CreateCombo>(_onCreateCombo);
-    on<UpdateCombo>(_onUpdateCombo);
-    on<DeleteCombo>(_onDeleteCombo);
-    on<DuplicateCombo>(_onDuplicateCombo);
+    on<CreateComboEvent>(_onCreateCombo);
+    on<UpdateComboEvent>(_onUpdateCombo);
+    on<DeleteComboEvent>(_onDeleteCombo);
+    on<DuplicateComboEvent>(_onDuplicateCombo);
     on<ToggleComboVisibility>(_onToggleComboVisibility);
     on<StartComboEdit>(_onStartComboEdit);
     on<CancelComboEdit>(_onCancelComboEdit);
@@ -93,89 +116,100 @@ class ComboManagementBloc
   }
 
   Future<void> _onCreateCombo(
-    CreateCombo event,
+    CreateComboEvent event,
     Emitter<ComboManagementState> emit,
   ) async {
     emit(state.copyWith(isSaving: true, saveError: null));
 
-    try {
-      await _saveComboToRepository(event.combo);
+    final result = await _createCombo(CreateComboParams(combo: event.combo));
 
-      final newState = state.withAddedCombo(event.combo);
-      final filteredCombos = _applyFilters(newState.combos);
+    result.fold(
+      (failure) {
+        emit(
+          state.copyWith(
+            isSaving: false,
+            saveError: 'Failed to create combo: ${failure.message}',
+          ),
+        );
+      },
+      (createdCombo) {
+        final newState = state.withAddedCombo(createdCombo);
+        final filteredCombos = _applyFilters(newState.combos);
 
-      emit(
-        newState.copyWith(
-          filteredCombos: filteredCombos,
-          isSaving: false,
-          unsavedChangesCount: state.unsavedChangesCount - 1,
-        ),
-      );
-    } catch (e) {
-      emit(
-        state.copyWith(
-          isSaving: false,
-          saveError: 'Failed to create combo: ${e.toString()}',
-        ),
-      );
-    }
+        emit(
+          newState.copyWith(
+            filteredCombos: filteredCombos,
+            isSaving: false,
+            unsavedChangesCount: state.unsavedChangesCount - 1,
+          ),
+        );
+      },
+    );
   }
 
   Future<void> _onUpdateCombo(
-    UpdateCombo event,
+    UpdateComboEvent event,
     Emitter<ComboManagementState> emit,
   ) async {
     emit(state.copyWith(isSaving: true, saveError: null));
 
-    try {
-      await _saveComboToRepository(event.combo);
+    final result = await _updateCombo(UpdateComboParams(combo: event.combo));
 
-      final newState = state.withUpdatedCombo(event.combo);
-      final filteredCombos = _applyFilters(newState.combos);
+    result.fold(
+      (failure) {
+        emit(
+          state.copyWith(
+            isSaving: false,
+            saveError: 'Failed to update combo: ${failure.message}',
+          ),
+        );
+      },
+      (updatedCombo) {
+        final newState = state.withUpdatedCombo(updatedCombo);
+        final filteredCombos = _applyFilters(newState.combos);
 
-      emit(
-        newState.copyWith(
-          filteredCombos: filteredCombos,
-          isSaving: false,
-          unsavedChangesCount: state.unsavedChangesCount - 1,
-        ),
-      );
-    } catch (e) {
-      emit(
-        state.copyWith(
-          isSaving: false,
-          saveError: 'Failed to update combo: ${e.toString()}',
-        ),
-      );
-    }
+        emit(
+          newState.copyWith(
+            filteredCombos: filteredCombos,
+            isSaving: false,
+            unsavedChangesCount: state.unsavedChangesCount - 1,
+          ),
+        );
+      },
+    );
   }
 
   Future<void> _onDeleteCombo(
-    DeleteCombo event,
+    DeleteComboEvent event,
     Emitter<ComboManagementState> emit,
   ) async {
-    try {
-      await _deleteComboFromRepository(event.comboId);
+    final result =
+        await _deleteCombo(DeleteComboParams(comboId: event.comboId));
 
-      final newState = state.withRemovedCombo(event.comboId);
-      final filteredCombos = _applyFilters(newState.combos);
+    result.fold(
+      (failure) {
+        emit(
+          state.copyWith(
+              errorMessage: 'Failed to delete combo: ${failure.message}'),
+        );
+      },
+      (_) {
+        final newState = state.withRemovedCombo(event.comboId);
+        final filteredCombos = _applyFilters(newState.combos);
 
-      emit(newState.copyWith(filteredCombos: filteredCombos));
-    } catch (e) {
-      emit(
-        state.copyWith(errorMessage: 'Failed to delete combo: ${e.toString()}'),
-      );
-    }
+        emit(newState.copyWith(filteredCombos: filteredCombos));
+      },
+    );
   }
 
   Future<void> _onDuplicateCombo(
-    DuplicateCombo event,
+    DuplicateComboEvent event,
     Emitter<ComboManagementState> emit,
   ) async {
     final originalCombo = state.getComboById(event.comboId);
     if (originalCombo == null) return;
 
-    final newName = event.newName ?? '${originalCombo.name} (Copy)';
+    final newName = event.newName ?? originalCombo.name;
     final duplicatedCombo = originalCombo.copyWith(
       id: _uuid.v4(),
       name: newName,
@@ -185,7 +219,7 @@ class ComboManagementBloc
       hasUnsavedChanges: true,
     );
 
-    add(CreateCombo(combo: duplicatedCombo));
+    add(CreateComboEvent(combo: duplicatedCombo));
   }
 
   Future<void> _onToggleComboVisibility(
@@ -201,7 +235,7 @@ class ComboManagementBloc
       hasUnsavedChanges: true,
     );
 
-    add(UpdateCombo(combo: updatedCombo));
+    add(UpdateComboEvent(combo: updatedCombo));
   }
 
   void _onStartComboEdit(
@@ -266,9 +300,9 @@ class ComboManagementBloc
     );
 
     if (state.editMode == ComboEditMode.create) {
-      add(CreateCombo(combo: savedCombo));
+      add(CreateComboEvent(combo: savedCombo));
     } else {
-      add(UpdateCombo(combo: savedCombo));
+      add(UpdateComboEvent(combo: savedCombo));
     }
 
     if (event.exitAfterSave) {
@@ -439,9 +473,8 @@ class ComboManagementBloc
     final combo = state.editingCombo;
     if (combo == null) return;
 
-    final updatedSlots = combo.slots
-        .where((slot) => slot.id != event.slotId)
-        .toList();
+    final updatedSlots =
+        combo.slots.where((slot) => slot.id != event.slotId).toList();
     final updatedCombo = combo.copyWith(
       slots: updatedSlots,
       hasUnsavedChanges: true,
@@ -497,7 +530,7 @@ class ComboManagementBloc
     );
     final duplicatedSlot = originalSlot.copyWith(
       id: _uuid.v4(),
-      name: '${originalSlot.name} (Copy)',
+      name: originalSlot.name,
       sortOrder: combo.slots.length,
     );
 
@@ -525,15 +558,36 @@ class ComboManagementBloc
     );
   }
 
-  void _onRecalculatePricing(
+  Future<void> _onRecalculatePricing(
     RecalculatePricing event,
     Emitter<ComboManagementState> emit,
-  ) {
+  ) async {
     final combo = state.editingCombo;
     if (combo == null) return;
 
-    // This would involve calculating totalIfSeparate, finalPrice, and savings
-    // based on the current slot configuration and pricing mode
+    final result =
+        await _calculatePricing(CalculatePricingParams(combo: combo));
+
+    result.fold(
+      (failure) {
+        emit(state.copyWith(
+            errorMessage: 'Failed to calculate pricing: ${failure.message}'));
+      },
+      (calculatedPricing) {
+        final updatedCombo = combo.copyWith(
+          pricing: calculatedPricing,
+          hasUnsavedChanges: true,
+        );
+
+        emit(
+          state.copyWith(
+            editingCombo: updatedCombo,
+            validationErrors: updatedCombo.validationErrors,
+            unsavedChangesCount: state.unsavedChangesCount + 1,
+          ),
+        );
+      },
+    );
   }
 
   void _onUpdateComboAvailability(
@@ -578,14 +632,25 @@ class ComboManagementBloc
     );
   }
 
-  void _onValidateCurrentCombo(
+  Future<void> _onValidateCurrentCombo(
     ValidateCurrentCombo event,
     Emitter<ComboManagementState> emit,
-  ) {
+  ) async {
     final combo = state.editingCombo;
     if (combo == null) return;
 
-    emit(state.copyWith(validationErrors: combo.validationErrors));
+    final result = await _validateCombo(ValidateComboParams(combo: combo));
+
+    result.fold(
+      (failure) {
+        // Handle validation failure if needed
+        emit(state.copyWith(
+            validationErrors: ['Validation failed: ${failure.message}']));
+      },
+      (validationErrors) {
+        emit(state.copyWith(validationErrors: validationErrors));
+      },
+    );
   }
 
   void _onMarkAsUnsaved(
@@ -717,15 +782,5 @@ class ComboManagementBloc
     // Simulate loading with sample data
     final result = await _getCombos(const NoParams());
     return result.fold((failure) => [], (combos) => combos);
-  }
-
-  Future<void> _saveComboToRepository(ComboEntity combo) async {
-    // Simulate saving
-    await Future.delayed(const Duration(milliseconds: 300));
-  }
-
-  Future<void> _deleteComboFromRepository(String comboId) async {
-    // Simulate deletion
-    await Future.delayed(const Duration(milliseconds: 300));
   }
 }
