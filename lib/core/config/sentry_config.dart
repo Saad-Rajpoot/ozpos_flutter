@@ -63,12 +63,12 @@ class SentryConfig {
 
   /// Get build configuration for Sentry
   static Map<String, dynamic> get buildConfig => {
-    'environment': AppConfig.instance.environment.name,
-    'debug': AppConfig.instance.environment == AppEnvironment.development,
-    'version': appVersion,
-    'build_time': DateTime.now().toIso8601String(),
-    'platform': defaultTargetPlatform.name,
-  };
+        'environment': AppConfig.instance.environment.name,
+        'debug': AppConfig.instance.environment == AppEnvironment.development,
+        'version': appVersion,
+        'build_time': DateTime.now().toIso8601String(),
+        'platform': defaultTargetPlatform.name,
+      };
 
   /// Print Sentry configuration summary
   static void printConfig() {

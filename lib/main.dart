@@ -44,23 +44,29 @@ void main() async {
 
   // Initialize Sentry based on configuration
   if (SentryConfig.enableSentry) {
-    await SentryFlutter.init((options) {
-      options.dsn = SentryConfig.sentryDsn;
-      options.environment = AppConfig.instance.environment.name;
-      options.release = 'ozpos-flutter@${SentryConfig.appVersion}';
-      options.tracesSampleRate = SentryConfig.sentrySampleRate;
-      options.profilesSampleRate = SentryConfig.sentryPerformanceSampleRate;
-      options.attachScreenshot = SentryConfig.attachScreenshots;
-      options.attachViewHierarchy = SentryConfig.attachViewHierarchy;
-      options.debug = SentryConfig.sentryDebug;
-      options.maxBreadcrumbs = SentryConfig.maxBreadcrumbs;
-      options.autoSessionTrackingInterval =
-          SentryConfig.sessionTrackingInterval;
-    }, appRunner: () => runApp(const OzposApp()));
+    // Initialize Sentry and run app
+    SentryFlutter.init(
+      (options) => _configureSentry(options),
+      appRunner: () => runApp(const OzposApp()),
+    );
   } else {
     // Run app without Sentry
     runApp(const OzposApp());
   }
+}
+
+/// Configure Sentry options for error tracking and performance monitoring
+void _configureSentry(SentryFlutterOptions options) {
+  options.dsn = SentryConfig.sentryDsn;
+  options.environment = AppConfig.instance.environment.name;
+  options.release = 'ozpos-flutter@${SentryConfig.appVersion}';
+  options.tracesSampleRate = SentryConfig.sentrySampleRate;
+  options.profilesSampleRate = SentryConfig.sentryPerformanceSampleRate;
+  options.attachScreenshot = SentryConfig.attachScreenshots;
+  options.attachViewHierarchy = SentryConfig.attachViewHierarchy;
+  options.debug = SentryConfig.sentryDebug;
+  options.maxBreadcrumbs = SentryConfig.maxBreadcrumbs;
+  options.autoSessionTrackingInterval = SentryConfig.sessionTrackingInterval;
 }
 
 class OzposApp extends StatelessWidget {
@@ -76,9 +82,8 @@ class OzposApp extends StatelessWidget {
           create: (_) => GetIt.instance<ComboManagementBloc>(),
         ),
         BlocProvider<ReservationManagementBloc>(
-          create: (_) =>
-              GetIt.instance<ReservationManagementBloc>()
-                ..add(const LoadReservationsEvent()),
+          create: (_) => GetIt.instance<ReservationManagementBloc>()
+            ..add(const LoadReservationsEvent()),
         ),
         BlocProvider<DeliveryBloc>(
           create: (_) => GetIt.instance<DeliveryBloc>(),
