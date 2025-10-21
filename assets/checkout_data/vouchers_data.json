@@ -1,0 +1,123 @@
+{
+  "vouchers": [
+    {
+      "id": "voucher_001",
+      "code": "SAVE5",
+      "name": "Save $5",
+      "type": "fixed_amount",
+      "value": 5.00,
+      "description": "Get $5 off your order",
+      "minOrderAmount": 25.00,
+      "maxDiscount": 5.00,
+      "validFrom": "2023-12-01T00:00:00Z",
+      "validUntil": "2024-01-31T23:59:59Z",
+      "usageLimit": 100,
+      "usedCount": 23,
+      "enabled": true
+    },
+    {
+      "id": "voucher_002",
+      "code": "SAVE10",
+      "name": "Save $10",
+      "type": "fixed_amount",
+      "value": 10.00,
+      "description": "Get $10 off your order",
+      "minOrderAmount": 50.00,
+      "maxDiscount": 10.00,
+      "validFrom": "2023-12-01T00:00:00Z",
+      "validUntil": "2024-01-31T23:59:59Z",
+      "usageLimit": 50,
+      "usedCount": 12,
+      "enabled": true
+    },
+    {
+      "id": "voucher_003",
+      "code": "SAVE15",
+      "name": "Save $15",
+      "type": "fixed_amount",
+      "value": 15.00,
+      "description": "Get $15 off your order",
+      "minOrderAmount": 75.00,
+      "maxDiscount": 15.00,
+      "validFrom": "2023-12-01T00:00:00Z",
+      "validUntil": "2024-01-31T23:59:59Z",
+      "usageLimit": 25,
+      "usedCount": 8,
+      "enabled": true
+    },
+    {
+      "id": "voucher_004",
+      "code": "SAVE20",
+      "name": "Save $20",
+      "type": "fixed_amount",
+      "value": 20.00,
+      "description": "Get $20 off your order",
+      "minOrderAmount": 100.00,
+      "maxDiscount": 20.00,
+      "validFrom": "2023-12-01T00:00:00Z",
+      "validUntil": "2024-01-31T23:59:59Z",
+      "usageLimit": 10,
+      "usedCount": 3,
+      "enabled": true
+    },
+    {
+      "id": "voucher_005",
+      "code": "PERCENT10",
+      "name": "10% Off",
+      "type": "percentage",
+      "value": 10.00,
+      "description": "Get 10% off your order",
+      "minOrderAmount": 30.00,
+      "maxDiscount": 25.00,
+      "validFrom": "2023-12-01T00:00:00Z",
+      "validUntil": "2024-01-31T23:59:59Z",
+      "usageLimit": 200,
+      "usedCount": 45,
+      "enabled": true
+    },
+    {
+      "id": "voucher_006",
+      "code": "FIRSTTIME",
+      "name": "First Time Customer",
+      "type": "percentage",
+      "value": 15.00,
+      "description": "15% off for first-time customers",
+      "minOrderAmount": 20.00,
+      "maxDiscount": 30.00,
+      "validFrom": "2023-12-01T00:00:00Z",
+      "validUntil": "2024-12-31T23:59:59Z",
+      "usageLimit": 1,
+      "usedCount": 0,
+      "enabled": true
+    },
+    {
+      "id": "voucher_007",
+      "code": "EXPIRED",
+      "name": "Expired Voucher",
+      "type": "fixed_amount",
+      "value": 5.00,
+      "description": "This voucher has expired",
+      "minOrderAmount": 25.00,
+      "maxDiscount": 5.00,
+      "validFrom": "2023-01-01T00:00:00Z",
+      "validUntil": "2023-11-30T23:59:59Z",
+      "usageLimit": 100,
+      "usedCount": 0,
+      "enabled": false
+    }
+  ],
+  "loyaltyProgram": {
+    "enabled": true,
+    "pointsPerDollar": 1,
+    "pointsForRedemption": 100,
+    "dollarValuePerPoint": 0.01,
+    "maxRedemptionPercent": 50
+  },
+  "metadata": {
+    "totalVouchers": 7,
+    "activeVouchers": 6,
+    "expiredVouchers": 1,
+    "totalUsage": 91,
+    "lastUpdated": "2023-12-21T12:30:00Z"
+  }
+}

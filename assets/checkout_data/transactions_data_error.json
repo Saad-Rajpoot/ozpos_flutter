@@ -1,0 +1,25 @@
+{
+  "error": {
+    "code": "TRANSACTIONS_DATA_ERROR",
+    "message": "Failed to load transaction data",
+    "details": "Transaction history service unavailable",
+    "timestamp": "2023-12-21T12:30:00Z"
+  },
+  "fallbackData": {
+    "transactions": [],
+    "dailySummary": {
+      "date": "2023-12-21",
+      "totalTransactions": 0,
+      "successfulTransactions": 0,
+      "failedTransactions": 0,
+      "totalAmount": 0.00,
+      "cashAmount": 0.00,
+      "cardAmount": 0.00,
+      "walletAmount": 0.00,
+      "averageTransactionValue": 0.00,
+      "refundCount": 0,
+      "refundAmount": 0.00
+    },
+    "message": "Transaction history temporarily unavailable"
+  }
+}

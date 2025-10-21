@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../checkout/domain/entities/payment_method.dart';
-import '../../../checkout/domain/entities/tender_entity.dart';
+import '../../domain/entities/payment_method_type.dart';
+import '../../domain/entities/tender_entity.dart';
+import '../../domain/entities/tender_status.dart';
 import '../bloc/checkout_bloc.dart';
 
 /// Split Payment Section - Manage multiple tenders and split evenly
@@ -187,8 +188,12 @@ class SplitPaymentSection extends StatelessWidget {
   }
 
   Widget _buildTenderCard(BuildContext context, TenderEntity tender) {
-    final statusColor = tender.status.color;
-    final statusIcon = tender.status.icon;
+    final statusColor = tender.status == TenderStatus.pending
+        ? const Color(0xFFFF9800)
+        : const Color(0xFF4CAF50);
+    final statusIcon = tender.status == TenderStatus.pending
+        ? Icons.access_time
+        : Icons.check_circle;
 
     return Container(
       padding: const EdgeInsets.all(12),
@@ -205,7 +210,7 @@ class SplitPaymentSection extends StatelessWidget {
               color: statusColor.withOpacity(0.1),
               borderRadius: BorderRadius.circular(6),
             ),
-            child: Icon(tender.method.icon, size: 20, color: statusColor),
+            child: Icon(Icons.payments, size: 20, color: statusColor),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -213,7 +218,7 @@ class SplitPaymentSection extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  tender.method.label,
+                  tender.method.value,
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -226,7 +231,7 @@ class SplitPaymentSection extends StatelessWidget {
                     Icon(statusIcon, size: 12, color: statusColor),
                     const SizedBox(width: 4),
                     Text(
-                      tender.status.label,
+                      tender.status.value,
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
@@ -262,7 +267,7 @@ class SplitPaymentSection extends StatelessWidget {
   }
 
   void _showAddTenderDialog(BuildContext context) {
-    PaymentMethod selectedMethod = PaymentMethod.cash;
+    PaymentMethodType selectedMethod = PaymentMethodType.cash;
     final amountController = TextEditingController(
       text: state.splitRemaining.toStringAsFixed(2),
     );
@@ -291,7 +296,7 @@ class SplitPaymentSection extends StatelessWidget {
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
-                children: PaymentMethod.values.map((method) {
+                children: PaymentMethodType.values.map((method) {
                   final isSelected = selectedMethod == method;
                   return GestureDetector(
                     onTap: () {
@@ -318,7 +323,7 @@ class SplitPaymentSection extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(
-                            method.icon,
+                            Icons.payments,
                             size: 24,
                             color: isSelected
                                 ? const Color(0xFF2196F3)
@@ -326,7 +331,7 @@ class SplitPaymentSection extends StatelessWidget {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            method.label,
+                            method.value,
                             style: TextStyle(
                               fontSize: 11,
                               fontWeight: isSelected

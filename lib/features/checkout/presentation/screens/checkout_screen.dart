@@ -56,27 +56,25 @@ class _CheckoutScreenContent extends StatelessWidget {
           );
         }
 
-        return BlocProvider(
-          create: (context) =>
-              CheckoutBloc()..add(InitializeCheckout(items: items)),
-          child: Scaffold(
-            backgroundColor: CheckoutConstants.background,
-            appBar: isCompact ? _buildCompactAppBar(context) : null,
-            endDrawer: isCompact ? _buildOrderDrawer(context) : null,
-            body: Row(
-              children: [
-                // Sidebar navigation (only on desktop)
-                if (!isCompact)
-                  const SidebarNav(activeRoute: AppRouter.checkout),
+        // Initialize checkout with cart items
+        context.read<CheckoutBloc>().add(InitializeCheckout(items: items));
 
-                // Main content
-                Expanded(
-                  child: isCompact
-                      ? _buildCompactLayout(context)
-                      : _buildDesktopLayout(context, screenWidth),
-                ),
-              ],
-            ),
+        return Scaffold(
+          backgroundColor: CheckoutConstants.background,
+          appBar: isCompact ? _buildCompactAppBar(context) : null,
+          endDrawer: isCompact ? _buildOrderDrawer(context) : null,
+          body: Row(
+            children: [
+              // Sidebar navigation (only on desktop)
+              if (!isCompact) const SidebarNav(activeRoute: AppRouter.checkout),
+
+              // Main content
+              Expanded(
+                child: isCompact
+                    ? _buildCompactLayout(context)
+                    : _buildDesktopLayout(context, screenWidth),
+              ),
+            ],
           ),
         );
       },

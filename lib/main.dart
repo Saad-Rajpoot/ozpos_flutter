@@ -15,6 +15,7 @@ import 'core/theme/app_theme.dart';
 import 'features/menu/presentation/bloc/menu_bloc.dart';
 import 'features/combos/presentation/bloc/combo_management_bloc.dart';
 import 'features/checkout/presentation/bloc/cart_bloc.dart';
+import 'features/checkout/presentation/bloc/checkout_bloc.dart';
 import 'features/reservations/presentation/bloc/reservation_management_bloc.dart';
 import 'features/reservations/presentation/bloc/reservation_management_event.dart';
 import 'features/delivery/presentation/bloc/delivery_bloc.dart';
@@ -78,6 +79,8 @@ class OzposApp extends StatelessWidget {
       providers: [
         BlocProvider<MenuBloc>(create: (_) => GetIt.instance<MenuBloc>()),
         BlocProvider<CartBloc>(create: (_) => GetIt.instance<CartBloc>()),
+        BlocProvider<CheckoutBloc>(
+            create: (_) => GetIt.instance<CheckoutBloc>()),
         BlocProvider<ComboManagementBloc>(
           create: (_) => GetIt.instance<ComboManagementBloc>(),
         ),

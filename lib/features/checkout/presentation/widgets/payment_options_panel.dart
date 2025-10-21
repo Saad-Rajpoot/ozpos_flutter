@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../checkout/presentation/bloc/checkout_bloc.dart';
-import '../../../checkout/domain/entities/payment_method.dart';
+import '../../domain/entities/payment_method_type.dart';
 import '../constant/checkout_constants.dart';
 
 /// Payment Options Panel - Right column
@@ -53,7 +53,7 @@ class PaymentOptionsPanel extends StatelessWidget {
           Wrap(
             spacing: CheckoutConstants.gapSmall,
             runSpacing: CheckoutConstants.gapSmall,
-            children: PaymentMethod.values.take(4).map((method) {
+            children: PaymentMethodType.values.take(4).map((method) {
               final isSelected = state.selectedMethod == method;
               return _buildMethodTile(context, method, isSelected);
             }).toList(),
@@ -65,11 +65,10 @@ class PaymentOptionsPanel extends StatelessWidget {
 
   Widget _buildMethodTile(
     BuildContext context,
-    PaymentMethod method,
+    PaymentMethodType method,
     bool isSelected,
   ) {
-    final width =
-        (CheckoutConstants.rightWidth -
+    final width = (CheckoutConstants.rightWidth -
             CheckoutConstants.cardPadding * 2 -
             CheckoutConstants.gapSmall) /
         2;
@@ -98,7 +97,7 @@ class PaymentOptionsPanel extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              method.icon,
+              Icons.payments,
               size: 28,
               color: isSelected
                   ? CheckoutConstants.primary
@@ -106,7 +105,7 @@ class PaymentOptionsPanel extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             Text(
-              method.label,
+              method.value,
               style: CheckoutConstants.textBody.copyWith(
                 fontWeight: isSelected
                     ? CheckoutConstants.weightSemiBold

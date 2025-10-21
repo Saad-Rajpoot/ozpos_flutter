@@ -18,6 +18,16 @@ import '../../features/menu/domain/usecases/get_menu_items.dart';
 import '../../features/menu/domain/usecases/get_menu_categories.dart';
 import '../../features/menu/presentation/bloc/menu_bloc.dart';
 import '../../features/checkout/presentation/bloc/cart_bloc.dart';
+import '../../features/checkout/presentation/bloc/checkout_bloc.dart';
+import '../../features/checkout/domain/usecases/initialize_checkout.dart';
+import '../../features/checkout/domain/usecases/process_payment.dart';
+import '../../features/checkout/domain/usecases/apply_voucher.dart';
+import '../../features/checkout/domain/usecases/calculate_totals.dart';
+import '../../features/checkout/data/repositories/checkout_repository_impl.dart';
+import '../../features/checkout/data/datasources/checkout_local_datasource.dart';
+import '../../features/checkout/data/datasources/checkout_mock_datasource.dart';
+import '../../features/checkout/data/datasources/checkout_datasource.dart';
+import '../../features/checkout/domain/repositories/checkout_repository.dart';
 import '../../features/combos/presentation/bloc/combo_management_bloc.dart';
 import '../../features/addons/data/datasources/addon_data_source.dart';
 import '../../features/addons/data/datasources/addon_mock_datasource.dart';
@@ -116,6 +126,7 @@ Future<void> init() async {
   // Features
   await _initMenu(sl);
   await _initCart(sl);
+  await _initCheckout(sl);
   await _initCombos(sl);
   await _initAddons(sl);
   await _initTables(sl);
@@ -196,6 +207,38 @@ Future<void> _initMenu(GetIt sl) async {
 Future<void> _initCart(GetIt sl) async {
   // BLoC (Singleton - shared cart across the app)
   sl.registerLazySingleton(() => CartBloc()..add(const InitializeCart()));
+}
+
+/// Initialize checkout feature dependencies
+Future<void> _initCheckout(GetIt sl) async {
+  // Data source - handle database availability
+  sl.registerLazySingleton<CheckoutDataSource>(() {
+    if (sl.isRegistered<Database>()) {
+      return CheckoutLocalDataSource(database: sl());
+    } else {
+      // Fallback for web or when database is not available
+      return CheckoutMockDataSource();
+    }
+  });
+
+  // Repository
+  sl.registerLazySingleton<CheckoutRepository>(
+    () => CheckoutRepositoryImpl(checkoutDataSource: sl()),
+  );
+
+  // Use cases
+  sl.registerLazySingleton(() => InitializeCheckoutUseCase());
+  sl.registerLazySingleton(() => ProcessPaymentUseCase(repository: sl()));
+  sl.registerLazySingleton(() => ApplyVoucherUseCase(repository: sl()));
+  sl.registerLazySingleton(() => CalculateTotalsUseCase());
+
+  // BLoC (Factory - new instance each time)
+  sl.registerFactory(() => CheckoutBloc(
+        initializeCheckoutUseCase: sl(),
+        processPaymentUseCase: sl(),
+        applyVoucherUseCase: sl(),
+        calculateTotalsUseCase: sl(),
+      ));
 }
 
 /// Initialize combo feature dependencies

@@ -1,6 +1,5 @@
 import 'package:equatable/equatable.dart';
 
-/// Represents an applied voucher/discount code
 class VoucherEntity extends Equatable {
   final String id;
   final String code;

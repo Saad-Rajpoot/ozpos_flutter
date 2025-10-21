@@ -1,0 +1,116 @@
+{
+  "paymentMethods": [
+    {
+      "id": "cash",
+      "name": "Cash",
+      "icon": "cash",
+      "enabled": true,
+      "requiresAmount": true,
+      "requiresChange": true,
+      "description": "Cash payment with change calculation"
+    },
+    {
+      "id": "card",
+      "name": "Credit/Debit Card",
+      "icon": "credit_card",
+      "enabled": true,
+      "requiresAmount": false,
+      "requiresChange": false,
+      "description": "Card payment via terminal"
+    },
+    {
+      "id": "wallet",
+      "name": "Digital Wallet",
+      "icon": "wallet",
+      "enabled": true,
+      "requiresAmount": false,
+      "requiresChange": false,
+      "description": "Apple Pay, Google Pay, etc."
+    },
+    {
+      "id": "bnpl",
+      "name": "Buy Now Pay Later",
+      "icon": "schedule",
+      "enabled": true,
+      "requiresAmount": false,
+      "requiresChange": false,
+      "description": "Afterpay, Klarna, etc."
+    }
+  ],
+  "splitPaymentOptions": [
+    {
+      "id": "even_split",
+      "name": "Split Evenly",
+      "options": [2, 3, 4],
+      "description": "Divide total equally among customers"
+    },
+    {
+      "id": "custom_split",
+      "name": "Custom Amounts",
+      "options": [],
+      "description": "Enter specific amounts for each customer"
+    }
+  ],
+  "quickAmounts": [
+    {
+      "amount": 5,
+      "label": "$5"
+    },
+    {
+      "amount": 10,
+      "label": "$10"
+    },
+    {
+      "amount": 20,
+      "label": "$20"
+    },
+    {
+      "amount": 50,
+      "label": "$50"
+    },
+    {
+      "amount": 100,
+      "label": "$100"
+    }
+  ],
+  "tipOptions": [
+    {
+      "percent": 0,
+      "label": "No Tip"
+    },
+    {
+      "percent": 5,
+      "label": "5%"
+    },
+    {
+      "percent": 10,
+      "label": "10%"
+    },
+    {
+      "percent": 15,
+      "label": "15%"
+    },
+    {
+      "percent": -1,
+      "label": "Custom"
+    }
+  ],
+  "discountOptions": [
+    {
+      "percent": 0,
+      "label": "No Discount"
+    },
+    {
+      "percent": 5,
+      "label": "5% Off"
+    },
+    {
+      "percent": 10,
+      "label": "10% Off"
+    },
+    {
+      "percent": 15,
+      "label": "15% Off"
+    }
+  ]
+}

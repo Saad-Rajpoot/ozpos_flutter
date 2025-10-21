@@ -1,0 +1,19 @@
+{
+  "error": {
+    "code": "VOUCHERS_DATA_ERROR",
+    "message": "Failed to load voucher data",
+    "details": "Voucher service temporarily unavailable",
+    "timestamp": "2023-12-21T12:30:00Z"
+  },
+  "fallbackData": {
+    "vouchers": [],
+    "loyaltyProgram": {
+      "enabled": false,
+      "pointsPerDollar": 0,
+      "pointsForRedemption": 0,
+      "dollarValuePerPoint": 0,
+      "maxRedemptionPercent": 0
+    },
+    "message": "Voucher system temporarily unavailable - discounts cannot be applied"
+  }
+}

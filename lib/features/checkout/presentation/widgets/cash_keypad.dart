@@ -35,7 +35,8 @@ class CashKeypad extends StatelessWidget {
   }
 
   Widget _buildCashDisplay(BuildContext context) {
-    final cashText = state.cashReceived.isEmpty ? '0.00' : state.cashReceived;
+    final cashText =
+        state.cashReceived.isEmpty ? '0.00' : state.cashReceived.toString();
     final grandTotal = state.grandTotal;
     final isSufficient = state.cashReceivedNum >= grandTotal;
 

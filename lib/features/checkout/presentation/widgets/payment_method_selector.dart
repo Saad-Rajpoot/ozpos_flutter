@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../checkout/domain/entities/payment_method.dart';
+import '../../domain/entities/payment_method_type.dart';
 import '../bloc/checkout_bloc.dart';
 
 /// Payment Method Selector - Matches React prototype design
@@ -15,7 +15,7 @@ class PaymentMethodSelector extends StatelessWidget {
     return Wrap(
       spacing: 12,
       runSpacing: 12,
-      children: PaymentMethod.values.map((method) {
+      children: PaymentMethodType.values.map((method) {
         final isSelected = state.selectedMethod == method;
 
         return GestureDetector(
@@ -43,13 +43,13 @@ class PaymentMethodSelector extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
-                  method.icon,
+                  Icons.payments,
                   size: 32,
                   color: isSelected ? const Color(0xFF2196F3) : Colors.black54,
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  method.label,
+                  method.value,
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,

@@ -1,0 +1,22 @@
+{
+  "error": {
+    "code": "PAYMENT_METHODS_ERROR",
+    "message": "Failed to load payment methods",
+    "details": "Payment configuration service unavailable",
+    "timestamp": "2023-12-21T12:30:00Z"
+  },
+  "fallbackData": {
+    "paymentMethods": [
+      {
+        "id": "cash",
+        "name": "Cash",
+        "icon": "cash",
+        "enabled": true,
+        "requiresAmount": true,
+        "requiresChange": true,
+        "description": "Cash payment with change calculation"
+      }
+    ],
+    "message": "Limited payment options available - using fallback configuration"
+  }
+}

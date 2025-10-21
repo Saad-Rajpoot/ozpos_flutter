@@ -1,64 +1,10 @@
 import 'package:equatable/equatable.dart';
-import 'package:flutter/material.dart';
-import 'payment_method.dart';
+import 'payment_method_type.dart';
+import 'tender_status.dart';
 
-/// Status of a tender in split payment
-enum TenderStatus {
-  pending,
-  authorized,
-  captured,
-  failed,
-  voided;
-
-  bool get isSuccessful => this == TenderStatus.authorized || this == TenderStatus.captured;
-  bool get isFailed => this == TenderStatus.failed || this == TenderStatus.voided;
-  
-  String get label {
-    switch (this) {
-      case TenderStatus.pending:
-        return 'Pending';
-      case TenderStatus.authorized:
-        return 'Authorized';
-      case TenderStatus.captured:
-        return 'Captured';
-      case TenderStatus.failed:
-        return 'Failed';
-      case TenderStatus.voided:
-        return 'Voided';
-    }
-  }
-  
-  Color get color {
-    switch (this) {
-      case TenderStatus.pending:
-        return const Color(0xFFFF9800); // Orange
-      case TenderStatus.authorized:
-      case TenderStatus.captured:
-        return const Color(0xFF4CAF50); // Green
-      case TenderStatus.failed:
-      case TenderStatus.voided:
-        return const Color(0xFFD32F2F); // Red
-    }
-  }
-  
-  IconData get icon {
-    switch (this) {
-      case TenderStatus.pending:
-        return Icons.access_time;
-      case TenderStatus.authorized:
-      case TenderStatus.captured:
-        return Icons.check_circle;
-      case TenderStatus.failed:
-      case TenderStatus.voided:
-        return Icons.error;
-    }
-  }
-}
-
-/// Represents a single payment tender in split payment mode
 class TenderEntity extends Equatable {
   final String id;
-  final PaymentMethod method;
+  final PaymentMethodType method;
   final double amount;
   final TenderStatus status;
   final String? authorizationId;
@@ -75,9 +21,33 @@ class TenderEntity extends Equatable {
     required this.createdAt,
   });
 
+  factory TenderEntity.fromJson(Map<String, dynamic> json) {
+    return TenderEntity(
+      id: json['id'],
+      method: PaymentMethodType.fromString(json['method']),
+      amount: json['amount'],
+      status: TenderStatus.fromString(json['status']),
+      authorizationId: json['authorizationId'],
+      createdAt: DateTime.parse(json['createdAt']),
+      errorMessage: json['errorMessage'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'method': method.value,
+      'amount': amount,
+      'status': status.value,
+      'authorizationId': authorizationId,
+      'createdAt': createdAt.toIso8601String(),
+      'errorMessage': errorMessage,
+    };
+  }
+
   TenderEntity copyWith({
     String? id,
-    PaymentMethod? method,
+    PaymentMethodType? method,
     double? amount,
     TenderStatus? status,
     String? authorizationId,

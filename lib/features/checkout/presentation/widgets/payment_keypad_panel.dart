@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../checkout/presentation/bloc/checkout_bloc.dart';
-import '../../../checkout/domain/entities/payment_method.dart';
+import '../../domain/entities/payment_method_type.dart';
 import '../constant/checkout_constants.dart';
 import 'compact_keypad.dart';
 
@@ -23,7 +23,7 @@ class PaymentKeypadPanel extends StatelessWidget {
           return const Center(child: CircularProgressIndicator());
         }
 
-        final isCash = state.selectedMethod == PaymentMethod.cash;
+        final isCash = state.selectedMethod == PaymentMethodType.cash;
 
         return Column(
           mainAxisSize: MainAxisSize.min,
@@ -49,7 +49,8 @@ class PaymentKeypadPanel extends StatelessWidget {
   }
 
   Widget _buildCashDisplay(CheckoutLoaded state) {
-    final cashText = state.cashReceived.isEmpty ? '0.00' : state.cashReceived;
+    final cashText =
+        state.cashReceived.isEmpty ? '0.00' : state.cashReceived.toString();
     final isSufficient = state.cashReceivedNum >= state.grandTotal;
 
     return Container(
