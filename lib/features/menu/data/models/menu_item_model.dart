@@ -78,7 +78,7 @@ class MenuItemModel {
       basePrice: (json['base_price'] as num?)?.toDouble() ?? 0.0,
       tags:
           (json['tags'] as List<dynamic>?)?.map((e) => e as String).toList() ??
-          [],
+              [],
     );
   }
 

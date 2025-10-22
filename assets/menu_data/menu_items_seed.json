@@ -1,0 +1,1289 @@
+[
+  {
+    "id": "item-1",
+    "categoryId": "cat-2",
+    "category": {
+      "id": "cat-2",
+      "name": "Burgers",
+      "description": "Juicy gourmet burgers",
+      "image": "https://via.placeholder.com/300x200/4ECDC4/FFFFFF?text=Burgers",
+      "isActive": true,
+      "sortOrder": 2,
+      "createdAt": "2025-01-08T10:00:00.000Z",
+      "updatedAt": "2025-01-08T10:00:00.000Z"
+    },
+    "name": "Classic Burger",
+    "description": "Juicy beef patty with fresh lettuce, tomato, and signature sauce.",
+    "image": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400",
+    "basePrice": 12.99,
+    "tags": ["Popular"],
+    "modifierGroups": [
+      {
+        "id": "size-burger",
+        "name": "Size Selection",
+        "isRequired": true,
+        "minSelection": 1,
+        "maxSelection": 1,
+        "options": [
+          {
+            "id": "size-regular",
+            "name": "Regular",
+            "priceDelta": 0.0,
+            "isDefault": true
+          },
+          {
+            "id": "size-large",
+            "name": "Large",
+            "priceDelta": 5.0
+          },
+          {
+            "id": "size-mega",
+            "name": "Mega",
+            "priceDelta": 8.0
+          }
+        ]
+      },
+      {
+        "id": "add-ons-burger",
+        "name": "Add-ons",
+        "minSelection": 0,
+        "maxSelection": 4,
+        "options": [
+          {
+            "id": "cheese",
+            "name": "Extra Cheese",
+            "priceDelta": 2.0
+          },
+          {
+            "id": "bacon",
+            "name": "Bacon",
+            "priceDelta": 3.5
+          },
+          {
+            "id": "avocado",
+            "name": "Avocado",
+            "priceDelta": 2.5
+          },
+          {
+            "id": "egg",
+            "name": "Fried Egg",
+            "priceDelta": 2.0
+          }
+        ]
+      },
+      {
+        "id": "sauces-burger",
+        "name": "Sauces",
+        "minSelection": 0,
+        "maxSelection": 2,
+        "options": [
+          {
+            "id": "ketchup",
+            "name": "Ketchup",
+            "priceDelta": 0.0
+          },
+          {
+            "id": "mustard",
+            "name": "Mustard",
+            "priceDelta": 0.0
+          },
+          {
+            "id": "bbq",
+            "name": "BBQ Sauce",
+            "priceDelta": 1.5
+          },
+          {
+            "id": "aioli",
+            "name": "Garlic Aioli",
+            "priceDelta": 1.5
+          }
+        ]
+      }
+    ],
+    "comboOptions": [
+      {
+        "id": "combo-regular",
+        "name": "Regular Combo",
+        "description": "Fries + Regular Drink",
+        "priceDelta": 6.5
+      },
+      {
+        "id": "combo-large",
+        "name": "Large Combo",
+        "description": "Large Fries + Large Drink",
+        "priceDelta": 8.5
+      }
+    ],
+    "recommendedAddOnIds": ["item-7", "item-8"]
+  },
+  {
+    "id": "item-2",
+    "categoryId": "cat-1",
+    "category": {
+      "id": "cat-1",
+      "name": "Pizza",
+      "description": "Delicious wood-fired pizzas",
+      "image": "https://via.placeholder.com/300x200/FF6B6B/FFFFFF?text=Pizza",
+      "isActive": true,
+      "sortOrder": 1,
+      "createdAt": "2025-01-08T10:00:00.000Z",
+      "updatedAt": "2025-01-08T10:00:00.000Z"
+    },
+    "name": "Margherita Pizza",
+    "description": "Fresh mozzarella, basil, and tomato sauce on crispy crust.",
+    "image": "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=400",
+    "basePrice": 16.5,
+    "tags": ["Popular", "Vegetarian"],
+    "modifierGroups": [
+      {
+        "id": "pizza-size",
+        "name": "Pizza Size",
+        "isRequired": true,
+        "minSelection": 1,
+        "maxSelection": 1,
+        "options": [
+          {
+            "id": "small",
+            "name": "Small (10\")",
+            "priceDelta": 0.0
+          },
+          {
+            "id": "medium",
+            "name": "Medium (12\")",
+            "priceDelta": 4.0,
+            "isDefault": true
+          },
+          {
+            "id": "large",
+            "name": "Large (14\")",
+            "priceDelta": 7.0
+          }
+        ]
+      },
+      {
+        "id": "pizza-crust",
+        "name": "Crust Type",
+        "isRequired": true,
+        "minSelection": 1,
+        "maxSelection": 1,
+        "options": [
+          {
+            "id": "thin",
+            "name": "Thin Crust",
+            "priceDelta": 0.0,
+            "isDefault": true
+          },
+          {
+            "id": "thick",
+            "name": "Thick Crust",
+            "priceDelta": 2.0
+          },
+          {
+            "id": "stuffed",
+            "name": "Stuffed Crust",
+            "priceDelta": 4.0
+          }
+        ]
+      },
+      {
+        "id": "pizza-toppings",
+        "name": "Extra Toppings",
+        "minSelection": 0,
+        "maxSelection": 5,
+        "options": [
+          {
+            "id": "mushrooms",
+            "name": "Mushrooms",
+            "priceDelta": 2.0
+          },
+          {
+            "id": "olives",
+            "name": "Olives",
+            "priceDelta": 1.5
+          },
+          {
+            "id": "peppers",
+            "name": "Bell Peppers",
+            "priceDelta": 1.5
+          },
+          {
+            "id": "onions",
+            "name": "Onions",
+            "priceDelta": 1.0
+          },
+          {
+            "id": "jalapenos",
+            "name": "Jalapeños",
+            "priceDelta": 1.5
+          }
+        ]
+      }
+    ],
+    "comboOptions": [
+      {
+        "id": "pizza-combo",
+        "name": "Pizza Combo",
+        "description": "Garlic Bread + 1.25L Drink",
+        "priceDelta": 7.0
+      }
+    ]
+  },
+  {
+    "id": "item-3",
+    "categoryId": "cat-7",
+    "category": {
+      "id": "cat-7",
+      "name": "Appetizers",
+      "description": "Delicious starters and appetizers",
+      "image": "https://via.placeholder.com/300x200/F38181/FFFFFF?text=Appetizers",
+      "isActive": true,
+      "sortOrder": 7,
+      "createdAt": "2025-01-08T10:00:00.000Z",
+      "updatedAt": "2025-01-08T10:00:00.000Z"
+    },
+    "name": "Chicken Wings",
+    "description": "Crispy wings with your choice of sauce.",
+    "image": "https://images.unsplash.com/photo-1567620832903-9fc6debc209f?w=400",
+    "basePrice": 14.99,
+    "tags": ["Popular"],
+    "modifierGroups": [
+      {
+        "id": "wings-qty",
+        "name": "Quantity",
+        "isRequired": true,
+        "minSelection": 1,
+        "maxSelection": 1,
+        "options": [
+          {
+            "id": "wings-6",
+            "name": "6 Wings",
+            "priceDelta": 0.0,
+            "isDefault": true
+          },
+          {
+            "id": "wings-12",
+            "name": "12 Wings",
+            "priceDelta": 8.0
+          },
+          {
+            "id": "wings-24",
+            "name": "24 Wings",
+            "priceDelta": 18.0
+          }
+        ]
+      },
+      {
+        "id": "wings-flavor",
+        "name": "Flavor",
+        "isRequired": true,
+        "minSelection": 1,
+        "maxSelection": 1,
+        "options": [
+          {
+            "id": "buffalo",
+            "name": "Buffalo",
+            "priceDelta": 0.0,
+            "isDefault": true
+          },
+          {
+            "id": "bbq-wings",
+            "name": "BBQ",
+            "priceDelta": 0.0
+          },
+          {
+            "id": "honey-garlic",
+            "name": "Honey Garlic",
+            "priceDelta": 1.0
+          },
+          {
+            "id": "hot",
+            "name": "Extra Hot",
+            "priceDelta": 1.0
+          }
+        ]
+      },
+      {
+        "id": "wings-sides",
+        "name": "Add Dipping Sauce",
+        "minSelection": 0,
+        "maxSelection": 3,
+        "options": [
+          {
+            "id": "ranch",
+            "name": "Ranch",
+            "priceDelta": 1.5
+          },
+          {
+            "id": "blue-cheese",
+            "name": "Blue Cheese",
+            "priceDelta": 1.5
+          },
+          {
+            "id": "sriracha",
+            "name": "Sriracha Mayo",
+            "priceDelta": 1.5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "item-4",
+    "categoryId": "cat-4",
+    "category": {
+      "id": "cat-4",
+      "name": "Salads",
+      "description": "Fresh and healthy salads",
+      "image": "https://via.placeholder.com/300x200/95E1D3/FFFFFF?text=Salads",
+      "isActive": true,
+      "sortOrder": 4,
+      "createdAt": "2025-01-08T10:00:00.000Z",
+      "updatedAt": "2025-01-08T10:00:00.000Z"
+    },
+    "name": "Caesar Salad",
+    "description": "Crisp romaine, parmesan, croutons, and creamy Caesar dressing.",
+    "image": "https://images.unsplash.com/photo-1546793665-c74683f339c1?w=400",
+    "basePrice": 11.5,
+    "tags": ["Healthy"],
+    "modifierGroups": [
+      {
+        "id": "salad-size",
+        "name": "Size",
+        "isRequired": true,
+        "minSelection": 1,
+        "maxSelection": 1,
+        "options": [
+          {
+            "id": "small-salad",
+            "name": "Small",
+            "priceDelta": 0.0,
+            "isDefault": true
+          },
+          {
+            "id": "large-salad",
+            "name": "Large",
+            "priceDelta": 4.0
+          }
+        ]
+      },
+      {
+        "id": "salad-protein",
+        "name": "Add Protein",
+        "minSelection": 0,
+        "maxSelection": 1,
+        "options": [
+          {
+            "id": "grilled-chicken",
+            "name": "Grilled Chicken",
+            "priceDelta": 5.0
+          },
+          {
+            "id": "grilled-shrimp",
+            "name": "Grilled Shrimp",
+            "priceDelta": 7.0
+          },
+          {
+            "id": "crispy-chicken",
+            "name": "Crispy Chicken",
+            "priceDelta": 5.0
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "item-5",
+    "categoryId": "cat-6",
+    "category": {
+      "id": "cat-6",
+      "name": "Beverages",
+      "description": "Hot and cold drinks",
+      "image": "https://via.placeholder.com/300x200/AA96DA/FFFFFF?text=Beverages",
+      "isActive": true,
+      "sortOrder": 6,
+      "createdAt": "2025-01-08T10:00:00.000Z",
+      "updatedAt": "2025-01-08T10:00:00.000Z"
+    },
+    "name": "Coffee",
+    "description": "Freshly brewed coffee.",
+    "image": "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=400",
+    "basePrice": 4.5,
+    "tags": [],
+    "modifierGroups": []
+  },
+  {
+    "id": "item-6",
+    "categoryId": "cat-6",
+    "category": {
+      "id": "cat-6",
+      "name": "Beverages",
+      "description": "Hot and cold drinks",
+      "image": "https://via.placeholder.com/300x200/AA96DA/FFFFFF?text=Beverages",
+      "isActive": true,
+      "sortOrder": 6,
+      "createdAt": "2025-01-08T10:00:00.000Z",
+      "updatedAt": "2025-01-08T10:00:00.000Z"
+    },
+    "name": "Iced Latte",
+    "description": "Espresso with cold milk over ice.",
+    "image": "https://images.unsplash.com/photo-1517487881594-2787fef5ebf7?w=400",
+    "basePrice": 6.5,
+    "tags": [],
+    "modifierGroups": [
+      {
+        "id": "coffee-size",
+        "name": "Size",
+        "isRequired": true,
+        "minSelection": 1,
+        "maxSelection": 1,
+        "options": [
+          {
+            "id": "small-coffee",
+            "name": "Small",
+            "priceDelta": 0.0,
+            "isDefault": true
+          },
+          {
+            "id": "medium-coffee",
+            "name": "Medium",
+            "priceDelta": 1.5
+          },
+          {
+            "id": "large-coffee",
+            "name": "Large",
+            "priceDelta": 2.5
+          }
+        ]
+      },
+      {
+        "id": "coffee-milk",
+        "name": "Milk Type",
+        "minSelection": 0,
+        "maxSelection": 1,
+        "options": [
+          {
+            "id": "whole-milk",
+            "name": "Whole Milk",
+            "priceDelta": 0.0,
+            "isDefault": true
+          },
+          {
+            "id": "almond-milk",
+            "name": "Almond Milk",
+            "priceDelta": 1.0
+          },
+          {
+            "id": "oat-milk",
+            "name": "Oat Milk",
+            "priceDelta": 1.0
+          },
+          {
+            "id": "soy-milk",
+            "name": "Soy Milk",
+            "priceDelta": 1.0
+          }
+        ]
+      },
+      {
+        "id": "coffee-extras",
+        "name": "Add Extra",
+        "minSelection": 0,
+        "maxSelection": 2,
+        "options": [
+          {
+            "id": "extra-shot",
+            "name": "Extra Shot",
+            "priceDelta": 1.5
+          },
+          {
+            "id": "vanilla-syrup",
+            "name": "Vanilla Syrup",
+            "priceDelta": 0.5
+          },
+          {
+            "id": "caramel-syrup",
+            "name": "Caramel Syrup",
+            "priceDelta": 0.5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "item-7",
+    "categoryId": "cat-8",
+    "category": {
+      "id": "cat-8",
+      "name": "Sides",
+      "description": "Delicious side dishes",
+      "image": "https://via.placeholder.com/300x200/FFE66D/FFFFFF?text=Sides",
+      "isActive": true,
+      "sortOrder": 8,
+      "createdAt": "2025-01-08T10:00:00.000Z",
+      "updatedAt": "2025-01-08T10:00:00.000Z"
+    },
+    "name": "French Fries",
+    "description": "Golden crispy fries.",
+    "image": "https://images.unsplash.com/photo-1576107232684-1279f390859f?w=400",
+    "basePrice": 5.5,
+    "tags": [],
+    "modifierGroups": [
+      {
+        "id": "fries-size",
+        "name": "Size",
+        "isRequired": true,
+        "minSelection": 1,
+        "maxSelection": 1,
+        "options": [
+          {
+            "id": "small-fries",
+            "name": "Small",
+            "priceDelta": 0.0,
+            "isDefault": true
+          },
+          {
+            "id": "medium-fries",
+            "name": "Medium",
+            "priceDelta": 2.0
+          },
+          {
+            "id": "large-fries",
+            "name": "Large",
+            "priceDelta": 3.5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "item-8",
+    "categoryId": "cat-8",
+    "category": {
+      "id": "cat-8",
+      "name": "Sides",
+      "description": "Delicious side dishes",
+      "image": "https://via.placeholder.com/300x200/FFE66D/FFFFFF?text=Sides",
+      "isActive": true,
+      "sortOrder": 8,
+      "createdAt": "2025-01-08T10:00:00.000Z",
+      "updatedAt": "2025-01-08T10:00:00.000Z"
+    },
+    "name": "Onion Rings",
+    "description": "Crispy battered onion rings.",
+    "image": "https://images.unsplash.com/photo-1639024471283-03518883512d?w=400",
+    "basePrice": 6.5,
+    "tags": [],
+    "modifierGroups": []
+  },
+  {
+    "id": "item-9",
+    "categoryId": "cat-5",
+    "category": {
+      "id": "cat-5",
+      "name": "Desserts",
+      "description": "Sweet treats",
+      "image": "https://via.placeholder.com/300x200/F38181/FFFFFF?text=Desserts",
+      "isActive": true,
+      "sortOrder": 5,
+      "createdAt": "2025-01-08T10:00:00.000Z",
+      "updatedAt": "2025-01-08T10:00:00.000Z"
+    },
+    "name": "Chocolate Cake",
+    "description": "Rich chocolate cake with ganache.",
+    "image": "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400",
+    "basePrice": 8.5,
+    "tags": [],
+    "modifierGroups": [
+      {
+        "id": "cake-extras",
+        "name": "Add Extra",
+        "minSelection": 0,
+        "maxSelection": 2,
+        "options": [
+          {
+            "id": "ice-cream",
+            "name": "Vanilla Ice Cream",
+            "priceDelta": 3.0
+          },
+          {
+            "id": "whipped-cream",
+            "name": "Whipped Cream",
+            "priceDelta": 1.5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "item-10",
+    "categoryId": "cat-9",
+    "category": {
+      "id": "cat-9",
+      "name": "Mexican",
+      "description": "Authentic Mexican cuisine",
+      "image": "https://via.placeholder.com/300x200/4ECDC4/FFFFFF?text=Mexican",
+      "isActive": true,
+      "sortOrder": 9,
+      "createdAt": "2025-01-08T10:00:00.000Z",
+      "updatedAt": "2025-01-08T10:00:00.000Z"
+    },
+    "name": "Beef Tacos",
+    "description": "Three soft tacos with seasoned beef.",
+    "image": "https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=400",
+    "basePrice": 13.5,
+    "tags": ["Popular"],
+    "modifierGroups": [
+      {
+        "id": "taco-shell",
+        "name": "Shell Type",
+        "isRequired": true,
+        "minSelection": 1,
+        "maxSelection": 1,
+        "options": [
+          {
+            "id": "soft-shell",
+            "name": "Soft Shell",
+            "priceDelta": 0.0,
+            "isDefault": true
+          },
+          {
+            "id": "hard-shell",
+            "name": "Hard Shell",
+            "priceDelta": 0.0
+          }
+        ]
+      },
+      {
+        "id": "taco-toppings",
+        "name": "Toppings",
+        "minSelection": 0,
+        "maxSelection": 5,
+        "options": [
+          {
+            "id": "sour-cream",
+            "name": "Sour Cream",
+            "priceDelta": 1.0
+          },
+          {
+            "id": "guacamole",
+            "name": "Guacamole",
+            "priceDelta": 2.5
+          },
+          {
+            "id": "salsa",
+            "name": "Salsa",
+            "priceDelta": 0.0
+          },
+          {
+            "id": "cheese-taco",
+            "name": "Extra Cheese",
+            "priceDelta": 1.5
+          },
+          {
+            "id": "jalapenos-taco",
+            "name": "Jalapeños",
+            "priceDelta": 1.0
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "item-11",
+    "categoryId": "cat-3",
+    "category": {
+      "id": "cat-3",
+      "name": "Pasta",
+      "description": "Fresh homemade pasta",
+      "image": "https://via.placeholder.com/300x200/FFE66D/FFFFFF?text=Pasta",
+      "isActive": true,
+      "sortOrder": 3,
+      "createdAt": "2025-01-08T10:00:00.000Z",
+      "updatedAt": "2025-01-08T10:00:00.000Z"
+    },
+    "name": "Pasta Carbonara",
+    "description": "Creamy pasta with bacon and parmesan.",
+    "image": "https://images.unsplash.com/photo-1612874742237-6526221588e3?w=400",
+    "basePrice": 17.5,
+    "tags": [],
+    "modifierGroups": [
+      {
+        "id": "pasta-type",
+        "name": "Pasta Type",
+        "isRequired": true,
+        "minSelection": 1,
+        "maxSelection": 1,
+        "options": [
+          {
+            "id": "spaghetti",
+            "name": "Spaghetti",
+            "priceDelta": 0.0,
+            "isDefault": true
+          },
+          {
+            "id": "fettuccine",
+            "name": "Fettuccine",
+            "priceDelta": 1.0
+          },
+          {
+            "id": "penne",
+            "name": "Penne",
+            "priceDelta": 0.0
+          }
+        ]
+      },
+      {
+        "id": "pasta-extras",
+        "name": "Add Extra",
+        "minSelection": 0,
+        "maxSelection": 2,
+        "options": [
+          {
+            "id": "extra-bacon",
+            "name": "Extra Bacon",
+            "priceDelta": 4.0
+          },
+          {
+            "id": "garlic-bread",
+            "name": "Garlic Bread",
+            "priceDelta": 3.5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "item-12",
+    "categoryId": "cat-10",
+    "category": {
+      "id": "cat-10",
+      "name": "Japanese",
+      "description": "Authentic Japanese cuisine",
+      "image": "https://via.placeholder.com/300x200/95E1D3/FFFFFF?text=Japanese",
+      "isActive": true,
+      "sortOrder": 10,
+      "createdAt": "2025-01-08T10:00:00.000Z",
+      "updatedAt": "2025-01-08T10:00:00.000Z"
+    },
+    "name": "Sushi Platter",
+    "description": "Assorted nigiri and rolls.",
+    "image": "https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=400",
+    "basePrice": 22.0,
+    "tags": ["Popular"],
+    "modifierGroups": [
+      {
+        "id": "sushi-size",
+        "name": "Platter Size",
+        "isRequired": true,
+        "minSelection": 1,
+        "maxSelection": 1,
+        "options": [
+          {
+            "id": "small-platter",
+            "name": "Small (12 pcs)",
+            "priceDelta": 0.0,
+            "isDefault": true
+          },
+          {
+            "id": "medium-platter",
+            "name": "Medium (20 pcs)",
+            "priceDelta": 8.0
+          },
+          {
+            "id": "large-platter",
+            "name": "Large (32 pcs)",
+            "priceDelta": 18.0
+          }
+        ]
+      },
+      {
+        "id": "sushi-extras",
+        "name": "Add Extra",
+        "minSelection": 0,
+        "maxSelection": 3,
+        "options": [
+          {
+            "id": "miso-soup",
+            "name": "Miso Soup",
+            "priceDelta": 3.5
+          },
+          {
+            "id": "edamame",
+            "name": "Edamame",
+            "priceDelta": 4.0
+          },
+          {
+            "id": "seaweed-salad",
+            "name": "Seaweed Salad",
+            "priceDelta": 4.5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "item-13",
+    "categoryId": "cat-6",
+    "category": {
+      "id": "cat-6",
+      "name": "Beverages",
+      "description": "Hot and cold drinks",
+      "image": "https://via.placeholder.com/300x200/AA96DA/FFFFFF?text=Beverages",
+      "isActive": true,
+      "sortOrder": 6,
+      "createdAt": "2025-01-08T10:00:00.000Z",
+      "updatedAt": "2025-01-08T10:00:00.000Z"
+    },
+    "name": "Mango Smoothie",
+    "description": "Fresh mango blended with yogurt.",
+    "image": "https://images.unsplash.com/photo-1505252585461-04db1eb84625?w=400",
+    "basePrice": 7.5,
+    "tags": ["Healthy"],
+    "modifierGroups": []
+  },
+  {
+    "id": "item-14",
+    "categoryId": "cat-11",
+    "category": {
+      "id": "cat-11",
+      "name": "Seafood",
+      "description": "Fresh seafood dishes",
+      "image": "https://via.placeholder.com/300x200/4ECDC4/FFFFFF?text=Seafood",
+      "isActive": true,
+      "sortOrder": 11,
+      "createdAt": "2025-01-08T10:00:00.000Z",
+      "updatedAt": "2025-01-08T10:00:00.000Z"
+    },
+    "name": "Fish & Chips",
+    "description": "Beer-battered fish with crispy chips.",
+    "image": "https://images.unsplash.com/photo-1579208575657-c595a05383b7?w=400",
+    "basePrice": 18.5,
+    "tags": [],
+    "modifierGroups": [
+      {
+        "id": "fish-type",
+        "name": "Fish Type",
+        "isRequired": true,
+        "minSelection": 1,
+        "maxSelection": 1,
+        "options": [
+          {
+            "id": "cod",
+            "name": "Cod",
+            "priceDelta": 0.0,
+            "isDefault": true
+          },
+          {
+            "id": "haddock",
+            "name": "Haddock",
+            "priceDelta": 2.0
+          },
+          {
+            "id": "salmon",
+            "name": "Salmon",
+            "priceDelta": 4.0
+          }
+        ]
+      },
+      {
+        "id": "fish-sides",
+        "name": "Add Side",
+        "minSelection": 0,
+        "maxSelection": 2,
+        "options": [
+          {
+            "id": "coleslaw",
+            "name": "Coleslaw",
+            "priceDelta": 3.0
+          },
+          {
+            "id": "mushy-peas",
+            "name": "Mushy Peas",
+            "priceDelta": 2.5
+          },
+          {
+            "id": "tartar-sauce",
+            "name": "Tartar Sauce",
+            "priceDelta": 1.5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "item-15",
+    "categoryId": "cat-6",
+    "category": {
+      "id": "cat-6",
+      "name": "Beverages",
+      "description": "Hot and cold drinks",
+      "image": "https://via.placeholder.com/300x200/AA96DA/FFFFFF?text=Beverages",
+      "isActive": true,
+      "sortOrder": 6,
+      "createdAt": "2025-01-08T10:00:00.000Z",
+      "updatedAt": "2025-01-08T10:00:00.000Z"
+    },
+    "name": "Fresh Orange Juice",
+    "description": "Freshly squeezed orange juice.",
+    "image": "https://images.unsplash.com/photo-1600271886742-f049cd451bba?w=400",
+    "basePrice": 5.5,
+    "tags": ["Healthy"],
+    "modifierGroups": []
+  },
+  {
+    "id": "item-16",
+    "categoryId": "cat-12",
+    "category": {
+      "id": "cat-12",
+      "name": "Breakfast",
+      "description": "Morning favorites and breakfast specials",
+      "image": "https://via.placeholder.com/300x200/FFE66D/FFFFFF?text=Breakfast",
+      "isActive": true,
+      "sortOrder": 12,
+      "createdAt": "2025-01-08T10:00:00.000Z",
+      "updatedAt": "2025-01-08T10:00:00.000Z"
+    },
+    "name": "Pancakes",
+    "description": "Fluffy pancakes with maple syrup and butter.",
+    "image": "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=400",
+    "basePrice": 8.99,
+    "tags": ["Popular"],
+    "modifierGroups": [
+      {
+        "id": "pancake-toppings",
+        "name": "Toppings",
+        "minSelection": 0,
+        "maxSelection": 3,
+        "options": [
+          {
+            "id": "blueberries",
+            "name": "Blueberries",
+            "priceDelta": 2.0
+          },
+          {
+            "id": "strawberries",
+            "name": "Strawberries",
+            "priceDelta": 2.0
+          },
+          {
+            "id": "chocolate-chips",
+            "name": "Chocolate Chips",
+            "priceDelta": 1.5
+          },
+          {
+            "id": "whipped-cream-breakfast",
+            "name": "Whipped Cream",
+            "priceDelta": 1.0
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "item-17",
+    "categoryId": "cat-13",
+    "category": {
+      "id": "cat-13",
+      "name": "Kids Menu",
+      "description": "Fun and tasty options for kids",
+      "image": "https://via.placeholder.com/300x200/F38181/FFFFFF?text=Kids",
+      "isActive": true,
+      "sortOrder": 13,
+      "createdAt": "2025-01-08T10:00:00.000Z",
+      "updatedAt": "2025-01-08T10:00:00.000Z"
+    },
+    "name": "Kids Chicken Nuggets",
+    "description": "Crispy chicken nuggets with fries and dipping sauce.",
+    "image": "https://images.unsplash.com/photo-1562967914-608f82629710?w=400",
+    "basePrice": 7.99,
+    "tags": ["Kids"],
+    "modifierGroups": [
+      {
+        "id": "kids-sauce",
+        "name": "Dipping Sauce",
+        "minSelection": 0,
+        "maxSelection": 2,
+        "options": [
+          {
+            "id": "ketchup-kids",
+            "name": "Ketchup",
+            "priceDelta": 0.0
+          },
+          {
+            "id": "bbq-kids",
+            "name": "BBQ Sauce",
+            "priceDelta": 0.0
+          },
+          {
+            "id": "honey-mustard",
+            "name": "Honey Mustard",
+            "priceDelta": 0.5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "item-18",
+    "categoryId": "cat-14",
+    "category": {
+      "id": "cat-14",
+      "name": "Healthy Options",
+      "description": "Nutritious and wholesome choices",
+      "image": "https://via.placeholder.com/300x200/95E1D3/FFFFFF?text=Healthy",
+      "isActive": true,
+      "sortOrder": 14,
+      "createdAt": "2025-01-08T10:00:00.000Z",
+      "updatedAt": "2025-01-08T10:00:00.000Z"
+    },
+    "name": "Quinoa Bowl",
+    "description": "Healthy quinoa bowl with roasted vegetables and tahini dressing.",
+    "image": "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400",
+    "basePrice": 13.99,
+    "tags": ["Healthy", "Vegetarian", "Gluten-Free"],
+    "modifierGroups": [
+      {
+        "id": "quinoa-protein",
+        "name": "Add Protein",
+        "minSelection": 0,
+        "maxSelection": 1,
+        "options": [
+          {
+            "id": "grilled-chicken-quinoa",
+            "name": "Grilled Chicken",
+            "priceDelta": 4.0
+          },
+          {
+            "id": "tofu",
+            "name": "Marinated Tofu",
+            "priceDelta": 3.0
+          },
+          {
+            "id": "salmon-quinoa",
+            "name": "Grilled Salmon",
+            "priceDelta": 6.0
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "item-19",
+    "categoryId": "cat-15",
+    "category": {
+      "id": "cat-15",
+      "name": "Snacks",
+      "description": "Quick bites and light snacks",
+      "image": "https://via.placeholder.com/300x200/FFE66D/FFFFFF?text=Snacks",
+      "isActive": true,
+      "sortOrder": 15,
+      "createdAt": "2025-01-08T10:00:00.000Z",
+      "updatedAt": "2025-01-08T10:00:00.000Z"
+    },
+    "name": "Loaded Nachos",
+    "description": "Crispy tortilla chips with cheese, jalapeños, and sour cream.",
+    "image": "https://images.unsplash.com/photo-1513456852971-30c0b8192d4d?w=400",
+    "basePrice": 9.99,
+    "tags": ["Popular"],
+    "modifierGroups": [
+      {
+        "id": "nachos-toppings",
+        "name": "Extra Toppings",
+        "minSelection": 0,
+        "maxSelection": 4,
+        "options": [
+          {
+            "id": "guacamole-nachos",
+            "name": "Guacamole",
+            "priceDelta": 2.5
+          },
+          {
+            "id": "salsa-nachos",
+            "name": "Salsa",
+            "priceDelta": 1.0
+          },
+          {
+            "id": "sour-cream-nachos",
+            "name": "Sour Cream",
+            "priceDelta": 1.0
+          },
+          {
+            "id": "jalapenos-nachos",
+            "name": "Extra Jalapeños",
+            "priceDelta": 0.5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "item-20",
+    "categoryId": "cat-16",
+    "category": {
+      "id": "cat-16",
+      "name": "Soups",
+      "description": "Comforting soups and broths",
+      "image": "https://via.placeholder.com/300x200/4ECDC4/FFFFFF?text=Soups",
+      "isActive": true,
+      "sortOrder": 16,
+      "createdAt": "2025-01-08T10:00:00.000Z",
+      "updatedAt": "2025-01-08T10:00:00.000Z"
+    },
+    "name": "Chicken Noodle Soup",
+    "description": "Homemade chicken noodle soup with fresh vegetables.",
+    "image": "https://images.unsplash.com/photo-1541592106381-b31e9677c0e5?w=400",
+    "basePrice": 6.99,
+    "tags": ["Comfort Food"],
+    "modifierGroups": [
+      {
+        "id": "soup-size",
+        "name": "Size",
+        "isRequired": true,
+        "minSelection": 1,
+        "maxSelection": 1,
+        "options": [
+          {
+            "id": "cup",
+            "name": "Cup",
+            "priceDelta": 0.0,
+            "isDefault": true
+          },
+          {
+            "id": "bowl",
+            "name": "Bowl",
+            "priceDelta": 2.0
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "item-21",
+    "categoryId": "cat-17",
+    "category": {
+      "id": "cat-17",
+      "name": "Grill",
+      "description": "Grilled specialties and barbecue",
+      "image": "https://via.placeholder.com/300x200/F38181/FFFFFF?text=Grill",
+      "isActive": true,
+      "sortOrder": 17,
+      "createdAt": "2025-01-08T10:00:00.000Z",
+      "updatedAt": "2025-01-08T10:00:00.000Z"
+    },
+    "name": "Grilled Salmon",
+    "description": "Fresh salmon fillet grilled to perfection with lemon herb seasoning.",
+    "image": "https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=400",
+    "basePrice": 19.99,
+    "tags": ["Premium", "Healthy"],
+    "modifierGroups": [
+      {
+        "id": "grill-sides",
+        "name": "Choose Two Sides",
+        "isRequired": true,
+        "minSelection": 2,
+        "maxSelection": 2,
+        "options": [
+          {
+            "id": "grilled-asparagus",
+            "name": "Grilled Asparagus",
+            "priceDelta": 0.0
+          },
+          {
+            "id": "roasted-potatoes",
+            "name": "Roasted Potatoes",
+            "priceDelta": 0.0
+          },
+          {
+            "id": "steamed-broccoli",
+            "name": "Steamed Broccoli",
+            "priceDelta": 0.0
+          },
+          {
+            "id": "rice-pilaf",
+            "name": "Rice Pilaf",
+            "priceDelta": 0.0
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "item-22",
+    "categoryId": "cat-18",
+    "category": {
+      "id": "cat-18",
+      "name": "Steak",
+      "description": "Premium cuts of beef grilled to order",
+      "image": "https://via.placeholder.com/300x200/AA96DA/FFFFFF?text=Steak",
+      "isActive": true,
+      "sortOrder": 18,
+      "createdAt": "2025-01-08T10:00:00.000Z",
+      "updatedAt": "2025-01-08T10:00:00.000Z"
+    },
+    "name": "Ribeye Steak",
+    "description": "12oz prime ribeye steak grilled to your preference.",
+    "image": "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
+    "basePrice": 28.99,
+    "tags": ["Premium"],
+    "modifierGroups": [
+      {
+        "id": "steak-temp",
+        "name": "Doneness",
+        "isRequired": true,
+        "minSelection": 1,
+        "maxSelection": 1,
+        "options": [
+          {
+            "id": "rare",
+            "name": "Rare",
+            "priceDelta": 0.0
+          },
+          {
+            "id": "medium-rare",
+            "name": "Medium Rare",
+            "priceDelta": 0.0,
+            "isDefault": true
+          },
+          {
+            "id": "medium",
+            "name": "Medium",
+            "priceDelta": 0.0
+          },
+          {
+            "id": "medium-well",
+            "name": "Medium Well",
+            "priceDelta": 0.0
+          },
+          {
+            "id": "well-done",
+            "name": "Well Done",
+            "priceDelta": 0.0
+          }
+        ]
+      },
+      {
+        "id": "steak-sauce",
+        "name": "Sauce",
+        "minSelection": 0,
+        "maxSelection": 2,
+        "options": [
+          {
+            "id": "peppercorn",
+            "name": "Peppercorn Sauce",
+            "priceDelta": 2.5
+          },
+          {
+            "id": "mushroom-sauce",
+            "name": "Mushroom Sauce",
+            "priceDelta": 2.5
+          },
+          {
+            "id": "garlic-butter",
+            "name": "Garlic Butter",
+            "priceDelta": 1.5
+          }
+        ]
+      }
+    ]
+  }
+]

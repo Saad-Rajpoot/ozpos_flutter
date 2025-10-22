@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../menu/data/seed_data.dart';
 import '../../domain/entities/menu_item_entity.dart';
+import '../../domain/entities/menu_category_entity.dart';
 import '../../../../core/navigation/app_router.dart';
 import '../../../../core/constants/app_responsive.dart';
 import '../widgets/menu_item_card.dart';
 import '../../../checkout/presentation/widgets/cart_pane.dart';
 import '../../../checkout/presentation/bloc/cart_bloc.dart' as cart_bloc;
 import '../../../../core/widgets/sidebar_nav.dart';
+import '../../data/datasources/menu_mock_datasource.dart';
 
 /// Menu Screen with Seed Data and Cart Integration
 class MenuScreen extends StatefulWidget {
@@ -19,40 +20,50 @@ class MenuScreen extends StatefulWidget {
   State<MenuScreen> createState() => _MenuScreenState();
 }
 
+class _MenuData {
+  final List<MenuItemEntity> menuItems;
+  final List<MenuCategoryEntity> categories;
+  final Map<String, String> categoryIdToNameMap;
+
+  const _MenuData({
+    required this.menuItems,
+    required this.categories,
+    required this.categoryIdToNameMap,
+  });
+}
+
 class _MenuScreenState extends State<MenuScreen> {
   String _selectedCategory = 'all';
   String _searchQuery = '';
+  late Future<_MenuData> _menuDataFuture;
 
-  List<String> get _categories {
-    final Set<String> allCategories = {};
-    for (final item in SeedData.menuItems) {
-      if (item.categoryId.isNotEmpty) {
-        allCategories.add(item.categoryId);
-      }
-    }
-    return ['all', ...allCategories];
+  @override
+  void initState() {
+    super.initState();
+    _menuDataFuture = _loadMenuData();
   }
 
-  List<MenuItemEntity> get _filteredItems {
-    List<MenuItemEntity> items = SeedData.menuItems;
+  Future<_MenuData> _loadMenuData() async {
+    // Load menu items and categories in parallel
+    final menuItemsResult = MenuMockDataSourceImpl().getMenuItems();
+    final categoriesResult = MenuMockDataSourceImpl().getMenuCategories();
 
-    // Apply category filter
-    if (_selectedCategory != 'all') {
-      items =
-          items.where((item) => item.categoryId == _selectedCategory).toList();
+    final menuItems = await menuItemsResult;
+    final categories = await categoriesResult;
+
+    final menuItemEntities = menuItems.map((item) => item.toEntity()).toList();
+    final categoryEntities = categories.map((cat) => cat.toEntity()).toList();
+
+    final categoryMap = <String, String>{};
+    for (final category in categoryEntities) {
+      categoryMap[category.id] = category.name;
     }
 
-    // Apply search filter
-    if (_searchQuery.isNotEmpty) {
-      items = items.where((item) {
-        final name = item.name;
-        final description = item.description;
-        return name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-            description.toLowerCase().contains(_searchQuery.toLowerCase());
-      }).toList();
-    }
-
-    return items;
+    return _MenuData(
+      menuItems: menuItemEntities,
+      categories: categoryEntities,
+      categoryIdToNameMap: categoryMap,
+    );
   }
 
   @override
@@ -112,10 +123,70 @@ class _MenuScreenState extends State<MenuScreen> {
                   _buildHeader(context),
                   // Search bar
                   _buildSearchBar(),
-                  // Category tabs
-                  _buildCategoryTabs(),
-                  // Menu grid
-                  Expanded(child: _buildMenuGrid()),
+                  // Combined data loading
+                  Expanded(
+                    child: FutureBuilder<_MenuData>(
+                      future: _menuDataFuture,
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Center(
+                              child: CircularProgressIndicator());
+                        }
+                        if (snapshot.hasError) {
+                          return const Center(
+                              child: Text('Error loading menu data'));
+                        }
+                        final menuData = snapshot.data!;
+
+                        // Get category names for tabs
+                        final categoryNames = [
+                          'all',
+                          ...menuData.categories.map((cat) => cat.name)
+                        ];
+
+                        // Filter menu items based on selected category and search
+                        List<MenuItemEntity> filteredItems = menuData.menuItems;
+
+                        if (_selectedCategory != 'all') {
+                          final categoryId = menuData
+                              .categoryIdToNameMap.entries
+                              .firstWhere(
+                                  (entry) => entry.value == _selectedCategory,
+                                  orElse: () => const MapEntry('', ''))
+                              .key;
+
+                          if (categoryId.isNotEmpty) {
+                            filteredItems = filteredItems
+                                .where((item) => item.categoryId == categoryId)
+                                .toList();
+                          }
+                        }
+
+                        if (_searchQuery.isNotEmpty) {
+                          filteredItems = filteredItems.where((item) {
+                            final name = item.name;
+                            final description = item.description;
+                            return name
+                                    .toLowerCase()
+                                    .contains(_searchQuery.toLowerCase()) ||
+                                description
+                                    .toLowerCase()
+                                    .contains(_searchQuery.toLowerCase());
+                          }).toList();
+                        }
+
+                        return Column(
+                          children: [
+                            // Category tabs
+                            _buildCategoryTabs(categoryNames),
+                            // Menu grid
+                            Expanded(child: _buildMenuGrid(filteredItems)),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -234,22 +305,22 @@ class _MenuScreenState extends State<MenuScreen> {
     );
   }
 
-  Widget _buildCategoryTabs() {
-    return Container(
+  Widget _buildCategoryTabs(List<String> categories) {
+    return SizedBox(
       height: 50,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      width: double.infinity, // Ensure full width is available
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        itemCount: _categories.length,
+        physics: const ClampingScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        itemCount: categories.length,
         itemBuilder: (context, index) {
-          final category = _categories[index];
+          final category = categories[index];
           final isSelected = _selectedCategory == category;
-          final displayName = category == 'all'
-              ? 'All'
-              : category[0].toUpperCase() + category.substring(1);
+          final displayName = category == 'all' ? 'All' : category;
 
-          return Padding(
-            padding: const EdgeInsets.only(right: 8),
+          return Container(
+            margin: const EdgeInsets.only(right: 8),
             child: ChoiceChip(
               label: Text(displayName),
               selected: isSelected,
@@ -278,9 +349,7 @@ class _MenuScreenState extends State<MenuScreen> {
     );
   }
 
-  Widget _buildMenuGrid() {
-    final items = _filteredItems;
-
+  Widget _buildMenuGrid(List<MenuItemEntity> items) {
     if (items.isEmpty) {
       return Center(
         child: Column(

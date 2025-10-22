@@ -1,8 +1,12 @@
 import 'dart:io';
+import '../../../../core/base/base_bloc.dart';
 import '../../domain/entities/menu_item_edit_entity.dart';
 
-abstract class MenuEditEvent {
+abstract class MenuEditEvent extends BaseEvent {
   const MenuEditEvent();
+
+  @override
+  List<Object?> get props => [];
 }
 
 class InitializeMenuEdit extends MenuEditEvent {

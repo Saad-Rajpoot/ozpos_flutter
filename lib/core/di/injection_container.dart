@@ -9,9 +9,8 @@ import '../network/api_client.dart';
 import '../network/network_info.dart';
 import '../utils/database_helper.dart';
 
+import '../../features/menu/data/datasources/menu_data_source.dart';
 import '../../features/menu/data/datasources/menu_remote_datasource.dart';
-import '../../features/menu/data/datasources/menu_mock_datasource.dart';
-import '../../features/menu/data/datasources/menu_local_datasource.dart';
 import '../../features/menu/data/repositories/menu_repository_impl.dart';
 import '../../features/menu/domain/repositories/menu_repository.dart';
 import '../../features/menu/domain/usecases/get_menu_items.dart';
@@ -164,31 +163,16 @@ Future<void> _initOrders(GetIt sl) async {
 
 /// Initialize menu feature dependencies
 Future<void> _initMenu(GetIt sl) async {
-  // Environment-based data source selection
-  sl.registerLazySingleton<MenuRemoteDataSource>(() {
-    if (AppConfig.instance.environment == AppEnvironment.development) {
-      // Use mock data source for development
-      return MenuMockDataSourceImpl();
-    } else {
-      // Use remote data source for production
-      return MenuRemoteDataSourceImpl(apiClient: sl());
-    }
+  // Data source - use remote for production, mock for testing
+  sl.registerLazySingleton<MenuDataSource>(() {
+    // Use remote data source for production
+    return MenuRemoteDataSourceImpl(apiClient: sl());
   });
-
-  // Only register local data source if database is available
-  if (sl.isRegistered<Database>()) {
-    sl.registerLazySingleton<MenuLocalDataSource>(
-      () => MenuLocalDataSourceImpl(database: sl()),
-    );
-  }
 
   // Repository
   sl.registerLazySingleton<MenuRepository>(
     () => MenuRepositoryImpl(
-      remoteDataSource: sl(),
-      localDataSource: sl.isRegistered<MenuLocalDataSource>()
-          ? sl<MenuLocalDataSource>()
-          : null,
+      menuDataSource: sl(),
       networkInfo: sl(),
     ),
   );

@@ -4,6 +4,7 @@ import '../../../../core/navigation/app_router.dart';
 import '../../../../core/navigation/navigation_service.dart';
 import '../../../../core/constants/app_responsive.dart';
 import '../../../menu/presentation/bloc/menu_bloc.dart';
+import '../../../menu/presentation/bloc/menu_event.dart';
 import '../widgets/dashboard_tile.dart';
 import '../../../orders/presentation/widgets/active_orders_panel.dart';
 import '../../../../core/widgets/sidebar_nav.dart';
@@ -41,7 +42,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void initState() {
     super.initState();
     // Load menu data when dashboard initializes
-    context.read<MenuBloc>().add(GetMenuItemsEvent());
+    context.read<MenuBloc>().add(const GetMenuItemsEvent());
   }
 
   @override

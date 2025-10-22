@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ozpos_flutter/features/tables/domain/entities/table_entity.dart';
-import 'package:ozpos_flutter/features/menu/data/seed_data.dart';
 import '../../../checkout/presentation/bloc/cart_bloc.dart';
+import '../../data/datasources/table_mock_datasource.dart';
 
 enum TableViewMode { list, floor }
 
@@ -19,18 +19,28 @@ class _TableSelectionModalState extends State<TableSelectionModal> {
   TableStatus? _filterStatus;
   String _searchQuery = '';
   TableEntity? _selectedTable;
+  late Future<List<TableEntity>> _tablesFuture;
 
-  List<TableEntity> get _filteredTables {
-    List<TableEntity> tables = SeedData.tables;
+  @override
+  void initState() {
+    super.initState();
+    _tablesFuture = TableMockDataSourceImpl().getTables();
+  }
+
+  Future<List<TableEntity>> get _filteredTables async {
+    final tables = await _tablesFuture;
+
+    List<TableEntity> filteredTables = tables;
 
     // Apply status filter
     if (_filterStatus != null) {
-      tables = tables.where((t) => t.status == _filterStatus).toList();
+      filteredTables =
+          filteredTables.where((t) => t.status == _filterStatus).toList();
     }
 
     // Apply search filter
     if (_searchQuery.isNotEmpty) {
-      tables = tables.where((t) {
+      filteredTables = filteredTables.where((t) {
         final String tableNumber = t.number;
         final String serverName = t.serverName ?? '';
         return tableNumber.contains(_searchQuery) ||
@@ -38,7 +48,7 @@ class _TableSelectionModalState extends State<TableSelectionModal> {
       }).toList();
     }
 
-    return tables;
+    return filteredTables;
   }
 
   @override
@@ -203,21 +213,32 @@ class _TableSelectionModalState extends State<TableSelectionModal> {
   // ==========================================================================
 
   Widget _buildListView() {
-    final tables = _filteredTables;
+    return FutureBuilder<List<TableEntity>>(
+      future: _filteredTables,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (snapshot.hasError) {
+          return const Center(child: Text('Error loading tables'));
+        }
+        final tables = snapshot.data ?? [];
 
-    if (tables.isEmpty) {
-      return _buildEmptyState();
-    }
+        if (tables.isEmpty) {
+          return _buildEmptyState();
+        }
 
-    return ListView.separated(
-      itemCount: tables.length,
-      separatorBuilder: (context, index) => const SizedBox(height: 12),
-      itemBuilder: (context, index) {
-        final table = tables[index];
-        return _TableListCard(
-          table: table,
-          isSelected: _selectedTable?.id == table.id,
-          onTap: () => setState(() => _selectedTable = table),
+        return ListView.separated(
+          itemCount: tables.length,
+          separatorBuilder: (context, index) => const SizedBox(height: 12),
+          itemBuilder: (context, index) {
+            final table = tables[index];
+            return _TableListCard(
+              table: table,
+              isSelected: _selectedTable?.id == table.id,
+              onTap: () => setState(() => _selectedTable = table),
+            );
+          },
         );
       },
     );
@@ -228,61 +249,73 @@ class _TableSelectionModalState extends State<TableSelectionModal> {
   // ==========================================================================
 
   Widget _buildFloorView() {
-    final tables = _filteredTables;
+    return FutureBuilder<List<TableEntity>>(
+      future: _filteredTables,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (snapshot.hasError) {
+          return const Center(child: Text('Error loading tables'));
+        }
+        final tables = snapshot.data ?? [];
 
-    if (tables.isEmpty) {
-      return _buildEmptyState();
-    }
+        if (tables.isEmpty) {
+          return _buildEmptyState();
+        }
 
-    return Column(
-      children: [
-        // Legend
-        _buildLegend(),
-        const SizedBox(height: 16),
+        return Column(
+          children: [
+            // Legend
+            _buildLegend(),
+            const SizedBox(height: 16),
 
-        // Floor grid (10x10)
-        Expanded(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              return GridView.builder(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 10,
-                  mainAxisSpacing: 8,
-                  crossAxisSpacing: 8,
-                ),
-                itemCount: 100,
-                itemBuilder: (context, index) {
-                  final x = index % 10;
-                  final y = index ~/ 10;
-
-                  // Find table at this position
-                  final table = tables.firstWhere(
-                    (t) => t.floorX == x && t.floorY == y,
-                    orElse: () => const TableEntity(
-                      id: '',
-                      number: '',
-                      seats: 0,
-                      status: TableStatus.available,
-                      floorX: null,
-                      floorY: null,
+            // Floor grid (10x10)
+            Expanded(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return GridView.builder(
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 10,
+                      mainAxisSpacing: 8,
+                      crossAxisSpacing: 8,
                     ),
-                  );
+                    itemCount: 100,
+                    itemBuilder: (context, index) {
+                      final x = index % 10;
+                      final y = index ~/ 10;
 
-                  if (table.id.isEmpty) {
-                    return const SizedBox.shrink();
-                  }
+                      // Find table at this position
+                      final table = tables.firstWhere(
+                        (t) => t.floorX == x && t.floorY == y,
+                        orElse: () => const TableEntity(
+                          id: '',
+                          number: '',
+                          seats: 0,
+                          status: TableStatus.available,
+                          floorX: null,
+                          floorY: null,
+                        ),
+                      );
 
-                  return _FloorTableNode(
-                    table: table,
-                    isSelected: _selectedTable?.id == table.id,
-                    onTap: () => setState(() => _selectedTable = table),
+                      if (table.id.isEmpty) {
+                        return const SizedBox.shrink();
+                      }
+
+                      return _FloorTableNode(
+                        table: table,
+                        isSelected: _selectedTable?.id == table.id,
+                        onTap: () => setState(() => _selectedTable = table),
+                      );
+                    },
                   );
                 },
-              );
-            },
-          ),
-        ),
-      ],
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 

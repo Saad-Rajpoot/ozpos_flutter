@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/navigation/app_router.dart';
 import '../../../../core/navigation/navigation_service.dart';
 import '../bloc/menu_bloc.dart';
+import '../bloc/menu_event.dart';
+import '../bloc/menu_state.dart';
 import '../../domain/entities/menu_item_entity.dart';
 import '../../domain/entities/menu_item_edit_entity.dart';
 import '../../../combos/presentation/bloc/combo_management_bloc.dart';
@@ -28,7 +30,7 @@ class _MenuEditorScreenState extends State<MenuEditorScreen> {
   @override
   void initState() {
     super.initState();
-    context.read<MenuBloc>().add(GetMenuItemsEvent());
+    context.read<MenuBloc>().add(const GetMenuItemsEvent());
   }
 
   @override
@@ -1024,7 +1026,7 @@ class _MenuEditorScreenState extends State<MenuEditorScreen> {
     );
 
     if (result != null && context.mounted) {
-      context.read<MenuBloc>().add(GetMenuItemsEvent());
+      context.read<MenuBloc>().add(const GetMenuItemsEvent());
       NavigationService.showSuccess('"${result.name}" saved successfully!');
     }
   }

@@ -6,7 +6,7 @@ class ModifierOptionEntity extends Equatable {
   final String name;
   final double priceDelta; // +$5.00, or 0.00 for "Free"
   final bool isDefault; // Pre-selected option in the group
-  
+
   const ModifierOptionEntity({
     required this.id,
     required this.name,

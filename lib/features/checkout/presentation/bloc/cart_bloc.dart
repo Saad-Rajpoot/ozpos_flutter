@@ -42,14 +42,14 @@ class CartLineItem extends Equatable {
 
   @override
   List<Object?> get props => [
-    id,
-    menuItem.id,
-    quantity,
-    unitPrice,
-    selectedComboId,
-    selectedModifiers,
-    modifierSummary,
-  ];
+        id,
+        menuItem.id,
+        quantity,
+        unitPrice,
+        selectedComboId,
+        selectedModifiers,
+        modifierSummary,
+      ];
 }
 
 // ============================================================================
@@ -125,15 +125,15 @@ class CartLoaded extends CartState {
 
   @override
   List<Object?> get props => [
-    items,
-    orderType,
-    selectedTable,
-    customerName,
-    customerPhone,
-    subtotal,
-    gst,
-    total,
-  ];
+        items,
+        orderType,
+        selectedTable,
+        customerName,
+        customerPhone,
+        subtotal,
+        gst,
+        total,
+      ];
 }
 
 // ============================================================================
@@ -175,13 +175,13 @@ class AddItemToCart extends CartEvent {
 
   @override
   List<Object?> get props => [
-    menuItem.id,
-    quantity,
-    unitPrice,
-    selectedComboId,
-    selectedModifiers,
-    modifierSummary,
-  ];
+        menuItem.id,
+        quantity,
+        unitPrice,
+        selectedComboId,
+        selectedModifiers,
+        modifierSummary,
+      ];
 }
 
 class UpdateLineItemQuantity extends CartEvent {

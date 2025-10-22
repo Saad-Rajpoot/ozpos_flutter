@@ -1,10 +1,12 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:equatable/equatable.dart';
+import '../../../../core/base/base_bloc.dart';
 import '../../domain/entities/menu_item_entity.dart';
 import '../../domain/entities/modifier_group_entity.dart';
+import 'item_config_event.dart';
+import 'item_config_state.dart';
 
 /// Item Configuration BLoC for managing modifier selection
-class ItemConfigBloc extends Bloc<ItemConfigEvent, ItemConfigState> {
+class ItemConfigBloc extends BaseBloc<ItemConfigEvent, ItemConfigState> {
   ItemConfigBloc() : super(ItemConfigInitial()) {
     on<InitializeItemConfig>(_onInitialize);
     on<SelectModifierOption>(_onSelectOption);
@@ -90,9 +92,8 @@ class ItemConfigBloc extends Bloc<ItemConfigEvent, ItemConfigState> {
       }
     } else {
       // Deselect
-      selectedOptions[event.groupId] = currentSelections
-          .where((id) => id != event.optionId)
-          .toList();
+      selectedOptions[event.groupId] =
+          currentSelections.where((id) => id != event.optionId).toList();
     }
 
     final newPrice = _calculatePrice(
@@ -215,114 +216,4 @@ class ItemConfigBloc extends Bloc<ItemConfigEvent, ItemConfigState> {
     }
     return true;
   }
-}
-
-// Events
-abstract class ItemConfigEvent extends Equatable {
-  const ItemConfigEvent();
-
-  @override
-  List<Object?> get props => [];
-}
-
-class InitializeItemConfig extends ItemConfigEvent {
-  final MenuItemEntity item;
-
-  const InitializeItemConfig({required this.item});
-
-  @override
-  List<Object?> get props => [item];
-}
-
-class SelectModifierOption extends ItemConfigEvent {
-  final String groupId;
-  final String optionId;
-  final bool selected;
-
-  const SelectModifierOption({
-    required this.groupId,
-    required this.optionId,
-    required this.selected,
-  });
-
-  @override
-  List<Object?> get props => [groupId, optionId, selected];
-}
-
-class SelectComboOption extends ItemConfigEvent {
-  final String? comboId;
-
-  const SelectComboOption({this.comboId});
-
-  @override
-  List<Object?> get props => [comboId];
-}
-
-class UpdateQuantity extends ItemConfigEvent {
-  final int quantity;
-
-  const UpdateQuantity({required this.quantity});
-
-  @override
-  List<Object?> get props => [quantity];
-}
-
-class ResetConfiguration extends ItemConfigEvent {
-  const ResetConfiguration();
-}
-
-// States
-abstract class ItemConfigState extends Equatable {
-  const ItemConfigState();
-
-  @override
-  List<Object?> get props => [];
-}
-
-class ItemConfigInitial extends ItemConfigState {}
-
-class ItemConfigLoaded extends ItemConfigState {
-  final MenuItemEntity item;
-  final Map<String, List<String>> selectedOptions;
-  final String? selectedComboId;
-  final int quantity;
-  final double totalPrice;
-  final bool canAddToCart;
-
-  const ItemConfigLoaded({
-    required this.item,
-    required this.selectedOptions,
-    this.selectedComboId,
-    required this.quantity,
-    required this.totalPrice,
-    required this.canAddToCart,
-  });
-
-  ItemConfigLoaded copyWith({
-    MenuItemEntity? item,
-    Map<String, List<String>>? selectedOptions,
-    String? selectedComboId,
-    int? quantity,
-    double? totalPrice,
-    bool? canAddToCart,
-  }) {
-    return ItemConfigLoaded(
-      item: item ?? this.item,
-      selectedOptions: selectedOptions ?? this.selectedOptions,
-      selectedComboId: selectedComboId ?? this.selectedComboId,
-      quantity: quantity ?? this.quantity,
-      totalPrice: totalPrice ?? this.totalPrice,
-      canAddToCart: canAddToCart ?? this.canAddToCart,
-    );
-  }
-
-  @override
-  List<Object?> get props => [
-    item,
-    selectedOptions,
-    selectedComboId,
-    quantity,
-    totalPrice,
-    canAddToCart,
-  ];
 }

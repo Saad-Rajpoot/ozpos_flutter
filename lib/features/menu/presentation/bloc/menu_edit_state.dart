@@ -1,3 +1,4 @@
+import '../../../../core/base/base_bloc.dart';
 import '../../domain/entities/menu_item_edit_entity.dart';
 import '../../domain/entities/menu_category_entity.dart';
 import '../../domain/entities/menu_item_entity.dart';
@@ -12,15 +13,47 @@ enum MenuEditStatus {
   error,
 }
 
+/// Validation result for menu item editing
+class ValidationResult {
+  final List<String> errors;
+  final List<String> warnings;
+
+  const ValidationResult({
+    required this.errors,
+    required this.warnings,
+  });
+
+  bool get isValid => errors.isEmpty;
+  int get issueCount => errors.length + warnings.length;
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is ValidationResult &&
+        other.errors.length == errors.length &&
+        other.warnings.length == warnings.length &&
+        other.errors.every((error) => errors.contains(error)) &&
+        other.warnings.every((warning) => warnings.contains(warning));
+  }
+
+  @override
+  int get hashCode => Object.hash(
+        errors.length,
+        warnings.length,
+        Object.hashAll(errors),
+        Object.hashAll(warnings),
+      );
+}
+
 /// State for menu item editing
-class MenuEditState {
+class MenuEditState extends BaseState {
   final MenuEditStatus status;
   final MenuItemEditEntity item;
   final ValidationResult validation;
   final int currentStep;
   final bool hasUnsavedChanges;
   final String? errorMessage;
-  
+
   // Available data for dropdowns/pickers
   final List<MenuCategoryEntity> categories;
   final List<BadgeEntity> badges;
@@ -39,6 +72,20 @@ class MenuEditState {
     required this.addOnCategories,
     required this.availableItems,
   });
+
+  @override
+  List<Object?> get props => [
+        status,
+        item,
+        validation,
+        currentStep,
+        hasUnsavedChanges,
+        errorMessage,
+        categories,
+        badges,
+        addOnCategories,
+        availableItems,
+      ];
 
   /// Create initial state
   factory MenuEditState.initial() {
@@ -144,7 +191,9 @@ class MenuEditState {
     }
 
     // Channel availability validation
-    if (!item.dineInAvailable && !item.takeawayAvailable && !item.deliveryAvailable) {
+    if (!item.dineInAvailable &&
+        !item.takeawayAvailable &&
+        !item.deliveryAvailable) {
       errors.add('Item must be available on at least one channel');
     }
 
@@ -163,7 +212,8 @@ class MenuEditState {
         (sum, size) => sum + size.addOnItems.length,
       );
       if (totalAddOns == 0) {
-        warnings.add('Consider adding add-ons to increase customization options');
+        warnings
+            .add('Consider adding add-ons to increase customization options');
       }
     }
 
@@ -176,7 +226,7 @@ class MenuEditState {
       final prices = item.sizes.map((s) => s.dineInPrice).toList();
       final minPrice = prices.reduce((a, b) => a < b ? a : b);
       final maxPrice = prices.reduce((a, b) => a > b ? a : b);
-      
+
       if (minPrice == maxPrice) {
         return '\$${minPrice.toStringAsFixed(2)}';
       }
@@ -205,7 +255,8 @@ class MenuEditState {
     if (currentStep == 2 && item.hasSizes) {
       return item.sizes.isNotEmpty &&
           item.sizes.any((s) => s.isDefault) &&
-          item.sizes.every((s) => s.name.trim().isNotEmpty && s.dineInPrice > 0);
+          item.sizes
+              .every((s) => s.name.trim().isNotEmpty && s.dineInPrice > 0);
     }
     // Other steps can always proceed
     return true;
@@ -215,7 +266,7 @@ class MenuEditState {
   bool get canSave {
     return validation.isValid && item.name.trim().isNotEmpty;
   }
-  
+
   /// Get category name by ID
   String getCategoryName(String categoryId) {
     final category = categories.firstWhere(
@@ -229,7 +280,7 @@ class MenuEditState {
     );
     return category.name;
   }
-  
+
   /// Get menu item by ID (for upsells/related)
   MenuItemEntity? getMenuItem(String itemId) {
     try {

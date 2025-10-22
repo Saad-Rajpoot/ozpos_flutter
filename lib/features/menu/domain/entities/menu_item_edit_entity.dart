@@ -13,22 +13,22 @@ class MenuItemEditEntity {
   final List<SizeEditEntity> sizes;
   final double basePrice;
   final double? discountedPrice;
-  
+
   // Channel availability
   final bool dineInAvailable;
   final bool takeawayAvailable;
   final bool deliveryAvailable;
-  
+
   // Kitchen settings
   final String? kitchenStation;
   final int? prepTimeMinutes;
   final String? specialInstructions;
-  
+
   // Tax and pricing
   final String taxCategory;
   final String sku;
   final bool stockTracking;
-  
+
   // Dietary preferences
   final bool isVegetarian;
   final bool isVegan;
@@ -36,7 +36,7 @@ class MenuItemEditEntity {
   final bool isDairyFree;
   final bool isNutFree;
   final bool isHalal;
-  
+
   // Upsells and related items
   final List<String> upsellItemIds; // Changed from upsellIds
   final List<String> relatedItemIds; // Changed from relatedIds
@@ -159,14 +159,15 @@ class MenuItemEditEntity {
       relatedItemIds: [],
     );
   }
-  
+
   // Helper to get display image (file or URL)
   String? get displayImagePath {
     if (imageFile != null) return imageFile!.path;
     return imageUrl;
   }
-  
-  bool get hasImage => imageFile != null || (imageUrl != null && imageUrl!.isNotEmpty);
+
+  bool get hasImage =>
+      imageFile != null || (imageUrl != null && imageUrl!.isNotEmpty);
 }
 
 class SizeEditEntity {

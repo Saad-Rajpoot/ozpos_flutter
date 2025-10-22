@@ -3,34 +3,55 @@ import 'package:flutter/services.dart' show rootBundle;
 
 import '../models/menu_item_model.dart';
 import '../models/menu_category_model.dart';
-import 'menu_remote_datasource.dart';
+import '../../domain/entities/menu_item_entity.dart';
+import '../../domain/entities/modifier_group_entity.dart';
+import '../../domain/entities/modifier_option_entity.dart';
+import '../../../combos/domain/entities/combo_option_entity.dart';
+import '../../../tables/domain/entities/table_entity.dart';
+import 'menu_data_source.dart';
 
 /// Mock menu data source implementation for testing without backend
-/// Implements the same interface as MenuRemoteDataSource for proper interchangeability
-class MenuMockDataSourceImpl implements MenuRemoteDataSource {
-  /// Load categories from JSON file
+class MenuMockDataSourceImpl implements MenuDataSource {
+  /// Load categories from menu items seed data
   static Future<List<MenuCategoryModel>> _getMockCategories() async {
     try {
-      // Try to load success data first
+      // Load menu items and extract categories from them
       final jsonString = await rootBundle.loadString(
-        'assets/menu_data/categories.json',
+        'assets/menu_data/menu_items_seed.json',
       );
-      final List<dynamic> jsonData = json.decode(jsonString);
+      final List<dynamic> menuItemsData = json.decode(jsonString);
 
-      return jsonData.map((category) {
+      // Extract unique categories from menu items
+      final Map<String, dynamic> categoriesMap = {};
+
+      for (final item in menuItemsData) {
+        final category = item['category'];
+        if (category != null && category['id'] != null) {
+          categoriesMap[category['id']] = category;
+        }
+      }
+
+      // Convert to sorted list
+      final categories = categoriesMap.values.toList();
+      categories
+          .sort((a, b) => (a['sortOrder'] ?? 0).compareTo(b['sortOrder'] ?? 0));
+
+      return categories.map((category) {
         return MenuCategoryModel(
           id: category['id'],
           name: category['name'],
           description: category['description'],
           image: category['image'],
-          isActive: category['isActive'],
-          sortOrder: category['sortOrder'],
-          createdAt: DateTime.parse(category['createdAt']),
-          updatedAt: DateTime.parse(category['updatedAt']),
+          isActive: category['isActive'] ?? true,
+          sortOrder: category['sortOrder'] ?? 0,
+          createdAt: DateTime.parse(
+              category['createdAt'] ?? '2025-01-08T10:00:00.000Z'),
+          updatedAt: DateTime.parse(
+              category['updatedAt'] ?? '2025-01-08T10:00:00.000Z'),
         );
       }).toList();
     } catch (e) {
-      // If success data fails to load, try loading error data
+      // If loading fails, try loading error data as fallback
       try {
         final errorJsonString = await rootBundle.loadString(
           'assets/menu_data/categories_error.json',
@@ -158,6 +179,104 @@ class MenuMockDataSourceImpl implements MenuRemoteDataSource {
               item.tags.contains('Best Seller'),
         )
         .toList();
+  }
+
+  /// Load menu items from JSON file
+  static Future<List<MenuItemEntity>> get menuItems async {
+    try {
+      final jsonString = await rootBundle.loadString(
+        'assets/menu_data/menu_items_seed.json',
+      );
+      final List<dynamic> jsonData = json.decode(jsonString);
+
+      return jsonData.map((item) {
+        return MenuItemEntity(
+          id: item['id'],
+          categoryId: item['categoryId'],
+          name: item['name'],
+          description: item['description'],
+          image: item['image'],
+          basePrice: item['basePrice'].toDouble(),
+          tags: item['tags'] != null ? List<String>.from(item['tags']) : [],
+          modifierGroups: item['modifierGroups'] != null
+              ? (item['modifierGroups'] as List<dynamic>).map((group) {
+                  return ModifierGroupEntity(
+                    id: group['id'],
+                    name: group['name'],
+                    isRequired: group['isRequired'] ?? false,
+                    minSelection: group['minSelection'] ?? 0,
+                    maxSelection: group['maxSelection'] ?? 1,
+                    options: (group['options'] as List<dynamic>).map((option) {
+                      return ModifierOptionEntity(
+                        id: option['id'],
+                        name: option['name'],
+                        priceDelta: option['priceDelta'].toDouble(),
+                        isDefault: option['isDefault'] ?? false,
+                      );
+                    }).toList(),
+                  );
+                }).toList()
+              : [],
+          comboOptions: item['comboOptions'] != null
+              ? (item['comboOptions'] as List<dynamic>).map((combo) {
+                  return ComboOptionEntity(
+                    id: combo['id'],
+                    name: combo['name'],
+                    description: combo['description'],
+                    priceDelta: combo['priceDelta'].toDouble(),
+                  );
+                }).toList()
+              : [],
+          recommendedAddOnIds: item['recommendedAddOnIds'] != null
+              ? List<String>.from(item['recommendedAddOnIds'])
+              : [],
+        );
+      }).toList();
+    } catch (e) {
+      // Fallback to empty list if JSON loading fails
+      return [];
+    }
+  }
+
+  /// Load tables from JSON file
+  static Future<List<TableEntity>> get tables async {
+    try {
+      final jsonString = await rootBundle.loadString(
+        'assets/seed_data/tables_seed.json',
+      );
+      final List<dynamic> jsonData = json.decode(jsonString);
+
+      return jsonData.map((table) {
+        return TableEntity(
+          id: table['id'],
+          number: table['number'],
+          seats: table['seats'],
+          status: _parseTableStatus(table['status']),
+          serverName: table['serverName'],
+          floorX: table['floorX'],
+          floorY: table['floorY'],
+        );
+      }).toList();
+    } catch (e) {
+      // Fallback to empty list if JSON loading fails
+      return [];
+    }
+  }
+
+  /// Helper method to parse table status from string
+  static TableStatus _parseTableStatus(String status) {
+    switch (status.toLowerCase()) {
+      case 'available':
+        return TableStatus.available;
+      case 'occupied':
+        return TableStatus.occupied;
+      case 'reserved':
+        return TableStatus.reserved;
+      case 'cleaning':
+        return TableStatus.cleaning;
+      default:
+        return TableStatus.available;
+    }
   }
 }
 

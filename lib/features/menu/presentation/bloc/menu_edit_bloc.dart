@@ -1,11 +1,12 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/base/base_bloc.dart';
 import '../../domain/entities/menu_item_edit_entity.dart';
 import '../../domain/repositories/menu_repository.dart';
 import 'menu_edit_event.dart';
 import 'menu_edit_state.dart';
 
 /// BLoC for managing menu item editing
-class MenuEditBloc extends Bloc<MenuEditEvent, MenuEditState> {
+class MenuEditBloc extends BaseBloc<MenuEditEvent, MenuEditState> {
   final MenuRepository menuRepository;
 
   MenuEditBloc({required this.menuRepository})

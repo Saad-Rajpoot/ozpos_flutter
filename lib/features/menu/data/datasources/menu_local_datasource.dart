@@ -2,24 +2,10 @@ import 'package:sqflite/sqflite.dart';
 import '../../../../core/errors/exceptions.dart';
 import '../models/menu_item_model.dart';
 import '../models/menu_category_model.dart';
-import 'menu_mock_datasource.dart';
-
-/// Menu local data source interface
-abstract class MenuLocalDataSource {
-  Future<List<MenuItemModel>> getMenuItems();
-  Future<List<MenuItemModel>> getMenuItemsByCategory(String categoryId);
-  Future<MenuItemModel?> getMenuItemById(String id);
-  Future<List<MenuCategoryModel>> getMenuCategories();
-  Future<MenuCategoryModel?> getMenuCategoryById(String id);
-  Future<List<MenuItemModel>> searchMenuItems(String query);
-  Future<List<MenuItemModel>> getPopularMenuItems();
-  Future<void> cacheMenuItems(List<MenuItemModel> items);
-  Future<void> cacheMenuCategories(List<MenuCategoryModel> categories);
-  Future<void> clearCache();
-}
+import 'menu_data_source.dart';
 
 /// Menu local data source implementation
-class MenuLocalDataSourceImpl implements MenuLocalDataSource {
+class MenuLocalDataSourceImpl implements MenuDataSource {
   final Database database;
 
   MenuLocalDataSourceImpl({required this.database});
@@ -31,18 +17,16 @@ class MenuLocalDataSourceImpl implements MenuLocalDataSource {
         'menu_items',
         orderBy: 'name ASC',
       );
-      // If database is empty, return mock data
+
       if (maps.isEmpty) {
-        return MenuMockDataSourceImpl().getMenuItems();
+        throw CacheException(message: 'No menu items found in local storage');
       }
+
       return maps.map((map) => MenuItemModel.fromJson(map)).toList();
     } catch (e) {
-      // For web or database errors, return mock data
-      if (e.toString().contains('Database operations not supported on web') ||
-          e.toString().contains('no such table')) {
-        return MenuMockDataSourceImpl().getMenuItems();
-      }
-      throw CacheException(message: e.toString());
+      throw CacheException(
+          message:
+              'Failed to fetch menu items from local storage: ${e.toString()}');
     }
   }
 
@@ -57,12 +41,14 @@ class MenuLocalDataSourceImpl implements MenuLocalDataSource {
       );
       return maps.map((map) => MenuItemModel.fromJson(map)).toList();
     } catch (e) {
-      throw CacheException(message: e.toString());
+      throw CacheException(
+          message:
+              'Failed to fetch menu items by category from local storage: ${e.toString()}');
     }
   }
 
   @override
-  Future<MenuItemModel?> getMenuItemById(String id) async {
+  Future<MenuItemModel> getMenuItemById(String id) async {
     try {
       final List<Map<String, dynamic>> maps = await database.query(
         'menu_items',
@@ -70,10 +56,14 @@ class MenuLocalDataSourceImpl implements MenuLocalDataSource {
         whereArgs: [id],
         limit: 1,
       );
-      if (maps.isEmpty) return null;
+      if (maps.isEmpty) {
+        throw CacheException(message: 'Menu item not found in local storage');
+      }
       return MenuItemModel.fromJson(maps.first);
     } catch (e) {
-      throw CacheException(message: e.toString());
+      throw CacheException(
+          message:
+              'Failed to fetch menu item by ID from local storage: ${e.toString()}');
     }
   }
 
@@ -86,23 +76,22 @@ class MenuLocalDataSourceImpl implements MenuLocalDataSource {
         whereArgs: [1],
         orderBy: 'sort_order ASC, name ASC',
       );
-      // If database is empty, return mock data
+
       if (maps.isEmpty) {
-        return MenuMockDataSourceImpl().getMenuCategories();
+        throw CacheException(
+            message: 'No menu categories found in local storage');
       }
+
       return maps.map((map) => MenuCategoryModel.fromJson(map)).toList();
     } catch (e) {
-      // For web or database errors, return mock data
-      if (e.toString().contains('Database operations not supported on web') ||
-          e.toString().contains('no such table')) {
-        return MenuMockDataSourceImpl().getMenuCategories();
-      }
-      throw CacheException(message: e.toString());
+      throw CacheException(
+          message:
+              'Failed to fetch menu categories from local storage: ${e.toString()}');
     }
   }
 
   @override
-  Future<MenuCategoryModel?> getMenuCategoryById(String id) async {
+  Future<MenuCategoryModel> getMenuCategoryById(String id) async {
     try {
       final List<Map<String, dynamic>> maps = await database.query(
         'menu_categories',
@@ -110,10 +99,15 @@ class MenuLocalDataSourceImpl implements MenuLocalDataSource {
         whereArgs: [id],
         limit: 1,
       );
-      if (maps.isEmpty) return null;
+      if (maps.isEmpty) {
+        throw CacheException(
+            message: 'Menu category not found in local storage');
+      }
       return MenuCategoryModel.fromJson(maps.first);
     } catch (e) {
-      throw CacheException(message: e.toString());
+      throw CacheException(
+          message:
+              'Failed to fetch menu category by ID from local storage: ${e.toString()}');
     }
   }
 
@@ -128,7 +122,9 @@ class MenuLocalDataSourceImpl implements MenuLocalDataSource {
       );
       return maps.map((map) => MenuItemModel.fromJson(map)).toList();
     } catch (e) {
-      throw CacheException(message: e.toString());
+      throw CacheException(
+          message:
+              'Failed to search menu items in local storage: ${e.toString()}');
     }
   }
 
@@ -143,51 +139,9 @@ class MenuLocalDataSourceImpl implements MenuLocalDataSource {
       );
       return maps.map((map) => MenuItemModel.fromJson(map)).toList();
     } catch (e) {
-      throw CacheException(message: e.toString());
-    }
-  }
-
-  @override
-  Future<void> cacheMenuItems(List<MenuItemModel> items) async {
-    try {
-      await database.transaction((txn) async {
-        for (final item in items) {
-          await txn.insert(
-            'menu_items',
-            item.toJson(),
-            conflictAlgorithm: ConflictAlgorithm.replace,
-          );
-        }
-      });
-    } catch (e) {
-      throw CacheException(message: e.toString());
-    }
-  }
-
-  @override
-  Future<void> cacheMenuCategories(List<MenuCategoryModel> categories) async {
-    try {
-      await database.transaction((txn) async {
-        for (final category in categories) {
-          await txn.insert(
-            'menu_categories',
-            category.toJson(),
-            conflictAlgorithm: ConflictAlgorithm.replace,
-          );
-        }
-      });
-    } catch (e) {
-      throw CacheException(message: e.toString());
-    }
-  }
-
-  @override
-  Future<void> clearCache() async {
-    try {
-      await database.delete('menu_items');
-      await database.delete('menu_categories');
-    } catch (e) {
-      throw CacheException(message: e.toString());
+      throw CacheException(
+          message:
+              'Failed to fetch popular menu items from local storage: ${e.toString()}');
     }
   }
 }
