@@ -1,14 +1,20 @@
 import 'package:equatable/equatable.dart';
+import 'package:dartz/dartz.dart';
+import '../../../../core/base/base_usecase.dart';
+import '../../../../core/errors/failures.dart';
 import '../repositories/checkout_repository.dart';
 import '../entities/checkout_metadata_entity.dart';
 
-class ProcessPaymentUseCase {
+class ProcessPaymentUseCase
+    implements UseCase<ProcessPaymentResult, ProcessPaymentParams> {
   final CheckoutRepository _repository;
 
-  ProcessPaymentUseCase({required CheckoutRepository repository})
+  const ProcessPaymentUseCase({required CheckoutRepository repository})
       : _repository = repository;
 
-  Future<ProcessPaymentResult> call(ProcessPaymentParams params) async {
+  @override
+  Future<Either<Failure, ProcessPaymentResult>> call(
+      ProcessPaymentParams params) async {
     try {
       final orderId = await _repository.processPayment(
         paymentMethod: params.paymentMethod,
@@ -16,10 +22,10 @@ class ProcessPaymentUseCase {
         metadata: params.metadata,
       );
 
-      return ProcessPaymentResult.success(
-          orderId: orderId, paidAmount: params.amount);
+      return Right(ProcessPaymentResult.success(
+          orderId: orderId, paidAmount: params.amount));
     } catch (e) {
-      return ProcessPaymentResult.error(message: 'Payment failed: $e');
+      return Left(ServerFailure(message: 'Payment failed: $e'));
     }
   }
 }

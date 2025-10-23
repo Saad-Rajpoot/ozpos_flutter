@@ -32,19 +32,23 @@ class MenuItemEntity extends Equatable {
     return modifierGroups.any((group) => group.isRequired);
   }
 
-  bool get isFastAdd => !hasRequiredModifiers;
+  bool get hasAnyModifiers {
+    return modifierGroups.isNotEmpty || comboOptions.isNotEmpty;
+  }
+
+  bool get isFastAdd => !hasAnyModifiers;
 
   @override
   List<Object?> get props => [
-    id,
-    categoryId,
-    name,
-    description,
-    image,
-    basePrice,
-    tags,
-    modifierGroups,
-    comboOptions,
-    recommendedAddOnIds,
-  ];
+        id,
+        categoryId,
+        name,
+        description,
+        image,
+        basePrice,
+        tags,
+        modifierGroups,
+        comboOptions,
+        recommendedAddOnIds,
+      ];
 }

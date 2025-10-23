@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../core/navigation/app_router.dart';
 import '../../../../core/navigation/navigation_service.dart';
 import '../bloc/menu_bloc.dart';
@@ -833,12 +834,13 @@ class _MenuEditorScreenState extends State<MenuEditorScreen> {
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
             child: item.image != null
-                ? Image.network(
-                    item.image!,
+                ? CachedNetworkImage(
+                    imageUrl: item.image!,
                     width: 80,
                     height: 80,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => _buildPlaceholderImage(),
+                    placeholder: (_, __) => _buildPlaceholderImage(),
+                    errorWidget: (_, __, ___) => _buildPlaceholderImage(),
                   )
                 : _buildPlaceholderImage(),
           ),

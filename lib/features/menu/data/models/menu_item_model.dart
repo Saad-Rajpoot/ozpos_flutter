@@ -1,4 +1,6 @@
 import '../../domain/entities/menu_item_entity.dart';
+import 'modifier_group_model.dart';
+import '../../../combos/data/models/combo_option_model.dart';
 
 /// Menu item model
 class MenuItemModel {
@@ -9,6 +11,9 @@ class MenuItemModel {
   final String? image;
   final double basePrice;
   final List<String> tags;
+  final List<ModifierGroupModel> modifierGroups;
+  final List<ComboOptionModel> comboOptions;
+  final List<String> recommendedAddOnIds;
 
   const MenuItemModel({
     required this.id,
@@ -18,6 +23,9 @@ class MenuItemModel {
     this.image,
     required this.basePrice,
     this.tags = const [],
+    this.modifierGroups = const [],
+    this.comboOptions = const [],
+    this.recommendedAddOnIds = const [],
   });
 
   /// Create entity from model
@@ -30,6 +38,9 @@ class MenuItemModel {
       image: image,
       basePrice: basePrice,
       tags: tags,
+      modifierGroups: modifierGroups.map((model) => model.toEntity()).toList(),
+      comboOptions: comboOptions.map((model) => model.toEntity()).toList(),
+      recommendedAddOnIds: recommendedAddOnIds,
     );
   }
 
@@ -43,6 +54,13 @@ class MenuItemModel {
       image: entity.image,
       basePrice: entity.basePrice,
       tags: entity.tags,
+      modifierGroups: entity.modifierGroups
+          .map((group) => ModifierGroupModel.fromEntity(group))
+          .toList(),
+      comboOptions: entity.comboOptions
+          .map((option) => ComboOptionModel.fromEntity(option))
+          .toList(),
+      recommendedAddOnIds: entity.recommendedAddOnIds,
     );
   }
 
@@ -55,6 +73,9 @@ class MenuItemModel {
     String? image,
     double? basePrice,
     List<String>? tags,
+    List<ModifierGroupModel>? modifierGroups,
+    List<ComboOptionModel>? comboOptions,
+    List<String>? recommendedAddOnIds,
   }) {
     return MenuItemModel(
       id: id ?? this.id,
@@ -64,6 +85,9 @@ class MenuItemModel {
       image: image ?? this.image,
       basePrice: basePrice ?? this.basePrice,
       tags: tags ?? this.tags,
+      modifierGroups: modifierGroups ?? this.modifierGroups,
+      comboOptions: comboOptions ?? this.comboOptions,
+      recommendedAddOnIds: recommendedAddOnIds ?? this.recommendedAddOnIds,
     );
   }
 
@@ -79,6 +103,18 @@ class MenuItemModel {
       tags:
           (json['tags'] as List<dynamic>?)?.map((e) => e as String).toList() ??
               [],
+      modifierGroups: (json['modifier_groups'] as List<dynamic>?)
+              ?.map((group) => ModifierGroupModel.fromJson(group))
+              .toList() ??
+          [],
+      comboOptions: (json['combo_options'] as List<dynamic>?)
+              ?.map((option) => ComboOptionModel.fromJson(option))
+              .toList() ??
+          [],
+      recommendedAddOnIds: (json['recommended_addon_ids'] as List<dynamic>?)
+              ?.map((id) => id as String)
+              .toList() ??
+          [],
     );
   }
 
@@ -92,12 +128,15 @@ class MenuItemModel {
       'image': image,
       'base_price': basePrice,
       'tags': tags,
+      'modifier_groups': modifierGroups.map((group) => group.toJson()).toList(),
+      'combo_options': comboOptions.map((option) => option.toJson()).toList(),
+      'recommended_addon_ids': recommendedAddOnIds,
     };
   }
 
   @override
   String toString() {
-    return 'MenuItemModel(id: $id, name: $name, basePrice: $basePrice)';
+    return 'MenuItemModel(id: $id, name: $name, basePrice: $basePrice, modifiers: ${modifierGroups.length}, combos: ${comboOptions.length})';
   }
 
   @override
@@ -110,7 +149,10 @@ class MenuItemModel {
         other.description == description &&
         other.image == image &&
         other.basePrice == basePrice &&
-        other.tags == tags;
+        other.tags == tags &&
+        other.modifierGroups == modifierGroups &&
+        other.comboOptions == comboOptions &&
+        other.recommendedAddOnIds == recommendedAddOnIds;
   }
 
   @override
@@ -123,6 +165,9 @@ class MenuItemModel {
       image,
       basePrice,
       tags,
+      modifierGroups,
+      comboOptions,
+      recommendedAddOnIds,
     );
   }
 }

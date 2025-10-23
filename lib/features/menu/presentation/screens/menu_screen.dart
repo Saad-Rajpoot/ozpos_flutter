@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/constants/app_constants.dart';
+import '../../../../core/constants/app_colors.dart';
 import '../../domain/entities/menu_item_entity.dart';
 import '../../domain/entities/menu_category_entity.dart';
 import '../../../../core/navigation/app_router.dart';
 import '../../../../core/constants/app_responsive.dart';
 import '../widgets/menu_item_card.dart';
+import '../widgets/item_configurator_dialog.dart';
 import '../../../checkout/presentation/widgets/cart_pane.dart';
 import '../../../checkout/presentation/bloc/cart_bloc.dart' as cart_bloc;
 import '../../../../core/widgets/sidebar_nav.dart';
@@ -66,9 +69,51 @@ class _MenuScreenState extends State<MenuScreen> {
     );
   }
 
+  /// Optimized filtering method - only called when filters actually change
+  List<MenuItemEntity> _getFilteredItems(
+    List<MenuItemEntity> allItems,
+    String selectedCategory,
+    String searchQuery,
+    Map<String, String> categoryIdToNameMap,
+  ) {
+    // Start with all items
+    var filtered = allItems;
+
+    // Filter by category if selected (not 'all')
+    if (selectedCategory != 'all') {
+      final categoryId = categoryIdToNameMap.entries
+          .firstWhere((entry) => entry.value == selectedCategory,
+              orElse: () => const MapEntry('', ''))
+          .key;
+
+      if (categoryId.isNotEmpty) {
+        filtered =
+            filtered.where((item) => item.categoryId == categoryId).toList();
+      }
+    }
+
+    // Filter by search query if provided
+    if (searchQuery.isNotEmpty) {
+      final query = searchQuery.toLowerCase();
+      filtered = filtered.where((item) {
+        final name = item.name.toLowerCase();
+        final description = item.description.toLowerCase();
+        return name.contains(query) || description.contains(query);
+      }).toList();
+    }
+
+    return filtered;
+  }
+
+  /// Get category names for tabs - optimized to avoid recreation
+  List<String> _getCategoryNames(List<MenuCategoryEntity> categories) {
+    return ['all', ...categories.map((cat) => cat.name)];
+  }
+
   @override
   Widget build(BuildContext context) {
-    final isDesktop = MediaQuery.of(context).size.width > 1024;
+    final isDesktop =
+        MediaQuery.of(context).size.width > AppConstants.desktopBreakpoint;
 
     // Extract orderType from navigation arguments
     final args =
@@ -139,42 +184,15 @@ class _MenuScreenState extends State<MenuScreen> {
                         }
                         final menuData = snapshot.data!;
 
-                        // Get category names for tabs
-                        final categoryNames = [
-                          'all',
-                          ...menuData.categories.map((cat) => cat.name)
-                        ];
-
-                        // Filter menu items based on selected category and search
-                        List<MenuItemEntity> filteredItems = menuData.menuItems;
-
-                        if (_selectedCategory != 'all') {
-                          final categoryId = menuData
-                              .categoryIdToNameMap.entries
-                              .firstWhere(
-                                  (entry) => entry.value == _selectedCategory,
-                                  orElse: () => const MapEntry('', ''))
-                              .key;
-
-                          if (categoryId.isNotEmpty) {
-                            filteredItems = filteredItems
-                                .where((item) => item.categoryId == categoryId)
-                                .toList();
-                          }
-                        }
-
-                        if (_searchQuery.isNotEmpty) {
-                          filteredItems = filteredItems.where((item) {
-                            final name = item.name;
-                            final description = item.description;
-                            return name
-                                    .toLowerCase()
-                                    .contains(_searchQuery.toLowerCase()) ||
-                                description
-                                    .toLowerCase()
-                                    .contains(_searchQuery.toLowerCase());
-                          }).toList();
-                        }
+                        // Optimized: Use pre-computed values (only recalculated when dependencies change)
+                        final categoryNames =
+                            _getCategoryNames(menuData.categories);
+                        final filteredItems = _getFilteredItems(
+                          menuData.menuItems,
+                          _selectedCategory,
+                          _searchQuery,
+                          menuData.categoryIdToNameMap,
+                        );
 
                         return Column(
                           children: [
@@ -219,12 +237,13 @@ class _MenuScreenState extends State<MenuScreen> {
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w700,
-              color: Color(0xFF111827),
+              color: AppColors.textPrimary,
             ),
           ),
           const Spacer(),
           // Cart icon with badge (mobile/tablet)
-          if (MediaQuery.of(context).size.width <= 1024)
+          if (MediaQuery.of(context).size.width <=
+              AppConstants.desktopBreakpoint)
             BlocBuilder<cart_bloc.CartBloc, cart_bloc.CartState>(
               builder: (context, state) {
                 final itemCount =
@@ -379,29 +398,29 @@ class _MenuScreenState extends State<MenuScreen> {
     int maxLines;
 
     // Responsive grid columns with proper aspect ratios to prevent overflow
-    if (screenWidth > 1400) {
-      crossAxisCount = 5;
-      spacing = 20;
+    if (screenWidth > AppConstants.desktopBreakpoint * 1.4) {
+      crossAxisCount = AppConstants.gridColumnsUltraWide;
+      spacing = AppConstants.spacingLarge;
       childAspectRatio = 0.8; // Taller cards for more content
       maxLines = 3;
-    } else if (screenWidth > 1024) {
-      crossAxisCount = 4;
-      spacing = 16;
+    } else if (screenWidth > AppConstants.desktopBreakpoint) {
+      crossAxisCount = AppConstants.gridColumnsDesktop;
+      spacing = AppConstants.spacingMedium;
       childAspectRatio = 0.8;
       maxLines = 3;
-    } else if (screenWidth > 768) {
-      crossAxisCount = 3;
-      spacing = 16;
+    } else if (screenWidth > AppConstants.tabletBreakpoint) {
+      crossAxisCount = AppConstants.gridColumnsTablet;
+      spacing = AppConstants.spacingMedium;
       maxLines = 2;
       childAspectRatio = 1.0;
-    } else if (screenWidth > 600) {
-      crossAxisCount = 2;
-      spacing = 12;
+    } else if (screenWidth > AppConstants.mobileBreakpoint) {
+      crossAxisCount = AppConstants.gridColumnsMobile;
+      spacing = AppConstants.spacingSmall * 1.5;
       maxLines = 2;
       childAspectRatio = 1.1;
     } else {
-      crossAxisCount = 2;
-      spacing = 12;
+      crossAxisCount = AppConstants.gridColumnsMobile;
+      spacing = AppConstants.spacingSmall * 1.5;
       maxLines = 1;
       childAspectRatio = 1.1; // More height for mobile
     }
@@ -421,7 +440,7 @@ class _MenuScreenState extends State<MenuScreen> {
           maxLines: maxLines,
           item: item,
           onTap: () {
-            // Fast add for items without required modifiers
+            // For fast-add items (no modifiers), add directly to cart
             if (item.isFastAdd) {
               context.read<cart_bloc.CartBloc>().add(
                     cart_bloc.AddItemToCart(
@@ -436,9 +455,12 @@ class _MenuScreenState extends State<MenuScreen> {
                 SnackBar(
                   content: Text('Added ${item.name} to cart'),
                   duration: const Duration(seconds: 2),
-                  backgroundColor: const Color(0xFF10B981),
+                  backgroundColor: AppColors.success,
                 ),
               );
+            } else {
+              // For items with modifiers, show configuration dialog
+              ItemConfiguratorDialog.show(context, item);
             }
           },
         );

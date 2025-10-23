@@ -107,4 +107,28 @@ class AppColors {
   static const warning = Color(0xFFF59E0B); // amber-500
   static const success = Color(0xFF10B981); // green-500
   static const info = Color(0xFF3B82F6); // blue-500
+
+  // Common opacity variations
+  static const whiteOpacity95 = Color(0xFFF2F2F2); // white with 95% opacity
+  static const blackOpacity20 = Color(0xFF333333); // black with 20% opacity
+  static const blueOpacity10 = Color(0x1A3B82F6); // blue-500 with 10% opacity
+
+  // Button colors
+  static const buttonPrimary = Color(0xFFEF4444); // red-500 (main CTA color)
+  static const buttonSecondary = Color(0xFF6B7280); // gray-500
+  static const buttonSuccess = Color(0xFF10B981); // green-500
+
+  // Status badge colors
+  static const badgePopular = Color(0xFFF59E0B); // amber-500
+  static const badgePopularText = Colors.white;
+
+  // Modifier colors
+  static const modifierPositive = Color(0xFF10B981); // green-500
+  static const modifierNegative = Color(0xFFEF4444); // red-500
+  static const modifierNeutral = Color(0xFF6B7280); // gray-500
+
+  // Price colors
+  static const pricePositive = Color(0xFF10B981); // green-500
+  static const priceNegative = Color(0xFFEF4444); // red-500
+  static const priceNeutral = Color(0xFF6B7280); // gray-500
 }

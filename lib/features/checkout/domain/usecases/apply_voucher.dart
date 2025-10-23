@@ -1,28 +1,34 @@
 import 'package:equatable/equatable.dart';
+import 'package:dartz/dartz.dart';
+import '../../../../core/base/base_usecase.dart';
+import '../../../../core/errors/failures.dart';
 import '../repositories/checkout_repository.dart';
 import '../entities/voucher_entity.dart';
 
-class ApplyVoucherUseCase {
+class ApplyVoucherUseCase
+    implements UseCase<ApplyVoucherResult, ApplyVoucherParams> {
   final CheckoutRepository _repository;
 
-  ApplyVoucherUseCase({required CheckoutRepository repository})
+  const ApplyVoucherUseCase({required CheckoutRepository repository})
       : _repository = repository;
 
-  Future<ApplyVoucherResult> call(ApplyVoucherParams params) async {
+  @override
+  Future<Either<Failure, ApplyVoucherResult>> call(
+      ApplyVoucherParams params) async {
     if (params.code.trim().isEmpty) {
-      return ApplyVoucherResult.error(message: 'Voucher code cannot be empty');
+      return Left(ValidationFailure(message: 'Voucher code cannot be empty'));
     }
 
     try {
       final voucher = await _repository.validateVoucher(params.code);
 
       if (voucher == null) {
-        return ApplyVoucherResult.error(message: 'Invalid voucher code');
+        return Left(ValidationFailure(message: 'Invalid voucher code'));
       }
 
-      return ApplyVoucherResult.success(voucher: voucher);
+      return Right(ApplyVoucherResult.success(voucher: voucher));
     } catch (e) {
-      return ApplyVoucherResult.error(message: 'Failed to apply voucher: $e');
+      return Left(ServerFailure(message: 'Failed to apply voucher: $e'));
     }
   }
 }

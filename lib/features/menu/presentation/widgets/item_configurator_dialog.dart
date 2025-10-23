@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../../domain/entities/menu_item_entity.dart';
 import '../../domain/entities/modifier_group_entity.dart';
 import '../bloc/item_config_bloc.dart';
 import '../bloc/item_config_event.dart';
 import '../bloc/item_config_state.dart';
 import '../../../checkout/presentation/bloc/cart_bloc.dart';
-import '../../../../core/constants/app_colors.dart';
 
 /// Item Configurator Dialog - Pixel-perfect match to reference
 class ItemConfiguratorDialog extends StatelessWidget {
@@ -65,23 +67,31 @@ class ItemConfiguratorDialog extends StatelessWidget {
         // Hero Image
         if (item.image != null)
           ClipRRect(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-            child: Image.network(
-              item.image!,
+            borderRadius: BorderRadius.vertical(
+                top: Radius.circular(AppConstants.borderRadiusExtraLarge)),
+            child: CachedNetworkImage(
+              imageUrl: item.image!,
               height: 200,
               width: double.infinity,
               fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  height: 200,
-                  color: AppColors.bgPrimary,
-                  child: const Icon(
-                    Icons.restaurant,
-                    size: 64,
-                    color: AppColors.textSecondary,
-                  ),
-                );
-              },
+              placeholder: (context, url) => Container(
+                height: 200,
+                color: AppColors.bgPrimary,
+                child: const Icon(
+                  Icons.restaurant,
+                  size: 64,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              errorWidget: (context, url, error) => Container(
+                height: 200,
+                color: AppColors.bgPrimary,
+                child: const Icon(
+                  Icons.restaurant,
+                  size: 64,
+                  color: AppColors.textSecondary,
+                ),
+              ),
             ),
           ),
         // Close button
@@ -157,20 +167,23 @@ class ItemConfiguratorDialog extends StatelessWidget {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFEF3C7),
-                    borderRadius: BorderRadius.circular(8),
+                    color: AppColors.statusPendingBg,
+                    borderRadius:
+                        BorderRadius.circular(AppConstants.borderRadiusMedium),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
-                    children: const [
-                      Icon(Icons.star, size: 16, color: Color(0xFFF59E0B)),
+                    children: [
+                      Icon(Icons.star,
+                          size: AppConstants.popularBadgeSize,
+                          color: AppColors.badgePopular),
                       SizedBox(width: 4),
                       Text(
                         'Popular',
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
-                          color: Color(0xFFD97706),
+                          color: AppColors.warning,
                         ),
                       ),
                     ],
@@ -234,7 +247,7 @@ class ItemConfiguratorDialog extends StatelessWidget {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFEE2E2),
+                      color: AppColors.statusUnpaidBg,
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: const Text(
@@ -242,8 +255,8 @@ class ItemConfiguratorDialog extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFFEF4444),
-                        letterSpacing: 0.5,
+                        color: AppColors.error,
+                        letterSpacing: AppConstants.letterSpacingSmall,
                       ),
                     ),
                   ),
@@ -255,7 +268,7 @@ class ItemConfiguratorDialog extends StatelessWidget {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFDBEAFE),
+                      color: AppColors.orderDineInBgStart,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
@@ -263,7 +276,7 @@ class ItemConfiguratorDialog extends StatelessWidget {
                       style: const TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w500,
-                        color: Color(0xFF3B82F6),
+                        color: AppColors.primary,
                       ),
                     ),
                   ),
@@ -317,9 +330,7 @@ class ItemConfiguratorDialog extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.white,
             border: Border.all(
-              color: isSelected
-                  ? const Color(0xFF3B82F6)
-                  : const Color(0xFFE5E7EB),
+              color: isSelected ? AppColors.primary : AppColors.borderLight,
               width: isSelected ? 2 : 1,
             ),
             borderRadius: BorderRadius.circular(8),
@@ -345,7 +356,7 @@ class ItemConfiguratorDialog extends StatelessWidget {
                         : Icons.circle_outlined),
                 color: isSelected
                     ? const Color(0xFF3B82F6)
-                    : const Color(0xFF9CA3AF),
+                    : AppColors.textSecondary,
                 size: 20,
               ),
               const SizedBox(width: 12),
@@ -462,9 +473,7 @@ class ItemConfiguratorDialog extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.white,
             border: Border.all(
-              color: isSelected
-                  ? const Color(0xFF3B82F6)
-                  : const Color(0xFFE5E7EB),
+              color: isSelected ? AppColors.primary : AppColors.borderLight,
               width: isSelected ? 2 : 1,
             ),
             borderRadius: BorderRadius.circular(8),
@@ -477,7 +486,7 @@ class ItemConfiguratorDialog extends StatelessWidget {
                     : Icons.radio_button_unchecked,
                 color: isSelected
                     ? const Color(0xFF3B82F6)
-                    : const Color(0xFF9CA3AF),
+                    : AppColors.textSecondary,
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -516,15 +525,16 @@ class ItemConfiguratorDialog extends StatelessWidget {
           padding: const EdgeInsets.all(20),
           decoration: const BoxDecoration(
             color: Colors.white,
-            border: Border(top: BorderSide(color: Color(0xFFE5E7EB))),
-            borderRadius: BorderRadius.vertical(bottom: Radius.circular(16)),
+            border: Border(top: BorderSide(color: AppColors.borderLight)),
+            borderRadius: BorderRadius.vertical(
+                bottom: Radius.circular(AppConstants.borderRadiusExtraLarge)),
           ),
           child: Row(
             children: [
               // Quantity stepper
               Container(
                 decoration: BoxDecoration(
-                  border: Border.all(color: const Color(0xFFE5E7EB)),
+                  border: Border.all(color: AppColors.borderLight),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
@@ -577,11 +587,12 @@ class ItemConfiguratorDialog extends StatelessWidget {
                       ? () => _addToCart(context, state)
                       : null,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFEF4444),
-                    foregroundColor: Colors.white,
+                    backgroundColor: AppColors.buttonPrimary,
+                    foregroundColor: AppColors.textWhite,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(
+                          AppConstants.borderRadiusMedium),
                     ),
                     elevation: 0,
                   ),
@@ -646,7 +657,7 @@ class ItemConfiguratorDialog extends StatelessWidget {
       SnackBar(
         content: Text('Added ${state.item.name} to cart'),
         duration: const Duration(seconds: 2),
-        backgroundColor: const Color(0xFF10B981),
+        backgroundColor: AppColors.success,
       ),
     );
   }

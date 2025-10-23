@@ -72,7 +72,7 @@ class MenuMockDataSourceImpl implements MenuDataSource {
     try {
       // Try to load success data first
       final jsonString = await rootBundle.loadString(
-        'assets/menu_data/menu_items.json',
+        'assets/menu_data/menu_items_seed.json',
       );
       final List<dynamic> jsonData = json.decode(jsonString);
 

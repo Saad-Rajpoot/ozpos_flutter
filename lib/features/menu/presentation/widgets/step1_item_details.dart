@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../bloc/menu_edit_bloc.dart';
 import '../bloc/menu_edit_event.dart';
 import '../bloc/menu_edit_state.dart';
@@ -294,25 +295,15 @@ class _Step1ItemDetailsState extends State<Step1ItemDetails> {
     } else if (state.item.displayImagePath != null &&
         state.item.displayImagePath!.isNotEmpty) {
       // Display network image
-      return Image.network(
-        state.item.displayImagePath!,
+      return CachedNetworkImage(
+        imageUrl: state.item.displayImagePath!,
         width: double.infinity,
         height: double.infinity,
         fit: BoxFit.cover,
-        loadingBuilder: (context, child, loadingProgress) {
-          if (loadingProgress == null) return child;
-          return Center(
-            child: CircularProgressIndicator(
-              value: loadingProgress.expectedTotalBytes != null
-                  ? loadingProgress.cumulativeBytesLoaded /
-                      loadingProgress.expectedTotalBytes!
-                  : null,
-            ),
-          );
-        },
-        errorBuilder: (context, error, stackTrace) {
-          return _buildImagePlaceholder();
-        },
+        placeholder: (context, url) => const Center(
+          child: CircularProgressIndicator(),
+        ),
+        errorWidget: (context, url, error) => _buildImagePlaceholder(),
       );
     }
 

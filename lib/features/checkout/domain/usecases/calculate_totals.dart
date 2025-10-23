@@ -1,105 +1,116 @@
 import 'dart:math' as math;
 import 'package:equatable/equatable.dart';
+import 'package:dartz/dartz.dart';
+import '../../../../core/base/base_usecase.dart';
+import '../../../../core/errors/failures.dart';
 import '../entities/voucher_entity.dart';
 import '../entities/tender_entity.dart';
 import '../entities/tender_status.dart';
 import '../entities/payment_method_type.dart';
 import '../entities/cart_line_item_entity.dart';
 
-class CalculateTotalsUseCase {
-  CalculateTotalsUseCase();
+class CalculateTotalsUseCase
+    implements UseCase<CalculateTotalsResult, CalculateTotalsParams> {
+  const CalculateTotalsUseCase();
 
-  CalculateTotalsResult call(CalculateTotalsParams params) {
-    // Calculate subtotal
-    final subtotal =
-        params.items.fold(0.0, (sum, item) => sum + item.lineTotal);
+  @override
+  Future<Either<Failure, CalculateTotalsResult>> call(
+      CalculateTotalsParams params) async {
+    try {
+      // Calculate subtotal
+      final subtotal =
+          params.items.fold(0.0, (sum, item) => sum + item.lineTotal);
 
-    // Calculate tip amount
-    double tipAmount = 0.0;
-    if (params.tipPercent > 0) {
-      tipAmount = (subtotal * params.tipPercent) / 100;
-    } else {
-      tipAmount = double.tryParse(params.customTipAmount) ?? 0.0;
+      // Calculate tip amount
+      double tipAmount = 0.0;
+      if (params.tipPercent > 0) {
+        tipAmount = (subtotal * params.tipPercent) / 100;
+      } else {
+        tipAmount = double.tryParse(params.customTipAmount) ?? 0.0;
+      }
+
+      // Calculate discount amount
+      final discountAmount = (subtotal * params.discountPercent) / 100;
+
+      // Calculate voucher total
+      final voucherTotal = params.appliedVouchers
+          .fold(0.0, (sum, voucher) => sum + voucher.amount);
+
+      // Calculate total before tax
+      final totalBeforeTax = math.max(
+        0.0,
+        subtotal +
+            tipAmount -
+            discountAmount -
+            voucherTotal -
+            params.loyaltyRedemption,
+      );
+
+      // Calculate tax (10% GST)
+      final tax = totalBeforeTax * 0.10;
+
+      // Calculate grand total
+      final grandTotal = math.max(0.0, totalBeforeTax + tax);
+
+      // Calculate cash received number
+      final cashReceivedNum =
+          double.tryParse(params.cashReceived.toString().replaceAll(',', '')) ??
+              0.0;
+
+      // Calculate cash change
+      final cashChange = math.max(0.0, cashReceivedNum - grandTotal);
+
+      // Calculate item count
+      final itemCount =
+          params.items.fold(0, (sum, item) => sum + item.quantity);
+
+      // Split payment calculations
+      final splitPaidTotal = params.tenders
+          .where((t) => t.status == TenderStatus.approved)
+          .fold(0.0, (sum, tender) => sum + tender.amount);
+
+      final splitRemaining = math.max(0.0, grandTotal - splitPaidTotal);
+
+      final canCompleteSplit = splitRemaining == 0 &&
+          params.tenders.isNotEmpty &&
+          params.tenders.every((t) => t.status == TenderStatus.approved);
+
+      // Payment validation
+      final canPayCash = params.selectedMethod == PaymentMethodType.cash &&
+          cashReceivedNum >= grandTotal;
+
+      final canPayNonCash = params.selectedMethod != PaymentMethodType.cash;
+
+      bool canPay;
+      if (params.isSplitMode) {
+        canPay = canCompleteSplit;
+      } else {
+        canPay = params.selectedMethod == PaymentMethodType.cash
+            ? canPayCash
+            : canPayNonCash;
+      }
+
+      return Right(CalculateTotalsResult(
+        subtotal: subtotal,
+        tipAmount: tipAmount,
+        discountAmount: discountAmount,
+        voucherTotal: voucherTotal,
+        totalBeforeTax: totalBeforeTax,
+        tax: tax,
+        grandTotal: grandTotal,
+        cashReceivedNum: cashReceivedNum,
+        cashChange: cashChange,
+        itemCount: itemCount,
+        splitPaidTotal: splitPaidTotal,
+        splitRemaining: splitRemaining,
+        canCompleteSplit: canCompleteSplit,
+        canPayCash: canPayCash,
+        canPayNonCash: canPayNonCash,
+        canPay: canPay,
+      ));
+    } catch (e) {
+      return Left(ValidationFailure(message: 'Calculation failed: $e'));
     }
-
-    // Calculate discount amount
-    final discountAmount = (subtotal * params.discountPercent) / 100;
-
-    // Calculate voucher total
-    final voucherTotal = params.appliedVouchers
-        .fold(0.0, (sum, voucher) => sum + voucher.amount);
-
-    // Calculate total before tax
-    final totalBeforeTax = math.max(
-      0.0,
-      subtotal +
-          tipAmount -
-          discountAmount -
-          voucherTotal -
-          params.loyaltyRedemption,
-    );
-
-    // Calculate tax (10% GST)
-    final tax = totalBeforeTax * 0.10;
-
-    // Calculate grand total
-    final grandTotal = math.max(0.0, totalBeforeTax + tax);
-
-    // Calculate cash received number
-    final cashReceivedNum =
-        double.tryParse(params.cashReceived.toString().replaceAll(',', '')) ??
-            0.0;
-
-    // Calculate cash change
-    final cashChange = math.max(0.0, cashReceivedNum - grandTotal);
-
-    // Calculate item count
-    final itemCount = params.items.fold(0, (sum, item) => sum + item.quantity);
-
-    // Split payment calculations
-    final splitPaidTotal = params.tenders
-        .where((t) => t.status == TenderStatus.approved)
-        .fold(0.0, (sum, tender) => sum + tender.amount);
-
-    final splitRemaining = math.max(0.0, grandTotal - splitPaidTotal);
-
-    final canCompleteSplit = splitRemaining == 0 &&
-        params.tenders.isNotEmpty &&
-        params.tenders.every((t) => t.status == TenderStatus.approved);
-
-    // Payment validation
-    final canPayCash = params.selectedMethod == PaymentMethodType.cash &&
-        cashReceivedNum >= grandTotal;
-
-    final canPayNonCash = params.selectedMethod != PaymentMethodType.cash;
-
-    bool canPay;
-    if (params.isSplitMode) {
-      canPay = canCompleteSplit;
-    } else {
-      canPay = params.selectedMethod == PaymentMethodType.cash
-          ? canPayCash
-          : canPayNonCash;
-    }
-
-    return CalculateTotalsResult(
-      subtotal: subtotal,
-      tipAmount: tipAmount,
-      discountAmount: discountAmount,
-      voucherTotal: voucherTotal,
-      totalBeforeTax: totalBeforeTax,
-      tax: tax,
-      grandTotal: grandTotal,
-      cashReceivedNum: cashReceivedNum,
-      cashChange: cashChange,
-      itemCount: itemCount,
-      splitPaidTotal: splitPaidTotal,
-      splitRemaining: splitRemaining,
-      canCompleteSplit: canCompleteSplit,
-      canPayCash: canPayCash,
-      canPayNonCash: canPayNonCash,
-      canPay: canPay,
-    );
   }
 }
 

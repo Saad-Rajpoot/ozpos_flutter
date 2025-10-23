@@ -11,6 +11,7 @@ import '../utils/database_helper.dart';
 
 import '../../features/menu/data/datasources/menu_data_source.dart';
 import '../../features/menu/data/datasources/menu_remote_datasource.dart';
+import '../../features/menu/data/datasources/menu_mock_datasource.dart';
 import '../../features/menu/data/repositories/menu_repository_impl.dart';
 import '../../features/menu/domain/repositories/menu_repository.dart';
 import '../../features/menu/domain/usecases/get_menu_items.dart';
@@ -163,10 +164,15 @@ Future<void> _initOrders(GetIt sl) async {
 
 /// Initialize menu feature dependencies
 Future<void> _initMenu(GetIt sl) async {
-  // Data source - use remote for production, mock for testing
+  // Environment-based data source selection
   sl.registerLazySingleton<MenuDataSource>(() {
-    // Use remote data source for production
-    return MenuRemoteDataSourceImpl(apiClient: sl());
+    if (AppConfig.instance.environment == AppEnvironment.development) {
+      // Use mock data source for development
+      return MenuMockDataSourceImpl();
+    } else {
+      // Use remote data source for production
+      return MenuRemoteDataSourceImpl(apiClient: sl());
+    }
   });
 
   // Repository
@@ -189,8 +195,8 @@ Future<void> _initMenu(GetIt sl) async {
 
 /// Initialize cart feature dependencies
 Future<void> _initCart(GetIt sl) async {
-  // BLoC (Singleton - shared cart across the app)
-  sl.registerLazySingleton(() => CartBloc()..add(const InitializeCart()));
+  // BLoC (Factory - separate cart per user/session)
+  sl.registerFactory(() => CartBloc()..add(const InitializeCart()));
 }
 
 /// Initialize checkout feature dependencies

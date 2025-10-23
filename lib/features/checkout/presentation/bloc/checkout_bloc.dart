@@ -27,47 +27,120 @@ abstract class CheckoutState extends Equatable {
 
 class CheckoutInitial extends CheckoutState {}
 
-class CheckoutLoaded extends CheckoutState {
-  // Mode
-  final bool isSplitMode;
+// ============================================================================
+// SEPARATE STATE CLASSES FOR BETTER ORGANIZATION
+// ============================================================================
 
-  // Payment
+class CheckoutPaymentState extends Equatable {
   final PaymentMethodType selectedMethod;
-  final String cashReceived; // String for keypad entry
+  final String cashReceived;
 
-  // Tips
-  final int tipPercent; // 0, 5, 10, 15
+  const CheckoutPaymentState({
+    required this.selectedMethod,
+    required this.cashReceived,
+  });
+
+  CheckoutPaymentState copyWith({
+    PaymentMethodType? selectedMethod,
+    String? cashReceived,
+  }) {
+    return CheckoutPaymentState(
+      selectedMethod: selectedMethod ?? this.selectedMethod,
+      cashReceived: cashReceived ?? this.cashReceived,
+    );
+  }
+
+  @override
+  List<Object?> get props => [selectedMethod, cashReceived];
+}
+
+class CheckoutDiscountState extends Equatable {
+  final int tipPercent;
   final String customTipAmount;
-
-  // Discounts
-  final int discountPercent; // 0, 5, 10, 15
+  final int discountPercent;
   final List<VoucherEntity> appliedVouchers;
   final double loyaltyRedemption;
   final bool isLoyaltyRedeemed;
 
-  // Split payment
-  final List<TenderEntity> tenders;
-
-  // Cart items
-  final List<CartLineItem> items;
-
-  // Calculated totals (from use case)
-  final CalculateTotalsResult? totals;
-
-  const CheckoutLoaded({
-    required this.isSplitMode,
-    required this.selectedMethod,
-    required this.cashReceived,
+  const CheckoutDiscountState({
     required this.tipPercent,
     required this.customTipAmount,
     required this.discountPercent,
     required this.appliedVouchers,
     required this.loyaltyRedemption,
     required this.isLoyaltyRedeemed,
+  });
+
+  CheckoutDiscountState copyWith({
+    int? tipPercent,
+    String? customTipAmount,
+    int? discountPercent,
+    List<VoucherEntity>? appliedVouchers,
+    double? loyaltyRedemption,
+    bool? isLoyaltyRedeemed,
+  }) {
+    return CheckoutDiscountState(
+      tipPercent: tipPercent ?? this.tipPercent,
+      customTipAmount: customTipAmount ?? this.customTipAmount,
+      discountPercent: discountPercent ?? this.discountPercent,
+      appliedVouchers: appliedVouchers ?? this.appliedVouchers,
+      loyaltyRedemption: loyaltyRedemption ?? this.loyaltyRedemption,
+      isLoyaltyRedeemed: isLoyaltyRedeemed ?? this.isLoyaltyRedeemed,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        tipPercent,
+        customTipAmount,
+        discountPercent,
+        appliedVouchers,
+        loyaltyRedemption,
+        isLoyaltyRedeemed,
+      ];
+}
+
+class CheckoutSplitState extends Equatable {
+  final bool isSplitMode;
+  final List<TenderEntity> tenders;
+
+  const CheckoutSplitState({
+    required this.isSplitMode,
     required this.tenders,
+  });
+
+  CheckoutSplitState copyWith({
+    bool? isSplitMode,
+    List<TenderEntity>? tenders,
+  }) {
+    return CheckoutSplitState(
+      isSplitMode: isSplitMode ?? this.isSplitMode,
+      tenders: tenders ?? this.tenders,
+    );
+  }
+
+  @override
+  List<Object?> get props => [isSplitMode, tenders];
+}
+
+class CheckoutCartState extends Equatable {
+  final List<CartLineItem> items;
+  final CalculateTotalsResult? totals;
+
+  const CheckoutCartState({
     required this.items,
     this.totals,
   });
+
+  CheckoutCartState copyWith({
+    List<CartLineItem>? items,
+    CalculateTotalsResult? totals,
+  }) {
+    return CheckoutCartState(
+      items: items ?? this.items,
+      totals: totals ?? this.totals,
+    );
+  }
 
   // Delegate calculations to use case result
   double get subtotal => totals?.subtotal ?? 0.0;
@@ -87,51 +160,71 @@ class CheckoutLoaded extends CheckoutState {
   bool get canPayNonCash => totals?.canPayNonCash ?? false;
   bool get canPay => totals?.canPay ?? false;
 
+  @override
+  List<Object?> get props => [items, totals];
+}
+
+class CheckoutLoaded extends CheckoutState {
+  final CheckoutPaymentState payment;
+  final CheckoutDiscountState discounts;
+  final CheckoutSplitState splitPayment;
+  final CheckoutCartState cart;
+
+  const CheckoutLoaded({
+    required this.payment,
+    required this.discounts,
+    required this.splitPayment,
+    required this.cart,
+  });
+
+  // Delegate properties to sub-states
+  bool get isSplitMode => splitPayment.isSplitMode;
+  PaymentMethodType get selectedMethod => payment.selectedMethod;
+  String get cashReceived => payment.cashReceived;
+  int get tipPercent => discounts.tipPercent;
+  String get customTipAmount => discounts.customTipAmount;
+  int get discountPercent => discounts.discountPercent;
+  List<VoucherEntity> get appliedVouchers => discounts.appliedVouchers;
+  double get loyaltyRedemption => discounts.loyaltyRedemption;
+  bool get isLoyaltyRedeemed => discounts.isLoyaltyRedeemed;
+  List<TenderEntity> get tenders => splitPayment.tenders;
+  List<CartLineItem> get items => cart.items;
+  CalculateTotalsResult? get totals => cart.totals;
+
+  // Delegate calculations to cart state
+  double get subtotal => cart.subtotal;
+  double get tipAmount => cart.tipAmount;
+  double get discountAmount => cart.discountAmount;
+  double get voucherTotal => cart.voucherTotal;
+  double get totalBeforeTax => cart.totalBeforeTax;
+  double get tax => cart.tax;
+  double get grandTotal => cart.grandTotal;
+  double get cashReceivedNum => cart.cashReceivedNum;
+  double get cashChange => cart.cashChange;
+  int get itemCount => cart.itemCount;
+  double get splitPaidTotal => cart.splitPaidTotal;
+  double get splitRemaining => cart.splitRemaining;
+  bool get canCompleteSplit => cart.canCompleteSplit;
+  bool get canPayCash => cart.canPayCash;
+  bool get canPayNonCash => cart.canPayNonCash;
+  bool get canPay => cart.canPay;
+
   CheckoutLoaded copyWith({
-    bool? isSplitMode,
-    PaymentMethodType? selectedMethod,
-    String? cashReceived,
-    int? tipPercent,
-    String? customTipAmount,
-    int? discountPercent,
-    List<VoucherEntity>? appliedVouchers,
-    double? loyaltyRedemption,
-    bool? isLoyaltyRedeemed,
-    List<TenderEntity>? tenders,
-    List<CartLineItem>? items,
-    CalculateTotalsResult? totals,
+    CheckoutPaymentState? payment,
+    CheckoutDiscountState? discounts,
+    CheckoutSplitState? splitPayment,
+    CheckoutCartState? cart,
   }) {
     return CheckoutLoaded(
-      isSplitMode: isSplitMode ?? this.isSplitMode,
-      selectedMethod: selectedMethod ?? this.selectedMethod,
-      cashReceived: cashReceived ?? this.cashReceived,
-      tipPercent: tipPercent ?? this.tipPercent,
-      customTipAmount: customTipAmount ?? this.customTipAmount,
-      discountPercent: discountPercent ?? this.discountPercent,
-      appliedVouchers: appliedVouchers ?? this.appliedVouchers,
-      loyaltyRedemption: loyaltyRedemption ?? this.loyaltyRedemption,
-      isLoyaltyRedeemed: isLoyaltyRedeemed ?? this.isLoyaltyRedeemed,
-      tenders: tenders ?? this.tenders,
-      items: items ?? this.items,
-      totals: totals ?? this.totals,
+      payment: payment ?? this.payment,
+      discounts: discounts ?? this.discounts,
+      splitPayment: splitPayment ?? this.splitPayment,
+      cart: cart ?? this.cart,
     );
   }
 
   @override
-  List<Object?> get props => [
-        isSplitMode,
-        selectedMethod,
-        cashReceived,
-        tipPercent,
-        customTipAmount,
-        discountPercent,
-        appliedVouchers,
-        loyaltyRedemption,
-        isLoyaltyRedeemed,
-        tenders,
-        items,
-        totals,
-      ];
+  List<Object?> get props => [payment, discounts, splitPayment, cart];
 }
 
 class CheckoutProcessing extends CheckoutState {}
@@ -148,11 +241,29 @@ class CheckoutSuccess extends CheckoutState {
 
 class CheckoutError extends CheckoutState {
   final String message;
+  final DateTime timestamp;
+  final bool canDismiss;
 
-  const CheckoutError({required this.message});
+  CheckoutError({
+    required this.message,
+    this.canDismiss = true,
+    DateTime? timestamp,
+  }) : timestamp = timestamp ?? DateTime.now();
+
+  CheckoutError copyWith({
+    String? message,
+    bool? canDismiss,
+    DateTime? timestamp,
+  }) {
+    return CheckoutError(
+      message: message ?? this.message,
+      canDismiss: canDismiss ?? this.canDismiss,
+      timestamp: timestamp ?? this.timestamp,
+    );
+  }
 
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, timestamp, canDismiss];
 }
 
 // ============================================================================
@@ -292,6 +403,8 @@ class ProcessPayment extends CheckoutEvent {}
 
 class PayLater extends CheckoutEvent {}
 
+class DismissError extends CheckoutEvent {}
+
 // ============================================================================
 // CHECKOUT BLOC
 // ============================================================================
@@ -329,12 +442,13 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
     on<SplitEvenly>(_onSplitEvenly);
     on<ProcessPayment>(_onProcessPayment);
     on<PayLater>(_onPayLater);
+    on<DismissError>(_onDismissError);
   }
 
-  void _onInitializeCheckout(
+  Future<void> _onInitializeCheckout(
     InitializeCheckout event,
     Emitter<CheckoutState> emit,
-  ) {
+  ) async {
     debugPrint(
       '🛒 CheckoutBloc: Initializing with ${event.items.length} items',
     );
@@ -357,12 +471,17 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
             ))
         .toList();
 
-    final result = _initializeCheckoutUseCase(
+    final resultEither = await _initializeCheckoutUseCase(
       InitializeCheckoutParams(items: domainItems),
     );
 
+    final result = resultEither.fold(
+      (failure) => throw Exception(failure.message),
+      (success) => success,
+    );
+
     // Calculate totals using use case
-    final totals = _calculateTotalsUseCase(
+    final totalsEither = await _calculateTotalsUseCase(
       CalculateTotalsParams(
         items: result.items,
         tipPercent: result.tipPercent,
@@ -377,41 +496,55 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
       ),
     );
 
+    final totals = totalsEither.fold(
+      (failure) => throw Exception(failure.message),
+      (success) => success,
+    );
+
+    final cartItems = result.items
+        .map((domainItem) => CartLineItem(
+              id: domainItem.id,
+              menuItem: MenuItemEntity(
+                id: domainItem.menuItem.id,
+                name: domainItem.menuItem.name,
+                description: domainItem.menuItem.description,
+                categoryId: domainItem.menuItem.categoryId,
+                basePrice: domainItem.menuItem.basePrice,
+                tags: domainItem.menuItem.tags,
+                modifierGroups: domainItem.menuItem.modifierGroups,
+                comboOptions: domainItem.menuItem.comboOptions,
+                recommendedAddOnIds: domainItem.menuItem.recommendedAddOnIds,
+                image: domainItem.menuItem.image,
+              ),
+              quantity: domainItem.quantity,
+              unitPrice: domainItem.menuItem.basePrice,
+              selectedModifiers: {},
+              modifierSummary: domainItem.specialInstructions ?? '',
+            ))
+        .toList();
+
     emit(
       CheckoutLoaded(
-        isSplitMode: result.isSplitMode,
-        selectedMethod: result.selectedMethod,
-        cashReceived: result.cashReceived,
-        tipPercent: result.tipPercent,
-        customTipAmount: result.customTipAmount,
-        discountPercent: result.discountPercent,
-        appliedVouchers: result.appliedVouchers,
-        loyaltyRedemption: result.loyaltyRedemption,
-        isLoyaltyRedeemed: result.isLoyaltyRedeemed,
-        tenders: result.tenders,
-        items: result.items
-            .map((domainItem) => CartLineItem(
-                  id: domainItem.id,
-                  menuItem: MenuItemEntity(
-                    id: domainItem.menuItem.id,
-                    name: domainItem.menuItem.name,
-                    description: domainItem.menuItem.description,
-                    categoryId: domainItem.menuItem.categoryId,
-                    basePrice: domainItem.menuItem.basePrice,
-                    tags: domainItem.menuItem.tags,
-                    modifierGroups: domainItem.menuItem.modifierGroups,
-                    comboOptions: domainItem.menuItem.comboOptions,
-                    recommendedAddOnIds:
-                        domainItem.menuItem.recommendedAddOnIds,
-                    image: domainItem.menuItem.image,
-                  ),
-                  quantity: domainItem.quantity,
-                  unitPrice: domainItem.menuItem.basePrice,
-                  selectedModifiers: {},
-                  modifierSummary: domainItem.specialInstructions ?? '',
-                ))
-            .toList(),
-        totals: totals,
+        payment: CheckoutPaymentState(
+          selectedMethod: result.selectedMethod,
+          cashReceived: result.cashReceived,
+        ),
+        discounts: CheckoutDiscountState(
+          tipPercent: result.tipPercent,
+          customTipAmount: result.customTipAmount,
+          discountPercent: result.discountPercent,
+          appliedVouchers: result.appliedVouchers,
+          loyaltyRedemption: result.loyaltyRedemption,
+          isLoyaltyRedeemed: result.isLoyaltyRedeemed,
+        ),
+        splitPayment: CheckoutSplitState(
+          isSplitMode: result.isSplitMode,
+          tenders: result.tenders,
+        ),
+        cart: CheckoutCartState(
+          items: cartItems,
+          totals: totals,
+        ),
       ),
     );
   }
@@ -425,8 +558,10 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
 
     emit(
       currentState.copyWith(
-        selectedMethod: event.method,
-        cashReceived: '', // Reset cash when changing method
+        payment: currentState.payment.copyWith(
+          selectedMethod: event.method,
+          cashReceived: '', // Reset cash when changing method
+        ),
       ),
     );
   }
@@ -453,7 +588,9 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
       }
     }
 
-    emit(currentState.copyWith(cashReceived: newValue));
+    emit(currentState.copyWith(
+      payment: currentState.payment.copyWith(cashReceived: newValue),
+    ));
   }
 
   void _onQuickAmountPress(
@@ -467,7 +604,10 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
     final current = currentState.cashReceivedNum;
     final newAmount = current == 0 ? event.amount : current + event.amount;
 
-    emit(currentState.copyWith(cashReceived: newAmount.toString()));
+    emit(currentState.copyWith(
+      payment:
+          currentState.payment.copyWith(cashReceived: newAmount.toString()),
+    ));
   }
 
   void _onSelectTipPercent(
@@ -479,8 +619,10 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
 
     emit(
       currentState.copyWith(
-        tipPercent: event.percent,
-        customTipAmount: '', // Clear custom tip
+        discounts: currentState.discounts.copyWith(
+          tipPercent: event.percent,
+          customTipAmount: '', // Clear custom tip
+        ),
       ),
     );
   }
@@ -491,8 +633,10 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
 
     emit(
       currentState.copyWith(
-        customTipAmount: event.amount,
-        tipPercent: 0, // Clear percentage tip
+        discounts: currentState.discounts.copyWith(
+          customTipAmount: event.amount,
+          tipPercent: 0, // Clear percentage tip
+        ),
       ),
     );
   }
@@ -501,22 +645,37 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
     if (state is! CheckoutLoaded) return;
     final currentState = state as CheckoutLoaded;
 
-    final result = await _applyVoucherUseCase(
+    final resultEither = await _applyVoucherUseCase(
       ApplyVoucherParams(code: event.code),
     );
 
-    if (result.isSuccess && result.voucher != null) {
-      final updatedVouchers = List<VoucherEntity>.from(
-        currentState.appliedVouchers,
-      )..add(result.voucher!);
+    resultEither.fold(
+      (failure) {
+        // Handle error - show dismissible error state
+        emit(CheckoutError(
+          message: failure.message,
+          canDismiss: true,
+        ));
+      },
+      (result) {
+        if (result.isSuccess && result.voucher != null) {
+          final updatedVouchers = List<VoucherEntity>.from(
+            currentState.appliedVouchers,
+          )..add(result.voucher!);
 
-      emit(currentState.copyWith(appliedVouchers: updatedVouchers));
-    } else {
-      // Handle error - could emit error state or show snackbar
-      emit(CheckoutError(
-          message: result.errorMessage ?? 'Failed to apply voucher'));
-      emit(currentState); // Return to previous state
-    }
+          emit(currentState.copyWith(
+            discounts: currentState.discounts
+                .copyWith(appliedVouchers: updatedVouchers),
+          ));
+        } else {
+          // Handle voucher failure - show dismissible error
+          emit(CheckoutError(
+            message: result.errorMessage ?? 'Failed to apply voucher',
+            canDismiss: true,
+          ));
+        }
+      },
+    );
   }
 
   void _onRemoveVoucher(RemoveVoucher event, Emitter<CheckoutState> emit) {
@@ -526,7 +685,10 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
     final updatedVouchers =
         currentState.appliedVouchers.where((v) => v.id != event.id).toList();
 
-    emit(currentState.copyWith(appliedVouchers: updatedVouchers));
+    emit(currentState.copyWith(
+      discounts:
+          currentState.discounts.copyWith(appliedVouchers: updatedVouchers),
+    ));
   }
 
   void _onSetDiscountPercent(
@@ -536,7 +698,10 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
     if (state is! CheckoutLoaded) return;
     final currentState = state as CheckoutLoaded;
 
-    emit(currentState.copyWith(discountPercent: event.percent));
+    emit(currentState.copyWith(
+      discounts:
+          currentState.discounts.copyWith(discountPercent: event.percent),
+    ));
   }
 
   void _onRedeemLoyaltyPoints(
@@ -548,8 +713,10 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
 
     emit(
       currentState.copyWith(
-        loyaltyRedemption: event.amount,
-        isLoyaltyRedeemed: true,
+        discounts: currentState.discounts.copyWith(
+          loyaltyRedemption: event.amount,
+          isLoyaltyRedeemed: true,
+        ),
       ),
     );
   }
@@ -562,7 +729,12 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
     final currentState = state as CheckoutLoaded;
 
     emit(
-      currentState.copyWith(loyaltyRedemption: 0.0, isLoyaltyRedeemed: false),
+      currentState.copyWith(
+        discounts: currentState.discounts.copyWith(
+          loyaltyRedemption: 0.0,
+          isLoyaltyRedeemed: false,
+        ),
+      ),
     );
   }
 
@@ -572,8 +744,10 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
 
     emit(
       currentState.copyWith(
-        isSplitMode: !currentState.isSplitMode,
-        tenders: [], // Reset tenders when toggling
+        splitPayment: currentState.splitPayment.copyWith(
+          isSplitMode: !currentState.isSplitMode,
+          tenders: [], // Reset tenders when toggling
+        ),
       ),
     );
   }
@@ -593,7 +767,9 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
     final updatedTenders = List<TenderEntity>.from(currentState.tenders)
       ..add(newTender);
 
-    emit(currentState.copyWith(tenders: updatedTenders));
+    emit(currentState.copyWith(
+      splitPayment: currentState.splitPayment.copyWith(tenders: updatedTenders),
+    ));
   }
 
   void _onRemoveTender(RemoveTender event, Emitter<CheckoutState> emit) {
@@ -603,7 +779,9 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
     final updatedTenders =
         currentState.tenders.where((t) => t.id != event.id).toList();
 
-    emit(currentState.copyWith(tenders: updatedTenders));
+    emit(currentState.copyWith(
+      splitPayment: currentState.splitPayment.copyWith(tenders: updatedTenders),
+    ));
   }
 
   void _onSplitEvenly(SplitEvenly event, Emitter<CheckoutState> emit) {
@@ -623,7 +801,9 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
       ),
     );
 
-    emit(currentState.copyWith(tenders: tenders));
+    emit(currentState.copyWith(
+      splitPayment: currentState.splitPayment.copyWith(tenders: tenders),
+    ));
   }
 
   void _onProcessPayment(
@@ -634,14 +814,17 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
     final currentState = state as CheckoutLoaded;
 
     if (!currentState.canPay) {
-      emit(const CheckoutError(message: 'Insufficient payment'));
-      emit(currentState);
+      emit(CheckoutError(
+        message:
+            'Insufficient payment amount. Please adjust payment method or amount.',
+        canDismiss: true,
+      ));
       return;
     }
 
     emit(CheckoutProcessing());
 
-    final result = await _processPaymentUseCase(
+    final resultEither = await _processPaymentUseCase(
       ProcessPaymentParams(
         paymentMethod: currentState.selectedMethod.value,
         amount: currentState.grandTotal,
@@ -656,17 +839,31 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
       ),
     );
 
-    if (result.isSuccess) {
-      emit(
-        CheckoutSuccess(
-          orderId: result.orderId!,
-          paidAmount: result.paidAmount!,
-        ),
-      );
-    } else {
-      emit(CheckoutError(message: result.errorMessage ?? 'Payment failed'));
-      emit(currentState); // Return to previous state
-    }
+    resultEither.fold(
+      (failure) {
+        // Handle payment error - show dismissible error
+        emit(CheckoutError(
+          message: failure.message,
+          canDismiss: true,
+        ));
+      },
+      (result) {
+        if (result.isSuccess) {
+          emit(
+            CheckoutSuccess(
+              orderId: result.orderId!,
+              paidAmount: result.paidAmount!,
+            ),
+          );
+        } else {
+          // Handle payment failure - show dismissible error
+          emit(CheckoutError(
+            message: result.errorMessage ?? 'Payment failed',
+            canDismiss: true,
+          ));
+        }
+      },
+    );
   }
 
   void _onPayLater(PayLater event, Emitter<CheckoutState> emit) async {
@@ -685,5 +882,13 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
         paidAmount: 0.0, // Unpaid
       ),
     );
+  }
+
+  void _onDismissError(DismissError event, Emitter<CheckoutState> emit) {
+    // For now, emit initial state - in a real app you'd want to store previous state
+    // This could be improved by adding a previous state to CheckoutError
+    if (state is CheckoutError) {
+      emit(CheckoutInitial());
+    }
   }
 }

@@ -93,4 +93,40 @@ class AppConstants {
   // Cache
   static const Duration cacheExpiration = Duration(hours: 1);
   static const int maxCacheSize = 100;
+
+  // UI Constants
+  static const double imageHeightRatio = 0.6; // Menu item card image ratio
+  static const double popularBadgeSize = 16.0;
+  static const double priceBadgeSize = 13.0;
+  static const double letterSpacingSmall = 0.5;
+
+  // Responsive breakpoints
+  static const double desktopBreakpoint = 1024.0;
+  static const double tabletBreakpoint = 768.0;
+  static const double mobileBreakpoint = 600.0;
+
+  // Grid configurations
+  static const int gridColumnsUltraWide = 5;
+  static const int gridColumnsDesktop = 4;
+  static const int gridColumnsTablet = 3;
+  static const int gridColumnsMobile = 2;
+
+  // Spacing ratios
+  static const double spacingSmall = 8.0;
+  static const double spacingMedium = 16.0;
+  static const double spacingLarge = 20.0;
+  static const double spacingExtraLarge = 24.0;
+
+  // Border radius
+  static const double borderRadiusSmall = 6.0;
+  static const double borderRadiusMedium = 8.0;
+  static const double borderRadiusLarge = 12.0;
+  static const double borderRadiusExtraLarge = 16.0;
+
+  // Opacity values
+  static const double opacityFull = 1.0;
+  static const double opacityHigh = 0.95;
+  static const double opacityMedium = 0.5;
+  static const double opacityLow = 0.1;
+  static const double opacityVeryLow = 0.05;
 }

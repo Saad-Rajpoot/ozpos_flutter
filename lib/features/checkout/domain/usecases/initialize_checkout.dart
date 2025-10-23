@@ -1,26 +1,37 @@
 import 'package:equatable/equatable.dart';
+import 'package:dartz/dartz.dart';
+import '../../../../core/base/base_usecase.dart';
+import '../../../../core/errors/failures.dart';
 import '../../domain/entities/voucher_entity.dart';
 import '../../domain/entities/tender_entity.dart';
 import '../../domain/entities/cart_line_item_entity.dart';
 import '../../domain/entities/payment_method_type.dart';
 
-class InitializeCheckoutUseCase {
-  InitializeCheckoutUseCase();
+class InitializeCheckoutUseCase
+    implements UseCase<InitializeCheckoutResult, InitializeCheckoutParams> {
+  const InitializeCheckoutUseCase();
 
-  InitializeCheckoutResult call(InitializeCheckoutParams params) {
-    return InitializeCheckoutResult(
-      isSplitMode: false,
-      selectedMethod: PaymentMethodType.cash,
-      cashReceived: '',
-      tipPercent: 0,
-      customTipAmount: '',
-      discountPercent: 0,
-      appliedVouchers: const [],
-      loyaltyRedemption: 0.0,
-      isLoyaltyRedeemed: false,
-      tenders: const [],
-      items: params.items,
-    );
+  @override
+  Future<Either<Failure, InitializeCheckoutResult>> call(
+      InitializeCheckoutParams params) async {
+    try {
+      return Right(InitializeCheckoutResult(
+        isSplitMode: false,
+        selectedMethod: PaymentMethodType.cash,
+        cashReceived: '',
+        tipPercent: 0,
+        customTipAmount: '',
+        discountPercent: 0,
+        appliedVouchers: const [],
+        loyaltyRedemption: 0.0,
+        isLoyaltyRedeemed: false,
+        tenders: const [],
+        items: params.items,
+      ));
+    } catch (e) {
+      return Left(
+          ValidationFailure(message: 'Failed to initialize checkout: $e'));
+    }
   }
 }
 
