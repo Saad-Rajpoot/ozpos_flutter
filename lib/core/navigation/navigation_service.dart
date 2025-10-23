@@ -20,21 +20,6 @@ class NavigationService {
   // NAVIGATION METHODS
   // ========================================================================
 
-  /// Navigate to a route by name
-  static Future<T?> go<T>(String routeName) {
-    return navigator.pushNamed<T>(routeName);
-  }
-
-  /// Navigate to a route by name with arguments
-  static Future<T?> goNamed<T>(
-    String routeName, {
-    Object? arguments,
-    Map<String, String>? pathParameters,
-    Map<String, dynamic>? queryParameters,
-  }) {
-    return navigator.pushNamed<T>(routeName, arguments: arguments);
-  }
-
   /// Push a route by name
   static Future<T?> push<T>(String routeName) {
     return navigator.pushNamed<T>(routeName);

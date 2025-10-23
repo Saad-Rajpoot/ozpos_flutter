@@ -6,15 +6,15 @@ import '../../../../core/constants/app_constants.dart';
 
 /// Remote reports data source that loads from API
 class ReportsRemoteDataSourceImpl implements ReportsDataSource {
-  final ApiClient client;
+  final ApiClient apiClient;
 
-  ReportsRemoteDataSourceImpl({required this.client});
+  ReportsRemoteDataSourceImpl({required this.apiClient});
 
   /// Load reports data from remote API
   @override
   Future<ReportsData> getReportsData() async {
     final endpoint = AppConstants.getReportsEndpoint;
-    final response = await client.get(endpoint);
+    final response = await apiClient.get(endpoint);
 
     if (response.statusCode == 200) {
       final Map<String, dynamic> jsonData = response.data;

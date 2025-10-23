@@ -10,8 +10,8 @@ class ApiClient {
   final String _baseUrl;
 
   ApiClient({required SharedPreferences sharedPreferences, String? baseUrl})
-    : _sharedPreferences = sharedPreferences,
-      _baseUrl = baseUrl ?? AppConstants.baseUrl {
+      : _sharedPreferences = sharedPreferences,
+        _baseUrl = baseUrl ?? AppConstants.baseUrl {
     _dio = Dio(
       BaseOptions(
         baseUrl: _baseUrl,

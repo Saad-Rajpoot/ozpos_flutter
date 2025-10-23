@@ -6,15 +6,16 @@ import '../../../../core/constants/app_constants.dart';
 
 /// Remote delivery data source that loads from API
 class DeliveryRemoteDataSourceImpl implements DeliveryDataSource {
-  final ApiClient client;
+  final ApiClient apiClient;
 
-  DeliveryRemoteDataSourceImpl({required this.client});
+  DeliveryRemoteDataSourceImpl({required this.apiClient});
 
   /// Load delivery data from API
   @override
   Future<DeliveryData> getDeliveryData() async {
     try {
-      final response = await client.get(AppConstants.getDeliveryJobsEndpoint);
+      final response =
+          await apiClient.get(AppConstants.getDeliveryJobsEndpoint);
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> jsonData = response.data;

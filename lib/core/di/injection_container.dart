@@ -353,7 +353,7 @@ Future<void> _initReports(GetIt sl) async {
       return ReportsMockDataSourceImpl();
     } else {
       // Use remote data source for production
-      return ReportsRemoteDataSourceImpl(client: sl());
+      return ReportsRemoteDataSourceImpl(apiClient: sl());
     }
   });
 
@@ -378,7 +378,7 @@ Future<void> _initDelivery(GetIt sl) async {
       return DeliveryMockDataSourceImpl();
     } else {
       // Use remote data source for production
-      return DeliveryRemoteDataSourceImpl(client: sl());
+      return DeliveryRemoteDataSourceImpl(apiClient: sl());
     }
   });
 

@@ -4,7 +4,7 @@ import '../../../../core/constants/app_radius.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/constants/app_shadows.dart';
-import '../../../../core/constants/breakpoints.dart';
+import '../../../../core/constants/app_sizes.dart';
 
 class DashboardTile extends StatefulWidget {
   final String title;
@@ -75,7 +75,8 @@ class _DashboardTileState extends State<DashboardTile>
 
   @override
   Widget build(BuildContext context) {
-    final isDesktop = MediaQuery.of(context).size.width >= Breakpoints.large;
+    final isDesktop =
+        MediaQuery.of(context).size.width >= AppSizes.breakpointLarge;
 
     return MouseRegion(
       onEnter: isDesktop ? (_) => setState(() => _isHovered = true) : null,
