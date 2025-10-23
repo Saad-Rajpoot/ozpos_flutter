@@ -29,7 +29,9 @@ class MenuItemCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge)),
       child: InkWell(
         borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
-        onTap: item.isFastAdd ? null : onTap,
+        onTap: () {
+          ItemConfiguratorDialog.show(context, item);
+        },
         child: LayoutBuilder(
           builder: (context, constraints) {
             // Calculate responsive image height based on card width
@@ -178,20 +180,13 @@ class MenuItemCard extends StatelessWidget {
                             // Customise button
                             Expanded(
                               child: OutlinedButton(
-                                onPressed: item.isFastAdd
-                                    ? null
-                                    : () {
-                                        ItemConfiguratorDialog.show(
-                                            context, item);
-                                      },
+                                onPressed: () {
+                                  ItemConfiguratorDialog.show(context, item);
+                                },
                                 style: OutlinedButton.styleFrom(
-                                  foregroundColor: item.isFastAdd
-                                      ? AppColors.textSecondary
-                                      : AppColors.buttonPrimary,
+                                  foregroundColor: AppColors.buttonPrimary,
                                   side: BorderSide(
-                                    color: item.isFastAdd
-                                        ? AppColors.borderMedium
-                                        : AppColors.buttonPrimary,
+                                    color: AppColors.buttonPrimary,
                                   ),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(8),
@@ -207,9 +202,7 @@ class MenuItemCard extends StatelessWidget {
                                   children: [
                                     Icon(Icons.tune,
                                         size: 14,
-                                        color: item.isFastAdd
-                                            ? AppColors.textSecondary
-                                            : AppColors.buttonPrimary),
+                                        color: AppColors.buttonPrimary),
                                     const SizedBox(width: 4),
                                     Flexible(
                                       child: Text(
@@ -217,9 +210,7 @@ class MenuItemCard extends StatelessWidget {
                                         style: TextStyle(
                                           fontSize: 11,
                                           fontWeight: FontWeight.w600,
-                                          color: item.isFastAdd
-                                              ? AppColors.textSecondary
-                                              : AppColors.buttonPrimary,
+                                          color: AppColors.buttonPrimary,
                                         ),
                                         overflow: TextOverflow.ellipsis,
                                       ),
@@ -232,11 +223,9 @@ class MenuItemCard extends StatelessWidget {
                             // Add to Cart button
                             Expanded(
                               child: ElevatedButton(
-                                onPressed: item.isFastAdd ? onTap : null,
+                                onPressed: onTap,
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: item.isFastAdd
-                                      ? AppColors.buttonPrimary
-                                      : AppColors.buttonSecondary,
+                                  backgroundColor: AppColors.buttonPrimary,
                                   foregroundColor: AppColors.textWhite,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(8),
@@ -252,20 +241,15 @@ class MenuItemCard extends StatelessWidget {
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Icon(Icons.add,
-                                        size: 14,
-                                        color: item.isFastAdd
-                                            ? AppColors.textWhite
-                                            : AppColors.textSecondary),
+                                        size: 14, color: AppColors.textWhite),
                                     const SizedBox(width: 4),
                                     Flexible(
                                       child: Text(
-                                        item.isFastAdd ? 'Add' : 'Select Size',
+                                        'Add',
                                         style: TextStyle(
                                           fontSize: 11,
                                           fontWeight: FontWeight.w600,
-                                          color: item.isFastAdd
-                                              ? AppColors.textWhite
-                                              : AppColors.textSecondary,
+                                          color: AppColors.textWhite,
                                         ),
                                         overflow: TextOverflow.ellipsis,
                                       ),

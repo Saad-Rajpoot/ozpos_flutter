@@ -28,16 +28,6 @@ class MenuItemEntity extends Equatable {
     this.recommendedAddOnIds = const [],
   });
 
-  bool get hasRequiredModifiers {
-    return modifierGroups.any((group) => group.isRequired);
-  }
-
-  bool get hasAnyModifiers {
-    return modifierGroups.isNotEmpty || comboOptions.isNotEmpty;
-  }
-
-  bool get isFastAdd => !hasAnyModifiers;
-
   @override
   List<Object?> get props => [
         id,

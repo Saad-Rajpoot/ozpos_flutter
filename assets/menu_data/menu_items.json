@@ -1082,7 +1082,7 @@
     },
     "name": "Loaded Nachos",
     "description": "Crispy tortilla chips with cheese, jalapeños, and sour cream.",
-    "image": "https://images.unsplash.com/photo-1513456852971-30c0b8192d4d?w=400",
+    "image": "https://images.unsplash.com/photo-1541592106381-b31e9677c0e5?w=500",
     "basePrice": 9.99,
     "tags": ["Popular"],
     "modifierGroups": [

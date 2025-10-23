@@ -17,7 +17,7 @@ class MenuMockDataSourceImpl implements MenuDataSource {
     try {
       // Load menu items and extract categories from them
       final jsonString = await rootBundle.loadString(
-        'assets/menu_data/menu_items_seed.json',
+        'assets/menu_data/menu_items.json',
       );
       final List<dynamic> menuItemsData = json.decode(jsonString);
 
@@ -72,7 +72,7 @@ class MenuMockDataSourceImpl implements MenuDataSource {
     try {
       // Try to load success data first
       final jsonString = await rootBundle.loadString(
-        'assets/menu_data/menu_items_seed.json',
+        'assets/menu_data/menu_items.json',
       );
       final List<dynamic> jsonData = json.decode(jsonString);
 
@@ -185,7 +185,7 @@ class MenuMockDataSourceImpl implements MenuDataSource {
   static Future<List<MenuItemEntity>> get menuItems async {
     try {
       final jsonString = await rootBundle.loadString(
-        'assets/menu_data/menu_items_seed.json',
+        'assets/menu_data/menu_items.json',
       );
       final List<dynamic> jsonData = json.decode(jsonString);
 

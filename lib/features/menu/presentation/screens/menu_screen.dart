@@ -440,28 +440,22 @@ class _MenuScreenState extends State<MenuScreen> {
           maxLines: maxLines,
           item: item,
           onTap: () {
-            // For fast-add items (no modifiers), add directly to cart
-            if (item.isFastAdd) {
-              context.read<cart_bloc.CartBloc>().add(
-                    cart_bloc.AddItemToCart(
-                      menuItem: item,
-                      quantity: 1,
-                      unitPrice: item.basePrice,
-                      selectedModifiers: {},
-                      modifierSummary: '',
-                    ),
-                  );
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Added ${item.name} to cart'),
-                  duration: const Duration(seconds: 2),
-                  backgroundColor: AppColors.success,
-                ),
-              );
-            } else {
-              // For items with modifiers, show configuration dialog
-              ItemConfiguratorDialog.show(context, item);
-            }
+            context.read<cart_bloc.CartBloc>().add(
+                  cart_bloc.AddItemToCart(
+                    menuItem: item,
+                    quantity: 1,
+                    unitPrice: item.basePrice,
+                    selectedModifiers: {},
+                    modifierSummary: '',
+                  ),
+                );
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Added ${item.name} to cart'),
+                duration: const Duration(seconds: 2),
+                backgroundColor: AppColors.success,
+              ),
+            );
           },
         );
       },
