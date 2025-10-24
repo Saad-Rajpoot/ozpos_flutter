@@ -118,15 +118,6 @@ class _MenuScreenState extends State<MenuScreen> {
                         }
                       },
                       buildWhen: (previous, current) {
-                        final prevCategory = previous is MenuLoaded
-                            ? previous.selectedCategory?.name
-                            : 'N/A';
-                        final currCategory = current is MenuLoaded
-                            ? current.selectedCategory?.name
-                            : 'N/A';
-                        print(
-                            'BuildWhen called - previous: selectedCategory=$prevCategory, current: selectedCategory=$currCategory');
-                        // Always rebuild to handle state changes properly
                         return true;
                       },
                       builder: (context, state) {
@@ -174,20 +165,6 @@ class _MenuScreenState extends State<MenuScreen> {
                               _getCategoryNames(state.categories);
                           final itemsToShow =
                               state.filteredItems ?? state.items;
-
-                          // Debug: Print categories for debugging
-                          print(
-                              'Categories loaded: ${state.categories.length}');
-                          print('Category names: $categoryNames');
-                          print(
-                              'Filtered items: ${state.filteredItems?.length ?? 'null'}');
-                          print('All items: ${state.items.length}');
-                          print(
-                              'Selected category: ${state.selectedCategory?.name ?? 'null'}');
-                          print('Search query: ${state.searchQuery ?? 'null'}');
-                          print(
-                              'Is All selected: ${state.selectedCategory == null && state.searchQuery == null}');
-
                           return Column(
                             children: [
                               // Category tabs
