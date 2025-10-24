@@ -42,13 +42,15 @@ class _MenuScreenState extends State<MenuScreen> {
     final isDesktop =
         MediaQuery.of(context).size.width > AppConstants.desktopBreakpoint;
 
-    // Extract orderType from navigation arguments
-    final args =
-        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-    final orderTypeString = args?['orderType'] as String?;
+    // Extract orderType from navigation arguments - safe type checking
+    final routeSettings = ModalRoute.of(context)?.settings;
+    final args = routeSettings?.arguments;
+    final Map<String, dynamic>? navigationArgs =
+        args is Map<String, dynamic> ? args : null;
+    final orderTypeString = navigationArgs?['orderType'] as String?;
 
     // Convert string to OrderType enum and update cart order type
-    if (orderTypeString != null) {
+    if (orderTypeString != null && orderTypeString.isNotEmpty) {
       cart_bloc.OrderType? orderType;
       switch (orderTypeString) {
         case 'takeaway':
@@ -60,14 +62,20 @@ class _MenuScreenState extends State<MenuScreen> {
         case 'delivery':
           orderType = cart_bloc.OrderType.delivery;
           break;
+        default:
+          // Log invalid order type for debugging
+          debugPrint('Invalid order type received: $orderTypeString');
+          break;
       }
 
-      // Update the shared CartBloc's order type if specified
+      // Update the shared CartBloc's order type if specified and valid
       if (orderType != null) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          context.read<cart_bloc.CartBloc>().add(
-                cart_bloc.ChangeOrderType(orderType: orderType!),
-              );
+          if (context.mounted) {
+            context.read<cart_bloc.CartBloc>().add(
+                  cart_bloc.ChangeOrderType(orderType: orderType!),
+                );
+          }
         });
       }
     }
