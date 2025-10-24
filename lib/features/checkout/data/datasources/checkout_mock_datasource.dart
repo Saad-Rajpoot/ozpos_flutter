@@ -4,6 +4,7 @@ import '../models/order_model.dart';
 import 'checkout_datasource.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
+import '../../../../core/errors/exceptions.dart';
 
 class CheckoutMockDataSource implements CheckoutDataSource {
   @override
@@ -27,12 +28,12 @@ class CheckoutMockDataSource implements CheckoutDataSource {
           'assets/checkout_data/orders_data_error.json',
         );
         final Map<String, dynamic> errorData = json.decode(errorJsonString);
-        throw Exception(
-          errorData['message'] ?? 'Failed to load orders data',
+        throw CacheException(
+          message: errorData['message'] ?? 'Failed to load orders data',
         );
       } catch (errorLoadingError) {
         // If even error data fails, throw the original error
-        throw Exception('Failed to load orders data: $e');
+        throw CacheException(message: 'Failed to load orders data: $e');
       }
     }
   }

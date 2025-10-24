@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
 
+import '../../../../core/errors/exceptions.dart';
 import '../models/menu_item_model.dart';
 import '../models/menu_category_model.dart';
 import '../../domain/entities/menu_item_entity.dart';
@@ -57,12 +58,12 @@ class MenuMockDataSourceImpl implements MenuDataSource {
           'assets/menu_data/categories_error.json',
         );
         final Map<String, dynamic> errorData = json.decode(errorJsonString);
-        throw Exception(
-          errorData['message'] ?? 'Failed to load menu categories',
+        throw CacheException(
+          message: errorData['message'] ?? 'Failed to load menu categories',
         );
       } catch (errorLoadingError) {
         // If even error data fails, throw the original error
-        throw Exception('Failed to load menu categories: $e');
+        throw CacheException(message: 'Failed to load menu categories: $e');
       }
     }
   }
@@ -94,10 +95,12 @@ class MenuMockDataSourceImpl implements MenuDataSource {
           'assets/menu_data/menu_items_error.json',
         );
         final Map<String, dynamic> errorData = json.decode(errorJsonString);
-        throw Exception(errorData['message'] ?? 'Failed to load menu items');
+        throw CacheException(
+          message: errorData['message'] ?? 'Failed to load menu items',
+        );
       } catch (errorLoadingError) {
         // If even error data fails, throw the original error
-        throw Exception('Failed to load menu items: $e');
+        throw CacheException(message: 'Failed to load menu items: $e');
       }
     }
   }
@@ -125,7 +128,7 @@ class MenuMockDataSourceImpl implements MenuDataSource {
     final items = await _getMockMenuItems();
     final item = items.where((item) => item.id == id).firstOrNull;
     if (item == null) {
-      throw Exception('Menu item not found');
+      throw ValidationException(message: 'Menu item not found: $id');
     }
     return item;
   }
@@ -144,7 +147,7 @@ class MenuMockDataSourceImpl implements MenuDataSource {
     final categories = await _getMockCategories();
     final category = categories.where((cat) => cat.id == id).firstOrNull;
     if (category == null) {
-      throw Exception('Menu category not found');
+      throw ValidationException(message: 'Menu category not found: $id');
     }
     return category;
   }

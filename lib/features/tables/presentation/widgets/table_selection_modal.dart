@@ -289,7 +289,7 @@ class _TableSelectionModalState extends State<TableSelectionModal> {
                       // Find table at this position
                       final table = tables.firstWhere(
                         (t) => t.floorX == x && t.floorY == y,
-                        orElse: () => const TableEntity(
+                        orElse: () => TableEntity(
                           id: '',
                           number: '',
                           seats: 0,

@@ -1,3 +1,5 @@
+import 'package:dio/dio.dart';
+
 import '../../../../core/network/api_client.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/errors/exceptions.dart';
@@ -11,6 +13,20 @@ class MenuRemoteDataSourceImpl implements MenuDataSource {
 
   MenuRemoteDataSourceImpl({required this.apiClient});
 
+  /// Helper method to handle DioException and convert to appropriate exceptions
+  Exception _handleDioException(DioException e, String operation) {
+    if (e.type == DioExceptionType.connectionError ||
+        e.type == DioExceptionType.connectionTimeout ||
+        e.type == DioExceptionType.receiveTimeout ||
+        e.type == DioExceptionType.sendTimeout) {
+      return NetworkException(
+          message: 'Network error during $operation: ${e.message}');
+    } else {
+      return ServerException(
+          message: 'Server error during $operation: ${e.message}');
+    }
+  }
+
   @override
   Future<List<MenuItemModel>> getMenuItems() async {
     try {
@@ -19,8 +35,11 @@ class MenuRemoteDataSourceImpl implements MenuDataSource {
       return (data['data'] as List)
           .map((json) => MenuItemModel.fromJson(json))
           .toList();
+    } on DioException catch (e) {
+      throw _handleDioException(e, 'fetching menu items');
     } catch (e) {
-      throw ServerException(message: 'Failed to fetch menu items from server');
+      throw ServerException(
+          message: 'Unexpected error fetching menu items: $e');
     }
   }
 
@@ -34,9 +53,11 @@ class MenuRemoteDataSourceImpl implements MenuDataSource {
       return (data['data'] as List)
           .map((json) => MenuItemModel.fromJson(json))
           .toList();
+    } on DioException catch (e) {
+      throw _handleDioException(e, 'fetching menu items by category');
     } catch (e) {
       throw ServerException(
-          message: 'Failed to fetch menu items by category from server');
+          message: 'Unexpected error fetching menu items by category: $e');
     }
   }
 
@@ -47,9 +68,11 @@ class MenuRemoteDataSourceImpl implements MenuDataSource {
           await apiClient.get('${AppConstants.getMenuItemsEndpoint}/$id');
       final data = response.data as Map<String, dynamic>;
       return MenuItemModel.fromJson(data['data']);
+    } on DioException catch (e) {
+      throw _handleDioException(e, 'fetching menu item by ID');
     } catch (e) {
       throw ServerException(
-          message: 'Failed to fetch menu item by ID from server');
+          message: 'Unexpected error fetching menu item by ID: $e');
     }
   }
 
@@ -62,9 +85,11 @@ class MenuRemoteDataSourceImpl implements MenuDataSource {
       return (data['data'] as List)
           .map((json) => MenuCategoryModel.fromJson(json))
           .toList();
+    } on DioException catch (e) {
+      throw _handleDioException(e, 'fetching menu categories');
     } catch (e) {
       throw ServerException(
-          message: 'Failed to fetch menu categories from server');
+          message: 'Unexpected error fetching menu categories: $e');
     }
   }
 
@@ -75,9 +100,11 @@ class MenuRemoteDataSourceImpl implements MenuDataSource {
           await apiClient.get('${AppConstants.getMenuCategoriesEndpoint}/$id');
       final data = response.data as Map<String, dynamic>;
       return MenuCategoryModel.fromJson(data['data']);
+    } on DioException catch (e) {
+      throw _handleDioException(e, 'fetching menu category by ID');
     } catch (e) {
       throw ServerException(
-          message: 'Failed to fetch menu category by ID from server');
+          message: 'Unexpected error fetching menu category by ID: $e');
     }
   }
 
@@ -91,8 +118,11 @@ class MenuRemoteDataSourceImpl implements MenuDataSource {
       return (data['data'] as List)
           .map((json) => MenuItemModel.fromJson(json))
           .toList();
+    } on DioException catch (e) {
+      throw _handleDioException(e, 'searching menu items');
     } catch (e) {
-      throw ServerException(message: 'Failed to search menu items on server');
+      throw ServerException(
+          message: 'Unexpected error searching menu items: $e');
     }
   }
 
@@ -106,9 +136,11 @@ class MenuRemoteDataSourceImpl implements MenuDataSource {
       return (data['data'] as List)
           .map((json) => MenuItemModel.fromJson(json))
           .toList();
+    } on DioException catch (e) {
+      throw _handleDioException(e, 'fetching popular menu items');
     } catch (e) {
       throw ServerException(
-          message: 'Failed to fetch popular menu items from server');
+          message: 'Unexpected error fetching popular menu items: $e');
     }
   }
 }

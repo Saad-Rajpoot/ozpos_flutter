@@ -22,11 +22,20 @@ class TableRepositoryImpl implements TableRepository {
       try {
         final tables = await tableDataSource.getTables();
         return Right(tables);
-      } on ServerException {
-        return Left(ServerFailure(message: 'Server error'));
+      } on CacheException catch (e) {
+        return Left(CacheFailure(message: e.message));
+      } on NetworkException catch (e) {
+        return Left(NetworkFailure(message: e.message));
+      } on ValidationException catch (e) {
+        return Left(ValidationFailure(message: e.message));
+      } on ServerException catch (e) {
+        return Left(ServerFailure(message: e.message));
+      } catch (e) {
+        return Left(
+            ServerFailure(message: 'Unexpected error loading tables: $e'));
       }
     } else {
-      return Left(NetworkFailure(message: 'Network error'));
+      return Left(NetworkFailure(message: 'No network connection'));
     }
   }
 
@@ -36,11 +45,20 @@ class TableRepositoryImpl implements TableRepository {
       try {
         final tables = await tableDataSource.getMoveAvailableTables();
         return Right(tables);
-      } on ServerException {
-        return Left(ServerFailure(message: 'Server error'));
+      } on CacheException catch (e) {
+        return Left(CacheFailure(message: e.message));
+      } on NetworkException catch (e) {
+        return Left(NetworkFailure(message: e.message));
+      } on ValidationException catch (e) {
+        return Left(ValidationFailure(message: e.message));
+      } on ServerException catch (e) {
+        return Left(ServerFailure(message: e.message));
+      } catch (e) {
+        return Left(ServerFailure(
+            message: 'Unexpected error loading available tables: $e'));
       }
     } else {
-      return Left(NetworkFailure(message: 'Network error'));
+      return Left(NetworkFailure(message: 'No network connection'));
     }
   }
 }

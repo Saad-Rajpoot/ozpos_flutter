@@ -112,6 +112,20 @@ class MenuBloc extends BaseBloc<MenuEvent, MenuState> {
     if (state is! MenuLoaded) return;
 
     final currentState = state as MenuLoaded;
+
+    // Avoid unnecessary filtering if query hasn't changed
+    if (currentState.searchQuery == event.query) return;
+
+    // Clear filters when search query is empty
+    if (event.query.isEmpty) {
+      emit(currentState.copyWith(
+        filteredItems: null,
+        searchQuery: null,
+        selectedCategory: null,
+      ));
+      return;
+    }
+
     final filteredItems = currentState.items.where((item) {
       return item.name.toLowerCase().contains(event.query.toLowerCase()) ||
           item.description.toLowerCase().contains(event.query.toLowerCase());
@@ -131,6 +145,10 @@ class MenuBloc extends BaseBloc<MenuEvent, MenuState> {
     if (state is! MenuLoaded) return;
 
     final currentState = state as MenuLoaded;
+
+    // Avoid unnecessary filtering if category hasn't changed
+    if (currentState.selectedCategory?.id == event.category.id) return;
+
     final filteredItems = currentState.items.where((item) {
       return item.categoryId == event.category.id;
     }).toList();
@@ -149,6 +167,14 @@ class MenuBloc extends BaseBloc<MenuEvent, MenuState> {
     if (state is! MenuLoaded) return;
 
     final currentState = state as MenuLoaded;
+
+    // Avoid unnecessary emission if filters are already cleared
+    if (currentState.filteredItems == null &&
+        currentState.selectedCategory == null &&
+        currentState.searchQuery == null) {
+      return;
+    }
+
     final newState = currentState.copyWith(
       filteredItems: null,
       selectedCategory: null,

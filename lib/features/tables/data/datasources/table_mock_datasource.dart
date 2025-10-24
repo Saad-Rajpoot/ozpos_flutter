@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
+
+import '../../../../core/errors/exceptions.dart';
 import '../../domain/entities/table_entity.dart';
 import '../models/table_model.dart';
 import 'table_data_source.dart';
@@ -31,10 +33,11 @@ class TableMockDataSourceImpl implements TableDataSource {
           'assets/tables_data/tables_error.json',
         );
         final Map<String, dynamic> errorData = json.decode(errorJsonString);
-        throw Exception(errorData['message'] ?? 'Failed to load tables');
+        throw CacheException(
+            message: errorData['message'] ?? 'Failed to load tables');
       } catch (errorLoadingError) {
         // If even error data fails, throw the original error
-        throw Exception('Failed to load tables: $e');
+        throw CacheException(message: 'Failed to load tables: $e');
       }
     }
   }
@@ -64,12 +67,12 @@ class TableMockDataSourceImpl implements TableDataSource {
           'assets/tables_data/move_tables_error.json',
         );
         final Map<String, dynamic> errorData = json.decode(errorJsonString);
-        throw Exception(
-          errorData['message'] ?? 'Failed to load available tables',
+        throw CacheException(
+          message: errorData['message'] ?? 'Failed to load available tables',
         );
       } catch (errorLoadingError) {
         // If even error data fails, throw the original error
-        throw Exception('Failed to load available tables: $e');
+        throw CacheException(message: 'Failed to load available tables: $e');
       }
     }
   }

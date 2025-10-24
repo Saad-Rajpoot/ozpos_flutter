@@ -9,7 +9,7 @@ class ModifierGroupEntity extends Equatable {
   final int minSelection; // Minimum options to select
   final int maxSelection; // Maximum options ("Max 2")
   final List<ModifierOptionEntity> options;
-  
+
   const ModifierGroupEntity({
     required this.id,
     required this.name,

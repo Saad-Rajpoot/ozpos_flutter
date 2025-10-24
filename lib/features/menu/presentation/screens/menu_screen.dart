@@ -32,8 +32,10 @@ class _MenuScreenState extends State<MenuScreen> {
     context.read<MenuBloc>().add(const LoadMenuData());
   }
 
-  /// Get category names for tabs - optimized to avoid recreation
+  /// Get category names for tabs - cached to avoid recreation when categories don't change
   List<String> _getCategoryNames(List<MenuCategoryEntity> categories) {
+    // Since categories don't change often, this is reasonably efficient
+    // Could be further optimized with memoization if categories change frequently
     return ['all', ...categories.map((cat) => cat.name)];
   }
 
@@ -118,7 +120,22 @@ class _MenuScreenState extends State<MenuScreen> {
                         }
                       },
                       buildWhen: (previous, current) {
-                        return true;
+                        // Always rebuild on state type changes (Loading/Error/Loaded)
+                        if (previous.runtimeType != current.runtimeType) {
+                          return true;
+                        }
+
+                        // For MenuLoaded state, only rebuild if relevant data changes
+                        if (previous is MenuLoaded && current is MenuLoaded) {
+                          return previous.categories != current.categories ||
+                              previous.items != current.items ||
+                              previous.filteredItems != current.filteredItems ||
+                              previous.selectedCategory !=
+                                  current.selectedCategory ||
+                              previous.searchQuery != current.searchQuery;
+                        }
+
+                        return false;
                       },
                       builder: (context, state) {
                         if (state is MenuLoading) {
@@ -222,6 +239,20 @@ class _MenuScreenState extends State<MenuScreen> {
           if (MediaQuery.of(context).size.width <=
               AppConstants.desktopBreakpoint)
             BlocBuilder<cart_bloc.CartBloc, cart_bloc.CartState>(
+              buildWhen: (previous, current) {
+                // Always rebuild on state type changes
+                if (previous.runtimeType != current.runtimeType) {
+                  return true;
+                }
+
+                // For CartLoaded state, only rebuild if item count changes
+                if (previous is cart_bloc.CartLoaded &&
+                    current is cart_bloc.CartLoaded) {
+                  return previous.itemCount != current.itemCount;
+                }
+
+                return false;
+              },
               builder: (context, state) {
                 final itemCount =
                     state is cart_bloc.CartLoaded ? state.itemCount : 0;

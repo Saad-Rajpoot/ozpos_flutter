@@ -19,10 +19,17 @@ class MenuRepositoryImpl implements MenuRepository {
     try {
       final items = await menuDataSource.getMenuItems();
       return Right(items.map((model) => model.toEntity()).toList());
-    } on ServerException {
-      return Left(ServerFailure(message: 'Server error'));
+    } on CacheException catch (e) {
+      return Left(CacheFailure(message: e.message));
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(message: e.message));
+    } on ValidationException catch (e) {
+      return Left(ValidationFailure(message: e.message));
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message));
     } catch (e) {
-      return Left(ServerFailure(message: 'Failed to load menu items: $e'));
+      return Left(
+          ServerFailure(message: 'Unexpected error loading menu items: $e'));
     }
   }
 
@@ -33,11 +40,17 @@ class MenuRepositoryImpl implements MenuRepository {
     try {
       final items = await menuDataSource.getMenuItemsByCategory(categoryId);
       return Right(items.map((model) => model.toEntity()).toList());
-    } on ServerException {
-      return Left(ServerFailure(message: 'Server error'));
+    } on CacheException catch (e) {
+      return Left(CacheFailure(message: e.message));
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(message: e.message));
+    } on ValidationException catch (e) {
+      return Left(ValidationFailure(message: e.message));
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message));
     } catch (e) {
-      return Left(
-          ServerFailure(message: 'Failed to load menu items by category: $e'));
+      return Left(ServerFailure(
+          message: 'Unexpected error loading menu items by category: $e'));
     }
   }
 
@@ -46,10 +59,17 @@ class MenuRepositoryImpl implements MenuRepository {
     try {
       final item = await menuDataSource.getMenuItemById(id);
       return Right(item.toEntity());
-    } on ServerException {
-      return Left(ServerFailure(message: 'Server error'));
+    } on CacheException catch (e) {
+      return Left(CacheFailure(message: e.message));
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(message: e.message));
+    } on ValidationException catch (e) {
+      return Left(ValidationFailure(message: e.message));
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message));
     } catch (e) {
-      return Left(ServerFailure(message: 'Failed to load menu item: $e'));
+      return Left(
+          ServerFailure(message: 'Unexpected error loading menu item: $e'));
     }
   }
 
@@ -58,10 +78,17 @@ class MenuRepositoryImpl implements MenuRepository {
     try {
       final categories = await menuDataSource.getMenuCategories();
       return Right(categories.map((model) => model.toEntity()).toList());
-    } on ServerException {
-      return Left(ServerFailure(message: 'Server error'));
+    } on CacheException catch (e) {
+      return Left(CacheFailure(message: e.message));
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(message: e.message));
+    } on ValidationException catch (e) {
+      return Left(ValidationFailure(message: e.message));
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message));
     } catch (e) {
-      return Left(ServerFailure(message: 'Failed to load menu categories: $e'));
+      return Left(ServerFailure(
+          message: 'Unexpected error loading menu categories: $e'));
     }
   }
 
@@ -71,10 +98,17 @@ class MenuRepositoryImpl implements MenuRepository {
     try {
       final category = await menuDataSource.getMenuCategoryById(id);
       return Right(category.toEntity());
-    } on ServerException {
-      return Left(ServerFailure(message: 'Server error'));
+    } on CacheException catch (e) {
+      return Left(CacheFailure(message: e.message));
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(message: e.message));
+    } on ValidationException catch (e) {
+      return Left(ValidationFailure(message: e.message));
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message));
     } catch (e) {
-      return Left(ServerFailure(message: 'Failed to load menu category: $e'));
+      return Left(
+          ServerFailure(message: 'Unexpected error loading menu category: $e'));
     }
   }
 
@@ -84,10 +118,17 @@ class MenuRepositoryImpl implements MenuRepository {
     try {
       final items = await menuDataSource.searchMenuItems(query);
       return Right(items.map((model) => model.toEntity()).toList());
-    } on ServerException {
-      return Left(ServerFailure(message: 'Server error'));
+    } on CacheException catch (e) {
+      return Left(CacheFailure(message: e.message));
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(message: e.message));
+    } on ValidationException catch (e) {
+      return Left(ValidationFailure(message: e.message));
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message));
     } catch (e) {
-      return Left(ServerFailure(message: 'Failed to search menu items: $e'));
+      return Left(
+          ServerFailure(message: 'Unexpected error searching menu items: $e'));
     }
   }
 
@@ -96,11 +137,17 @@ class MenuRepositoryImpl implements MenuRepository {
     try {
       final items = await menuDataSource.getPopularMenuItems();
       return Right(items.map((model) => model.toEntity()).toList());
-    } on ServerException {
-      return Left(ServerFailure(message: 'Server error'));
+    } on CacheException catch (e) {
+      return Left(CacheFailure(message: e.message));
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(message: e.message));
+    } on ValidationException catch (e) {
+      return Left(ValidationFailure(message: e.message));
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message));
     } catch (e) {
-      return Left(
-          ServerFailure(message: 'Failed to load popular menu items: $e'));
+      return Left(ServerFailure(
+          message: 'Unexpected error loading popular menu items: $e'));
     }
   }
 
@@ -110,10 +157,17 @@ class MenuRepositoryImpl implements MenuRepository {
       await menuDataSource.getMenuItems();
       await menuDataSource.getMenuCategories();
       return const Right(null);
-    } on ServerException {
-      return Left(ServerFailure(message: 'Server error'));
+    } on CacheException catch (e) {
+      return Left(CacheFailure(message: e.message));
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(message: e.message));
+    } on ValidationException catch (e) {
+      return Left(ValidationFailure(message: e.message));
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message));
     } catch (e) {
-      return Left(ServerFailure(message: 'Failed to refresh menu data: $e'));
+      return Left(
+          ServerFailure(message: 'Unexpected error refreshing menu data: $e'));
     }
   }
 }
