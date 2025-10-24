@@ -88,31 +88,21 @@ class MenuBloc extends BaseBloc<MenuEvent, MenuState> {
     RefreshMenuData event,
     Emitter<MenuState> emit,
   ) async {
-    // Don't show loading during refresh, just update data
+    // Show loading during refresh
+    emit(const MenuLoading());
+
     final categoriesResult = await getMenuCategories(const NoParams());
     final itemsResult = await getMenuItems(const NoParams());
 
-    if (state is MenuLoaded) {
-      final currentState = state as MenuLoaded;
-
-      final updatedCategories = categoriesResult.fold(
-        (failure) => currentState.categories,
-        (categories) => categories,
-      );
-
-      final updatedItems = itemsResult.fold(
-        (failure) => currentState.items,
-        (items) => items,
-      );
-
-      emit(currentState.copyWith(
-        categories: updatedCategories,
-        items: updatedItems,
-        filteredItems: null,
-        selectedCategory: null,
-        searchQuery: null,
-      ));
-    }
+    categoriesResult.fold(
+      (failure) => emit(MenuError(message: _mapFailureToMessage(failure))),
+      (categories) {
+        itemsResult.fold(
+          (failure) => emit(MenuError(message: _mapFailureToMessage(failure))),
+          (items) => emit(MenuLoaded(categories: categories, items: items)),
+        );
+      },
+    );
   }
 
   Future<void> _onSearchMenuItems(
@@ -159,11 +149,12 @@ class MenuBloc extends BaseBloc<MenuEvent, MenuState> {
     if (state is! MenuLoaded) return;
 
     final currentState = state as MenuLoaded;
-    emit(currentState.copyWith(
+    final newState = currentState.copyWith(
       filteredItems: null,
       selectedCategory: null,
       searchQuery: null,
-    ));
+    );
+    emit(newState);
   }
 
   String _mapFailureToMessage(Failure failure) {

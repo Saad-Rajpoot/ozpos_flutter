@@ -53,9 +53,9 @@ class MenuLoaded extends MenuState {
     return MenuLoaded(
       categories: categories ?? this.categories,
       items: items ?? this.items,
-      filteredItems: filteredItems ?? this.filteredItems,
-      selectedCategory: selectedCategory ?? this.selectedCategory,
-      searchQuery: searchQuery ?? this.searchQuery,
+      filteredItems: filteredItems,
+      selectedCategory: selectedCategory,
+      searchQuery: searchQuery,
     );
   }
 }

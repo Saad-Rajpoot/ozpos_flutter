@@ -179,7 +179,6 @@ Future<void> _initMenu(GetIt sl) async {
   sl.registerLazySingleton<MenuRepository>(
     () => MenuRepositoryImpl(
       menuDataSource: sl(),
-      networkInfo: sl(),
     ),
   );
 
@@ -284,7 +283,7 @@ Future<void> _initAddons(GetIt sl) async {
 
   // Repository
   sl.registerLazySingleton<AddonRepository>(
-    () => AddonRepositoryImpl(addonDataSource: sl(), networkInfo: sl()),
+    () => AddonRepositoryImpl(addonDataSource: sl()),
   );
 
   // Use cases

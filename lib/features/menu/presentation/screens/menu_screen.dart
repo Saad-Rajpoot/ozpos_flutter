@@ -7,11 +7,12 @@ import '../../domain/entities/menu_category_entity.dart';
 import '../../../../core/navigation/app_router.dart';
 import '../../../../core/constants/app_responsive.dart';
 import '../widgets/menu_item_card.dart';
-import '../widgets/item_configurator_dialog.dart';
 import '../../../checkout/presentation/widgets/cart_pane.dart';
 import '../../../checkout/presentation/bloc/cart_bloc.dart' as cart_bloc;
 import '../../../../core/widgets/sidebar_nav.dart';
-import '../../data/datasources/menu_mock_datasource.dart';
+import '../bloc/menu_bloc.dart';
+import '../bloc/menu_event.dart';
+import '../bloc/menu_state.dart';
 
 /// Menu Screen with Seed Data and Cart Integration
 class MenuScreen extends StatefulWidget {
@@ -23,86 +24,12 @@ class MenuScreen extends StatefulWidget {
   State<MenuScreen> createState() => _MenuScreenState();
 }
 
-class _MenuData {
-  final List<MenuItemEntity> menuItems;
-  final List<MenuCategoryEntity> categories;
-  final Map<String, String> categoryIdToNameMap;
-
-  const _MenuData({
-    required this.menuItems,
-    required this.categories,
-    required this.categoryIdToNameMap,
-  });
-}
-
 class _MenuScreenState extends State<MenuScreen> {
-  String _selectedCategory = 'all';
-  String _searchQuery = '';
-  late Future<_MenuData> _menuDataFuture;
-
   @override
   void initState() {
     super.initState();
-    _menuDataFuture = _loadMenuData();
-  }
-
-  Future<_MenuData> _loadMenuData() async {
-    // Load menu items and categories in parallel
-    final menuItemsResult = MenuMockDataSourceImpl().getMenuItems();
-    final categoriesResult = MenuMockDataSourceImpl().getMenuCategories();
-
-    final menuItems = await menuItemsResult;
-    final categories = await categoriesResult;
-
-    final menuItemEntities = menuItems.map((item) => item.toEntity()).toList();
-    final categoryEntities = categories.map((cat) => cat.toEntity()).toList();
-
-    final categoryMap = <String, String>{};
-    for (final category in categoryEntities) {
-      categoryMap[category.id] = category.name;
-    }
-
-    return _MenuData(
-      menuItems: menuItemEntities,
-      categories: categoryEntities,
-      categoryIdToNameMap: categoryMap,
-    );
-  }
-
-  /// Optimized filtering method - only called when filters actually change
-  List<MenuItemEntity> _getFilteredItems(
-    List<MenuItemEntity> allItems,
-    String selectedCategory,
-    String searchQuery,
-    Map<String, String> categoryIdToNameMap,
-  ) {
-    // Start with all items
-    var filtered = allItems;
-
-    // Filter by category if selected (not 'all')
-    if (selectedCategory != 'all') {
-      final categoryId = categoryIdToNameMap.entries
-          .firstWhere((entry) => entry.value == selectedCategory,
-              orElse: () => const MapEntry('', ''))
-          .key;
-
-      if (categoryId.isNotEmpty) {
-        filtered =
-            filtered.where((item) => item.categoryId == categoryId).toList();
-      }
-    }
-
-    // Filter by search query if provided
-    if (searchQuery.isNotEmpty) {
-      final query = searchQuery.toLowerCase();
-      filtered = filtered.where((item) {
-        final name = item.name.toLowerCase();
-        final description = item.description.toLowerCase();
-        return name.contains(query) || description.contains(query);
-      }).toList();
-    }
-
-    return filtered;
+    // Load menu data through BLoC
+    context.read<MenuBloc>().add(const LoadMenuData());
   }
 
   /// Get category names for tabs - optimized to avoid recreation
@@ -168,39 +95,104 @@ class _MenuScreenState extends State<MenuScreen> {
                   _buildHeader(context),
                   // Search bar
                   _buildSearchBar(),
-                  // Combined data loading
+                  // Menu content with BLoC state management
                   Expanded(
-                    child: FutureBuilder<_MenuData>(
-                      future: _menuDataFuture,
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return const Center(
-                              child: CircularProgressIndicator());
+                    child: BlocConsumer<MenuBloc, MenuState>(
+                      listener: (context, state) {
+                        // Handle error states
+                        if (state is MenuError) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(state.message),
+                              backgroundColor: AppColors.error,
+                            ),
+                          );
                         }
-                        if (snapshot.hasError) {
+                      },
+                      buildWhen: (previous, current) {
+                        final prevCategory = previous is MenuLoaded
+                            ? previous.selectedCategory?.name
+                            : 'N/A';
+                        final currCategory = current is MenuLoaded
+                            ? current.selectedCategory?.name
+                            : 'N/A';
+                        print(
+                            'BuildWhen called - previous: selectedCategory=$prevCategory, current: selectedCategory=$currCategory');
+                        // Always rebuild to handle state changes properly
+                        return true;
+                      },
+                      builder: (context, state) {
+                        if (state is MenuLoading) {
                           return const Center(
-                              child: Text('Error loading menu data'));
+                            child: CircularProgressIndicator(),
+                          );
                         }
-                        final menuData = snapshot.data!;
 
-                        // Optimized: Use pre-computed values (only recalculated when dependencies change)
-                        final categoryNames =
-                            _getCategoryNames(menuData.categories);
-                        final filteredItems = _getFilteredItems(
-                          menuData.menuItems,
-                          _selectedCategory,
-                          _searchQuery,
-                          menuData.categoryIdToNameMap,
-                        );
+                        if (state is MenuError) {
+                          return Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(
+                                  Icons.error_outline,
+                                  size: 64,
+                                  color: Colors.red,
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  state.message,
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.red,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    context
+                                        .read<MenuBloc>()
+                                        .add(const LoadMenuData());
+                                  },
+                                  child: const Text('Retry'),
+                                ),
+                              ],
+                            ),
+                          );
+                        }
 
-                        return Column(
-                          children: [
-                            // Category tabs
-                            _buildCategoryTabs(categoryNames),
-                            // Menu grid
-                            Expanded(child: _buildMenuGrid(filteredItems)),
-                          ],
+                        if (state is MenuLoaded) {
+                          final categoryNames =
+                              _getCategoryNames(state.categories);
+                          final itemsToShow =
+                              state.filteredItems ?? state.items;
+
+                          // Debug: Print categories for debugging
+                          print(
+                              'Categories loaded: ${state.categories.length}');
+                          print('Category names: $categoryNames');
+                          print(
+                              'Filtered items: ${state.filteredItems?.length ?? 'null'}');
+                          print('All items: ${state.items.length}');
+                          print(
+                              'Selected category: ${state.selectedCategory?.name ?? 'null'}');
+                          print('Search query: ${state.searchQuery ?? 'null'}');
+                          print(
+                              'Is All selected: ${state.selectedCategory == null && state.searchQuery == null}');
+
+                          return Column(
+                            children: [
+                              // Category tabs
+                              _buildCategoryTabs(
+                                  categoryNames, state.categories, state),
+                              // Menu grid
+                              Expanded(child: _buildMenuGrid(itemsToShow)),
+                            ],
+                          );
+                        }
+
+                        return const Center(
+                          child: Text('No menu data available'),
                         );
                       },
                     ),
@@ -316,15 +308,14 @@ class _MenuScreenState extends State<MenuScreen> {
           fillColor: Colors.white,
         ),
         onChanged: (value) {
-          setState(() {
-            _searchQuery = value;
-          });
+          context.read<MenuBloc>().add(SearchMenuItems(query: value));
         },
       ),
     );
   }
 
-  Widget _buildCategoryTabs(List<String> categories) {
+  Widget _buildCategoryTabs(List<String> categoryNames,
+      List<MenuCategoryEntity> categories, MenuLoaded state) {
     return SizedBox(
       height: 50,
       width: double.infinity, // Ensure full width is available
@@ -332,11 +323,20 @@ class _MenuScreenState extends State<MenuScreen> {
         scrollDirection: Axis.horizontal,
         physics: const ClampingScrollPhysics(),
         padding: const EdgeInsets.symmetric(horizontal: 16),
-        itemCount: categories.length,
+        itemCount: categoryNames.length,
         itemBuilder: (context, index) {
-          final category = categories[index];
-          final isSelected = _selectedCategory == category;
-          final displayName = category == 'all' ? 'All' : category;
+          final categoryName = categoryNames[index];
+          final isAll = categoryName == 'all';
+          final displayName = isAll ? 'All' : categoryName;
+
+          // Check if this category is selected
+          // "All" is selected when no filters are active (no selected category and no search)
+          final isAllSelected =
+              (state.selectedCategory == null && state.searchQuery == null);
+          final isCategorySelected =
+              (state.selectedCategory?.name == categoryName);
+
+          final isSelected = isAll ? isAllSelected : isCategorySelected;
 
           return Container(
             margin: const EdgeInsets.only(right: 8),
@@ -344,9 +344,16 @@ class _MenuScreenState extends State<MenuScreen> {
               label: Text(displayName),
               selected: isSelected,
               onSelected: (selected) {
-                setState(() {
-                  _selectedCategory = category;
-                });
+                if (selected && !isAll) {
+                  final category = categories.firstWhere(
+                    (cat) => cat.name == categoryName,
+                  );
+                  context
+                      .read<MenuBloc>()
+                      .add(FilterByCategory(category: category));
+                } else if (selected && isAll) {
+                  context.read<MenuBloc>().add(const ClearFilters());
+                }
               },
               backgroundColor: Colors.white,
               selectedColor: const Color(0xFFEF4444),
@@ -376,13 +383,11 @@ class _MenuScreenState extends State<MenuScreen> {
           children: [
             Icon(Icons.restaurant_menu, size: 64, color: Colors.grey.shade300),
             const SizedBox(height: 16),
-            Text(
-              _searchQuery.isNotEmpty
-                  ? 'No items found for "$_searchQuery"'
-                  : 'No menu items available',
+            const Text(
+              'No menu items available',
               style: TextStyle(
                 fontSize: 16,
-                color: Colors.grey.shade600,
+                color: Colors.grey,
                 fontWeight: FontWeight.w500,
               ),
             ),
