@@ -5,7 +5,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:uuid/uuid.dart';
 
 import '../config/app_config.dart';
-import '../network/api_client.dart';
+import '../network/api_client.dart' as api_client;
 import '../network/network_info.dart';
 import '../utils/database_helper.dart';
 
@@ -119,8 +119,8 @@ Future<void> init() async {
 
   // API Client with environment-based configuration
   sl.registerLazySingleton(
-    () =>
-        ApiClient(sharedPreferences: sl(), baseUrl: AppConfig.instance.baseUrl),
+    () => api_client.ApiClient(
+        sharedPreferences: sl(), baseUrl: AppConfig.instance.baseUrl),
   );
 
   // Features

@@ -305,8 +305,9 @@ class CartBloc extends Bloc<CartEvent, CartState> {
           ? _getDefaultModifiers(event.menuItem)
           : event.selectedModifiers;
 
-      if (!_modifiersMatch(item.selectedModifiers, modifiersToCompare))
+      if (!_modifiersMatch(item.selectedModifiers, modifiersToCompare)) {
         continue;
+      }
 
       return i;
     }
@@ -319,8 +320,9 @@ class CartBloc extends Bloc<CartEvent, CartState> {
       Map<String, List<String>> modifiers2) {
     // Check if both have same modifier groups
     if (modifiers1.keys.length != modifiers2.keys.length) return false;
-    if (!modifiers1.keys.every((key) => modifiers2.containsKey(key)))
+    if (!modifiers1.keys.every((key) => modifiers2.containsKey(key))) {
       return false;
+    }
 
     // Check if each modifier group has same options
     for (final groupId in modifiers1.keys) {
