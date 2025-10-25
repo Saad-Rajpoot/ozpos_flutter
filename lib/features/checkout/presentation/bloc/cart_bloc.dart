@@ -28,14 +28,17 @@ class CartLineItem extends Equatable {
 
   double get lineTotal => unitPrice * quantity;
 
-  CartLineItem copyWith({int? quantity}) {
+  CartLineItem copyWith({
+    int? quantity,
+    Map<String, List<String>>? selectedModifiers,
+  }) {
     return CartLineItem(
       id: id,
       menuItem: menuItem,
       quantity: quantity ?? this.quantity,
       unitPrice: unitPrice,
       selectedComboId: selectedComboId,
-      selectedModifiers: selectedModifiers,
+      selectedModifiers: selectedModifiers ?? this.selectedModifiers,
       modifierSummary: modifierSummary,
     );
   }
@@ -267,29 +270,125 @@ class CartBloc extends Bloc<CartEvent, CartState> {
     );
   }
 
+  /// Helper method to get default modifiers for a menu item
+  Map<String, List<String>> _getDefaultModifiers(MenuItemEntity menuItem) {
+    final defaultModifiers = <String, List<String>>{};
+
+    for (final group in menuItem.modifierGroups) {
+      final defaultOptions = group.options
+          .where((opt) => opt.isDefault)
+          .map((opt) => opt.id)
+          .toList();
+      if (defaultOptions.isNotEmpty) {
+        defaultModifiers[group.id] = defaultOptions;
+      }
+    }
+
+    return defaultModifiers;
+  }
+
+  /// Helper method to find index of identical item in cart
+  /// Two items are considered identical if they have same menu item, modifiers, and combo
+  int _findIdenticalItemIndex(List<CartLineItem> items, AddItemToCart event) {
+    for (int i = 0; i < items.length; i++) {
+      final item = items[i];
+
+      // Check if menu item IDs match
+      if (item.menuItem.id != event.menuItem.id) continue;
+
+      // Check if combo selections match (both null or both same)
+      if (item.selectedComboId != event.selectedComboId) continue;
+
+      // Check if modifiers match
+      // If new item has empty modifiers, compare with default modifiers for the menu item
+      final modifiersToCompare = event.selectedModifiers.isEmpty
+          ? _getDefaultModifiers(event.menuItem)
+          : event.selectedModifiers;
+
+      if (!_modifiersMatch(item.selectedModifiers, modifiersToCompare))
+        continue;
+
+      return i;
+    }
+
+    return -1; // No identical item found
+  }
+
+  /// Helper method to compare modifier selections
+  bool _modifiersMatch(Map<String, List<String>> modifiers1,
+      Map<String, List<String>> modifiers2) {
+    // Check if both have same modifier groups
+    if (modifiers1.keys.length != modifiers2.keys.length) return false;
+    if (!modifiers1.keys.every((key) => modifiers2.containsKey(key)))
+      return false;
+
+    // Check if each modifier group has same options
+    for (final groupId in modifiers1.keys) {
+      final options1 = modifiers1[groupId] ?? [];
+      final options2 = modifiers2[groupId] ?? [];
+
+      if (options1.length != options2.length) return false;
+      if (!options1.every((option) => options2.contains(option))) return false;
+    }
+
+    return true;
+  }
+
   void _onAddItemToCart(AddItemToCart event, Emitter<CartState> emit) {
     if (state is! CartLoaded) return;
 
     final currentState = state as CartLoaded;
 
-    // Generate unique line item ID
-    final lineItemId =
-        '${event.menuItem.id}_${DateTime.now().millisecondsSinceEpoch}';
+    // If event has empty modifiers, use defaults for comparison
+    if (event.selectedModifiers.isEmpty) {}
 
-    final newLineItem = CartLineItem(
-      id: lineItemId,
-      menuItem: event.menuItem,
-      quantity: event.quantity,
-      unitPrice: event.unitPrice,
-      selectedComboId: event.selectedComboId,
-      selectedModifiers: event.selectedModifiers,
-      modifierSummary: event.modifierSummary,
-    );
+    // Check if an identical item already exists in the cart
+    final existingItemIndex =
+        _findIdenticalItemIndex(currentState.items, event);
 
-    final updatedItems = List<CartLineItem>.from(currentState.items)
-      ..add(newLineItem);
+    if (existingItemIndex != -1) {
+      // Update quantity of existing item
+      final existingItem = currentState.items[existingItemIndex];
+      final updatedQuantity = existingItem.quantity + event.quantity;
 
-    emit(currentState.copyWith(items: updatedItems));
+      // Ensure the existing item uses default modifiers if it had empty modifiers
+      final finalModifiers = existingItem.selectedModifiers.isEmpty
+          ? _getDefaultModifiers(event.menuItem)
+          : existingItem.selectedModifiers;
+
+      final updatedItems = List<CartLineItem>.from(currentState.items);
+      updatedItems[existingItemIndex] = existingItem.copyWith(
+        quantity: updatedQuantity,
+        selectedModifiers: finalModifiers,
+      );
+
+      emit(currentState.copyWith(items: updatedItems));
+    } else {
+      // Add new item to cart
+      // Generate unique line item ID
+      final lineItemId =
+          '${event.menuItem.id}_${DateTime.now().millisecondsSinceEpoch}';
+
+      // Use default modifiers if event has empty modifiers
+      final finalModifiers = event.selectedModifiers.isEmpty
+          ? _getDefaultModifiers(event.menuItem)
+          : event.selectedModifiers;
+
+      final newLineItem = CartLineItem(
+        id: lineItemId,
+        menuItem: event.menuItem,
+        quantity: event.quantity,
+        unitPrice: event.unitPrice,
+        selectedComboId: event.selectedComboId,
+        selectedModifiers: finalModifiers,
+        modifierSummary: event.modifierSummary,
+      );
+
+      final updatedItems = List<CartLineItem>.from(currentState.items)
+        ..add(newLineItem);
+
+      emit(currentState.copyWith(items: updatedItems));
+    }
   }
 
   void _onUpdateLineItemQuantity(
