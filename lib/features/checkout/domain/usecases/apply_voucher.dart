@@ -19,17 +19,18 @@ class ApplyVoucherUseCase
       return Left(ValidationFailure(message: 'Voucher code cannot be empty'));
     }
 
-    try {
-      final voucher = await _repository.validateVoucher(params.code);
+    // Repository now returns Either, so we handle it directly
+    final result = await _repository.validateVoucher(params.code);
 
-      if (voucher == null) {
-        return Left(ValidationFailure(message: 'Invalid voucher code'));
-      }
-
-      return Right(ApplyVoucherResult.success(voucher: voucher));
-    } catch (e) {
-      return Left(ServerFailure(message: 'Failed to apply voucher: $e'));
-    }
+    return result.fold(
+      (failure) => Left(failure),
+      (voucher) {
+        if (voucher == null) {
+          return Left(ValidationFailure(message: 'Invalid voucher code'));
+        }
+        return Right(ApplyVoucherResult.success(voucher: voucher));
+      },
+    );
   }
 }
 

@@ -15,18 +15,18 @@ class ProcessPaymentUseCase
   @override
   Future<Either<Failure, ProcessPaymentResult>> call(
       ProcessPaymentParams params) async {
-    try {
-      final orderId = await _repository.processPayment(
-        paymentMethod: params.paymentMethod,
-        amount: params.amount,
-        metadata: params.metadata,
-      );
+    // Repository now returns Either, so we handle it directly
+    final result = await _repository.processPayment(
+      paymentMethod: params.paymentMethod,
+      amount: params.amount,
+      metadata: params.metadata,
+    );
 
-      return Right(ProcessPaymentResult.success(
-          orderId: orderId, paidAmount: params.amount));
-    } catch (e) {
-      return Left(ServerFailure(message: 'Payment failed: $e'));
-    }
+    return result.fold(
+      (failure) => Left(failure),
+      (orderId) => Right(ProcessPaymentResult.success(
+          orderId: orderId, paidAmount: params.amount)),
+    );
   }
 }
 
