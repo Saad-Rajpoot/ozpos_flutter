@@ -63,6 +63,18 @@ class AppConstants {
   // Printer endpoints
   static const String getPrintersEndpoint = '/printers';
   static const String testPrintEndpoint = '/printers/{id}/test';
+  static const String discoverBluetoothPrintersEndpoint =
+      '/printers/discover/bluetooth';
+  static const String discoverNetworkPrintersEndpoint =
+      '/printers/discover/network';
+  static const String addPrinterEndpoint = '/printers';
+  static const String updatePrinterEndpoint = '/printers/{id}';
+  static const String deletePrinterEndpoint = '/printers/{id}';
+  static const String connectPrinterEndpoint = '/printers/{id}/connect';
+  static const String disconnectPrinterEndpoint = '/printers/{id}/disconnect';
+  static const String setDefaultPrinterEndpoint = '/printers/{id}/set-default';
+  static const String printJobHistoryEndpoint = '/printers/jobs';
+  static const String printJobStatusEndpoint = '/printers/jobs/{jobId}';
 
   // Reports endpoints
   static const String getReportsEndpoint = '/reports';

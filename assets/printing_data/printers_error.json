@@ -1,0 +1,6 @@
+{
+  "message": "Failed to load printers",
+  "error": "DATABASE_ERROR",
+  "code": 500
+}
+

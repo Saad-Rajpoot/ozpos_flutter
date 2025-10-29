@@ -180,6 +180,23 @@ class DatabaseHelper {
       )
     ''');
 
+    // Printers table
+    await db.execute('''
+      CREATE TABLE printers (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        type TEXT NOT NULL,
+        connection TEXT NOT NULL,
+        address TEXT,
+        port INTEGER,
+        is_connected INTEGER NOT NULL DEFAULT 0,
+        is_default INTEGER NOT NULL DEFAULT 0,
+        last_used_at TEXT,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+      )
+    ''');
+
     // Cart items table
     await db.execute('''
       CREATE TABLE cart_items (
@@ -223,6 +240,9 @@ class DatabaseHelper {
     );
     await db.execute(
       'CREATE INDEX idx_sync_queue_synced ON sync_queue(synced_at)',
+    );
+    await db.execute(
+      'CREATE INDEX idx_printers_connection ON printers(connection)',
     );
   }
 

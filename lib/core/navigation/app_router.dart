@@ -27,6 +27,9 @@ import '../../features/orders/presentation/bloc/orders_management_bloc.dart';
 import '../../features/docket/presentation/bloc/docket_management_bloc.dart';
 import '../../features/docket/presentation/bloc/docket_management_event.dart';
 import '../../features/docket/presentation/screens/docket_management_screen.dart';
+import '../../features/printing/presentation/bloc/printing_bloc.dart';
+import '../../features/printing/presentation/bloc/printing_event.dart';
+import '../../features/printing/presentation/screens/printing_management_screen.dart';
 
 /// Centralized route management
 ///
@@ -51,6 +54,7 @@ class AppRouter {
   static const String moveTable = '/move-table';
   static const String addonManagement = '/addon-management';
   static const String docketManagement = '/docket-management';
+  static const String printingManagement = '/printing-management';
 
   // ========================================================================
   // ROUTE GENERATOR
@@ -168,6 +172,15 @@ class AppRouter {
           builder: (_) => BlocProvider<DocketManagementBloc>.value(
             value: di.sl<DocketManagementBloc>()..add(const LoadDocketsEvent()),
             child: const DocketManagementScreen(),
+          ),
+          settings: settings,
+        );
+
+      case printingManagement:
+        return MaterialPageRoute(
+          builder: (_) => BlocProvider<PrintingBloc>.value(
+            value: di.sl<PrintingBloc>()..add(LoadPrinters()),
+            child: const PrintingManagementScreen(),
           ),
           settings: settings,
         );

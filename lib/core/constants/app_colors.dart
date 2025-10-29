@@ -32,6 +32,16 @@ class AppColors {
   static const tileSettings = Color(0xFF64748B); // slate-500
   static const tileSettingsEnd = Color(0xFF475569); // slate-600
 
+  // Settings tile gradient colors
+  static const tilePrinting = Color(0xFF0EA5E9); // sky-500
+  static const tilePrintingEnd = Color(0xFF0284C7); // sky-600
+
+  static const tileGeneral = Color(0xFF64748B); // slate-500
+  static const tileGeneralEnd = Color(0xFF475569); // slate-600
+
+  static const tileDatabase = Color(0xFF8B5CF6); // violet-500
+  static const tileDatabaseEnd = Color(0xFF7C3AED); // violet-600
+
   // Background colors - exact from reference
   static const bgPrimary = Color(0xFFF9FAFB); // gray-50
   static const bgSecondary = Colors.white;

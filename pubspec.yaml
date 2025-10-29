@@ -78,10 +78,11 @@ dependencies:
   
   # Storage
   shared_preferences: ^2.2.2
+
   
-  # PDF Generation (for receipts)
-  pdf: ^3.10.7
-  printing: ^5.12.0
+  # ESC/POS Printing - Network and Bluetooth
+  esc_pos_printer: ^4.1.0
+  esc_pos_utils: ^1.1.0
   
   # HTTP
   dio: ^5.7.0
@@ -125,6 +126,7 @@ flutter:
     - assets/tables_data/
     - assets/reports_data/
     - assets/docket_data/
+    - assets/printing_data/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
