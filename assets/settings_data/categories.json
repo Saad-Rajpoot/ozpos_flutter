@@ -1,0 +1,44 @@
+[
+  {
+    "id": "system",
+    "title": "System",
+    "description": "Core system settings",
+    "items": [
+      {"name": "Update Version", "description": "Check for app updates", "action": "toast:update"},
+      {"name": "Hot Reload", "description": "Enable live updates", "action": "toast:hot-reload"},
+      {"name": "Dual Screen Mode", "description": "Configure multiple displays", "action": "toast:dual-screen"}
+    ]
+  },
+  {
+    "id": "user-access",
+    "title": "User & Access",
+    "description": "Manage users and permissions",
+    "items": [
+      {"name": "Switch User", "description": "Change active user", "action": "toast:switch-user"},
+      {"name": "App Permissions", "description": "Manage app access", "action": "toast:permissions"},
+      {"name": "Client Details", "description": "Customer information", "action": "toast:client-details"}
+    ]
+  },
+  {
+    "id": "operations",
+    "title": "Operations",
+    "description": "Business operations setup",
+    "items": [
+      {"name": "Printer Setup", "description": "Manage receipts & printers", "action": "nav:printer-setup"},
+      {"name": "Docket Designer", "description": "Design receipts & kitchen dockets", "action": "nav:docket-management"},
+      {"name": "Reports", "description": "Financial & operational reports", "action": "toast:reports"},
+      {"name": "Expenses", "description": "Track business expenses", "action": "toast:expenses"}
+    ]
+  },
+  {
+    "id": "customization",
+    "title": "Customization",
+    "description": "Personalize your experience",
+    "items": [
+      {"name": "Edit Menu", "description": "Modify menu items & prices", "action": "nav:menu-management"},
+      {"name": "Change View", "description": "Customize interface layout", "action": "toast:change-view"},
+      {"name": "Watch Guide", "description": "Tutorials & help videos", "action": "toast:watch-guide"}
+    ]
+  }
+]
+

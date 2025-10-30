@@ -127,6 +127,8 @@ flutter:
     - assets/reports_data/
     - assets/docket_data/
     - assets/printing_data/
+    - assets/settings_data/categories.json
+    - assets/settings_data/categories_error.json
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

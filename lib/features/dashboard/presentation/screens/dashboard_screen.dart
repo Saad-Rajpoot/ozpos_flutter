@@ -370,7 +370,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         NavigationService.pushNamed(AppRouter.reports);
         break;
       case 'settings':
-        NavigationService.pushNamed(AppRouter.settings);
+        NavigationService.pushNamed(AppRouter.settingsScreen);
         break;
       default:
         if (widget.onNavigate != null) {

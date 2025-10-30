@@ -48,7 +48,7 @@ class AppRouter {
   static const String delivery = '/delivery';
   static const String reservations = '/reservations';
   static const String reports = '/reports';
-  static const String settings = '/settings';
+  static const String settingsScreen = '/settings-screen';
   static const String menuEditor = '/menu-editor';
   static const String menuItemWizard = '/menu-item-wizard';
   static const String moveTable = '/move-table';
@@ -126,7 +126,7 @@ class AppRouter {
           settings: settings,
         );
 
-      case AppRouter.settings:
+      case settingsScreen:
         return MaterialPageRoute(
           builder: (_) => const SettingsScreen(),
           settings: settings,

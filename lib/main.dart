@@ -5,7 +5,6 @@ import 'package:get_it/get_it.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'dart:io' show Platform;
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-
 import 'core/config/app_config.dart';
 import 'core/config/sentry_config.dart';
 import 'core/di/injection_container.dart' as di;
@@ -23,6 +22,8 @@ import 'features/reservations/presentation/bloc/reservation_management_event.dar
 import 'features/delivery/presentation/bloc/delivery_bloc.dart';
 import 'features/docket/presentation/bloc/docket_management_bloc.dart';
 import 'features/printing/presentation/bloc/printing_bloc.dart';
+import 'features/settings/presentation/bloc/settings_bloc.dart';
+import 'features/settings/presentation/bloc/settings_event.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -105,6 +106,9 @@ class OzposApp extends StatelessWidget {
         ),
         BlocProvider<PrintingBloc>(
           create: (_) => GetIt.instance<PrintingBloc>(),
+        ),
+        BlocProvider<SettingsBloc>(
+          create: (_) => GetIt.instance<SettingsBloc>()..add(LoadSettings()),
         ),
       ],
       child: MaterialApp(

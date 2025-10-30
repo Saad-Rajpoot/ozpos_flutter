@@ -99,6 +99,15 @@ import '../../features/combos/domain/usecases/delete_combo.dart';
 import '../../features/combos/domain/usecases/validate_combo.dart';
 import '../../features/combos/domain/usecases/calculate_pricing.dart';
 
+// Settings feature imports
+import '../../features/settings/data/datasources/settings_data_source.dart';
+import '../../features/settings/data/datasources/settings_mock_datasource.dart';
+import '../../features/settings/data/datasources/settings_remote_datasource.dart';
+import '../../features/settings/data/repositories/settings_repository_impl.dart';
+import '../../features/settings/domain/repositories/settings_repository.dart';
+import '../../features/settings/domain/usecases/get_settings_categories.dart';
+import '../../features/settings/presentation/bloc/settings_bloc.dart';
+
 final sl = GetIt.instance;
 
 /// Initialize dependency injection
@@ -144,6 +153,7 @@ Future<void> init() async {
   await _initDelivery(sl);
   await _initDocket(sl);
   await _initPrinting(sl);
+  await _initSettings(sl);
 }
 
 /// Initialize orders feature dependencies
@@ -464,4 +474,27 @@ Future<void> _initPrinting(GetIt sl) async {
         addPrinter: sl(),
         printingRepository: sl(),
       ));
+}
+
+/// Initialize settings feature dependencies
+Future<void> _initSettings(GetIt sl) async {
+  // Data source (environment-based)
+  sl.registerLazySingleton<SettingsDataSource>(() {
+    if (AppConfig.instance.environment == AppEnvironment.development) {
+      return SettingsMockDataSourceImpl();
+    } else {
+      return SettingsRemoteDataSourceImpl(apiClient: sl());
+    }
+  });
+
+  // Repository
+  sl.registerLazySingleton<SettingsRepository>(
+    () => SettingsRepositoryImpl(dataSource: sl(), networkInfo: sl()),
+  );
+
+  // Use cases
+  sl.registerLazySingleton(() => GetSettingsCategories(repository: sl()));
+
+  // BLoC
+  sl.registerFactory(() => SettingsBloc(getSettingsCategories: sl()));
 }

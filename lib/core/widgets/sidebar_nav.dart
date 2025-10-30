@@ -113,8 +113,8 @@ class SidebarNav extends StatelessWidget {
                 _NavItem(
                   icon: Icons.settings,
                   label: 'Settings',
-                  route: AppRouter.settings,
-                  isActive: activeRoute == AppRouter.settings,
+                  route: AppRouter.settingsScreen,
+                  isActive: activeRoute == AppRouter.settingsScreen,
                 ),
               ],
             ),
