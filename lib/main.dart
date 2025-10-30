@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
+import 'dart:io' show Platform;
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'core/config/app_config.dart';
 import 'core/config/sentry_config.dart';
@@ -33,6 +35,12 @@ void main() async {
     environment:
         AppEnvironment.development, // Change to production for remote API
   );
+
+  // Initialize SQLite for desktop platforms (Windows/Linux/macOS)
+  if (!kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi;
+  }
 
   // Initialize dependency injection
   await di.init();

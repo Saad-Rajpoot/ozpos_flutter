@@ -134,14 +134,12 @@ class PrintingManagementScreen extends StatelessWidget {
                 PopupMenuItem(
                   child: const Text('Edit'),
                   onTap: () {
-                    Navigator.pop(context); // Close popup menu first
                     _showEditPrinterDialog(context, printer);
                   },
                 ),
                 PopupMenuItem(
                   child: const Text('Delete'),
                   onTap: () {
-                    Navigator.pop(context); // Close popup menu first
                     _showDeleteDialog(context, printer);
                   },
                 ),

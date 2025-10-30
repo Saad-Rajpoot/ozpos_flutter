@@ -19,7 +19,6 @@ class NetworkPrinterService {
     int port = 9100,
     Duration timeout = const Duration(seconds: 5),
   }) async {
-    // TODO: Uncomment when esc_pos_printer package is available
     // final printer = PrinterNetwork(ipAddress, port: port);
     // final profile = await CapabilityProfile.load();
     // final PosPrintResult result = await printer.printTicket(
@@ -52,7 +51,6 @@ class NetworkPrinterService {
     PrinterType printerType = PrinterType.receipt,
     int copies = 1,
   }) async {
-    // TODO: Implement when package is available
     // final printer = printerInfo['printer'] as PrinterNetwork;
     // final profile = await CapabilityProfile.load();
     //
@@ -102,7 +100,6 @@ class NetworkPrinterService {
     required Map<String, dynamic> printerInfo,
     String printerId = 'UNKNOWN',
   }) async {
-    // TODO: Implement when package is available
     final testContent = '''
 ================================
     TEST PAGE

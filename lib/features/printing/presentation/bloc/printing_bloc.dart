@@ -87,10 +87,10 @@ class PrintingBloc extends BaseBloc<PrintingEvent, PrintingState> {
 
   String _mapFailureToMessage(Failure failure) {
     switch (failure.runtimeType) {
-      case ServerFailure:
-        return failure.message;
-      case NetworkFailure:
-        return 'Network error: ${failure.message}';
+      case ServerFailure _:
+        return (failure as ServerFailure).message;
+      case NetworkFailure _:
+        return 'Network error: ${(failure as NetworkFailure).message}';
       default:
         return 'Unexpected error: ${failure.message}';
     }

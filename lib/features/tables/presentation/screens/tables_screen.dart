@@ -63,40 +63,51 @@ class _TablesScreenState extends State<TablesScreen> {
 
     return MediaQuery(
       data: MediaQuery.of(context).copyWith(textScaler: scaler),
-      child: Scaffold(
-        backgroundColor: const Color(0xFFF5F5F7),
-        body: Row(
-          children: [
-            // Sidebar navigation
-            if (isDesktop) const SidebarNav(activeRoute: AppRouter.tables),
+      child: BlocListener<TableManagementBloc, TableManagementState>(
+        listener: (context, state) {
+          if (state is TableManagementLoaded) {
+            setState(() {
+              _tableDataList = state.tables
+                  .map((entity) => TableData.fromEntity(entity))
+                  .toList();
+            });
+          }
+        },
+        child: Scaffold(
+          backgroundColor: const Color(0xFFF5F5F7),
+          body: Row(
+            children: [
+              // Sidebar navigation
+              if (isDesktop) const SidebarNav(activeRoute: AppRouter.tables),
 
-            // Main content
-            Expanded(
-              child: Column(
-                children: [
-                  _buildHeader(),
-                  Expanded(
-                    child: Row(
-                      children: [
-                        // Left rail - Areas
-                        _buildAreasRail(),
+              // Main content
+              Expanded(
+                child: Column(
+                  children: [
+                    _buildHeader(),
+                    Expanded(
+                      child: Row(
+                        children: [
+                          // Left rail - Areas
+                          _buildAreasRail(),
 
-                        // Center - Table grid
-                        Expanded(
-                          flex: showDetailsPanel ? 2 : 3,
-                          child: _buildTableGrid(),
-                        ),
+                          // Center - Table grid
+                          Expanded(
+                            flex: showDetailsPanel ? 2 : 3,
+                            child: _buildTableGrid(),
+                          ),
 
-                        // Right - Details panel
-                        if (showDetailsPanel)
-                          SizedBox(width: 380, child: _buildDetailsPanel()),
-                      ],
+                          // Right - Details panel
+                          if (showDetailsPanel)
+                            SizedBox(width: 380, child: _buildDetailsPanel()),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
