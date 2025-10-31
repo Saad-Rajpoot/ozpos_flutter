@@ -114,7 +114,7 @@ class PrintingManagementScreen extends StatelessWidget {
               label: const Text('Docket Designer'),
               onPressed: () {
                 // Navigate to Docket Designer route
-                Navigator.of(context).pushNamed('/docket-management');
+                Navigator.of(context).pushNamed('/docket-designer');
               },
             ),
             const SizedBox(width: 8),

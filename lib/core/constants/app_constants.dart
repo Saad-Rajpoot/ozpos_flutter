@@ -11,8 +11,6 @@ class AppConstants {
   // Addon endpoints
   static const String getAddonCategoriesEndpoint = '/addons/categories';
 
-  // Docket endpoints
-  static const String getDocketsEndpoint = '/dockets';
 
   // Menu endpoints
   static const String getMenuItemsEndpoint = '/menu/items';

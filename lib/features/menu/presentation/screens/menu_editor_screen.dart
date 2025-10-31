@@ -154,13 +154,13 @@ class _MenuEditorScreenState extends State<MenuEditorScreen> {
 
           const SizedBox(height: 12),
 
-          // Docket Management Button
+          // Docket Designer Button
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: OutlinedButton.icon(
-              onPressed: () => _openDocketManagement(context),
+              onPressed: () => _openDocketDesigner(context),
               icon: const Icon(Icons.receipt_long, size: 18),
-              label: const Text('Manage Dockets'),
+              label: const Text('Docket Designer'),
               style: OutlinedButton.styleFrom(
                 foregroundColor: const Color(0xFF4CAF50),
                 side: const BorderSide(color: Color(0xFF4CAF50)),
@@ -1037,8 +1037,8 @@ class _MenuEditorScreenState extends State<MenuEditorScreen> {
     NavigationService.pushNamed(AppRouter.addonManagement);
   }
 
-  void _openDocketManagement(BuildContext context) {
-    NavigationService.pushNamed(AppRouter.docketManagement);
+  void _openDocketDesigner(BuildContext context) {
+    NavigationService.pushNamed(AppRouter.docketDesigner);
   }
 
   void _openComboCreator(BuildContext context) {

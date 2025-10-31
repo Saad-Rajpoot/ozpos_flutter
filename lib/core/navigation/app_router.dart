@@ -24,9 +24,7 @@ import '../../features/settings/presentation/screens/settings_screen.dart';
 import '../widgets/error_screen.dart';
 import '../../features/reports/presentation/bloc/reports_bloc.dart';
 import '../../features/orders/presentation/bloc/orders_management_bloc.dart';
-import '../../features/docket/presentation/bloc/docket_management_bloc.dart';
-import '../../features/docket/presentation/bloc/docket_management_event.dart';
-import '../../features/docket/presentation/screens/docket_management_screen.dart';
+import '../../features/docket/presentation/screens/docket_designer_screen.dart';
 import '../../features/printing/presentation/bloc/printing_bloc.dart';
 import '../../features/printing/presentation/bloc/printing_event.dart';
 import '../../features/printing/presentation/screens/printing_management_screen.dart';
@@ -53,7 +51,7 @@ class AppRouter {
   static const String menuItemWizard = '/menu-item-wizard';
   static const String moveTable = '/move-table';
   static const String addonManagement = '/addon-management';
-  static const String docketManagement = '/docket-management';
+  static const String docketDesigner = '/docket-designer';
   static const String printingManagement = '/printing-management';
 
   // ========================================================================
@@ -167,12 +165,9 @@ class AppRouter {
           settings: settings,
         );
 
-      case docketManagement:
+      case docketDesigner:
         return MaterialPageRoute(
-          builder: (_) => BlocProvider<DocketManagementBloc>.value(
-            value: di.sl<DocketManagementBloc>()..add(const LoadDocketsEvent()),
-            child: const DocketManagementScreen(),
-          ),
+          builder: (_) => const DocketDesignerScreen(),
           settings: settings,
         );
 

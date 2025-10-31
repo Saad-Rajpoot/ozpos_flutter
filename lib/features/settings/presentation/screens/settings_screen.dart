@@ -56,8 +56,8 @@ class SettingsScreen extends StatelessWidget {
     if (action.startsWith('nav:')) {
       final route = action.substring(4);
       switch (route) {
-        case 'docket-management':
-          Navigator.pushNamed(context, AppRouter.docketManagement);
+        case 'docket-designer':
+          Navigator.pushNamed(context, AppRouter.docketDesigner);
           break;
         case 'printing-management':
           Navigator.pushNamed(context, AppRouter.printingManagement);

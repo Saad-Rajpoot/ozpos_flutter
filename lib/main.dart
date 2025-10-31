@@ -20,7 +20,6 @@ import 'features/checkout/presentation/bloc/checkout_bloc.dart';
 import 'features/reservations/presentation/bloc/reservation_management_bloc.dart';
 import 'features/reservations/presentation/bloc/reservation_management_event.dart';
 import 'features/delivery/presentation/bloc/delivery_bloc.dart';
-import 'features/docket/presentation/bloc/docket_management_bloc.dart';
 import 'features/printing/presentation/bloc/printing_bloc.dart';
 import 'features/settings/presentation/bloc/settings_bloc.dart';
 import 'features/settings/presentation/bloc/settings_event.dart';
@@ -100,9 +99,6 @@ class OzposApp extends StatelessWidget {
         ),
         BlocProvider<DeliveryBloc>(
           create: (_) => GetIt.instance<DeliveryBloc>(),
-        ),
-        BlocProvider<DocketManagementBloc>(
-          create: (_) => GetIt.instance<DocketManagementBloc>(),
         ),
         BlocProvider<PrintingBloc>(
           create: (_) => GetIt.instance<PrintingBloc>(),
