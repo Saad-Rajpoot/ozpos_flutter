@@ -4,6 +4,9 @@ import '../bloc/printing_bloc.dart';
 import '../bloc/printing_event.dart';
 import '../bloc/printing_state.dart';
 import '../../domain/entities/printing_entities.dart';
+import '../widgets/printer_section.dart';
+import '../widgets/add_printer_dialog.dart';
+import '../widgets/edit_printer_dialog.dart';
 
 /// Printing Management Screen
 /// Simple CRUD operations for managing printers
@@ -55,7 +58,7 @@ class PrintingManagementScreen extends StatelessWidget {
           }
 
           if (state is PrintersLoaded) {
-            return _buildPrintersList(context, state.printers);
+            return _buildScreenWithHeader(context, state.printers);
           }
 
           return Center(
@@ -70,10 +73,76 @@ class PrintingManagementScreen extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          _showAddPrinterDialog(context);
+          showAddPrinterDialog(context);
         },
         child: const Icon(Icons.add),
       ),
+    );
+  }
+
+  Widget _buildScreenWithHeader(
+      BuildContext context, List<PrinterEntity> printers) {
+    final total = printers.length;
+    final online = printers.where((p) => p.isConnected).length;
+
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+      children: [
+        // Header row (title + action buttons)
+        Row(
+          children: [
+            Text(
+              'Printer Settings',
+              style: Theme.of(context)
+                  .textTheme
+                  .headlineSmall
+                  ?.copyWith(fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(width: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text('$online / $total Online',
+                  style: const TextStyle(fontWeight: FontWeight.w600)),
+            ),
+            const Spacer(),
+            OutlinedButton.icon(
+              icon: const Icon(Icons.description_outlined, size: 18),
+              label: const Text('Docket Designer'),
+              onPressed: () {
+                // Navigate to Docket Designer route
+                Navigator.of(context).pushNamed('/docket-management');
+              },
+            ),
+            const SizedBox(width: 8),
+            OutlinedButton.icon(
+              icon: const Icon(Icons.tune, size: 18),
+              label: const Text('Advanced Settings'),
+              onPressed: () {
+                // Placeholder: advanced settings dialog
+                showDialog(
+                  context: context,
+                  builder: (_) => const AlertDialog(
+                    title: Text('Advanced Settings'),
+                    content: Text('Coming soon...'),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(width: 8),
+            ElevatedButton.icon(
+              icon: const Icon(Icons.add, size: 18),
+              label: const Text('Add Printer'),
+              onPressed: () => showAddPrinterDialog(context),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        _buildPrintersList(context, printers),
+      ],
     );
   }
 
@@ -100,319 +169,30 @@ class PrintingManagementScreen extends StatelessWidget {
       );
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: printers.length,
-      itemBuilder: (context, index) {
-        final printer = printers[index];
-        return Card(
-          margin: const EdgeInsets.only(bottom: 12),
-          child: ListTile(
-            leading: Icon(
-              printer.connection == PrinterConnection.bluetooth
-                  ? Icons.bluetooth
-                  : printer.connection == PrinterConnection.network
-                      ? Icons.wifi
-                      : Icons.usb,
-              color: printer.isConnected ? Colors.green : Colors.grey,
-            ),
-            title: Text(printer.name),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Type: ${_getPrinterTypeName(printer.type)}'),
-                Text('Connection: ${_getConnectionName(printer.connection)}'),
-                if (printer.address != null)
-                  Text('Address: ${printer.address}'),
-                if (printer.isDefault)
-                  const Text('Default Printer',
-                      style: TextStyle(color: Colors.blue)),
-              ],
-            ),
-            trailing: PopupMenuButton(
-              itemBuilder: (context) => [
-                PopupMenuItem(
-                  child: const Text('Edit'),
-                  onTap: () {
-                    _showEditPrinterDialog(context, printer);
-                  },
-                ),
-                PopupMenuItem(
-                  child: const Text('Delete'),
-                  onTap: () {
-                    _showDeleteDialog(context, printer);
-                  },
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  void _showAddPrinterDialog(BuildContext context) {
-    final nameController = TextEditingController();
-    final addressController = TextEditingController();
-    final portController = TextEditingController(text: '9100');
-    PrinterType selectedType = PrinterType.receipt;
-    PrinterConnection selectedConnection = PrinterConnection.network;
-
-    showDialog(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          title: const Text('Add Printer'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: nameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Printer Name',
-                    hintText: 'e.g., Kitchen Printer',
-                  ),
-                ),
-                const SizedBox(height: 16),
-                DropdownButtonFormField<PrinterType>(
-                  value: selectedType,
-                  decoration: const InputDecoration(labelText: 'Type'),
-                  items: PrinterType.values.map((type) {
-                    return DropdownMenuItem(
-                      value: type,
-                      child: Text(_getPrinterTypeName(type)),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    if (value != null) {
-                      setState(() => selectedType = value);
-                    }
-                  },
-                ),
-                const SizedBox(height: 16),
-                DropdownButtonFormField<PrinterConnection>(
-                  value: selectedConnection,
-                  decoration: const InputDecoration(labelText: 'Connection'),
-                  items: PrinterConnection.values.map((connection) {
-                    return DropdownMenuItem(
-                      value: connection,
-                      child: Text(_getConnectionName(connection)),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    if (value != null) {
-                      setState(() => selectedConnection = value);
-                    }
-                  },
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: addressController,
-                  decoration: const InputDecoration(
-                    labelText: 'Address',
-                    hintText: 'IP Address or MAC Address',
-                  ),
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: portController,
-                  decoration: const InputDecoration(
-                    labelText: 'Port',
-                    hintText: '9100',
-                  ),
-                  keyboardType: TextInputType.number,
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                if (nameController.text.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Please enter printer name')),
-                  );
-                  return;
-                }
-
-                final printer = PrinterEntity(
-                  id: DateTime.now().millisecondsSinceEpoch.toString(),
-                  name: nameController.text,
-                  type: selectedType,
-                  connection: selectedConnection,
-                  address: addressController.text.isEmpty
-                      ? null
-                      : addressController.text,
-                  port: portController.text.isEmpty
-                      ? null
-                      : int.tryParse(portController.text),
-                  isConnected: false,
-                  isDefault: false,
-                );
-
-                Navigator.pop(context);
-                context.read<PrintingBloc>().add(AddPrinter(printer: printer));
-              },
-              child: const Text('Add'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showEditPrinterDialog(BuildContext context, PrinterEntity printer) {
-    final nameController = TextEditingController(text: printer.name);
-    final addressController =
-        TextEditingController(text: printer.address ?? '');
-    final portController =
-        TextEditingController(text: printer.port?.toString() ?? '9100');
-    PrinterType selectedType = printer.type;
-    PrinterConnection selectedConnection = printer.connection;
-
-    showDialog(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          title: const Text('Edit Printer'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: nameController,
-                  decoration: const InputDecoration(labelText: 'Printer Name'),
-                ),
-                const SizedBox(height: 16),
-                DropdownButtonFormField<PrinterType>(
-                  value: selectedType,
-                  decoration: const InputDecoration(labelText: 'Type'),
-                  items: PrinterType.values.map((type) {
-                    return DropdownMenuItem(
-                      value: type,
-                      child: Text(_getPrinterTypeName(type)),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    if (value != null) {
-                      setState(() => selectedType = value);
-                    }
-                  },
-                ),
-                const SizedBox(height: 16),
-                DropdownButtonFormField<PrinterConnection>(
-                  value: selectedConnection,
-                  decoration: const InputDecoration(labelText: 'Connection'),
-                  items: PrinterConnection.values.map((connection) {
-                    return DropdownMenuItem(
-                      value: connection,
-                      child: Text(_getConnectionName(connection)),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    if (value != null) {
-                      setState(() => selectedConnection = value);
-                    }
-                  },
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: addressController,
-                  decoration: const InputDecoration(labelText: 'Address'),
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: portController,
-                  decoration: const InputDecoration(labelText: 'Port'),
-                  keyboardType: TextInputType.number,
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                final updatedPrinter = printer.copyWith(
-                  name: nameController.text,
-                  type: selectedType,
-                  connection: selectedConnection,
-                  address: addressController.text.isEmpty
-                      ? null
-                      : addressController.text,
-                  port: portController.text.isEmpty
-                      ? null
-                      : int.tryParse(portController.text),
-                );
-
-                Navigator.pop(context);
-                context
-                    .read<PrintingBloc>()
-                    .add(UpdatePrinter(printer: updatedPrinter));
-              },
-              child: const Text('Save'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showDeleteDialog(BuildContext context, PrinterEntity printer) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Printer'),
-        content: Text('Are you sure you want to delete ${printer.name}?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              context.read<PrintingBloc>().add(
-                    DeletePrinter(printerId: printer.id),
-                  );
-            },
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _getPrinterTypeName(PrinterType type) {
-    switch (type) {
-      case PrinterType.receipt:
-        return 'Receipt';
-      case PrinterType.kitchen:
-        return 'Kitchen';
-      case PrinterType.label:
-        return 'Label';
-      case PrinterType.invoice:
-        return 'Invoice';
+    // Group by type
+    final Map<PrinterType, List<PrinterEntity>> grouped = {};
+    for (final printer in printers) {
+      grouped.putIfAbsent(printer.type, () => []).add(printer);
     }
+
+    return Column(
+      children: [
+        for (final group in grouped.entries)
+          PrinterSection(
+            type: group.key,
+            printers: group.value,
+            onEdit: (ctx, p) => showEditPrinterDialog(ctx, p),
+          ),
+      ],
+    );
   }
 
-  String _getConnectionName(PrinterConnection connection) {
-    switch (connection) {
-      case PrinterConnection.bluetooth:
-        return 'Bluetooth';
-      case PrinterConnection.network:
-        return 'Network';
-      case PrinterConnection.usb:
-        return 'USB';
-    }
-  }
+  // dialog moved to ../widgets/add_printer_dialog.dart
+
+  // dialog moved to ../widgets/edit_printer_dialog.dart
 }
+
+// Section widget
+// Section and Card moved to widgets/printer_section.dart and widgets/printer_card.dart
+
+// moved tiles/cards to ../widgets/printer_dialog_components.dart

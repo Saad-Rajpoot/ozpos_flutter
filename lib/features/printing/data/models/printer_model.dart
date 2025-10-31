@@ -135,6 +135,8 @@ PrinterType _stringToPrinterType(String type) {
       return PrinterType.label;
     case 'invoice':
       return PrinterType.invoice;
+    case 'barista':
+      return PrinterType.barista;
     default:
       return PrinterType.receipt;
   }
@@ -150,6 +152,8 @@ String _printerTypeToString(PrinterType type) {
       return 'label';
     case PrinterType.invoice:
       return 'invoice';
+    case PrinterType.barista:
+      return 'barista';
   }
 }
 

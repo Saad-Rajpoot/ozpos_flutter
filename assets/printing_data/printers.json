@@ -11,6 +11,17 @@
     "lastUsedAt": "2025-01-20T08:00:00.000Z"
   },
   {
+    "id": "printer-5",
+    "name": "Kitchen Printer",
+    "type": "kitchen",
+    "connection": "bluetooth",
+    "address": "00:11:22:33:44:55",
+    "port": null,
+    "isConnected": true,
+    "isDefault": false,
+    "lastUsedAt": "2025-01-20T08:00:00.000Z"
+  },
+  {
     "id": "printer-2",
     "name": "Receipt Printer",
     "type": "receipt",

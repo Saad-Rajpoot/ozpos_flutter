@@ -24,7 +24,7 @@
     "title": "Operations",
     "description": "Business operations setup",
     "items": [
-      {"name": "Printer Setup", "description": "Manage receipts & printers", "action": "nav:printer-setup"},
+      {"name": "Printer Setup", "description": "Manage receipts & printers", "action": "nav:printing-management"},
       {"name": "Docket Designer", "description": "Design receipts & kitchen dockets", "action": "nav:docket-management"},
       {"name": "Reports", "description": "Financial & operational reports", "action": "toast:reports"},
       {"name": "Expenses", "description": "Track business expenses", "action": "toast:expenses"}

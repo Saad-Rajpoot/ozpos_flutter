@@ -140,6 +140,7 @@ enum PrinterType {
   kitchen,
   label,
   invoice,
+  barista,
 }
 
 /// Printer connection type enum
@@ -162,7 +163,7 @@ enum PrintJobStatus {
 enum PrintJobType {
   receipt,
   kitchen,
-  invoice,
-  test,
   label,
+  invoice,
+  barista,
 }
