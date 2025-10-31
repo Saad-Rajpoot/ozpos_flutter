@@ -13,6 +13,9 @@ import '../../../../core/widgets/sidebar_nav.dart';
 import '../bloc/menu_bloc.dart';
 import '../bloc/menu_event.dart';
 import '../bloc/menu_state.dart';
+import '../../../orders/presentation/widgets/order_alert_widget.dart';
+import '../../../orders/domain/entities/order_entity.dart';
+import '../../../orders/domain/entities/order_item_entity.dart';
 
 /// Menu Screen with Seed Data and Cart Integration
 class MenuScreen extends StatefulWidget {
@@ -235,6 +238,27 @@ class _MenuScreenState extends State<MenuScreen> {
             ),
           ),
           const Spacer(),
+          // Demo Alert Buttons
+          ElevatedButton(
+            onPressed: () => _showDemoAlert(context),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFF59E0B),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: const Text(
+              'Demo Alert',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+
+          const SizedBox(width: 8),
           // Cart icon with badge (mobile/tablet)
           if (MediaQuery.of(context).size.width <=
               AppConstants.desktopBreakpoint)
@@ -485,5 +509,67 @@ class _MenuScreenState extends State<MenuScreen> {
 
   void _showCartDrawer(BuildContext context) {
     Scaffold.of(context).openEndDrawer();
+  }
+
+  void _showDemoAlert(BuildContext context) {
+    // Create a demo order
+    final demoOrder = OrderEntity(
+      id: 'demo-8642',
+      queueNumber: '8642',
+      channel: OrderChannel.app,
+      orderType: OrderType.takeaway,
+      paymentStatus: PaymentStatus.unpaid,
+      status: OrderStatus.active,
+      customerName: 'Michael Brown',
+      customerPhone: '+1234567890',
+      items: const [
+        OrderItemEntity(
+          name: 'Classic Burger',
+          quantity: 2,
+          price: 12.99,
+        ),
+        OrderItemEntity(
+          name: 'French Fries',
+          quantity: 1,
+          price: 4.99,
+        ),
+        OrderItemEntity(
+          name: 'Coca-Cola',
+          quantity: 2,
+          price: 2.99,
+        ),
+      ],
+      subtotal: 38.94,
+      tax: 3.67,
+      total: 42.61,
+      createdAt: DateTime.now().subtract(const Duration(minutes: 1)),
+      estimatedTime: DateTime.now().add(const Duration(minutes: 30)),
+    );
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => OrderAlertWidget(
+        order: demoOrder,
+        onAccept: () {
+          Navigator.pop(context);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Order #8642 accepted!'),
+              backgroundColor: AppColors.success,
+            ),
+          );
+        },
+        onReject: () {
+          Navigator.pop(context);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Order #8642 rejected'),
+              backgroundColor: AppColors.error,
+            ),
+          );
+        },
+      ),
+    );
   }
 }
