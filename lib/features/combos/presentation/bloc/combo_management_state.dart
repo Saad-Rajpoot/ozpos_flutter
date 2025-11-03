@@ -10,23 +10,25 @@ class ComboManagementState extends Equatable {
   final List<ComboEntity> combos;
   final List<ComboEntity> filteredCombos;
   final String? errorMessage;
-  
+
   // Editing state
   final ComboEditMode editMode;
   final ComboEntity? editingCombo;
   final int unsavedChangesCount;
-  
+
   // Filters and search
   final String searchQuery;
   final ComboStatus? statusFilter;
   final String? categoryFilter;
-  
+
   // UI state
   final bool isBuilderOpen;
-  final String? selectedTab; // "details", "items", "pricing", "availability", "advanced"
+  final String?
+      selectedTab; // "details", "items", "pricing", "availability", "advanced"
   final List<String> validationErrors;
   final bool isSaving;
   final String? saveError;
+  final ComboEntity? lastSavedCombo;
 
   const ComboManagementState({
     this.status = ComboLoadingStatus.initial,
@@ -44,10 +46,11 @@ class ComboManagementState extends Equatable {
     this.validationErrors = const [],
     this.isSaving = false,
     this.saveError,
+    this.lastSavedCombo,
   });
 
   // Computed properties
-  
+
   bool get isLoading => status == ComboLoadingStatus.loading;
   bool get hasError => status == ComboLoadingStatus.error || saveError != null;
   bool get hasData => status == ComboLoadingStatus.loaded;
@@ -55,13 +58,17 @@ class ComboManagementState extends Equatable {
   bool get hasUnsavedChanges => unsavedChangesCount > 0;
   bool get isEditing => editMode != ComboEditMode.none;
   bool get isCreating => editMode == ComboEditMode.create;
-  bool get canSave => isEditing && editingCombo != null && validationErrors.isEmpty;
-  
+  bool get canSave =>
+      isEditing && editingCombo != null && validationErrors.isEmpty;
+
   int get totalCombosCount => combos.length;
-  int get activeCombosCount => combos.where((c) => c.status == ComboStatus.active).length;
-  int get hiddenCombosCount => combos.where((c) => c.status == ComboStatus.hidden).length;
-  int get draftCombosCount => combos.where((c) => c.status == ComboStatus.draft).length;
-  
+  int get activeCombosCount =>
+      combos.where((c) => c.status == ComboStatus.active).length;
+  int get hiddenCombosCount =>
+      combos.where((c) => c.status == ComboStatus.hidden).length;
+  int get draftCombosCount =>
+      combos.where((c) => c.status == ComboStatus.draft).length;
+
   List<String> get availableCategories {
     final categories = combos
         .where((combo) => combo.categoryTag != null)
@@ -71,9 +78,9 @@ class ComboManagementState extends Equatable {
     categories.sort();
     return categories;
   }
-  
+
   String? get currentErrorMessage => errorMessage ?? saveError;
-  
+
   ComboEntity? getComboById(String id) {
     try {
       return combos.firstWhere((combo) => combo.id == id);
@@ -81,11 +88,11 @@ class ComboManagementState extends Equatable {
       return null;
     }
   }
-  
+
   bool hasComboWithName(String name, {String? excludeId}) {
-    return combos.any((combo) => 
-      combo.name.toLowerCase() == name.toLowerCase() && 
-      combo.id != excludeId);
+    return combos.any((combo) =>
+        combo.name.toLowerCase() == name.toLowerCase() &&
+        combo.id != excludeId);
   }
 
   ComboManagementState copyWith({
@@ -104,6 +111,8 @@ class ComboManagementState extends Equatable {
     List<String>? validationErrors,
     bool? isSaving,
     String? saveError,
+    ComboEntity? lastSavedCombo,
+    bool resetLastSavedCombo = false,
   }) {
     return ComboManagementState(
       status: status ?? this.status,
@@ -121,9 +130,11 @@ class ComboManagementState extends Equatable {
       validationErrors: validationErrors ?? this.validationErrors,
       isSaving: isSaving ?? this.isSaving,
       saveError: saveError ?? this.saveError,
+      lastSavedCombo:
+          resetLastSavedCombo ? null : lastSavedCombo ?? this.lastSavedCombo,
     );
   }
-  
+
   // Null-aware copyWith methods
   ComboManagementState clearError() {
     return copyWith(
@@ -131,7 +142,7 @@ class ComboManagementState extends Equatable {
       saveError: null,
     );
   }
-  
+
   ComboManagementState clearFilters() {
     return copyWith(
       searchQuery: '',
@@ -139,7 +150,7 @@ class ComboManagementState extends Equatable {
       categoryFilter: null,
     );
   }
-  
+
   ComboManagementState exitEditMode() {
     return copyWith(
       editMode: ComboEditMode.none,
@@ -150,24 +161,25 @@ class ComboManagementState extends Equatable {
       saveError: null,
     );
   }
-  
+
   ComboManagementState withUpdatedCombo(ComboEntity updatedCombo) {
     final updatedCombos = combos.map((combo) {
       return combo.id == updatedCombo.id ? updatedCombo : combo;
     }).toList();
-    
+
     return copyWith(
       combos: updatedCombos,
-      editingCombo: editingCombo?.id == updatedCombo.id ? updatedCombo : editingCombo,
+      editingCombo:
+          editingCombo?.id == updatedCombo.id ? updatedCombo : editingCombo,
     );
   }
-  
+
   ComboManagementState withAddedCombo(ComboEntity newCombo) {
     return copyWith(
       combos: [...combos, newCombo],
     );
   }
-  
+
   ComboManagementState withRemovedCombo(String comboId) {
     final updatedCombos = combos.where((combo) => combo.id != comboId).toList();
     return copyWith(
@@ -195,5 +207,6 @@ class ComboManagementState extends Equatable {
         validationErrors,
         isSaving,
         saveError,
+        lastSavedCombo,
       ];
 }

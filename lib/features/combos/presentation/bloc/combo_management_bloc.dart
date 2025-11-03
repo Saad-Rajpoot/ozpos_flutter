@@ -141,6 +141,7 @@ class ComboManagementBloc
             filteredCombos: filteredCombos,
             isSaving: false,
             unsavedChangesCount: state.unsavedChangesCount - 1,
+            lastSavedCombo: createdCombo,
           ),
         );
       },
@@ -173,6 +174,7 @@ class ComboManagementBloc
             filteredCombos: filteredCombos,
             isSaving: false,
             unsavedChangesCount: state.unsavedChangesCount - 1,
+            lastSavedCombo: updatedCombo,
           ),
         );
       },

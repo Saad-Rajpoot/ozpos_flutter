@@ -12,6 +12,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_sizes.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../customer_display/presentation/widgets/customer_display_button.dart';
+import '../../../combos/presentation/widgets/debug_combo_builder_button.dart';
 
 /// Dashboard Screen - Pixel-perfect match to reference image
 /// Responsive breakpoints:
@@ -121,39 +122,37 @@ class _DashboardScreenState extends State<DashboardScreen> {
           child: Row(
             children: [
               // Restaurant info
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.restaurant,
-                          size: 20,
-                          color: AppColors.primary,
-                        ),
-                        const SizedBox(width: 8),
-                        const Text(
-                          'Billy\'s Burgers',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 2),
-                    const Text(
-                      'Main Branch',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: AppColors.textSecondary,
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.restaurant,
+                        size: 20,
+                        color: AppColors.primary,
                       ),
+                      const SizedBox(width: 8),
+                      const Text(
+                        'Billy\'s Burgers',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 2),
+                  const Text(
+                    'Main Branch',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
 
               // Time and profile
@@ -163,6 +162,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   children: [
                     const CustomerDisplayButton(),
                     const SizedBox(width: 8),
+                    const DebugComboBuilderButton(),
+                    const SizedBox(width: 12),
                     const Icon(
                       Icons.access_time,
                       size: 16,
