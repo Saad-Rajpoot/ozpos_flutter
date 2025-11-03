@@ -65,6 +65,9 @@ class SettingsScreen extends StatelessWidget {
         case 'menu-management':
           Navigator.pushNamed(context, AppRouter.menuEditor);
           break;
+        case 'reports':
+          Navigator.pushNamed(context, AppRouter.reports);
+          break;
         default:
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Unhandled nav: $route')),

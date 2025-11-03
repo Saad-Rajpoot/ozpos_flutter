@@ -11,7 +11,6 @@ class AppConstants {
   // Addon endpoints
   static const String getAddonCategoriesEndpoint = '/addons/categories';
 
-
   // Menu endpoints
   static const String getMenuItemsEndpoint = '/menu/items';
   static const String getMenuCategoriesEndpoint = '/menu/categories';
@@ -81,6 +80,9 @@ class AppConstants {
   // Settings endpoints
   static const String getSettingsEndpoint = '/settings';
   static const String updateSettingsEndpoint = '/settings';
+
+  // Customer display endpoints
+  static const String customerDisplayEndpoint = '/customer-display';
 
   // Storage keys
   static const String tokenKey = 'token';

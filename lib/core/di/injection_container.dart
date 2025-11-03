@@ -72,6 +72,14 @@ import '../../features/delivery/data/repositories/delivery_repository_impl.dart'
 import '../../features/delivery/domain/repositories/delivery_repository.dart';
 import '../../features/delivery/domain/usecases/get_delivery_data.dart';
 import '../../features/delivery/presentation/bloc/delivery_bloc.dart';
+import '../../features/customer_display/data/datasources/customer_display_data_source.dart';
+import '../../features/customer_display/data/datasources/customer_display_mock_datasource.dart';
+import '../../features/customer_display/data/datasources/customer_display_local_datasource.dart';
+import '../../features/customer_display/data/datasources/customer_display_remote_datasource.dart';
+import '../../features/customer_display/data/repositories/customer_display_repository_impl.dart';
+import '../../features/customer_display/domain/repositories/customer_display_repository.dart';
+import '../../features/customer_display/domain/usecases/get_customer_display.dart';
+import '../../features/customer_display/presentation/bloc/customer_display_bloc.dart';
 // Removed - docket management feature removed
 // import '../../features/docket/data/datasources/docket_data_source.dart';
 // import '../../features/docket/data/datasources/docket_mock_datasource.dart';
@@ -153,6 +161,7 @@ Future<void> init() async {
   // await _initDocket(sl); // Removed - docket management feature removed
   await _initPrinting(sl);
   await _initSettings(sl);
+  await _initCustomerDisplay(sl);
 }
 
 /// Initialize orders feature dependencies
@@ -415,6 +424,26 @@ Future<void> _initDelivery(GetIt sl) async {
 
   // BLoC (Factory - new instance each time)
   sl.registerFactory(() => DeliveryBloc(getDeliveryData: sl()));
+}
+
+Future<void> _initCustomerDisplay(GetIt sl) async {
+  sl.registerLazySingleton<CustomerDisplayDataSource>(() {
+    if (AppConfig.instance.environment == AppEnvironment.development) {
+      return CustomerDisplayMockDataSourceImpl();
+    }
+    if (sl.isRegistered<Database>()) {
+      return CustomerDisplayLocalDataSourceImpl(database: sl());
+    }
+    return CustomerDisplayRemoteDataSourceImpl(apiClient: sl());
+  });
+
+  sl.registerLazySingleton<CustomerDisplayRepository>(
+    () => CustomerDisplayRepositoryImpl(dataSource: sl()),
+  );
+
+  sl.registerLazySingleton(() => GetCustomerDisplay(repository: sl()));
+
+  sl.registerFactory(() => CustomerDisplayBloc(getCustomerDisplay: sl()));
 }
 
 /// Initialize docket feature dependencies

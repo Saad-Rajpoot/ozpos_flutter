@@ -101,6 +101,7 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
+  mocktail: ^1.0.3
   
   # Code Generation
 
@@ -119,6 +120,7 @@ flutter:
   assets:
     - assets/addons_data/
     - assets/combo_data/
+    - assets/customer_display_data/
     - assets/menu_data/
     - assets/reservations_data/
     - assets/delivery_data/

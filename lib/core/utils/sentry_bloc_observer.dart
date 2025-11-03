@@ -8,7 +8,7 @@ class SentryBlocObserver extends BlocObserver {
   @override
   void onCreate(BlocBase bloc) {
     super.onCreate(bloc);
-    
+
     // Track BLoC creation for debugging
     SentryService.addBreadcrumb(
       message: 'BLoC Created: ${bloc.runtimeType}',
@@ -21,11 +21,10 @@ class SentryBlocObserver extends BlocObserver {
     );
   }
 
-
   @override
   void onError(BlocBase bloc, Object error, StackTrace stackTrace) {
     super.onError(bloc, error, stackTrace);
-    
+
     // Report BLoC errors to Sentry with context
     SentryService.reportError(
       error,
@@ -55,7 +54,7 @@ class SentryBlocObserver extends BlocObserver {
   @override
   void onClose(BlocBase bloc) {
     super.onClose(bloc);
-    
+
     // Track BLoC disposal
     SentryService.addBreadcrumb(
       message: 'BLoC Closed: ${bloc.runtimeType}',
@@ -67,5 +66,4 @@ class SentryBlocObserver extends BlocObserver {
       },
     );
   }
-
 }

@@ -3,7 +3,6 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 
 /// Service for configuring and managing Sentry error tracking
 class SentryService {
-
   /// Report an error to Sentry with additional context
   static Future<void> reportError(
     dynamic error,
@@ -23,7 +22,7 @@ class SentryService {
             timestamp: DateTime.now(),
           ));
         }
-        
+
         if (extra != null) {
           for (final entry in extra.entries) {
             scope.setTag('extra_${entry.key}', entry.value.toString());
@@ -49,7 +48,7 @@ class SentryService {
             scope.setTag('extra_${entry.key}', entry.value.toString());
           }
         }
-        
+
         if (tags != null) {
           for (final entry in tags.entries) {
             scope.setTag(entry.key, entry.value);
@@ -100,7 +99,8 @@ class SentryService {
   }
 
   /// Set custom context for errors
-  static Future<void> setContext(String key, Map<String, dynamic> context) async {
+  static Future<void> setContext(
+      String key, Map<String, dynamic> context) async {
     await Sentry.configureScope((scope) {
       // Use setTag for simple key-value pairs or handle context differently
       for (final entry in context.entries) {
@@ -140,7 +140,7 @@ class SentryService {
       return parent.startChild(operation, description: description);
     }
     return Sentry.getSpan()?.startChild(operation, description: description) ??
-           Sentry.startTransaction('manual', operation);
+        Sentry.startTransaction('manual', operation);
   }
 
   /// Business logic error tracking for POS operations
@@ -207,9 +207,9 @@ class SentryService {
         'status_code': statusCode,
         'timestamp': DateTime.now().toIso8601String(),
       },
-      level: statusCode != null && statusCode >= 500 
-        ? SentryLevel.error 
-        : SentryLevel.warning,
+      level: statusCode != null && statusCode >= 500
+          ? SentryLevel.error
+          : SentryLevel.warning,
     );
   }
 

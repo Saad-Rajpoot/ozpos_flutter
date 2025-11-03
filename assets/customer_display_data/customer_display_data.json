@@ -1,0 +1,106 @@
+{
+  "orderNumber": "142",
+  "cartItems": [
+    {
+      "id": "1",
+      "name": "Classic Burger",
+      "price": 12.99,
+      "quantity": 2,
+      "modifiers": [
+        "Extra Cheese (+$1.50)",
+        "No Pickles"
+      ]
+    },
+    {
+      "id": "2",
+      "name": "French Fries",
+      "price": 4.5,
+      "quantity": 1
+    },
+    {
+      "id": "3",
+      "name": "Coca-Cola",
+      "price": 2.5,
+      "quantity": 2
+    }
+  ],
+  "totals": {
+    "subtotal": 35.48,
+    "discount": 4.5,
+    "tax": 3.1,
+    "total": 34.08,
+    "cashReceived": 40.0,
+    "change": 5.92
+  },
+  "loyalty": {
+    "pointsEarned": 175,
+    "currentBalance": 420,
+    "showLoyalty": true
+  },
+  "promoSlides": [
+    {
+      "id": 1,
+      "emoji": "🍔",
+      "title": "NEW! Triple Burger Combo",
+      "subtitle": "3 Burgers + Fries + Drinks",
+      "price": "$24.99",
+      "savings": "Save $8.00",
+      "gradientStart": "#F97316",
+      "gradientEnd": "#EF4444"
+    },
+    {
+      "id": 2,
+      "emoji": "⭐",
+      "title": "Loyalty Rewards Program",
+      "subtitle": "Earn 5 points for every $1 spent",
+      "price": "JOIN FREE",
+      "savings": "Get $5 off your next order",
+      "gradientStart": "#A855F7",
+      "gradientEnd": "#EC4899"
+    },
+    {
+      "id": 3,
+      "emoji": "👨‍👩‍👧‍👦",
+      "title": "Family Meal Deal",
+      "subtitle": "4 Burgers + 4 Fries + 4 Drinks",
+      "price": "$39.99",
+      "savings": "Save $12.00",
+      "gradientStart": "#22C55E",
+      "gradientEnd": "#10B981"
+    },
+    {
+      "id": 4,
+      "emoji": "🍗",
+      "title": "Wednesday Wings Special",
+      "subtitle": "12 Wings + 2 Sides",
+      "price": "$19.99",
+      "savings": "Limited Time Only",
+      "gradientStart": "#3B82F6",
+      "gradientEnd": "#06B6D4"
+    },
+    {
+      "id": 5,
+      "emoji": "🍰",
+      "title": "Free Dessert",
+      "subtitle": "With Any Meal Over $15",
+      "price": "TODAY ONLY",
+      "savings": "Choose from 5 delicious options",
+      "gradientStart": "#EC4899",
+      "gradientEnd": "#F43F5E"
+    }
+  ],
+  "demoSequence": [
+    "idle",
+    "order",
+    "payment-card",
+    "approved",
+    "idle",
+    "order",
+    "payment-cash",
+    "change-due",
+    "idle"
+  ],
+  "modeIntervalSeconds": 5,
+  "slideIntervalSeconds": 4
+}
+

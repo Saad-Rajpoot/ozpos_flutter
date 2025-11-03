@@ -23,6 +23,7 @@ import 'features/delivery/presentation/bloc/delivery_bloc.dart';
 import 'features/printing/presentation/bloc/printing_bloc.dart';
 import 'features/settings/presentation/bloc/settings_bloc.dart';
 import 'features/settings/presentation/bloc/settings_event.dart';
+import 'features/customer_display/presentation/bloc/customer_display_bloc.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -105,6 +106,9 @@ class OzposApp extends StatelessWidget {
         ),
         BlocProvider<SettingsBloc>(
           create: (_) => GetIt.instance<SettingsBloc>()..add(LoadSettings()),
+        ),
+        BlocProvider<CustomerDisplayBloc>(
+          create: (_) => GetIt.instance<CustomerDisplayBloc>(),
         ),
       ],
       child: MaterialApp(

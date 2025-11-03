@@ -11,6 +11,7 @@ import '../../../../core/widgets/sidebar_nav.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_sizes.dart';
 import '../../../../core/constants/app_spacing.dart';
+import '../../../customer_display/presentation/widgets/customer_display_button.dart';
 
 /// Dashboard Screen - Pixel-perfect match to reference image
 /// Responsive breakpoints:
@@ -160,7 +161,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    // Time
+                    const CustomerDisplayButton(),
+                    const SizedBox(width: 8),
                     const Icon(
                       Icons.access_time,
                       size: 16,
