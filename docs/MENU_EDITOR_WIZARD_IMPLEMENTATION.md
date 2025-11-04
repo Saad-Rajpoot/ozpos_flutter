@@ -526,7 +526,7 @@ class _SizeRowExpandedState extends State<SizeRowExpanded> {
 
   Widget _buildCollapsedRow() {
     return InkWell(
-      onTap: () => setState(() => _isExpanded = !_isExpanded),
+      onTap: () => _toggleExpansionNotifier.value = !_toggleExpansionNotifier.value,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(

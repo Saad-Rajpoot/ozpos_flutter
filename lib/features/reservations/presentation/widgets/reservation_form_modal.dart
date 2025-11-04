@@ -1,6 +1,47 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:equatable/equatable.dart';
 import '../../../reservations/domain/entities/reservation_entity.dart';
+
+class _ReservationFormViewState extends Equatable {
+  const _ReservationFormViewState({
+    required this.selectedDate,
+    required this.selectedTime,
+    required this.durationMinutes,
+    required this.selectedTags,
+  });
+
+  final DateTime selectedDate;
+  final TimeOfDay selectedTime;
+  final int durationMinutes;
+  final Set<String> selectedTags;
+
+  _ReservationFormViewState copyWith({
+    DateTime? selectedDate,
+    TimeOfDay? selectedTime,
+    int? durationMinutes,
+    Set<String>? selectedTags,
+  }) {
+    return _ReservationFormViewState(
+      selectedDate: selectedDate ?? this.selectedDate,
+      selectedTime: selectedTime ?? this.selectedTime,
+      durationMinutes: durationMinutes ?? this.durationMinutes,
+      selectedTags: selectedTags ?? Set<String>.from(this.selectedTags),
+    );
+  }
+
+  @override
+  List<Object?> get props {
+    final sortedTags = selectedTags.toList()..sort();
+    return [
+      selectedDate.millisecondsSinceEpoch,
+      selectedTime.hour,
+      selectedTime.minute,
+      durationMinutes,
+      sortedTags,
+    ];
+  }
+}
 
 class ReservationFormModal extends StatefulWidget {
   final ReservationEntity? reservation; // null for new, provided for edit
@@ -21,17 +62,12 @@ class _ReservationFormModalState extends State<ReservationFormModal> {
   late final TextEditingController _partySizeController;
   late final TextEditingController _notesController;
 
-  // Form state
-  late DateTime _selectedDate;
-  late TimeOfDay _selectedTime;
-  int _durationMinutes = 90;
-  final List<String> _selectedTags = [];
+  late final ValueNotifier<_ReservationFormViewState> _viewNotifier;
 
   @override
   void initState() {
     super.initState();
 
-    // Initialize with existing data or defaults
     final res = widget.reservation;
     _nameController = TextEditingController(text: res?.guest.name ?? '');
     _phoneController = TextEditingController(text: res?.guest.phone ?? '');
@@ -41,16 +77,30 @@ class _ReservationFormModalState extends State<ReservationFormModal> {
     );
     _notesController = TextEditingController(text: res?.guest.notes ?? '');
 
+    DateTime selectedDate;
+    TimeOfDay selectedTime;
+    int durationMinutes = res?.timing.durationMinutes ?? 90;
+    final selectedTags = <String>{};
+
     if (res != null) {
-      _selectedDate = res.timing.startAt;
-      _selectedTime = TimeOfDay.fromDateTime(res.timing.startAt);
-      _durationMinutes = res.timing.durationMinutes;
-      _selectedTags.addAll(res.preferences.tags);
+      selectedDate = res.timing.startAt;
+      selectedTime = TimeOfDay.fromDateTime(res.timing.startAt);
+      selectedTags.addAll(res.preferences.tags.map((tag) => tag.toLowerCase()));
     } else {
       final now = DateTime.now();
-      _selectedDate = now.add(const Duration(hours: 2));
-      _selectedTime = TimeOfDay(hour: (now.hour + 2) % 24, minute: 0);
+      final defaultDate = now.add(const Duration(hours: 2));
+      selectedDate = defaultDate;
+      selectedTime = TimeOfDay(hour: (now.hour + 2) % 24, minute: 0);
     }
+
+    _viewNotifier = ValueNotifier(
+      _ReservationFormViewState(
+        selectedDate: selectedDate,
+        selectedTime: selectedTime,
+        durationMinutes: durationMinutes,
+        selectedTags: selectedTags,
+      ),
+    );
   }
 
   @override
@@ -60,141 +110,154 @@ class _ReservationFormModalState extends State<ReservationFormModal> {
     _emailController.dispose();
     _partySizeController.dispose();
     _notesController.dispose();
+    _viewNotifier.dispose();
     super.dispose();
   }
 
-  DateTime get _fullDateTime {
+  DateTime _fullDateTime(_ReservationFormViewState state) {
     return DateTime(
-      _selectedDate.year,
-      _selectedDate.month,
-      _selectedDate.day,
-      _selectedTime.hour,
-      _selectedTime.minute,
+      state.selectedDate.year,
+      state.selectedDate.month,
+      state.selectedDate.day,
+      state.selectedTime.hour,
+      state.selectedTime.minute,
     );
   }
 
-  DateTime get _endDateTime =>
-      _fullDateTime.add(Duration(minutes: _durationMinutes));
+  DateTime _endDateTime(_ReservationFormViewState state) {
+    return _fullDateTime(state).add(Duration(minutes: state.durationMinutes));
+  }
+
+  void _updateViewState(_ReservationFormViewState newState) {
+    _viewNotifier.value = newState;
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Container(
-        width: 900,
-        constraints: const BoxConstraints(maxHeight: 700),
-        child: Row(
-          children: [
-            // Left: Form
-            Expanded(
-              flex: 2,
-              child: Column(
-                children: [
-                  _buildHeader(),
-                  Expanded(
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.all(24),
-                      child: Form(
-                        key: _formKey,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _buildSectionTitle('Guest Information'),
-                            const SizedBox(height: 16),
-                            _buildTextField(
-                              'Guest Name *',
-                              _nameController,
-                              'Enter full name',
-                              validator: _requiredValidator,
-                            ),
-                            const SizedBox(height: 16),
-                            Row(
+    return ValueListenableBuilder<_ReservationFormViewState>(
+      valueListenable: _viewNotifier,
+      builder: (context, viewState, _) {
+        return Dialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          child: Container(
+            width: 900,
+            constraints: const BoxConstraints(maxHeight: 700),
+            child: Row(
+              children: [
+                Expanded(
+                  flex: 2,
+                  child: Column(
+                    children: [
+                      _buildHeader(),
+                      Expanded(
+                        child: SingleChildScrollView(
+                          padding: const EdgeInsets.all(24),
+                          child: Form(
+                            key: _formKey,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Expanded(
-                                  child: _buildTextField(
-                                    'Phone',
-                                    _phoneController,
-                                    '+1 XXX-XXX-XXXX',
-                                  ),
+                                _buildSectionTitle('Guest Information'),
+                                const SizedBox(height: 16),
+                                _buildTextField(
+                                  'Guest Name *',
+                                  _nameController,
+                                  'Enter full name',
+                                  validator: _requiredValidator,
                                 ),
-                                const SizedBox(width: 16),
-                                Expanded(
-                                  child: _buildTextField(
-                                    'Email',
-                                    _emailController,
-                                    'guest@example.com',
+                                const SizedBox(height: 16),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: _buildTextField(
+                                        'Phone',
+                                        _phoneController,
+                                        '+1 XXX-XXX-XXXX',
+                                      ),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: _buildTextField(
+                                        'Email',
+                                        _emailController,
+                                        'guest@example.com',
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 32),
+                                _buildSectionTitle('Reservation Details'),
+                                const SizedBox(height: 16),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                        child: _buildDatePicker(viewState)),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                        child: _buildTimePicker(viewState)),
+                                  ],
+                                ),
+                                const SizedBox(height: 16),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: _buildTextField(
+                                        'Party Size *',
+                                        _partySizeController,
+                                        '0',
+                                        keyboardType: TextInputType.number,
+                                        validator: _partySizeValidator,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: _buildDurationPicker(viewState),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 16),
+                                _buildTagsSection(viewState),
+                                const SizedBox(height: 32),
+                                _buildSectionTitle('Additional Notes'),
+                                const SizedBox(height: 16),
+                                TextFormField(
+                                  controller: _notesController,
+                                  maxLines: 3,
+                                  decoration: InputDecoration(
+                                    hintText:
+                                        'Special requests, dietary restrictions, etc.',
+                                    filled: true,
+                                    fillColor: const Color(0xFFF9FAFB),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                      borderSide: const BorderSide(
+                                        color: Color(0xFFE5E7EB),
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 32),
-                            _buildSectionTitle('Reservation Details'),
-                            const SizedBox(height: 16),
-                            Row(
-                              children: [
-                                Expanded(child: _buildDatePicker()),
-                                const SizedBox(width: 16),
-                                Expanded(child: _buildTimePicker()),
-                              ],
-                            ),
-                            const SizedBox(height: 16),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: _buildTextField(
-                                    'Party Size *',
-                                    _partySizeController,
-                                    '0',
-                                    keyboardType: TextInputType.number,
-                                    validator: _partySizeValidator,
-                                  ),
-                                ),
-                                const SizedBox(width: 16),
-                                Expanded(child: _buildDurationPicker()),
-                              ],
-                            ),
-                            const SizedBox(height: 16),
-                            _buildTagsSection(),
-                            const SizedBox(height: 32),
-                            _buildSectionTitle('Additional Notes'),
-                            const SizedBox(height: 16),
-                            TextFormField(
-                              controller: _notesController,
-                              maxLines: 3,
-                              decoration: InputDecoration(
-                                hintText:
-                                    'Special requests, dietary restrictions, etc.',
-                                filled: true,
-                                fillColor: const Color(0xFFF9FAFB),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: const BorderSide(
-                                    color: Color(0xFFE5E7EB),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
                       ),
-                    ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+                Container(
+                  width: 320,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFF9FAFB),
+                    border: Border(left: BorderSide(color: Color(0xFFE5E7EB))),
+                  ),
+                  child: _buildSummaryPanel(viewState),
+                ),
+              ],
             ),
-
-            // Right: Summary
-            Container(
-              width: 320,
-              decoration: const BoxDecoration(
-                color: Color(0xFFF9FAFB),
-                border: Border(left: BorderSide(color: Color(0xFFE5E7EB))),
-              ),
-              child: _buildSummaryPanel(),
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
@@ -268,7 +331,7 @@ class _ReservationFormModalState extends State<ReservationFormModal> {
     );
   }
 
-  Widget _buildDatePicker() {
+  Widget _buildDatePicker(_ReservationFormViewState viewState) {
     final dateFormat = DateFormat('MMM dd, yyyy');
 
     return Column(
@@ -287,12 +350,14 @@ class _ReservationFormModalState extends State<ReservationFormModal> {
           onTap: () async {
             final picked = await showDatePicker(
               context: context,
-              initialDate: _selectedDate,
+              initialDate: viewState.selectedDate,
               firstDate: DateTime.now(),
               lastDate: DateTime.now().add(const Duration(days: 365)),
             );
             if (picked != null) {
-              setState(() => _selectedDate = picked);
+              _updateViewState(
+                _viewNotifier.value.copyWith(selectedDate: picked),
+              );
             }
           },
           child: Container(
@@ -310,7 +375,7 @@ class _ReservationFormModalState extends State<ReservationFormModal> {
                   color: Color(0xFF6B7280),
                 ),
                 const SizedBox(width: 12),
-                Text(dateFormat.format(_selectedDate)),
+                Text(dateFormat.format(viewState.selectedDate)),
               ],
             ),
           ),
@@ -319,7 +384,7 @@ class _ReservationFormModalState extends State<ReservationFormModal> {
     );
   }
 
-  Widget _buildTimePicker() {
+  Widget _buildTimePicker(_ReservationFormViewState viewState) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -336,10 +401,12 @@ class _ReservationFormModalState extends State<ReservationFormModal> {
           onTap: () async {
             final picked = await showTimePicker(
               context: context,
-              initialTime: _selectedTime,
+              initialTime: viewState.selectedTime,
             );
             if (picked != null) {
-              setState(() => _selectedTime = picked);
+              _updateViewState(
+                _viewNotifier.value.copyWith(selectedTime: picked),
+              );
             }
           },
           child: Container(
@@ -357,7 +424,7 @@ class _ReservationFormModalState extends State<ReservationFormModal> {
                   color: Color(0xFF6B7280),
                 ),
                 const SizedBox(width: 12),
-                Text(_selectedTime.format(context)),
+                Text(viewState.selectedTime.format(context)),
               ],
             ),
           ),
@@ -366,7 +433,7 @@ class _ReservationFormModalState extends State<ReservationFormModal> {
     );
   }
 
-  Widget _buildDurationPicker() {
+  Widget _buildDurationPicker(_ReservationFormViewState viewState) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -380,7 +447,7 @@ class _ReservationFormModalState extends State<ReservationFormModal> {
         ),
         const SizedBox(height: 8),
         DropdownButtonFormField<int>(
-          value: _durationMinutes,
+          value: viewState.durationMinutes,
           decoration: InputDecoration(
             filled: true,
             fillColor: const Color(0xFFF9FAFB),
@@ -401,13 +468,19 @@ class _ReservationFormModalState extends State<ReservationFormModal> {
               ),
             );
           }).toList(),
-          onChanged: (value) => setState(() => _durationMinutes = value!),
+          onChanged: (value) {
+            if (value != null) {
+              _updateViewState(
+                _viewNotifier.value.copyWith(durationMinutes: value),
+              );
+            }
+          },
         ),
       ],
     );
   }
 
-  Widget _buildTagsSection() {
+  Widget _buildTagsSection(_ReservationFormViewState viewState) {
     final availableTags = [
       'Birthday',
       'Anniversary',
@@ -432,18 +505,22 @@ class _ReservationFormModalState extends State<ReservationFormModal> {
           spacing: 8,
           runSpacing: 8,
           children: availableTags.map((tag) {
-            final isSelected = _selectedTags.contains(tag.toLowerCase());
+            final tagKey = tag.toLowerCase();
+            final isSelected = viewState.selectedTags.contains(tagKey);
             return FilterChip(
               label: Text(tag),
               selected: isSelected,
               onSelected: (selected) {
-                setState(() {
-                  if (selected) {
-                    _selectedTags.add(tag.toLowerCase());
-                  } else {
-                    _selectedTags.remove(tag.toLowerCase());
-                  }
-                });
+                final updated =
+                    Set<String>.from(_viewNotifier.value.selectedTags);
+                if (selected) {
+                  updated.add(tagKey);
+                } else {
+                  updated.remove(tagKey);
+                }
+                _updateViewState(
+                  _viewNotifier.value.copyWith(selectedTags: updated),
+                );
               },
             );
           }).toList(),
@@ -452,9 +529,10 @@ class _ReservationFormModalState extends State<ReservationFormModal> {
     );
   }
 
-  Widget _buildSummaryPanel() {
+  Widget _buildSummaryPanel(_ReservationFormViewState viewState) {
     final dateFormat = DateFormat('EEEE, MMM dd');
     final timeFormat = DateFormat('h:mm a');
+    final fullDateTime = _fullDateTime(viewState);
 
     return Column(
       children: [
@@ -481,7 +559,7 @@ class _ReservationFormModalState extends State<ReservationFormModal> {
                 const SizedBox(height: 16),
                 _buildSummaryItem(
                   'Date & Time',
-                  '${dateFormat.format(_fullDateTime)}\n${timeFormat.format(_fullDateTime)}',
+                  '${dateFormat.format(fullDateTime)}\n${timeFormat.format(fullDateTime)}',
                 ),
                 const SizedBox(height: 16),
                 _buildSummaryItem(
@@ -493,15 +571,18 @@ class _ReservationFormModalState extends State<ReservationFormModal> {
                 const SizedBox(height: 16),
                 _buildSummaryItem(
                   'Duration',
-                  '${(_durationMinutes / 60).toStringAsFixed(_durationMinutes % 60 == 0 ? 0 : 1)} hours',
+                  '${(viewState.durationMinutes / 60).toStringAsFixed(viewState.durationMinutes % 60 == 0 ? 0 : 1)} hours',
                 ),
                 const SizedBox(height: 16),
-                _buildSummaryItem('End Time', timeFormat.format(_endDateTime)),
-                if (_selectedTags.isNotEmpty) ...[
+                _buildSummaryItem(
+                  'End Time',
+                  timeFormat.format(_endDateTime(viewState)),
+                ),
+                if (viewState.selectedTags.isNotEmpty) ...[
                   const SizedBox(height: 16),
                   _buildSummaryItem(
                     'Tags',
-                    _selectedTags
+                    viewState.selectedTags
                         .map((t) => t[0].toUpperCase() + t.substring(1))
                         .join(', '),
                   ),
@@ -518,7 +599,7 @@ class _ReservationFormModalState extends State<ReservationFormModal> {
           child: SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: _saveReservation,
+              onPressed: () => _saveReservation(viewState),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF3B82F6),
                 padding: const EdgeInsets.symmetric(vertical: 14),
@@ -573,17 +654,18 @@ class _ReservationFormModalState extends State<ReservationFormModal> {
     return null;
   }
 
-  void _saveReservation() {
+  void _saveReservation(_ReservationFormViewState viewState) {
     if (_formKey.currentState!.validate()) {
+      final fullDateTime = _fullDateTime(viewState);
       final data = {
         'name': _nameController.text,
         'phone': _phoneController.text,
         'email': _emailController.text,
         'partySize': int.parse(_partySizeController.text),
-        'dateTime': _fullDateTime,
-        'duration': _durationMinutes,
+        'dateTime': fullDateTime,
+        'duration': viewState.durationMinutes,
         'notes': _notesController.text,
-        'tags': _selectedTags,
+        'tags': viewState.selectedTags.toList(),
       };
 
       Navigator.pop(context, data);

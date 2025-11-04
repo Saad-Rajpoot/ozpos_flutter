@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:equatable/equatable.dart';
 import '../../bloc/combo_management_bloc.dart';
 import '../../bloc/combo_management_state.dart';
 import '../../../domain/entities/combo_entity.dart';
@@ -11,63 +12,111 @@ class AdvancedTab extends StatefulWidget {
   State<AdvancedTab> createState() => _AdvancedTabState();
 }
 
-class _AdvancedTabState extends State<AdvancedTab> {
-  // State variables for advanced settings
-  bool _isFeatured = false;
-  bool _canStackWithDiscounts = true;
-  bool _isExclusivePromo = false;
-  bool _requireMembership = true;
+class _AdvancedSettingsViewState extends Equatable {
+  const _AdvancedSettingsViewState({
+    this.isFeatured = false,
+    this.canStackWithDiscounts = true,
+    this.isExclusivePromo = false,
+    this.requireMembership = true,
+  });
+
+  final bool isFeatured;
+  final bool canStackWithDiscounts;
+  final bool isExclusivePromo;
+  final bool requireMembership;
+
+  _AdvancedSettingsViewState copyWith({
+    bool? isFeatured,
+    bool? canStackWithDiscounts,
+    bool? isExclusivePromo,
+    bool? requireMembership,
+  }) {
+    return _AdvancedSettingsViewState(
+      isFeatured: isFeatured ?? this.isFeatured,
+      canStackWithDiscounts:
+          canStackWithDiscounts ?? this.canStackWithDiscounts,
+      isExclusivePromo: isExclusivePromo ?? this.isExclusivePromo,
+      requireMembership: requireMembership ?? this.requireMembership,
+    );
+  }
 
   @override
+  List<Object?> get props => [
+        isFeatured,
+        canStackWithDiscounts,
+        isExclusivePromo,
+        requireMembership,
+      ];
+}
+
+class _AdvancedTabState extends State<AdvancedTab> {
+  late final ValueNotifier<_AdvancedSettingsViewState> _stateNotifier;
+
+  @override
+  void initState() {
+    super.initState();
+    _stateNotifier = ValueNotifier(const _AdvancedSettingsViewState());
+  }
+
+  @override
+  void dispose() {
+    _stateNotifier.dispose();
+    super.dispose();
+  }
+
+  void _updateState(_AdvancedSettingsViewState newState) {
+    _stateNotifier.value = newState;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ComboManagementBloc, ComboManagementState>(
-      builder: (context, state) {
-        final combo = state.editingCombo;
-        if (combo == null) return const SizedBox.shrink();
+    return ValueListenableBuilder<_AdvancedSettingsViewState>(
+      valueListenable: _stateNotifier,
+      builder: (context, viewState, _) {
+        return BlocBuilder<ComboManagementBloc, ComboManagementState>(
+          builder: (context, state) {
+            final combo = state.editingCombo;
+            if (combo == null) return const SizedBox.shrink();
 
-        return SingleChildScrollView(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Advanced Settings',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF111827),
-                ),
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(32),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Advanced Settings',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF111827),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Configure limits, stacking rules, and visibility controls',
+                    style: TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
+                  ),
+                  const SizedBox(height: 32),
+                  _buildVisibilitySection(combo, viewState),
+                  const SizedBox(height: 32),
+                  _buildCustomerLimitsSection(combo),
+                  const SizedBox(height: 32),
+                  _buildStackingRulesSection(combo, viewState),
+                  const SizedBox(height: 32),
+                  _buildPrioritySection(combo),
+                ],
               ),
-              const SizedBox(height: 8),
-              const Text(
-                'Configure limits, stacking rules, and visibility controls',
-                style: TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
-              ),
-              const SizedBox(height: 32),
-
-              // Deal Status & Visibility
-              _buildVisibilitySection(combo),
-              const SizedBox(height: 32),
-
-              // Customer Limits
-              _buildCustomerLimitsSection(combo),
-              const SizedBox(height: 32),
-
-              // Stacking Rules
-              _buildStackingRulesSection(combo),
-              const SizedBox(height: 32),
-
-              // Priority & Ordering
-              _buildPrioritySection(combo),
-            ],
-          ),
+            );
+          },
         );
       },
     );
   }
 
-  Widget _buildVisibilitySection(ComboEntity combo) {
+  Widget _buildVisibilitySection(
+    ComboEntity combo,
+    _AdvancedSettingsViewState viewState,
+  ) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -177,8 +226,9 @@ class _AdvancedTabState extends State<AdvancedTab> {
           Row(
             children: [
               Checkbox(
-                value: _isFeatured,
-                onChanged: (value) => _updateFeaturedStatus(value ?? false),
+                value: viewState.isFeatured,
+                onChanged: (value) =>
+                    _updateFeaturedStatus(viewState, value ?? false),
                 activeColor: const Color(0xFF8B5CF6),
               ),
               const SizedBox(width: 8),
@@ -353,7 +403,10 @@ class _AdvancedTabState extends State<AdvancedTab> {
     );
   }
 
-  Widget _buildStackingRulesSection(ComboEntity combo) {
+  Widget _buildStackingRulesSection(
+    ComboEntity combo,
+    _AdvancedSettingsViewState viewState,
+  ) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -383,9 +436,9 @@ class _AdvancedTabState extends State<AdvancedTab> {
               Row(
                 children: [
                   Checkbox(
-                    value: _canStackWithDiscounts,
+                    value: viewState.canStackWithDiscounts,
                     onChanged: (value) =>
-                        _updateStackWithDiscounts(value ?? false),
+                        _updateStackWithDiscounts(viewState, value ?? false),
                     activeColor: const Color(0xFF8B5CF6),
                   ),
                   const SizedBox(width: 8),
@@ -417,8 +470,9 @@ class _AdvancedTabState extends State<AdvancedTab> {
               Row(
                 children: [
                   Checkbox(
-                    value: _isExclusivePromo,
-                    onChanged: (value) => _updateExclusivePromo(value ?? false),
+                    value: viewState.isExclusivePromo,
+                    onChanged: (value) =>
+                        _updateExclusivePromo(viewState, value ?? false),
                     activeColor: const Color(0xFF8B5CF6),
                   ),
                   const SizedBox(width: 8),
@@ -450,9 +504,9 @@ class _AdvancedTabState extends State<AdvancedTab> {
               Row(
                 children: [
                   Checkbox(
-                    value: _requireMembership,
+                    value: viewState.requireMembership,
                     onChanged: (value) =>
-                        _updateRequireMembership(value ?? false),
+                        _updateRequireMembership(viewState, value ?? false),
                     activeColor: const Color(0xFF8B5CF6),
                   ),
                   const SizedBox(width: 8),
@@ -627,10 +681,11 @@ class _AdvancedTabState extends State<AdvancedTab> {
     ).showSnackBar(SnackBar(content: Text('Status updated to ${status.name}')));
   }
 
-  void _updateFeaturedStatus(bool featured) {
-    setState(() {
-      _isFeatured = featured;
-    });
+  void _updateFeaturedStatus(
+    _AdvancedSettingsViewState previous,
+    bool featured,
+  ) {
+    _updateState(previous.copyWith(isFeatured: featured));
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Featured: ${featured ? 'Enabled' : 'Disabled'}')),
     );
@@ -654,10 +709,11 @@ class _AdvancedTabState extends State<AdvancedTab> {
     );
   }
 
-  void _updateStackWithDiscounts(bool canStack) {
-    setState(() {
-      _canStackWithDiscounts = canStack;
-    });
+  void _updateStackWithDiscounts(
+    _AdvancedSettingsViewState previous,
+    bool canStack,
+  ) {
+    _updateState(previous.copyWith(canStackWithDiscounts: canStack));
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
@@ -667,10 +723,11 @@ class _AdvancedTabState extends State<AdvancedTab> {
     );
   }
 
-  void _updateExclusivePromo(bool exclusive) {
-    setState(() {
-      _isExclusivePromo = exclusive;
-    });
+  void _updateExclusivePromo(
+    _AdvancedSettingsViewState previous,
+    bool exclusive,
+  ) {
+    _updateState(previous.copyWith(isExclusivePromo: exclusive));
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
@@ -680,10 +737,11 @@ class _AdvancedTabState extends State<AdvancedTab> {
     );
   }
 
-  void _updateRequireMembership(bool required) {
-    setState(() {
-      _requireMembership = required;
-    });
+  void _updateRequireMembership(
+    _AdvancedSettingsViewState previous,
+    bool required,
+  ) {
+    _updateState(previous.copyWith(requireMembership: required));
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(

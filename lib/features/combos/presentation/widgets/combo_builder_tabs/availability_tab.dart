@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart' hide TimeOfDay;
 import 'package:flutter/material.dart' as material show TimeOfDay;
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:equatable/equatable.dart';
 import '../../bloc/combo_management_bloc.dart';
 import '../../bloc/combo_management_state.dart';
 
@@ -11,77 +12,117 @@ class AvailabilityTab extends StatefulWidget {
   State<AvailabilityTab> createState() => _AvailabilityTabState();
 }
 
-class _AvailabilityTabState extends State<AvailabilityTab> {
-  // State variables for tracking selections
-  final Map<String, bool> _orderTypes = const {
-    'dineIn': true,
-    'takeaway': true,
-    'delivery': true,
-    'online': true,
-  };
+class _AvailabilityViewState extends Equatable {
+  const _AvailabilityViewState({
+    this.orderTypes = const {
+      'dineIn': true,
+      'takeaway': true,
+      'delivery': true,
+      'online': true,
+    },
+    this.selectedTimeSlots = const {'Lunch'},
+    this.selectedWeekdays = const {1, 2, 3, 4, 5, 6, 7},
+    this.noEndDate = true,
+  });
 
-  final Set<String> _selectedTimeSlots = const {
-    'Lunch',
-  }; // Mock default selection
-  final Set<int> _selectedWeekdays = const {
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7,
-  }; // All days selected by default
+  final Map<String, bool> orderTypes;
+  final Set<String> selectedTimeSlots;
+  final Set<int> selectedWeekdays;
+  final bool noEndDate;
+
+  _AvailabilityViewState copyWith({
+    Map<String, bool>? orderTypes,
+    Set<String>? selectedTimeSlots,
+    Set<int>? selectedWeekdays,
+    bool? noEndDate,
+  }) {
+    return _AvailabilityViewState(
+      orderTypes: orderTypes ?? Map<String, bool>.from(this.orderTypes),
+      selectedTimeSlots:
+          selectedTimeSlots ?? Set<String>.from(this.selectedTimeSlots),
+      selectedWeekdays:
+          selectedWeekdays ?? Set<int>.from(this.selectedWeekdays),
+      noEndDate: noEndDate ?? this.noEndDate,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        orderTypes,
+        selectedTimeSlots,
+        selectedWeekdays,
+        noEndDate,
+      ];
+}
+
+class _AvailabilityTabState extends State<AvailabilityTab> {
+  late final ValueNotifier<_AvailabilityViewState> _stateNotifier;
+
+  @override
+  void initState() {
+    super.initState();
+    _stateNotifier = ValueNotifier(const _AvailabilityViewState());
+  }
+
+  @override
+  void dispose() {
+    _stateNotifier.dispose();
+    super.dispose();
+  }
+
+  void _updateState(_AvailabilityViewState newState) {
+    _stateNotifier.value = newState;
+  }
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ComboManagementBloc, ComboManagementState>(
-      builder: (context, state) {
-        final combo = state.editingCombo;
-        if (combo == null) return const SizedBox.shrink();
+    return ValueListenableBuilder<_AvailabilityViewState>(
+      valueListenable: _stateNotifier,
+      builder: (context, viewState, _) {
+        return BlocBuilder<ComboManagementBloc, ComboManagementState>(
+          builder: (context, state) {
+            final combo = state.editingCombo;
+            if (combo == null) return const SizedBox.shrink();
 
-        return SingleChildScrollView(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Availability & Restrictions',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF111827),
-                ),
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(32),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Availability & Restrictions',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF111827),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Control when and how this combo deal is available to customers',
+                    style: TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
+                  ),
+                  const SizedBox(height: 32),
+                  _buildOrderTypeSection(combo, viewState),
+                  const SizedBox(height: 32),
+                  _buildTimeRestrictionsSection(combo, viewState),
+                  const SizedBox(height: 32),
+                  _buildWeekdaySection(combo, viewState),
+                  const SizedBox(height: 32),
+                  _buildDateRangeSection(combo, viewState),
+                ],
               ),
-              const SizedBox(height: 8),
-              const Text(
-                'Control when and how this combo deal is available to customers',
-                style: TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
-              ),
-              const SizedBox(height: 32),
-
-              // Order Type Availability
-              _buildOrderTypeSection(combo),
-              const SizedBox(height: 32),
-
-              // Time Restrictions
-              _buildTimeRestrictionsSection(combo),
-              const SizedBox(height: 32),
-
-              // Day of Week Selection
-              _buildWeekdaySection(combo),
-              const SizedBox(height: 32),
-
-              // Date Range
-              _buildDateRangeSection(combo),
-            ],
-          ),
+            );
+          },
         );
       },
     );
   }
 
-  Widget _buildOrderTypeSection(combo) {
+  Widget _buildOrderTypeSection(
+    combo,
+    _AvailabilityViewState viewState,
+  ) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -118,29 +159,29 @@ class _AvailabilityTabState extends State<AvailabilityTab> {
                 'Dine In',
                 'Customers eating at restaurant',
                 Icons.restaurant,
-                _orderTypes['dineIn'] ?? false,
-                (value) => _updateOrderType('dineIn', value),
+                viewState.orderTypes['dineIn'] ?? false,
+                (value) => _updateOrderType(viewState, 'dineIn', value),
               ),
               _buildOrderTypeCard(
                 'Takeaway',
                 'Customers picking up orders',
                 Icons.shopping_bag,
-                _orderTypes['takeaway'] ?? false,
-                (value) => _updateOrderType('takeaway', value),
+                viewState.orderTypes['takeaway'] ?? false,
+                (value) => _updateOrderType(viewState, 'takeaway', value),
               ),
               _buildOrderTypeCard(
                 'Delivery',
                 'Orders delivered to customers',
                 Icons.delivery_dining,
-                _orderTypes['delivery'] ?? false,
-                (value) => _updateOrderType('delivery', value),
+                viewState.orderTypes['delivery'] ?? false,
+                (value) => _updateOrderType(viewState, 'delivery', value),
               ),
               _buildOrderTypeCard(
                 'Online Order',
                 'Orders placed online',
                 Icons.computer,
-                _orderTypes['online'] ?? false,
-                (value) => _updateOrderType('online', value),
+                viewState.orderTypes['online'] ?? false,
+                (value) => _updateOrderType(viewState, 'online', value),
               ),
             ],
           ),
@@ -214,7 +255,10 @@ class _AvailabilityTabState extends State<AvailabilityTab> {
     );
   }
 
-  Widget _buildTimeRestrictionsSection(combo) {
+  Widget _buildTimeRestrictionsSection(
+    combo,
+    _AvailabilityViewState viewState,
+  ) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -251,28 +295,28 @@ class _AvailabilityTabState extends State<AvailabilityTab> {
                 'Breakfast',
                 '07:00-11:00',
                 Icons.wb_sunny,
-                _selectedTimeSlots.contains('Breakfast'),
-                () => _toggleTimeSlot('Breakfast'),
+                viewState.selectedTimeSlots.contains('Breakfast'),
+                () => _toggleTimeSlot(viewState, 'Breakfast'),
               ),
               _buildTimeSlotCard(
                 'Lunch',
                 '11:00-15:00',
                 Icons.lunch_dining,
-                _selectedTimeSlots.contains('Lunch'),
-                () => _toggleTimeSlot('Lunch'),
+                viewState.selectedTimeSlots.contains('Lunch'),
+                () => _toggleTimeSlot(viewState, 'Lunch'),
               ),
               _buildTimeSlotCard(
                 'Dinner',
                 '18:00-22:00',
                 Icons.dinner_dining,
-                _selectedTimeSlots.contains('Dinner'),
-                () => _toggleTimeSlot('Dinner'),
+                viewState.selectedTimeSlots.contains('Dinner'),
+                () => _toggleTimeSlot(viewState, 'Dinner'),
               ),
               _buildTimeSlotCard(
                 'Custom',
                 'Set times',
                 Icons.schedule,
-                _selectedTimeSlots.contains('Custom'),
+                viewState.selectedTimeSlots.contains('Custom'),
                 () => _showCustomTimeDialog(),
               ),
             ],
@@ -348,7 +392,10 @@ class _AvailabilityTabState extends State<AvailabilityTab> {
     );
   }
 
-  Widget _buildWeekdaySection(combo) {
+  Widget _buildWeekdaySection(
+    combo,
+    _AvailabilityViewState viewState,
+  ) {
     final weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
     return Container(
@@ -379,7 +426,7 @@ class _AvailabilityTabState extends State<AvailabilityTab> {
             children: weekdays.asMap().entries.map((entry) {
               final index = entry.key;
               final day = entry.value;
-              final isSelected = _selectedWeekdays.contains(index + 1);
+              final isSelected = viewState.selectedWeekdays.contains(index + 1);
 
               return Expanded(
                 child: Padding(
@@ -387,7 +434,7 @@ class _AvailabilityTabState extends State<AvailabilityTab> {
                     right: index < weekdays.length - 1 ? 8 : 0,
                   ),
                   child: GestureDetector(
-                    onTap: () => _toggleWeekday(index + 1),
+                    onTap: () => _toggleWeekday(viewState, index + 1),
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       decoration: BoxDecoration(
@@ -422,7 +469,10 @@ class _AvailabilityTabState extends State<AvailabilityTab> {
     );
   }
 
-  Widget _buildDateRangeSection(combo) {
+  Widget _buildDateRangeSection(
+    combo,
+    _AvailabilityViewState viewState,
+  ) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -536,8 +586,12 @@ class _AvailabilityTabState extends State<AvailabilityTab> {
           Row(
             children: [
               Checkbox(
-                value: true,
-                onChanged: (value) {},
+                value: viewState.noEndDate,
+                onChanged: (value) {
+                  if (value != null) {
+                    _updateState(viewState.copyWith(noEndDate: value));
+                  }
+                },
                 activeColor: const Color(0xFF8B5CF6),
               ),
               const SizedBox(width: 8),
@@ -555,10 +609,14 @@ class _AvailabilityTabState extends State<AvailabilityTab> {
   }
 
   // Event handlers
-  void _updateOrderType(String orderType, bool enabled) {
-    setState(() {
-      _orderTypes[orderType] = enabled;
-    });
+  void _updateOrderType(
+    _AvailabilityViewState previous,
+    String orderType,
+    bool enabled,
+  ) {
+    final updated = Map<String, bool>.from(previous.orderTypes);
+    updated[orderType] = enabled;
+    _updateState(previous.copyWith(orderTypes: updated));
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('${enabled ? 'Enabled' : 'Disabled'} $orderType orders'),
@@ -566,18 +624,21 @@ class _AvailabilityTabState extends State<AvailabilityTab> {
     );
   }
 
-  void _toggleTimeSlot(String name) {
-    setState(() {
-      if (_selectedTimeSlots.contains(name)) {
-        _selectedTimeSlots.remove(name);
-      } else {
-        _selectedTimeSlots.add(name);
-      }
-    });
+  void _toggleTimeSlot(
+    _AvailabilityViewState previous,
+    String name,
+  ) {
+    final updated = Set<String>.from(previous.selectedTimeSlots);
+    if (updated.contains(name)) {
+      updated.remove(name);
+    } else {
+      updated.add(name);
+    }
+    _updateState(previous.copyWith(selectedTimeSlots: updated));
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          '${_selectedTimeSlots.contains(name) ? 'Selected' : 'Deselected'} $name time slot',
+          '${updated.contains(name) ? 'Selected' : 'Deselected'} $name time slot',
         ),
       ),
     );
@@ -639,14 +700,17 @@ class _AvailabilityTabState extends State<AvailabilityTab> {
     );
   }
 
-  void _toggleWeekday(int weekday) {
-    setState(() {
-      if (_selectedWeekdays.contains(weekday)) {
-        _selectedWeekdays.remove(weekday);
-      } else {
-        _selectedWeekdays.add(weekday);
-      }
-    });
+  void _toggleWeekday(
+    _AvailabilityViewState previous,
+    int weekday,
+  ) {
+    final updated = Set<int>.from(previous.selectedWeekdays);
+    if (updated.contains(weekday)) {
+      updated.remove(weekday);
+    } else {
+      updated.add(weekday);
+    }
+    _updateState(previous.copyWith(selectedWeekdays: updated));
 
     final weekdayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     final dayName = weekdayNames[weekday - 1];
@@ -654,7 +718,7 @@ class _AvailabilityTabState extends State<AvailabilityTab> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          '${_selectedWeekdays.contains(weekday) ? 'Selected' : 'Deselected'} $dayName',
+          '${updated.contains(weekday) ? 'Selected' : 'Deselected'} $dayName',
         ),
       ),
     );
