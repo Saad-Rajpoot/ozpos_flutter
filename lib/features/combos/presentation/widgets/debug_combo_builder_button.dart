@@ -12,87 +12,94 @@ import '../../domain/entities/combo_limits_entity.dart';
 import '../../domain/entities/combo_pricing_entity.dart';
 import 'combo_builder_modal.dart';
 
-class DebugComboBuilderButton extends StatefulWidget {
+class DebugComboBuilderButton extends StatelessWidget {
   const DebugComboBuilderButton({super.key});
 
   @override
-  State<DebugComboBuilderButton> createState() =>
-      _DebugComboBuilderButtonState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => _DebugComboButtonCubit(),
+      child: const _DebugComboBuilderButtonView(),
+    );
+  }
 }
 
-class _DebugComboBuilderButtonState extends State<DebugComboBuilderButton> {
-  bool _isHovering = false;
-  ComboEntity? _savedCombo;
+class _DebugComboBuilderButtonView extends StatelessWidget {
+  const _DebugComboBuilderButtonView();
 
   @override
   Widget build(BuildContext context) {
-    final gradientColors = _isHovering
-        ? const [Color(0xFF16A34A), Color(0xFF047857)]
-        : const [Color(0xFF22C55E), Color(0xFF10B981)];
+    return BlocBuilder<_DebugComboButtonCubit, _DebugComboButtonState>(
+      builder: (context, state) {
+        final gradientColors = state.isHovering
+            ? const [Color(0xFF16A34A), Color(0xFF047857)]
+            : const [Color(0xFF22C55E), Color(0xFF10B981)];
 
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isHovering = true),
-      onExit: (_) => setState(() => _isHovering = false),
-      child: Material(
-        color: Colors.transparent,
-        child: Ink(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: gradientColors,
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(8),
-            boxShadow: _isHovering
-                ? [
-                    BoxShadow(
-                      color: Colors.green.withOpacity(0.3),
-                      blurRadius: 16,
-                      offset: const Offset(0, 6),
+        return MouseRegion(
+          onEnter: (_) =>
+              context.read<_DebugComboButtonCubit>().setHovering(true),
+          onExit: (_) =>
+              context.read<_DebugComboButtonCubit>().setHovering(false),
+          child: Material(
+            color: Colors.transparent,
+            child: Ink(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: gradientColors,
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(8),
+                boxShadow: state.isHovering
+                    ? [
+                        BoxShadow(
+                          color: Colors.green.withOpacity(0.3),
+                          blurRadius: 16,
+                          offset: const Offset(0, 6),
+                        ),
+                      ]
+                    : [
+                        BoxShadow(
+                          color: Colors.green.withOpacity(0.2),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+              ),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(8),
+                onTap: () => _showDebugDialog(context, state.savedCombo),
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  child: Text(
+                    '🔧 Debug Combo Builder',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.2,
                     ),
-                  ]
-                : [
-                    BoxShadow(
-                      color: Colors.green.withOpacity(0.2),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-          ),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(8),
-            onTap: _showDebugDialog,
-            child: const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Text(
-                '🔧 Debug Combo Builder',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 0.2,
+                  ),
                 ),
               ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
-  void _showDebugDialog() {
-    final rootContext = context;
-
+  void _showDebugDialog(BuildContext rootContext, ComboEntity? savedCombo) {
     showDialog<void>(
       context: rootContext,
       barrierDismissible: false,
       barrierColor: Colors.black.withOpacity(0.5),
-      builder: (dialogContext) {
+      builder: (_) {
         return ComboBuilderDebugDialog(
           rootContext: rootContext,
-          initialSavedCombo: _savedCombo,
+          initialSavedCombo: savedCombo,
           onSavedCombo: (combo) {
-            setState(() => _savedCombo = combo);
+            rootContext.read<_DebugComboButtonCubit>().updateSavedCombo(combo);
           },
           onOpenBuilder: () => _openComboBuilder(rootContext),
         );
@@ -112,7 +119,75 @@ class _DebugComboBuilderButtonState extends State<DebugComboBuilderButton> {
   }
 }
 
-class ComboBuilderDebugDialog extends StatefulWidget {
+class _DebugComboButtonState {
+  const _DebugComboButtonState({
+    required this.isHovering,
+    this.savedCombo,
+  });
+
+  final bool isHovering;
+  final ComboEntity? savedCombo;
+
+  _DebugComboButtonState copyWith({
+    bool? isHovering,
+    ComboEntity? savedCombo,
+    bool shouldUpdateSavedCombo = false,
+  }) {
+    return _DebugComboButtonState(
+      isHovering: isHovering ?? this.isHovering,
+      savedCombo: shouldUpdateSavedCombo ? savedCombo : this.savedCombo,
+    );
+  }
+}
+
+class _DebugComboButtonCubit extends Cubit<_DebugComboButtonState> {
+  _DebugComboButtonCubit()
+      : super(const _DebugComboButtonState(isHovering: false));
+
+  void setHovering(bool value) {
+    emit(state.copyWith(isHovering: value));
+  }
+
+  void updateSavedCombo(ComboEntity? combo) {
+    emit(
+      state.copyWith(
+        savedCombo: combo,
+        shouldUpdateSavedCombo: true,
+      ),
+    );
+  }
+}
+
+class _DebugDialogState {
+  const _DebugDialogState({this.savedCombo});
+
+  final ComboEntity? savedCombo;
+
+  _DebugDialogState copyWith({
+    ComboEntity? savedCombo,
+    bool shouldUpdateSavedCombo = false,
+  }) {
+    return _DebugDialogState(
+      savedCombo: shouldUpdateSavedCombo ? savedCombo : this.savedCombo,
+    );
+  }
+}
+
+class _DebugDialogCubit extends Cubit<_DebugDialogState> {
+  _DebugDialogCubit(ComboEntity? initialSavedCombo)
+      : super(_DebugDialogState(savedCombo: initialSavedCombo));
+
+  void updateSavedCombo(ComboEntity? combo) {
+    emit(
+      state.copyWith(
+        savedCombo: combo,
+        shouldUpdateSavedCombo: true,
+      ),
+    );
+  }
+}
+
+class ComboBuilderDebugDialog extends StatelessWidget {
   const ComboBuilderDebugDialog({
     required this.rootContext,
     required this.initialSavedCombo,
@@ -127,12 +202,28 @@ class ComboBuilderDebugDialog extends StatefulWidget {
   final Future<void> Function() onOpenBuilder;
 
   @override
-  State<ComboBuilderDebugDialog> createState() =>
-      _ComboBuilderDebugDialogState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => _DebugDialogCubit(initialSavedCombo),
+      child: _ComboBuilderDebugDialogBody(
+        rootContext: rootContext,
+        onSavedCombo: onSavedCombo,
+        onOpenBuilder: onOpenBuilder,
+      ),
+    );
+  }
 }
 
-class _ComboBuilderDebugDialogState extends State<ComboBuilderDebugDialog> {
-  late ComboEntity? _savedCombo;
+class _ComboBuilderDebugDialogBody extends StatelessWidget {
+  const _ComboBuilderDebugDialogBody({
+    required this.rootContext,
+    required this.onSavedCombo,
+    required this.onOpenBuilder,
+  });
+
+  final BuildContext rootContext;
+  final ValueChanged<ComboEntity?> onSavedCombo;
+  final Future<void> Function() onOpenBuilder;
 
   static final List<_DebugMenuItem> _mockMenuItems = [
     _DebugMenuItem(
@@ -216,67 +307,68 @@ class _ComboBuilderDebugDialogState extends State<ComboBuilderDebugDialog> {
   ];
 
   @override
-  void initState() {
-    super.initState();
-    _savedCombo = widget.initialSavedCombo;
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Dialog(
-      insetPadding: const EdgeInsets.all(16),
-      backgroundColor: Colors.transparent,
-      child: BlocListener<ComboManagementBloc, ComboManagementState>(
-        listenWhen: (previous, current) =>
-            previous.lastSavedCombo != current.lastSavedCombo,
-        listener: (context, state) {
-          if (state.lastSavedCombo != null) {
-            setState(() => _savedCombo = state.lastSavedCombo);
-            widget.onSavedCombo(state.lastSavedCombo);
-            _showSaveSnackBar();
-          }
-        },
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 900),
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.12),
-                    blurRadius: 32,
-                    offset: const Offset(0, 16),
-                  ),
-                ],
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      _buildHeader(context),
-                      const SizedBox(height: 24),
-                      _buildCategoriesSection(),
-                      const SizedBox(height: 24),
-                      _buildItemsSection(),
-                      const SizedBox(height: 24),
-                      _buildActions(context),
-                      if (_savedCombo != null) ...[
-                        const SizedBox(height: 24),
-                        _buildSavedComboSummary(_savedCombo!),
-                      ],
+    return BlocListener<ComboManagementBloc, ComboManagementState>(
+      listenWhen: (previous, current) =>
+          previous.lastSavedCombo != current.lastSavedCombo,
+      listener: (context, state) {
+        final combo = state.lastSavedCombo;
+        if (combo != null) {
+          context.read<_DebugDialogCubit>().updateSavedCombo(combo);
+          onSavedCombo(combo);
+          _showSaveSnackBar();
+        }
+      },
+      child: BlocBuilder<_DebugDialogCubit, _DebugDialogState>(
+        builder: (context, dialogState) {
+          final savedCombo = dialogState.savedCombo;
+
+          return Dialog(
+            insetPadding: const EdgeInsets.all(16),
+            backgroundColor: Colors.transparent,
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 900),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.12),
+                        blurRadius: 32,
+                        offset: const Offset(0, 16),
+                      ),
                     ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _buildHeader(context),
+                          const SizedBox(height: 24),
+                          _buildCategoriesSection(),
+                          const SizedBox(height: 24),
+                          _buildItemsSection(),
+                          const SizedBox(height: 24),
+                          _buildActions(context, savedCombo),
+                          if (savedCombo != null) ...[
+                            const SizedBox(height: 24),
+                            _buildSavedComboSummary(savedCombo),
+                          ],
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }
@@ -434,7 +526,7 @@ class _ComboBuilderDebugDialogState extends State<ComboBuilderDebugDialog> {
     return parts.join(' \u2022 ');
   }
 
-  Widget _buildActions(BuildContext context) {
+  Widget _buildActions(BuildContext context, ComboEntity? savedCombo) {
     return Wrap(
       alignment: WrapAlignment.spaceBetween,
       runSpacing: 12,
@@ -445,22 +537,22 @@ class _ComboBuilderDebugDialogState extends State<ComboBuilderDebugDialog> {
           onPressed: () => Navigator.of(context).pop(),
           child: const Text('Close Debug'),
         ),
-        if (_savedCombo != null)
+        if (savedCombo != null)
           OutlinedButton(
-            onPressed: _handleViewSavedCombo,
+            onPressed: () => _handleViewSavedCombo(savedCombo),
             child: const Text('View Saved Combo (Console)'),
           ),
         _GradientButton(
           label: 'Open Combo Builder',
-          onPressed: _handleOpenComboBuilder,
+          onPressed: () => _handleOpenComboBuilder(),
         ),
       ],
     );
   }
 
   Future<void> _handleOpenComboBuilder() async {
-    final openBuilder = widget.onOpenBuilder;
-    final navigator = Navigator.of(widget.rootContext, rootNavigator: true);
+    final openBuilder = onOpenBuilder;
+    final navigator = Navigator.of(rootContext, rootNavigator: true);
 
     navigator.pop();
     await Future.microtask(() {});
@@ -497,7 +589,9 @@ class _ComboBuilderDebugDialogState extends State<ComboBuilderDebugDialog> {
           ),
           const SizedBox(height: 12),
           _buildSummaryRow(
-              'Combo Name', combo.name.isEmpty ? 'Untitled combo' : combo.name),
+            'Combo Name',
+            combo.name.isEmpty ? 'Untitled combo' : combo.name,
+          ),
           _buildSummaryRow('Items Count', '${combo.slots.length} item(s)'),
           _buildSummaryRow(
             'Combo Price',
@@ -546,14 +640,12 @@ class _ComboBuilderDebugDialogState extends State<ComboBuilderDebugDialog> {
     );
   }
 
-  Future<void> _handleViewSavedCombo() async {
-    if (_savedCombo == null) return;
-
-    final comboMap = _comboToDebugMap(_savedCombo!);
+  Future<void> _handleViewSavedCombo(ComboEntity savedCombo) async {
+    final comboMap = _comboToDebugMap(savedCombo);
     debugPrint('Saved combo snapshot:');
     debugPrint(const JsonEncoder.withIndent('  ').convert(comboMap));
 
-    final messenger = ScaffoldMessenger.maybeOf(widget.rootContext);
+    final messenger = ScaffoldMessenger.maybeOf(rootContext);
     messenger?.showSnackBar(
       const SnackBar(
         content: Text('Saved combo details logged to console'),
@@ -563,7 +655,7 @@ class _ComboBuilderDebugDialogState extends State<ComboBuilderDebugDialog> {
   }
 
   void _showSaveSnackBar() {
-    final messenger = ScaffoldMessenger.maybeOf(widget.rootContext);
+    final messenger = ScaffoldMessenger.maybeOf(rootContext);
     messenger?.showSnackBar(
       const SnackBar(
         content: Text('Combo saved. Summary updated in debug tool.'),
@@ -674,7 +766,7 @@ class _ComboBuilderDebugDialogState extends State<ComboBuilderDebugDialog> {
     };
   }
 
-  String _formatOrderType(OrderType type) {
+  static String _formatOrderType(OrderType type) {
     switch (type) {
       case OrderType.dineIn:
         return 'Dine In';
@@ -687,13 +779,13 @@ class _ComboBuilderDebugDialogState extends State<ComboBuilderDebugDialog> {
     }
   }
 
-  String _capitalize(String value) {
+  static String _capitalize(String value) {
     if (value.isEmpty) return value;
     return value[0].toUpperCase() + value.substring(1);
   }
 }
 
-class _GradientButton extends StatefulWidget {
+class _GradientButton extends StatelessWidget {
   const _GradientButton({
     required this.label,
     required this.onPressed,
@@ -703,66 +795,74 @@ class _GradientButton extends StatefulWidget {
   final Future<void> Function() onPressed;
 
   @override
-  State<_GradientButton> createState() => _GradientButtonState();
-}
-
-class _GradientButtonState extends State<_GradientButton> {
-  bool _working = false;
-
-  @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 44,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF8B5CF6), Color(0xFFD946EF)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: ElevatedButton(
-          onPressed: _working ? null : _handlePressed,
-          style: ElevatedButton.styleFrom(
-            elevation: 0,
-            backgroundColor: Colors.transparent,
-            shadowColor: Colors.transparent,
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ),
-          child: _working
-              ? const SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                  ),
-                )
-              : Text(
-                  widget.label,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
+    return BlocProvider(
+      create: (_) => _GradientButtonCubit(),
+      child: BlocBuilder<_GradientButtonCubit, bool>(
+        builder: (context, working) {
+          return SizedBox(
+            height: 44,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF8B5CF6), Color(0xFFD946EF)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: ElevatedButton(
+                onPressed: working ? null : () => _handlePressed(context),
+                style: ElevatedButton.styleFrom(
+                  elevation: 0,
+                  backgroundColor: Colors.transparent,
+                  shadowColor: Colors.transparent,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-        ),
+                child: working
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      )
+                    : Text(
+                        label,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }
 
-  Future<void> _handlePressed() async {
-    setState(() => _working = true);
+  Future<void> _handlePressed(BuildContext context) async {
+    final cubit = context.read<_GradientButtonCubit>();
+    cubit.setWorking(true);
     try {
-      await widget.onPressed();
+      await onPressed();
     } finally {
-      if (mounted) {
-        setState(() => _working = false);
+      if (!cubit.isClosed) {
+        cubit.setWorking(false);
       }
     }
   }
+}
+
+class _GradientButtonCubit extends Cubit<bool> {
+  _GradientButtonCubit() : super(false);
+
+  void setWorking(bool value) => emit(value);
 }
 
 class _DebugMenuItem {
