@@ -1,3 +1,4 @@
+import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -17,40 +18,19 @@ class TablesScreen extends StatefulWidget {
 }
 
 class _TablesScreenState extends State<TablesScreen> {
-  TableArea _selectedArea = TableArea.main;
-  TableStatus? _filterStatus;
-  String _searchQuery = '';
-  TableData? _selectedTable;
-  List<TableData> _tableDataList = [];
+  late final TablesViewCubit _viewCubit;
 
   @override
   void initState() {
     super.initState();
+    _viewCubit = TablesViewCubit();
     context.read<TableManagementBloc>().add(const LoadTablesEvent());
   }
 
-  List<TableData> get _filteredTables {
-    return _tableDataList.where((table) {
-      // Area filter
-      if (table.area != _selectedArea) return false;
-
-      // Status filter
-      if (_filterStatus != null && table.status != _filterStatus) return false;
-
-      // Search filter
-      if (_searchQuery.isNotEmpty) {
-        final query = _searchQuery.toLowerCase();
-        return table.number.toString().contains(query) ||
-            (table.serverTag?.toLowerCase().contains(query) ?? false) ||
-            (table.orderId?.toLowerCase().contains(query) ?? false);
-      }
-
-      return true;
-    }).toList();
-  }
-
-  int _getAreaTableCount(TableArea area) {
-    return _tableDataList.where((t) => t.area == area).length;
+  @override
+  void dispose() {
+    _viewCubit.close();
+    super.dispose();
   }
 
   @override
@@ -58,55 +38,68 @@ class _TablesScreenState extends State<TablesScreen> {
     final scaler = MediaQuery.textScalerOf(
       context,
     ).clamp(minScaleFactor: 1.0, maxScaleFactor: 1.1);
-    final isDesktop = MediaQuery.of(context).size.width >= 768;
-    final showDetailsPanel = isDesktop && _selectedTable != null;
 
     return MediaQuery(
       data: MediaQuery.of(context).copyWith(textScaler: scaler),
-      child: BlocListener<TableManagementBloc, TableManagementState>(
-        listener: (context, state) {
-          if (state is TableManagementLoaded) {
-            setState(() {
-              _tableDataList = state.tables
-                  .map((entity) => TableData.fromEntity(entity))
-                  .toList();
-            });
-          }
-        },
-        child: Scaffold(
-          backgroundColor: const Color(0xFFF5F5F7),
-          body: Row(
-            children: [
-              // Sidebar navigation
-              if (isDesktop) const SidebarNav(activeRoute: AppRouter.tables),
+      child: BlocProvider<TablesViewCubit>.value(
+        value: _viewCubit,
+        child: BlocListener<TableManagementBloc, TableManagementState>(
+          listener: (context, state) {
+            if (state is TableManagementLoaded) {
+              _viewCubit.setTableData(
+                state.tables
+                    .map((entity) => TableData.fromEntity(entity))
+                    .toList(),
+              );
+            }
+          },
+          child: BlocBuilder<TablesViewCubit, TablesViewState>(
+            builder: (context, viewState) {
+              final isDesktop = MediaQuery.of(context).size.width >= 768;
+              final showDetailsPanel =
+                  isDesktop && viewState.selectedTable != null;
 
-              // Main content
-              Expanded(
-                child: Column(
+              return Scaffold(
+                backgroundColor: const Color(0xFFF5F5F7),
+                body: Row(
                   children: [
-                    _buildHeader(),
+                    // Sidebar navigation
+                    if (isDesktop)
+                      const SidebarNav(activeRoute: AppRouter.tables),
+
+                    // Main content
                     Expanded(
-                      child: Row(
+                      child: Column(
                         children: [
-                          // Left rail - Areas
-                          _buildAreasRail(),
-
-                          // Center - Table grid
+                          _buildHeader(),
                           Expanded(
-                            flex: showDetailsPanel ? 2 : 3,
-                            child: _buildTableGrid(),
-                          ),
+                            child: Row(
+                              children: [
+                                // Left rail - Areas
+                                _buildAreasRail(viewState),
 
-                          // Right - Details panel
-                          if (showDetailsPanel)
-                            SizedBox(width: 380, child: _buildDetailsPanel()),
+                                // Center - Table grid
+                                Expanded(
+                                  flex: showDetailsPanel ? 2 : 3,
+                                  child: _buildTableGrid(viewState),
+                                ),
+
+                                // Right - Details panel
+                                if (showDetailsPanel)
+                                  SizedBox(
+                                    width: 380,
+                                    child: _buildDetailsPanel(viewState),
+                                  ),
+                              ],
+                            ),
+                          ),
                         ],
                       ),
                     ),
                   ],
                 ),
-              ),
-            ],
+              );
+            },
           ),
         ),
       ),
@@ -179,7 +172,7 @@ class _TablesScreenState extends State<TablesScreen> {
     );
   }
 
-  Widget _buildAreasRail() {
+  Widget _buildAreasRail(TablesViewState viewState) {
     return Container(
       width: 180,
       color: Colors.white,
@@ -199,28 +192,32 @@ class _TablesScreenState extends State<TablesScreen> {
             ),
           ),
           _buildAreaItem(
+            viewState,
             TableArea.main,
             'Main',
             Icons.restaurant,
-            _getAreaTableCount(TableArea.main),
+            viewState.areaTableCount(TableArea.main),
           ),
           _buildAreaItem(
+            viewState,
             TableArea.tens,
             '10s',
             Icons.deck,
-            _getAreaTableCount(TableArea.tens),
+            viewState.areaTableCount(TableArea.tens),
           ),
           _buildAreaItem(
+            viewState,
             TableArea.twenties,
             '20s',
             Icons.weekend,
-            _getAreaTableCount(TableArea.twenties),
+            viewState.areaTableCount(TableArea.twenties),
           ),
           _buildAreaItem(
+            viewState,
             TableArea.patio,
             'Patio',
             Icons.outdoor_grill,
-            _getAreaTableCount(TableArea.patio),
+            viewState.areaTableCount(TableArea.patio),
           ),
         ],
       ),
@@ -228,18 +225,16 @@ class _TablesScreenState extends State<TablesScreen> {
   }
 
   Widget _buildAreaItem(
+    TablesViewState viewState,
     TableArea area,
     String label,
     IconData icon,
     int count,
   ) {
-    final isActive = _selectedArea == area;
+    final isActive = viewState.selectedArea == area;
 
     return InkWell(
-      onTap: () => setState(() {
-        _selectedArea = area;
-        _selectedTable = null;
-      }),
+      onTap: () => _viewCubit.selectArea(area),
       borderRadius: BorderRadius.circular(8),
       child: Container(
         margin: const EdgeInsets.only(bottom: 4),
@@ -289,7 +284,7 @@ class _TablesScreenState extends State<TablesScreen> {
     );
   }
 
-  Widget _buildTableGrid() {
+  Widget _buildTableGrid(TablesViewState viewState) {
     return Container(
       color: const Color(0xFFF5F5F7),
       child: Column(
@@ -301,7 +296,7 @@ class _TablesScreenState extends State<TablesScreen> {
             child: Column(
               children: [
                 TextField(
-                  onChanged: (value) => setState(() => _searchQuery = value),
+                  onChanged: _viewCubit.updateSearchQuery,
                   decoration: InputDecoration(
                     hintText: 'Search table...',
                     prefixIcon: const Icon(Icons.search, size: 20),
@@ -326,29 +321,26 @@ class _TablesScreenState extends State<TablesScreen> {
                   children: [
                     _buildFilterChip(
                       'All',
-                      _filterStatus == null,
-                      () => setState(() => _filterStatus = null),
+                      viewState.filterStatus == null,
+                      () => _viewCubit.setFilterStatus(null),
                     ),
                     const SizedBox(width: 8),
                     _buildFilterChip(
                       'Available',
-                      _filterStatus == TableStatus.available,
-                      () =>
-                          setState(() => _filterStatus = TableStatus.available),
+                      viewState.filterStatus == TableStatus.available,
+                      () => _viewCubit.setFilterStatus(TableStatus.available),
                     ),
                     const SizedBox(width: 8),
                     _buildFilterChip(
                       'Occupied',
-                      _filterStatus == TableStatus.occupied,
-                      () =>
-                          setState(() => _filterStatus = TableStatus.occupied),
+                      viewState.filterStatus == TableStatus.occupied,
+                      () => _viewCubit.setFilterStatus(TableStatus.occupied),
                     ),
                     const SizedBox(width: 8),
                     _buildFilterChip(
                       'Reserved',
-                      _filterStatus == TableStatus.reserved,
-                      () =>
-                          setState(() => _filterStatus = TableStatus.reserved),
+                      viewState.filterStatus == TableStatus.reserved,
+                      () => _viewCubit.setFilterStatus(TableStatus.reserved),
                     ),
                   ],
                 ),
@@ -394,11 +386,9 @@ class _TablesScreenState extends State<TablesScreen> {
                 }
 
                 if (state is TableManagementLoaded) {
-                  _tableDataList = state.tables
-                      .map((entity) => TableData.fromEntity(entity))
-                      .toList();
+                  final filteredTables = viewState.filteredTables;
 
-                  if (_filteredTables.isEmpty) {
+                  if (filteredTables.isEmpty) {
                     return const Center(
                       child: Text(
                         'No tables found',
@@ -416,10 +406,10 @@ class _TablesScreenState extends State<TablesScreen> {
                       mainAxisSpacing: 16,
                       childAspectRatio: 1.5,
                     ),
-                    itemCount: _filteredTables.length,
+                    itemCount: filteredTables.length,
                     itemBuilder: (context, index) {
-                      final table = _filteredTables[index];
-                      return _buildTableCard(table);
+                      final table = filteredTables[index];
+                      return _buildTableCard(viewState, table);
                     },
                   );
                 }
@@ -459,8 +449,8 @@ class _TablesScreenState extends State<TablesScreen> {
     );
   }
 
-  Widget _buildTableCard(TableData table) {
-    final isSelected = _selectedTable?.number == table.number;
+  Widget _buildTableCard(TablesViewState viewState, TableData table) {
+    final isSelected = viewState.selectedTable?.number == table.number;
     Color cardColor;
 
     switch (table.status) {
@@ -479,7 +469,7 @@ class _TablesScreenState extends State<TablesScreen> {
     }
 
     return InkWell(
-      onTap: () => setState(() => _selectedTable = table),
+      onTap: () => _viewCubit.selectTable(table),
       borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: const EdgeInsets.all(16),
@@ -601,8 +591,8 @@ class _TablesScreenState extends State<TablesScreen> {
     );
   }
 
-  Widget _buildDetailsPanel() {
-    final table = _selectedTable!;
+  Widget _buildDetailsPanel(TablesViewState viewState) {
+    final table = viewState.selectedTable!;
 
     return Container(
       color: Colors.white,
@@ -827,21 +817,24 @@ class _TablesScreenState extends State<TablesScreen> {
   // ========================================================================
 
   void _onMoveTable() async {
-    if (_selectedTable == null) return;
+    final tablesCubit = _viewCubit;
+    final selectedTable = tablesCubit.state.selectedTable;
+    if (selectedTable == null) return;
 
     final result = await NavigationService.pushNamed(
       AppRouter.moveTable,
-      arguments: {'sourceTable': _selectedTable!},
+      arguments: {'sourceTable': selectedTable},
     );
 
     if (result != null && mounted) {
       NavigationService.showSuccess('Table moved successfully');
-      setState(() => _selectedTable = null);
+      tablesCubit.clearSelectedTable();
     }
   }
 
   void _onMergeTables() {
-    if (_selectedTable == null) return;
+    final selectedTable = _viewCubit.state.selectedTable;
+    if (selectedTable == null) return;
 
     showDialog(
       context: context,
@@ -851,7 +844,7 @@ class _TablesScreenState extends State<TablesScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Merge Table ${_selectedTable!.number} with another table?'),
+            Text('Merge Table ${selectedTable.number} with another table?'),
             const SizedBox(height: 16),
             const Text(
               'This will combine both orders into a single bill.',
@@ -870,7 +863,7 @@ class _TablesScreenState extends State<TablesScreen> {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(
-                    'Merge table ${_selectedTable!.number} - Feature coming soon',
+                    'Merge table ${selectedTable.number} - Feature coming soon',
                   ),
                   behavior: SnackBarBehavior.floating,
                 ),
@@ -887,7 +880,8 @@ class _TablesScreenState extends State<TablesScreen> {
   }
 
   void _onSplitBill() {
-    if (_selectedTable == null) return;
+    final selectedTable = _viewCubit.state.selectedTable;
+    if (selectedTable == null) return;
 
     showDialog(
       context: context,
@@ -897,7 +891,7 @@ class _TablesScreenState extends State<TablesScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Split bill for Table ${_selectedTable!.number}'),
+            Text('Split bill for Table ${selectedTable.number}'),
             const SizedBox(height: 16),
             const Text(
               'Choose how to split the bill:',
@@ -907,7 +901,7 @@ class _TablesScreenState extends State<TablesScreen> {
             ListTile(
               leading: const Icon(Icons.people),
               title: const Text('Split by Guest'),
-              subtitle: Text('${_selectedTable!.guests ?? 0} guests'),
+              subtitle: Text('${selectedTable.guests ?? 0} guests'),
               onTap: () {
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -921,7 +915,7 @@ class _TablesScreenState extends State<TablesScreen> {
             ListTile(
               leading: const Icon(Icons.receipt),
               title: const Text('Split by Item'),
-              subtitle: Text('${_selectedTable!.items ?? 0} items'),
+              subtitle: Text('${selectedTable.items ?? 0} items'),
               onTap: () {
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -959,7 +953,8 @@ class _TablesScreenState extends State<TablesScreen> {
   }
 
   void _onCloseBill() {
-    if (_selectedTable == null) return;
+    final selectedTable = _viewCubit.state.selectedTable;
+    if (selectedTable == null) return;
 
     showDialog(
       context: context,
@@ -970,12 +965,12 @@ class _TablesScreenState extends State<TablesScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Table ${_selectedTable!.number}',
+              'Table ${selectedTable.number}',
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 8),
             Text(
-              'Order ${_selectedTable!.orderId}',
+              'Order ${selectedTable.orderId}',
               style: const TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
             ),
             const Divider(height: 24),
@@ -987,7 +982,7 @@ class _TablesScreenState extends State<TablesScreen> {
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                 ),
                 Text(
-                  '\$${_selectedTable!.amount?.toStringAsFixed(2) ?? '0.00'}',
+                  '\$${selectedTable.amount?.toStringAsFixed(2) ?? '0.00'}',
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
@@ -1024,12 +1019,13 @@ class _TablesScreenState extends State<TablesScreen> {
   }
 
   void _onEditOrder() {
-    if (_selectedTable == null) return;
+    final selectedTable = _viewCubit.state.selectedTable;
+    if (selectedTable == null) return;
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          'Edit order for Table ${_selectedTable!.number} - Opening menu...',
+          'Edit order for Table ${selectedTable.number} - Opening menu...',
         ),
         behavior: SnackBarBehavior.floating,
         action: SnackBarAction(
@@ -1043,7 +1039,9 @@ class _TablesScreenState extends State<TablesScreen> {
   }
 
   void _onClearTable() {
-    if (_selectedTable == null) return;
+    final tablesCubit = _viewCubit;
+    final selectedTable = tablesCubit.state.selectedTable;
+    if (selectedTable == null) return;
 
     showDialog(
       context: context,
@@ -1053,7 +1051,7 @@ class _TablesScreenState extends State<TablesScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Clear Table ${_selectedTable!.number}?'),
+            Text('Clear Table ${selectedTable.number}?'),
             const SizedBox(height: 16),
             const Text(
               'This will remove all orders and reset the table status. This action cannot be undone.',
@@ -1071,11 +1069,11 @@ class _TablesScreenState extends State<TablesScreen> {
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('Table ${_selectedTable!.number} cleared'),
+                  content: Text('Table ${selectedTable.number} cleared'),
                   behavior: SnackBarBehavior.floating,
                 ),
               );
-              setState(() => _selectedTable = null);
+              tablesCubit.clearSelectedTable();
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFEF4444),
@@ -1085,5 +1083,97 @@ class _TablesScreenState extends State<TablesScreen> {
         ],
       ),
     );
+  }
+}
+
+class TablesViewState extends Equatable {
+  const TablesViewState({
+    this.selectedArea = TableArea.main,
+    this.filterStatus,
+    this.searchQuery = '',
+    this.selectedTable,
+    this.tableDataList = const [],
+  });
+
+  final TableArea selectedArea;
+  final TableStatus? filterStatus;
+  final String searchQuery;
+  final TableData? selectedTable;
+  final List<TableData> tableDataList;
+
+  List<TableData> get filteredTables {
+    return tableDataList.where((table) {
+      if (table.area != selectedArea) return false;
+      if (filterStatus != null && table.status != filterStatus) return false;
+
+      if (searchQuery.isNotEmpty) {
+        final query = searchQuery.toLowerCase();
+        return table.number.toLowerCase().contains(query) ||
+            (table.serverTag?.toLowerCase().contains(query) ?? false) ||
+            (table.orderId?.toLowerCase().contains(query) ?? false);
+      }
+
+      return true;
+    }).toList();
+  }
+
+  int areaTableCount(TableArea area) {
+    return tableDataList.where((table) => table.area == area).length;
+  }
+
+  TablesViewState copyWith({
+    TableArea? selectedArea,
+    TableStatus? filterStatus,
+    bool setFilterStatusToNull = false,
+    String? searchQuery,
+    TableData? selectedTable,
+    bool setSelectedTableToNull = false,
+    List<TableData>? tableDataList,
+  }) {
+    return TablesViewState(
+      selectedArea: selectedArea ?? this.selectedArea,
+      filterStatus:
+          setFilterStatusToNull ? null : (filterStatus ?? this.filterStatus),
+      searchQuery: searchQuery ?? this.searchQuery,
+      selectedTable:
+          setSelectedTableToNull ? null : (selectedTable ?? this.selectedTable),
+      tableDataList: tableDataList ?? this.tableDataList,
+    );
+  }
+
+  @override
+  List<Object?> get props =>
+      [selectedArea, filterStatus, searchQuery, selectedTable, tableDataList];
+}
+
+class TablesViewCubit extends Cubit<TablesViewState> {
+  TablesViewCubit() : super(const TablesViewState());
+
+  void setTableData(List<TableData> tables) {
+    emit(state.copyWith(tableDataList: List.unmodifiable(tables)));
+  }
+
+  void selectArea(TableArea area) {
+    emit(state.copyWith(selectedArea: area, setSelectedTableToNull: true));
+  }
+
+  void updateSearchQuery(String query) {
+    emit(state.copyWith(searchQuery: query));
+  }
+
+  void setFilterStatus(TableStatus? status) {
+    if (status == null) {
+      emit(state.copyWith(setFilterStatusToNull: true));
+    } else {
+      emit(state.copyWith(filterStatus: status));
+    }
+  }
+
+  void selectTable(TableData table) {
+    emit(state.copyWith(selectedTable: table));
+  }
+
+  void clearSelectedTable() {
+    emit(state.copyWith(setSelectedTableToNull: true));
   }
 }

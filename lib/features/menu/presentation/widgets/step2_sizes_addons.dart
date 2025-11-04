@@ -15,7 +15,19 @@ class Step2SizesAddOns extends StatefulWidget {
 }
 
 class _Step2SizesAddOnsState extends State<Step2SizesAddOns> {
-  int? _expandedSizeIndex;
+  late final ValueNotifier<int?> _expandedSizeIndexNotifier;
+
+  @override
+  void initState() {
+    super.initState();
+    _expandedSizeIndexNotifier = ValueNotifier<int?>(null);
+  }
+
+  @override
+  void dispose() {
+    _expandedSizeIndexNotifier.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -89,32 +101,36 @@ class _Step2SizesAddOnsState extends State<Step2SizesAddOns> {
               if (state.item.sizes.isEmpty)
                 _buildEmptyState()
               else
-                ...state.item.sizes.asMap().entries.map((entry) {
-                  final index = entry.key;
-                  final size = entry.value;
-                  return SizeRowWidget(
-                    key: ValueKey(index),
-                    size: size,
-                    itemId: state.item.id ?? 'temp_${state.item.name}',
-                    isExpanded: _expandedSizeIndex == index,
-                    onToggleExpand: () {
-                      setState(() {
-                        _expandedSizeIndex = _expandedSizeIndex == index
-                            ? null
-                            : index;
-                      });
-                    },
-                    onUpdate: (updatedSize) {
-                      context.read<MenuEditBloc>().add(
-                        UpdateSize(index, updatedSize),
-                      );
-                    },
-                    onDelete: () {
-                      _showDeleteConfirmation(context, index);
-                    },
-                    availableAddOnCategories: [],
-                  );
-                }),
+                ValueListenableBuilder<int?>(
+                  valueListenable: _expandedSizeIndexNotifier,
+                  builder: (context, expandedIndex, _) {
+                    return Column(
+                      children: state.item.sizes.asMap().entries.map((entry) {
+                        final index = entry.key;
+                        final size = entry.value;
+                        return SizeRowWidget(
+                          key: ValueKey(index),
+                          size: size,
+                          itemId: state.item.id ?? 'temp_${state.item.name}',
+                          isExpanded: expandedIndex == index,
+                          onToggleExpand: () {
+                            _expandedSizeIndexNotifier.value =
+                                expandedIndex == index ? null : index;
+                          },
+                          onUpdate: (updatedSize) {
+                            context.read<MenuEditBloc>().add(
+                                  UpdateSize(index, updatedSize),
+                                );
+                          },
+                          onDelete: () {
+                            _showDeleteConfirmation(context, index);
+                          },
+                          availableAddOnCategories: [],
+                        );
+                      }).toList(),
+                    );
+                  },
+                ),
 
               const SizedBox(height: 24),
 
@@ -251,11 +267,9 @@ class _Step2SizesAddOnsState extends State<Step2SizesAddOns> {
             onPressed: () {
               context.read<MenuEditBloc>().add(DeleteSize(sizeIndex));
               Navigator.pop(dialogContext);
-              setState(() {
-                if (_expandedSizeIndex == sizeIndex) {
-                  _expandedSizeIndex = null;
-                }
-              });
+              if (_expandedSizeIndexNotifier.value == sizeIndex) {
+                _expandedSizeIndexNotifier.value = null;
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFEF4444),
@@ -274,73 +288,76 @@ class _Step2SizesAddOnsState extends State<Step2SizesAddOns> {
       {'name': 'Large', 'price': 0.0},
       {'name': 'Extra Large', 'price': 0.0},
     ];
-    final selectedSizes = <String>{};
     final bloc = context.read<MenuEditBloc>();
+    final selectedSizesNotifier = ValueNotifier<Set<String>>({});
 
-    showDialog(
+    showDialog<Set<String>>(
       context: context,
-      builder: (dialogContext) => StatefulBuilder(
-        builder: (statefulContext, setState) {
-          return AlertDialog(
-            title: const Text('Add Common Sizes'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: commonSizes.map((sizeData) {
-                final sizeName = sizeData['name'] as String;
-                return CheckboxListTile(
-                  value: selectedSizes.contains(sizeName),
-                  onChanged: (value) {
-                    setState(() {
+      builder: (dialogContext) {
+        return ValueListenableBuilder<Set<String>>(
+          valueListenable: selectedSizesNotifier,
+          builder: (context, selectedSizes, _) {
+            return AlertDialog(
+              title: const Text('Add Common Sizes'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: commonSizes.map((sizeData) {
+                  final sizeName = sizeData['name'] as String;
+                  return CheckboxListTile(
+                    value: selectedSizes.contains(sizeName),
+                    onChanged: (value) {
+                      final updated = Set<String>.from(selectedSizes);
                       if (value == true) {
-                        selectedSizes.add(sizeName);
+                        updated.add(sizeName);
                       } else {
-                        selectedSizes.remove(sizeName);
+                        updated.remove(sizeName);
                       }
-                    });
-                  },
-                  title: Text(sizeName),
-                );
-              }).toList(),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(dialogContext),
-                child: const Text('Cancel'),
+                      selectedSizesNotifier.value = updated;
+                    },
+                    title: Text(sizeName),
+                  );
+                }).toList(),
               ),
-              ElevatedButton(
-                onPressed: selectedSizes.isEmpty
-                    ? null
-                    : () {
-                        // Add sizes with their names
-                        for (final sizeName in selectedSizes) {
-                          bloc.add(AddSize());
-                          // Get the newly added size index
-                          final currentSizes = bloc.state.item.sizes;
-                          final newIndex = currentSizes.length - 1;
-                          if (newIndex >= 0) {
-                            final newSize = currentSizes[newIndex].copyWith(
-                              name: sizeName,
-                            );
-                            bloc.add(UpdateSize(newIndex, newSize));
-                          }
-                        }
-                        Navigator.pop(dialogContext);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              'Added ${selectedSizes.length} sizes',
-                            ),
-                            duration: const Duration(seconds: 2),
-                          ),
-                        );
-                      },
-                child: const Text('Add Selected'),
-              ),
-            ],
-          );
-        },
-      ),
-    );
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext),
+                  child: const Text('Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: selectedSizes.isEmpty
+                      ? null
+                      : () {
+                          Navigator.pop(dialogContext, selectedSizes);
+                        },
+                  child: const Text('Add Selected'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    ).then((selectedSizes) {
+      selectedSizesNotifier.dispose();
+      if (selectedSizes == null || selectedSizes.isEmpty) return;
+
+      if (!context.mounted) return;
+      for (final sizeName in selectedSizes) {
+        bloc.add(AddSize());
+        final currentSizes = bloc.state.item.sizes;
+        final newIndex = currentSizes.length - 1;
+        if (newIndex >= 0) {
+          final newSize = currentSizes[newIndex].copyWith(name: sizeName);
+          bloc.add(UpdateSize(newIndex, newSize));
+        }
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Added ${selectedSizes.length} sizes'),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    });
   }
 
   void _copyPricesAcrossChannels(BuildContext context) {

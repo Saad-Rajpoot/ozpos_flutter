@@ -143,7 +143,21 @@ class _NavItem extends StatefulWidget {
 }
 
 class _NavItemState extends State<_NavItem> {
-  bool _isHovered = false;
+  late ValueNotifier<bool> _isHoveredNotifier;
+
+  @override
+  void initState() {
+    super.initState();
+    _isHoveredNotifier = ValueNotifier(false);
+  }
+
+  @override
+  void dispose() {
+    _isHoveredNotifier.dispose();
+    super.dispose();
+  }
+
+  void _setHover(bool value) => _isHoveredNotifier.value = value;
 
   @override
   Widget build(BuildContext context) {
@@ -156,34 +170,39 @@ class _NavItemState extends State<_NavItem> {
         message: widget.label,
         preferBelow: false,
         verticalOffset: 0,
-        child: MouseRegion(
-          onEnter: (_) => setState(() => _isHovered = true),
-          onExit: (_) => setState(() => _isHovered = false),
-          child: Material(
-            color: widget.isActive
-                ? AppColors.sidebarItemActive.withOpacity(0.12)
-                : (_isHovered
-                    ? AppColors.sidebarItemHover
-                    : Colors.transparent),
-            borderRadius: BorderRadius.circular(AppRadius.md),
-            child: InkWell(
-              onTap: () => NavigationService.pushNamed(widget.route),
-              borderRadius: BorderRadius.circular(AppRadius.md),
-              child: Container(
-                height: 48,
-                alignment: Alignment.center,
-                child: Icon(
-                  widget.icon,
-                  color: widget.isActive
-                      ? AppColors.sidebarItemActive
-                      : (_isHovered
-                          ? AppColors.sidebarText
-                          : AppColors.sidebarTextMuted),
-                  size: 24,
+        child: ValueListenableBuilder<bool>(
+          valueListenable: _isHoveredNotifier,
+          builder: (context, isHovered, child) {
+            return MouseRegion(
+              onEnter: (_) => _setHover(true),
+              onExit: (_) => _setHover(false),
+              child: Material(
+                color: widget.isActive
+                    ? AppColors.sidebarItemActive.withOpacity(0.12)
+                    : (isHovered
+                        ? AppColors.sidebarItemHover
+                        : Colors.transparent),
+                borderRadius: BorderRadius.circular(AppRadius.md),
+                child: InkWell(
+                  onTap: () => NavigationService.pushNamed(widget.route),
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                  child: Container(
+                    height: 48,
+                    alignment: Alignment.center,
+                    child: Icon(
+                      widget.icon,
+                      color: widget.isActive
+                          ? AppColors.sidebarItemActive
+                          : (isHovered
+                              ? AppColors.sidebarText
+                              : AppColors.sidebarTextMuted),
+                      size: 24,
+                    ),
+                  ),
                 ),
               ),
-            ),
-          ),
+            );
+          },
         ),
       ),
     );

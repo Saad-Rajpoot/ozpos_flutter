@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:equatable/equatable.dart';
 import '../../../../core/navigation/app_router.dart';
 import '../../../../core/navigation/navigation_service.dart';
 import '../bloc/menu_bloc.dart';
@@ -24,10 +25,6 @@ class MenuEditorScreen extends StatefulWidget {
 }
 
 class _MenuEditorScreenState extends State<MenuEditorScreen> {
-  String _searchQuery = '';
-  String? _selectedCategoryId;
-  final Map<String, bool> _collapsedCategories = {};
-
   @override
   void initState() {
     super.initState();
@@ -36,45 +33,55 @@ class _MenuEditorScreenState extends State<MenuEditorScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFB),
-      appBar: AppBar(
-        title: const Text(
-          'Menu Editor',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF1F2937),
-          ),
-        ),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Color(0xFF1F2937)),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-      ),
-      body: Row(
-        children: [
-          // Left Sidebar
-          _buildLeftSidebar(),
-
-          // Main Content
-          Expanded(
-            child: Column(
+    return BlocProvider(
+      create: (_) => MenuEditorViewCubit(),
+      child: BlocBuilder<MenuEditorViewCubit, MenuEditorViewState>(
+        builder: (context, viewState) {
+          return Scaffold(
+            backgroundColor: const Color(0xFFF9FAFB),
+            appBar: AppBar(
+              title: const Text(
+                'Menu Editor',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF1F2937),
+                ),
+              ),
+              backgroundColor: Colors.white,
+              elevation: 0,
+              iconTheme: const IconThemeData(color: Color(0xFF1F2937)),
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            ),
+            body: Row(
               children: [
-                _buildTopBar(),
-                Expanded(child: _buildMainContent()),
+                // Left Sidebar
+                _buildLeftSidebar(context, viewState),
+
+                // Main Content
+                Expanded(
+                  child: Column(
+                    children: [
+                      _buildTopBar(context, viewState),
+                      Expanded(child: _buildMainContent(context, viewState)),
+                    ],
+                  ),
+                ),
               ],
             ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
 
-  Widget _buildLeftSidebar() {
+  Widget _buildLeftSidebar(
+    BuildContext cubitContext,
+    MenuEditorViewState viewState,
+  ) {
     return Container(
       width: 260,
       color: Colors.white,
@@ -191,6 +198,8 @@ class _MenuEditorScreenState extends State<MenuEditorScreen> {
                     padding: EdgeInsets.zero,
                     children: categoryGroups.entries.map((entry) {
                       return _buildCategoryItem(
+                        cubitContext,
+                        viewState,
                         entry.key,
                         _getCategoryName(entry.key),
                         entry.value.length,
@@ -207,14 +216,20 @@ class _MenuEditorScreenState extends State<MenuEditorScreen> {
     );
   }
 
-  Widget _buildCategoryItem(String categoryId, String name, int count) {
-    final isSelected = _selectedCategoryId == categoryId;
+  Widget _buildCategoryItem(
+    BuildContext cubitContext,
+    MenuEditorViewState viewState,
+    String categoryId,
+    String name,
+    int count,
+  ) {
+    final isSelected = viewState.selectedCategoryId == categoryId;
 
     return InkWell(
       onTap: () {
-        setState(() {
-          _selectedCategoryId = isSelected ? null : categoryId;
-        });
+        cubitContext
+            .read<MenuEditorViewCubit>()
+            .toggleCategorySelection(categoryId);
       },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
@@ -302,7 +317,8 @@ class _MenuEditorScreenState extends State<MenuEditorScreen> {
     return map[categoryId] ?? 'Unknown';
   }
 
-  Widget _buildTopBar() {
+  Widget _buildTopBar(
+      BuildContext cubitContext, MenuEditorViewState viewState) {
     return Container(
       padding: const EdgeInsets.all(20),
       color: Colors.white,
@@ -339,7 +355,9 @@ class _MenuEditorScreenState extends State<MenuEditorScreen> {
             width: 300,
             height: 40,
             child: TextField(
-              onChanged: (value) => setState(() => _searchQuery = value),
+              onChanged: (value) => cubitContext
+                  .read<MenuEditorViewCubit>()
+                  .updateSearchQuery(value),
               decoration: InputDecoration(
                 hintText: 'Search items, categories',
                 prefixIcon: const Icon(Icons.search, size: 20),
@@ -399,7 +417,10 @@ class _MenuEditorScreenState extends State<MenuEditorScreen> {
     );
   }
 
-  Widget _buildMainContent() {
+  Widget _buildMainContent(
+    BuildContext cubitContext,
+    MenuEditorViewState viewState,
+  ) {
     return BlocBuilder<MenuBloc, MenuState>(
       builder: (context, state) {
         if (state is MenuLoading) {
@@ -414,11 +435,11 @@ class _MenuEditorScreenState extends State<MenuEditorScreen> {
           // Group items by category
           final categoryGroups = <String, List<MenuItemEntity>>{};
           for (final item in state.items) {
-            if (_selectedCategoryId == null ||
-                item.categoryId == _selectedCategoryId) {
-              if (_searchQuery.isEmpty ||
+            if (viewState.selectedCategoryId == null ||
+                item.categoryId == viewState.selectedCategoryId) {
+              if (viewState.searchQuery.isEmpty ||
                   item.name.toLowerCase().contains(
-                        _searchQuery.toLowerCase(),
+                        viewState.searchQuery.toLowerCase(),
                       )) {
                 categoryGroups.putIfAbsent(item.categoryId, () => []).add(item);
               }
@@ -435,6 +456,8 @@ class _MenuEditorScreenState extends State<MenuEditorScreen> {
               // Menu Items Sections
               ...categoryGroups.entries.map((entry) {
                 return _buildCategorySection(
+                  cubitContext,
+                  viewState,
                   entry.key,
                   _getCategoryName(entry.key),
                   entry.value,
@@ -754,11 +777,13 @@ class _MenuEditorScreenState extends State<MenuEditorScreen> {
   }
 
   Widget _buildCategorySection(
+    BuildContext cubitContext,
+    MenuEditorViewState viewState,
     String categoryId,
     String categoryName,
     List<MenuItemEntity> items,
   ) {
-    final isCollapsed = _collapsedCategories[categoryId] ?? false;
+    final isCollapsed = viewState.collapsedCategories[categoryId] ?? false;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -793,9 +818,9 @@ class _MenuEditorScreenState extends State<MenuEditorScreen> {
               const SizedBox(width: 8),
               TextButton.icon(
                 onPressed: () {
-                  setState(() {
-                    _collapsedCategories[categoryId] = !isCollapsed;
-                  });
+                  cubitContext
+                      .read<MenuEditorViewCubit>()
+                      .toggleCategoryCollapse(categoryId);
                 },
                 icon: Icon(
                   isCollapsed ? Icons.expand_more : Icons.expand_less,
@@ -1054,5 +1079,61 @@ class _MenuEditorScreenState extends State<MenuEditorScreen> {
         child: const ComboBuilderModal(),
       ),
     );
+  }
+}
+
+class MenuEditorViewState extends Equatable {
+  const MenuEditorViewState({
+    this.searchQuery = '',
+    this.selectedCategoryId,
+    this.collapsedCategories = const {},
+  });
+
+  final String searchQuery;
+  final String? selectedCategoryId;
+  final Map<String, bool> collapsedCategories;
+
+  MenuEditorViewState copyWith({
+    String? searchQuery,
+    String? selectedCategoryId,
+    Map<String, bool>? collapsedCategories,
+    bool clearSelectedCategory = false,
+  }) {
+    return MenuEditorViewState(
+      searchQuery: searchQuery ?? this.searchQuery,
+      selectedCategoryId: clearSelectedCategory
+          ? null
+          : selectedCategoryId ?? this.selectedCategoryId,
+      collapsedCategories: collapsedCategories != null
+          ? Map<String, bool>.unmodifiable(collapsedCategories)
+          : this.collapsedCategories,
+    );
+  }
+
+  @override
+  List<Object?> get props =>
+      [searchQuery, selectedCategoryId, collapsedCategories];
+}
+
+class MenuEditorViewCubit extends Cubit<MenuEditorViewState> {
+  MenuEditorViewCubit() : super(const MenuEditorViewState());
+
+  void updateSearchQuery(String query) {
+    emit(state.copyWith(searchQuery: query));
+  }
+
+  void toggleCategorySelection(String categoryId) {
+    if (state.selectedCategoryId == categoryId) {
+      emit(state.copyWith(clearSelectedCategory: true));
+    } else {
+      emit(state.copyWith(selectedCategoryId: categoryId));
+    }
+  }
+
+  void toggleCategoryCollapse(String categoryId) {
+    final updated = Map<String, bool>.from(state.collapsedCategories);
+    final current = updated[categoryId] ?? false;
+    updated[categoryId] = !current;
+    emit(state.copyWith(collapsedCategories: Map.unmodifiable(updated)));
   }
 }

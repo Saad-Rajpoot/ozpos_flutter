@@ -149,7 +149,6 @@ final finalTotal = totalBeforeTax + tax;
 ```
 
 ### State Management
-- Uses `setState()` for local checkout state
 - Consumes `CartProvider` for cart operations
 - Clean separation of concerns
 

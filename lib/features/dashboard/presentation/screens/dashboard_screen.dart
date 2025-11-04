@@ -38,7 +38,6 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  bool _showRightPanel = true; // Default open on desktop
 
   @override
   void initState() {
@@ -49,36 +48,43 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return ClampedTextScaling(
-      child: Scaffold(
-        key: _scaffoldKey,
-        backgroundColor: AppColors.bgPrimary,
-        // Right drawer for compact breakpoint
-        endDrawer: context.isCompact
-            ? Drawer(
-                width: MediaQuery.of(context).size.width * 0.85,
-                child: const ActiveOrdersPanel(),
-              )
-            : null,
-        body: Row(
-          children: [
-            // Left Sidebar (fixed 80dp) - always show on desktop
-            if (context.isDesktopOrLarger)
-              const SidebarNav(activeRoute: AppRouter.dashboard),
+    return BlocProvider(
+      create: (_) => DashboardViewCubit(),
+      child: BlocBuilder<DashboardViewCubit, bool>(
+        builder: (context, showRightPanel) {
+          return ClampedTextScaling(
+            child: Scaffold(
+              key: _scaffoldKey,
+              backgroundColor: AppColors.bgPrimary,
+              // Right drawer for compact breakpoint
+              endDrawer: context.isCompact
+                  ? Drawer(
+                      width: MediaQuery.of(context).size.width * 0.85,
+                      child: const ActiveOrdersPanel(),
+                    )
+                  : null,
+              body: Row(
+                children: [
+                  // Left Sidebar (fixed 80dp) - always show on desktop
+                  if (context.isDesktopOrLarger)
+                    const SidebarNav(activeRoute: AppRouter.dashboard),
 
-            // Main content area
-            Expanded(child: _buildMainContent(context)),
+                  // Main content area
+                  Expanded(child: _buildMainContent(context, showRightPanel)),
 
-            // Right panel (fixed on large/wide)
-            if (_showRightPanel && context.showRightPanelFixed)
-              const ActiveOrdersPanel(),
-          ],
-        ),
+                  // Right panel (fixed on large/wide)
+                  if (showRightPanel && context.showRightPanelFixed)
+                    const ActiveOrdersPanel(),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }
 
-  Widget _buildMainContent(BuildContext context) {
+  Widget _buildMainContent(BuildContext context, bool showRightPanel) {
     return Container(
       color: AppColors.bgPrimary,
       child: LayoutBuilder(
@@ -93,7 +99,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               child: CustomScrollView(
                 slivers: [
                   // Sticky App Bar
-                  _buildSliverAppBar(context),
+                  _buildSliverAppBar(context, showRightPanel),
 
                   // Grid of tiles
                   _buildSliverGrid(context),
@@ -106,7 +112,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildSliverAppBar(BuildContext context) {
+  Widget _buildSliverAppBar(BuildContext context, bool showRightPanel) {
     return SliverAppBar(
       backgroundColor: AppColors.bgPrimary,
       elevation: 0,
@@ -186,13 +192,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           if (context.isCompact) {
                             _scaffoldKey.currentState?.openEndDrawer();
                           } else {
-                            setState(() {
-                              _showRightPanel = !_showRightPanel;
-                            });
+                            context
+                                .read<DashboardViewCubit>()
+                                .toggleRightPanel();
                           }
                         },
                         icon: Icon(
-                          context.isCompact || !_showRightPanel
+                          context.isCompact || !showRightPanel
                               ? Icons.menu
                               : Icons.close,
                           color: AppColors.textSecondary,
@@ -381,6 +387,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
         }
     }
   }
+}
+
+class DashboardViewCubit extends Cubit<bool> {
+  DashboardViewCubit() : super(true);
+
+  void toggleRightPanel() => emit(!state);
+
+  void setRightPanelVisibility(bool isVisible) => emit(isVisible);
 }
 
 class _TileData {

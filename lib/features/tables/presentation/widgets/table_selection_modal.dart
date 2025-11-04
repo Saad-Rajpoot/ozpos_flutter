@@ -1,8 +1,10 @@
+import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ozpos_flutter/features/tables/domain/entities/table_entity.dart';
 import '../../../checkout/presentation/bloc/cart_bloc.dart';
 import '../../data/datasources/table_mock_datasource.dart';
+import '../../data/datasources/table_data_source.dart';
 
 enum TableViewMode { list, floor }
 
@@ -15,78 +17,96 @@ class TableSelectionModal extends StatefulWidget {
 }
 
 class _TableSelectionModalState extends State<TableSelectionModal> {
-  TableViewMode _viewMode = TableViewMode.list;
-  TableStatus? _filterStatus;
-  String _searchQuery = '';
-  TableEntity? _selectedTable;
-  late Future<List<TableEntity>> _tablesFuture;
+  late final TableSelectionViewCubit _viewCubit;
 
   @override
   void initState() {
     super.initState();
-    _tablesFuture = TableMockDataSourceImpl().getTables();
+    _viewCubit = TableSelectionViewCubit(TableMockDataSourceImpl())
+      ..loadTables();
   }
 
-  Future<List<TableEntity>> get _filteredTables async {
-    final tables = await _tablesFuture;
-
-    List<TableEntity> filteredTables = tables;
-
-    // Apply status filter
-    if (_filterStatus != null) {
-      filteredTables =
-          filteredTables.where((t) => t.status == _filterStatus).toList();
-    }
-
-    // Apply search filter
-    if (_searchQuery.isNotEmpty) {
-      filteredTables = filteredTables.where((t) {
-        final String tableNumber = t.number;
-        final String serverName = t.serverName ?? '';
-        return tableNumber.contains(_searchQuery) ||
-            serverName.toLowerCase().contains(_searchQuery.toLowerCase());
-      }).toList();
-    }
-
-    return filteredTables;
+  @override
+  void dispose() {
+    _viewCubit.close();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Container(
-        width: 800,
-        height: 700,
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header
-            _buildHeader(),
-            const SizedBox(height: 20),
-
-            // Search and filters
-            _buildSearchAndFilters(),
-            const SizedBox(height: 16),
-
-            // Status filter chips
-            _buildStatusFilters(),
-            const SizedBox(height: 20),
-
-            // Content (List or Floor view)
-            Expanded(
-              child: _viewMode == TableViewMode.list
-                  ? _buildListView()
-                  : _buildFloorView(),
+    return BlocProvider.value(
+      value: _viewCubit,
+      child: BlocBuilder<TableSelectionViewCubit, TableSelectionViewState>(
+        builder: (context, state) {
+          return Dialog(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            child: Container(
+              width: 800,
+              height: 700,
+              padding: const EdgeInsets.all(24),
+              child: state.isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : state.error != null
+                      ? _buildErrorState(state.error!, context)
+                      : Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildHeader(context, state),
+                            const SizedBox(height: 20),
+                            _buildSearchAndFilters(context, state),
+                            const SizedBox(height: 16),
+                            _buildStatusFilters(context, state),
+                            const SizedBox(height: 20),
+                            Expanded(
+                              child: state.viewMode == TableViewMode.list
+                                  ? _buildListView(context, state)
+                                  : _buildFloorView(context, state),
+                            ),
+                            const SizedBox(height: 20),
+                            _buildFooter(context, state),
+                          ],
+                        ),
             ),
+          );
+        },
+      ),
+    );
+  }
 
-            const SizedBox(height: 20),
-
-            // Footer buttons
-            _buildFooter(context),
-          ],
-        ),
+  Widget _buildErrorState(String message, BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.error_outline, size: 56, color: Colors.red.shade400),
+          const SizedBox(height: 12),
+          Text(
+            'Failed to load tables',
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF111827),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            message,
+            style: const TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton.icon(
+            onPressed: () => context.read<TableSelectionViewCubit>().loadTables(),
+            icon: const Icon(Icons.refresh, size: 18),
+            label: const Text('Try Again'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF3B82F6),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -95,7 +115,10 @@ class _TableSelectionModalState extends State<TableSelectionModal> {
   // HEADER
   // ==========================================================================
 
-  Widget _buildHeader() {
+  Widget _buildHeader(
+    BuildContext context,
+    TableSelectionViewState state,
+  ) {
     return Row(
       children: [
         const Text(
@@ -118,13 +141,17 @@ class _TableSelectionModalState extends State<TableSelectionModal> {
             children: [
               _ViewToggleButton(
                 icon: Icons.list,
-                isSelected: _viewMode == TableViewMode.list,
-                onTap: () => setState(() => _viewMode = TableViewMode.list),
+                isSelected: state.viewMode == TableViewMode.list,
+                onTap: () => context
+                    .read<TableSelectionViewCubit>()
+                    .setViewMode(TableViewMode.list),
               ),
               _ViewToggleButton(
                 icon: Icons.grid_view,
-                isSelected: _viewMode == TableViewMode.floor,
-                onTap: () => setState(() => _viewMode = TableViewMode.floor),
+                isSelected: state.viewMode == TableViewMode.floor,
+                onTap: () => context
+                    .read<TableSelectionViewCubit>()
+                    .setViewMode(TableViewMode.floor),
               ),
             ],
           ),
@@ -145,7 +172,10 @@ class _TableSelectionModalState extends State<TableSelectionModal> {
   // SEARCH AND FILTERS
   // ==========================================================================
 
-  Widget _buildSearchAndFilters() {
+  Widget _buildSearchAndFilters(
+    BuildContext context,
+    TableSelectionViewState state,
+  ) {
     return TextField(
       decoration: InputDecoration(
         hintText: 'Search by table number or server...',
@@ -167,42 +197,55 @@ class _TableSelectionModalState extends State<TableSelectionModal> {
           borderSide: const BorderSide(color: Color(0xFF3B82F6), width: 2),
         ),
       ),
-      onChanged: (value) => setState(() => _searchQuery = value),
+      onChanged: (value) =>
+          context.read<TableSelectionViewCubit>().updateSearchQuery(value),
     );
   }
 
-  Widget _buildStatusFilters() {
+  Widget _buildStatusFilters(
+    BuildContext context,
+    TableSelectionViewState state,
+  ) {
     return Wrap(
       spacing: 8,
       children: [
         _StatusChip(
           label: 'All',
-          isSelected: _filterStatus == null,
-          onTap: () => setState(() => _filterStatus = null),
+          isSelected: state.filterStatus == null,
+          onTap: () =>
+              context.read<TableSelectionViewCubit>().setFilterStatus(null),
         ),
         _StatusChip(
           label: 'Available',
           color: const Color(0xFF10B981),
-          isSelected: _filterStatus == TableStatus.available,
-          onTap: () => setState(() => _filterStatus = TableStatus.available),
+          isSelected: state.filterStatus == TableStatus.available,
+          onTap: () => context
+              .read<TableSelectionViewCubit>()
+              .setFilterStatus(TableStatus.available),
         ),
         _StatusChip(
           label: 'Occupied',
           color: const Color(0xFFEF4444),
-          isSelected: _filterStatus == TableStatus.occupied,
-          onTap: () => setState(() => _filterStatus = TableStatus.occupied),
+          isSelected: state.filterStatus == TableStatus.occupied,
+          onTap: () => context
+              .read<TableSelectionViewCubit>()
+              .setFilterStatus(TableStatus.occupied),
         ),
         _StatusChip(
           label: 'Reserved',
           color: const Color(0xFF3B82F6),
-          isSelected: _filterStatus == TableStatus.reserved,
-          onTap: () => setState(() => _filterStatus = TableStatus.reserved),
+          isSelected: state.filterStatus == TableStatus.reserved,
+          onTap: () => context
+              .read<TableSelectionViewCubit>()
+              .setFilterStatus(TableStatus.reserved),
         ),
         _StatusChip(
           label: 'Cleaning',
           color: const Color(0xFFF59E0B),
-          isSelected: _filterStatus == TableStatus.cleaning,
-          onTap: () => setState(() => _filterStatus = TableStatus.cleaning),
+          isSelected: state.filterStatus == TableStatus.cleaning,
+          onTap: () => context
+              .read<TableSelectionViewCubit>()
+              .setFilterStatus(TableStatus.cleaning),
         ),
       ],
     );
@@ -212,33 +255,26 @@ class _TableSelectionModalState extends State<TableSelectionModal> {
   // LIST VIEW
   // ==========================================================================
 
-  Widget _buildListView() {
-    return FutureBuilder<List<TableEntity>>(
-      future: _filteredTables,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (snapshot.hasError) {
-          return const Center(child: Text('Error loading tables'));
-        }
-        final tables = snapshot.data ?? [];
+  Widget _buildListView(
+    BuildContext context,
+    TableSelectionViewState state,
+  ) {
+    final tables = state.filteredTables;
 
-        if (tables.isEmpty) {
-          return _buildEmptyState();
-        }
+    if (tables.isEmpty) {
+      return _buildEmptyState();
+    }
 
-        return ListView.separated(
-          itemCount: tables.length,
-          separatorBuilder: (context, index) => const SizedBox(height: 12),
-          itemBuilder: (context, index) {
-            final table = tables[index];
-            return _TableListCard(
-              table: table,
-              isSelected: _selectedTable?.id == table.id,
-              onTap: () => setState(() => _selectedTable = table),
-            );
-          },
+    return ListView.separated(
+      itemCount: tables.length,
+      separatorBuilder: (context, index) => const SizedBox(height: 12),
+      itemBuilder: (context, index) {
+        final table = tables[index];
+        return _TableListCard(
+          table: table,
+          isSelected: state.selectedTable?.id == table.id,
+          onTap: () =>
+              context.read<TableSelectionViewCubit>().selectTable(table),
         );
       },
     );
@@ -248,74 +284,62 @@ class _TableSelectionModalState extends State<TableSelectionModal> {
   // FLOOR VIEW
   // ==========================================================================
 
-  Widget _buildFloorView() {
-    return FutureBuilder<List<TableEntity>>(
-      future: _filteredTables,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (snapshot.hasError) {
-          return const Center(child: Text('Error loading tables'));
-        }
-        final tables = snapshot.data ?? [];
+  Widget _buildFloorView(
+    BuildContext context,
+    TableSelectionViewState state,
+  ) {
+    final tables = state.filteredTables;
 
-        if (tables.isEmpty) {
-          return _buildEmptyState();
-        }
+    if (tables.isEmpty) {
+      return _buildEmptyState();
+    }
 
-        return Column(
-          children: [
-            // Legend
-            _buildLegend(),
-            const SizedBox(height: 16),
+    return Column(
+      children: [
+        _buildLegend(),
+        const SizedBox(height: 16),
+        Expanded(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return GridView.builder(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 10,
+                  mainAxisSpacing: 8,
+                  crossAxisSpacing: 8,
+                ),
+                itemCount: 100,
+                itemBuilder: (context, index) {
+                  final x = index % 10;
+                  final y = index ~/ 10;
 
-            // Floor grid (10x10)
-            Expanded(
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  return GridView.builder(
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 10,
-                      mainAxisSpacing: 8,
-                      crossAxisSpacing: 8,
+                  final table = tables.firstWhere(
+                    (t) => t.floorX == x && t.floorY == y,
+                    orElse: () => TableEntity(
+                      id: '',
+                      number: '',
+                      seats: 0,
+                      status: TableStatus.available,
+                      floorX: null,
+                      floorY: null,
                     ),
-                    itemCount: 100,
-                    itemBuilder: (context, index) {
-                      final x = index % 10;
-                      final y = index ~/ 10;
+                  );
 
-                      // Find table at this position
-                      final table = tables.firstWhere(
-                        (t) => t.floorX == x && t.floorY == y,
-                        orElse: () => TableEntity(
-                          id: '',
-                          number: '',
-                          seats: 0,
-                          status: TableStatus.available,
-                          floorX: null,
-                          floorY: null,
-                        ),
-                      );
+                  if (table.id.isEmpty) {
+                    return const SizedBox.shrink();
+                  }
 
-                      if (table.id.isEmpty) {
-                        return const SizedBox.shrink();
-                      }
-
-                      return _FloorTableNode(
-                        table: table,
-                        isSelected: _selectedTable?.id == table.id,
-                        onTap: () => setState(() => _selectedTable = table),
-                      );
-                    },
+                  return _FloorTableNode(
+                    table: table,
+                    isSelected: state.selectedTable?.id == table.id,
+                    onTap: () =>
+                        context.read<TableSelectionViewCubit>().selectTable(table),
                   );
                 },
-              ),
-            ),
-          ],
-        );
-      },
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 
@@ -358,7 +382,10 @@ class _TableSelectionModalState extends State<TableSelectionModal> {
   // FOOTER
   // ==========================================================================
 
-  Widget _buildFooter(BuildContext context) {
+  Widget _buildFooter(
+    BuildContext context,
+    TableSelectionViewState state,
+  ) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
@@ -371,10 +398,10 @@ class _TableSelectionModalState extends State<TableSelectionModal> {
         ),
         const SizedBox(width: 12),
         ElevatedButton(
-          onPressed: _selectedTable != null
+          onPressed: state.selectedTable != null
               ? () {
                   context.read<CartBloc>().add(
-                        SelectTable(table: _selectedTable!),
+                        SelectTable(table: state.selectedTable!),
                       );
                   Navigator.pop(context);
                 }
@@ -741,5 +768,125 @@ class _LegendItem extends StatelessWidget {
         ),
       ],
     );
+  }
+}
+
+class TableSelectionViewState extends Equatable {
+  const TableSelectionViewState({
+    this.viewMode = TableViewMode.list,
+    this.filterStatus,
+    this.searchQuery = '',
+    this.selectedTable,
+    this.tables = const [],
+    this.isLoading = true,
+    this.error,
+  });
+
+  final TableViewMode viewMode;
+  final TableStatus? filterStatus;
+  final String searchQuery;
+  final TableEntity? selectedTable;
+  final List<TableEntity> tables;
+  final bool isLoading;
+  final String? error;
+
+  List<TableEntity> get filteredTables {
+    return tables.where((table) {
+      if (filterStatus != null && table.status != filterStatus) return false;
+
+      if (searchQuery.isNotEmpty) {
+        final query = searchQuery.toLowerCase();
+        return table.number.toLowerCase().contains(query) ||
+            (table.serverName?.toLowerCase().contains(query) ?? false) ||
+            (table.orderId?.toLowerCase().contains(query) ?? false);
+      }
+
+      return true;
+    }).toList();
+  }
+
+  TableSelectionViewState copyWith({
+    TableViewMode? viewMode,
+    TableStatus? filterStatus,
+    bool setFilterStatusToNull = false,
+    String? searchQuery,
+    TableEntity? selectedTable,
+    bool setSelectedTableToNull = false,
+    List<TableEntity>? tables,
+    bool? isLoading,
+    String? error,
+    bool setErrorToNull = false,
+  }) {
+    return TableSelectionViewState(
+      viewMode: viewMode ?? this.viewMode,
+      filterStatus:
+          setFilterStatusToNull ? null : (filterStatus ?? this.filterStatus),
+      searchQuery: searchQuery ?? this.searchQuery,
+      selectedTable: setSelectedTableToNull
+          ? null
+          : (selectedTable ?? this.selectedTable),
+      tables: tables ?? this.tables,
+      isLoading: isLoading ?? this.isLoading,
+      error: setErrorToNull ? null : (error ?? this.error),
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        viewMode,
+        filterStatus,
+        searchQuery,
+        selectedTable,
+        tables,
+        isLoading,
+        error,
+      ];
+}
+
+class TableSelectionViewCubit extends Cubit<TableSelectionViewState> {
+  TableSelectionViewCubit(this._dataSource)
+      : super(const TableSelectionViewState());
+
+  final TableDataSource _dataSource;
+
+  Future<void> loadTables() async {
+    emit(state.copyWith(isLoading: true, setErrorToNull: true));
+    try {
+      final tables = await _dataSource.getTables();
+      emit(state.copyWith(
+        tables: List.unmodifiable(tables),
+        isLoading: false,
+        setSelectedTableToNull: true,
+      ));
+    } catch (error) {
+      emit(state.copyWith(
+        isLoading: false,
+        error: error.toString(),
+      ));
+    }
+  }
+
+  void setViewMode(TableViewMode mode) {
+    emit(state.copyWith(viewMode: mode));
+  }
+
+  void updateSearchQuery(String query) {
+    emit(state.copyWith(searchQuery: query));
+  }
+
+  void setFilterStatus(TableStatus? status) {
+    if (status == null) {
+      emit(state.copyWith(setFilterStatusToNull: true));
+    } else {
+      emit(state.copyWith(filterStatus: status));
+    }
+  }
+
+  void selectTable(TableEntity table) {
+    emit(state.copyWith(selectedTable: table));
+  }
+
+  void clearSelectedTable() {
+    emit(state.copyWith(setSelectedTableToNull: true));
   }
 }

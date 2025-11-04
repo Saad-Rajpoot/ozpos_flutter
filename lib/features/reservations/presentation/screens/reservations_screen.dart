@@ -1,3 +1,4 @@
+import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
@@ -17,49 +18,6 @@ class ReservationsScreen extends StatefulWidget {
 }
 
 class _ReservationsScreenState extends State<ReservationsScreen> {
-  String _selectedDateFilter = 'All';
-  String _searchQuery = '';
-  bool _isListView = true;
-
-  List<ReservationEntity> _getFilteredReservations(
-    ReservationManagementState state,
-  ) {
-    if (state is ReservationManagementLoaded) {
-      return state.reservations.where((res) {
-        // Date filter
-        bool matchesDate = true;
-        if (_selectedDateFilter == 'Today') {
-          final today = DateTime.now();
-          matchesDate = res.timing.startAt.year == today.year &&
-              res.timing.startAt.month == today.month &&
-              res.timing.startAt.day == today.day;
-        } else if (_selectedDateFilter == 'Tomorrow') {
-          final tomorrow = DateTime.now().add(const Duration(days: 1));
-          matchesDate = res.timing.startAt.year == tomorrow.year &&
-              res.timing.startAt.month == tomorrow.month &&
-              res.timing.startAt.day == tomorrow.day;
-        }
-
-        // Search filter
-        bool matchesSearch = true;
-        if (_searchQuery.isNotEmpty) {
-          final query = _searchQuery.toLowerCase();
-          matchesSearch = res.guest.name.toLowerCase().contains(query) ||
-              res.guest.phone.toLowerCase().contains(query) ||
-              res.reservationId.toLowerCase().contains(query);
-        }
-
-        return matchesDate && matchesSearch;
-      }).toList();
-    }
-
-    return [];
-  }
-
-  int _getBookingsCount(ReservationManagementState state) {
-    return _getFilteredReservations(state).length;
-  }
-
   @override
   Widget build(BuildContext context) {
     final scaler = MediaQuery.textScalerOf(
@@ -76,21 +34,34 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
             if (isDesktop)
               const SidebarNav(activeRoute: AppRouter.reservations),
             Expanded(
-              child: BlocBuilder<ReservationManagementBloc,
-                  ReservationManagementState>(
-                builder: (context, state) {
-                  return Column(
-                    children: [
-                      _buildHeader(),
-                      _buildToolbar(),
-                      Expanded(
-                        child: _isListView
-                            ? _buildListView(state)
-                            : _buildFloorView(),
-                      ),
-                    ],
-                  );
-                },
+              child: BlocProvider(
+                create: (_) => ReservationsViewCubit(),
+                child:
+                    BlocBuilder<ReservationsViewCubit, ReservationsViewState>(
+                  builder: (context, viewState) {
+                    return BlocBuilder<ReservationManagementBloc,
+                        ReservationManagementState>(
+                      builder: (context, dataState) {
+                        final filtered =
+                            _filterReservations(dataState, viewState);
+                        return Column(
+                          children: [
+                            _Header(bookingsCount: filtered.length),
+                            _Toolbar(viewState: viewState),
+                            Expanded(
+                              child: viewState.isListView
+                                  ? _ListViewContent(
+                                      dataState: dataState,
+                                      filteredReservations: filtered,
+                                    )
+                                  : const _FloorViewContent(),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  },
+                ),
               ),
             ),
           ],
@@ -99,7 +70,66 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
     );
   }
 
-  Widget _buildHeader() {
+  void _seatReservation(ReservationEntity reservation) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Seating ${reservation.guest.name} at ${reservation.tableId}',
+        ),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  void _editReservation(ReservationEntity reservation) async {
+    await showDialog(
+      context: context,
+      builder: (context) => ReservationFormModal(reservation: reservation),
+    );
+  }
+
+  void _cancelReservation(ReservationEntity reservation) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Cancel Reservation'),
+        content: Text('Cancel reservation for ${reservation.guest.name}?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('No'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              context
+                  .read<ReservationManagementBloc>()
+                  .add(const LoadReservationsEvent());
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Reservation cancelled'),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFEF4444),
+            ),
+            child: const Text('Yes, Cancel'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Header extends StatelessWidget {
+  const _Header({required this.bookingsCount});
+
+  final int bookingsCount;
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: const BoxDecoration(
@@ -117,17 +147,12 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
                 'Reservations',
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
               ),
-              BlocBuilder<ReservationManagementBloc,
-                  ReservationManagementState>(
-                builder: (context, state) {
-                  return Text(
-                    '${_getBookingsCount(state)} bookings',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: Color(0xFF6B7280),
-                    ),
-                  );
-                },
+              Text(
+                '$bookingsCount bookings',
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: Color(0xFF6B7280),
+                ),
               ),
             ],
           ),
@@ -135,8 +160,17 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
       ),
     );
   }
+}
 
-  Widget _buildToolbar() {
+class _Toolbar extends StatelessWidget {
+  const _Toolbar({required this.viewState});
+
+  final ReservationsViewState viewState;
+
+  @override
+  Widget build(BuildContext context) {
+    final viewCubit = context.read<ReservationsViewCubit>();
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: const BoxDecoration(
@@ -145,7 +179,6 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
       ),
       child: Row(
         children: [
-          // View toggle
           Container(
             decoration: BoxDecoration(
               border: Border.all(color: const Color(0xFFE5E7EB)),
@@ -153,26 +186,33 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
             ),
             child: Row(
               children: [
-                _buildViewButton(
-                  'List View',
-                  Icons.view_list,
-                  _isListView,
-                  () => setState(() => _isListView = true),
+                _ViewButton(
+                  label: 'List View',
+                  icon: Icons.view_list,
+                  isSelected: viewState.isListView,
+                  onTap: () => viewCubit.setListView(true),
                 ),
-                _buildViewButton(
-                  'Floor View',
-                  Icons.grid_view,
-                  !_isListView,
-                  () => setState(() => _isListView = false),
+                _ViewButton(
+                  label: 'Floor View',
+                  icon: Icons.grid_view,
+                  isSelected: !viewState.isListView,
+                  onTap: () => viewCubit.setListView(false),
                 ),
               ],
             ),
           ),
           const SizedBox(width: 16),
-
-          // New Reservation
           ElevatedButton.icon(
-            onPressed: _showNewReservation,
+            onPressed: () async {
+              await showDialog(
+                context: context,
+                builder: (context) => const ReservationFormModal(),
+              );
+              if (!context.mounted) return;
+              context
+                  .read<ReservationManagementBloc>()
+                  .add(const LoadReservationsEvent());
+            },
             icon: const Icon(Icons.add, size: 18),
             label: const Text('New Reservation'),
             style: ElevatedButton.styleFrom(
@@ -182,12 +222,10 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
             ),
           ),
           const Spacer(),
-
-          // Search
           SizedBox(
             width: 300,
             child: TextField(
-              onChanged: (value) => setState(() => _searchQuery = value),
+              onChanged: viewCubit.updateSearchQuery,
               decoration: InputDecoration(
                 hintText: 'Search by guest name, phone, or ID...',
                 prefixIcon: const Icon(Icons.search, size: 20),
@@ -205,36 +243,48 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
             ),
           ),
           const SizedBox(width: 16),
-
-          // Date chips
-          _buildDateChip(
-            'Today',
-            _selectedDateFilter == 'Today',
-            () => setState(() => _selectedDateFilter = 'Today'),
+          _DateChip(
+            label: 'Today',
+            isSelected:
+                viewState.selectedDateFilter == ReservationsDateFilter.today,
+            onTap: () => viewCubit.setDateFilter(ReservationsDateFilter.today),
           ),
           const SizedBox(width: 8),
-          _buildDateChip(
-            'Tomorrow',
-            _selectedDateFilter == 'Tomorrow',
-            () => setState(() => _selectedDateFilter = 'Tomorrow'),
+          _DateChip(
+            label: 'Tomorrow',
+            isSelected:
+                viewState.selectedDateFilter == ReservationsDateFilter.tomorrow,
+            onTap: () =>
+                viewCubit.setDateFilter(ReservationsDateFilter.tomorrow),
           ),
           const SizedBox(width: 8),
-          _buildDateChip(
-            'All',
-            _selectedDateFilter == 'All',
-            () => setState(() => _selectedDateFilter = 'All'),
+          _DateChip(
+            label: 'All',
+            isSelected:
+                viewState.selectedDateFilter == ReservationsDateFilter.all,
+            onTap: () => viewCubit.setDateFilter(ReservationsDateFilter.all),
           ),
         ],
       ),
     );
   }
+}
 
-  Widget _buildViewButton(
-    String label,
-    IconData icon,
-    bool isSelected,
-    VoidCallback onTap,
-  ) {
+class _ViewButton extends StatelessWidget {
+  const _ViewButton({
+    required this.label,
+    required this.icon,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  final String label;
+  final IconData icon;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
       child: Container(
@@ -272,8 +322,21 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
       ),
     );
   }
+}
 
-  Widget _buildDateChip(String label, bool isSelected, VoidCallback onTap) {
+class _DateChip extends StatelessWidget {
+  const _DateChip({
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(999),
@@ -298,13 +361,28 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
       ),
     );
   }
+}
 
-  Widget _buildListView(ReservationManagementState state) {
-    if (state is ReservationManagementLoading) {
+class _ListViewContent extends StatelessWidget {
+  const _ListViewContent({
+    required this.dataState,
+    required this.filteredReservations,
+  });
+
+  final ReservationManagementState dataState;
+  final List<ReservationEntity> filteredReservations;
+
+  @override
+  Widget build(BuildContext context) {
+    final hostState =
+        context.findAncestorStateOfType<_ReservationsScreenState>();
+
+    if (dataState is ReservationManagementLoading) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (state is ReservationManagementError) {
+    if (dataState is ReservationManagementError) {
+      final errorState = dataState as ReservationManagementError;
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -312,7 +390,7 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
             Icon(Icons.error_outline, size: 64, color: Colors.red.shade300),
             const SizedBox(height: 16),
             Text(
-              'Error: ${state.message}',
+              'Error: ${errorState.message}',
               style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
             ),
             const SizedBox(height: 16),
@@ -329,10 +407,8 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
       );
     }
 
-    if (state is ReservationManagementLoaded) {
-      final reservations = _getFilteredReservations(state);
-
-      if (reservations.isEmpty) {
+    if (dataState is ReservationManagementLoaded) {
+      if (filteredReservations.isEmpty) {
         return Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -364,7 +440,6 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
           ),
           child: Column(
             children: [
-              // Table header
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: const BoxDecoration(
@@ -448,10 +523,13 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
                   ],
                 ),
               ),
-
-              // Table rows
-              ...reservations.map(
-                (reservation) => _buildReservationRow(reservation),
+              ...filteredReservations.map(
+                (reservation) => _ReservationRow(
+                  reservation: reservation,
+                  onSeat: hostState?._seatReservation,
+                  onEdit: hostState?._editReservation,
+                  onCancel: hostState?._cancelReservation,
+                ),
               ),
             ],
           ),
@@ -459,13 +537,60 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
       );
     }
 
-    // Default case - show loading or empty state
     return const Center(child: CircularProgressIndicator());
   }
+}
 
-  Widget _buildReservationRow(ReservationEntity reservation) {
+class _ReservationRow extends StatelessWidget {
+  const _ReservationRow({
+    required this.reservation,
+    required this.onSeat,
+    required this.onEdit,
+    required this.onCancel,
+  });
+
+  final ReservationEntity reservation;
+  final void Function(ReservationEntity)? onSeat;
+  final void Function(ReservationEntity)? onEdit;
+  final void Function(ReservationEntity)? onCancel;
+
+  @override
+  Widget build(BuildContext context) {
     final timeFormat = DateFormat('HH:mm');
     final dateFormat = DateFormat('MMM dd, yyyy');
+
+    final actionButtons = <Widget>[];
+    if ((reservation.status == ReservationStatus.pending ||
+            reservation.status == ReservationStatus.confirmed) &&
+        onSeat != null) {
+      actionButtons.add(
+        _ActionButton(
+          label: 'Seat',
+          color: const Color(0xFF10B981),
+          onPressed: () => onSeat!(reservation),
+        ),
+      );
+    }
+
+    actionButtons.add(
+      IconButton(
+        icon: const Icon(Icons.edit, size: 18),
+        onPressed: onEdit == null ? null : () => onEdit!(reservation),
+        tooltip: 'Edit',
+      ),
+    );
+
+    if (reservation.status != ReservationStatus.cancelled && onCancel != null) {
+      actionButtons.add(
+        TextButton(
+          onPressed: () => onCancel!(reservation),
+          child: const Text(
+            'Cancel',
+            style: TextStyle(color: Color(0xFFEF4444), fontSize: 14),
+          ),
+        ),
+      );
+    }
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -474,7 +599,6 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
       ),
       child: Row(
         children: [
-          // Guest name
           Expanded(
             flex: 2,
             child: Column(
@@ -497,24 +621,18 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
               ],
             ),
           ),
-
-          // Date
           Expanded(
             child: Text(
               dateFormat.format(reservation.timing.startAt),
               style: const TextStyle(fontSize: 14),
             ),
           ),
-
-          // Time
           Expanded(
             child: Text(
               timeFormat.format(reservation.timing.startAt),
               style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
             ),
           ),
-
-          // Party size
           Expanded(
             child: Row(
               children: [
@@ -527,32 +645,33 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
               ],
             ),
           ),
-
-          // Table
           Expanded(
             child: Text(
               reservation.tableId,
               style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
             ),
           ),
-
-          // Status
-          Expanded(child: _buildStatusPill(reservation.status)),
-
-          // Actions
+          Expanded(child: _StatusPill(status: reservation.status)),
           Expanded(
             flex: 2,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
-              children: _buildActionButtons(reservation),
+              children: actionButtons,
             ),
           ),
         ],
       ),
     );
   }
+}
 
-  Widget _buildStatusPill(ReservationStatus status) {
+class _StatusPill extends StatelessWidget {
+  const _StatusPill({required this.status});
+
+  final ReservationStatus status;
+
+  @override
+  Widget build(BuildContext context) {
     Color backgroundColor;
     Color textColor;
     String label;
@@ -596,48 +715,21 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
       ),
     );
   }
+}
 
-  List<Widget> _buildActionButtons(ReservationEntity reservation) {
-    final buttons = <Widget>[];
+class _ActionButton extends StatelessWidget {
+  const _ActionButton({
+    required this.label,
+    required this.color,
+    required this.onPressed,
+  });
 
-    // Seat button for pending/confirmed reservations
-    if (reservation.status == ReservationStatus.pending ||
-        reservation.status == ReservationStatus.confirmed) {
-      buttons.add(
-        _buildActionButton(
-          'Seat',
-          const Color(0xFF10B981),
-          () => _seatReservation(reservation),
-        ),
-      );
-    }
+  final String label;
+  final Color color;
+  final VoidCallback? onPressed;
 
-    // Edit button
-    buttons.add(
-      IconButton(
-        icon: const Icon(Icons.edit, size: 18),
-        onPressed: () => _editReservation(reservation),
-        tooltip: 'Edit',
-      ),
-    );
-
-    // Cancel button for non-cancelled reservations
-    if (reservation.status != ReservationStatus.cancelled) {
-      buttons.add(
-        TextButton(
-          onPressed: () => _cancelReservation(reservation),
-          child: const Text(
-            'Cancel',
-            style: TextStyle(color: Color(0xFFEF4444), fontSize: 14),
-          ),
-        ),
-      );
-    }
-
-    return buttons;
-  }
-
-  Widget _buildActionButton(String label, Color color, VoidCallback onPressed) {
+  @override
+  Widget build(BuildContext context) {
     return OutlinedButton(
       onPressed: onPressed,
       style: OutlinedButton.styleFrom(
@@ -648,8 +740,13 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
       child: Text(label),
     );
   }
+}
 
-  Widget _buildFloorView() {
+class _FloorViewContent extends StatelessWidget {
+  const _FloorViewContent();
+
+  @override
+  Widget build(BuildContext context) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -669,89 +766,89 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
       ),
     );
   }
+}
 
-  void _showNewReservation() async {
-    final result = await showDialog(
-      context: context,
-      builder: (context) => const ReservationFormModal(),
-    );
+List<ReservationEntity> _filterReservations(
+  ReservationManagementState dataState,
+  ReservationsViewState viewState,
+) {
+  if (dataState is! ReservationManagementLoaded) return const [];
 
-    if (result != null) {
-      // In real app, create reservation entity and add to list
-      // For now, just show success message
-      setState(() {
-        // Reload data or add new reservation
-      });
+  return dataState.reservations.where((res) {
+    bool matchesDate = true;
+    final start = res.timing.startAt;
+    final now = DateTime.now();
+
+    switch (viewState.selectedDateFilter) {
+      case ReservationsDateFilter.today:
+        matchesDate = start.year == now.year &&
+            start.month == now.month &&
+            start.day == now.day;
+        break;
+      case ReservationsDateFilter.tomorrow:
+        final tomorrow = now.add(const Duration(days: 1));
+        matchesDate = start.year == tomorrow.year &&
+            start.month == tomorrow.month &&
+            start.day == tomorrow.day;
+        break;
+      case ReservationsDateFilter.all:
+        matchesDate = true;
+        break;
     }
-  }
 
-  void _seatReservation(ReservationEntity reservation) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Seating ${reservation.guest.name} at ${reservation.tableId}',
-        ),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-  }
-
-  void _editReservation(ReservationEntity reservation) async {
-    final result = await showDialog(
-      context: context,
-      builder: (context) => ReservationFormModal(reservation: reservation),
-    );
-
-    if (result != null) {
-      // In real app, update reservation
-      setState(() {
-        // Update the reservation in the list
-      });
+    bool matchesSearch = true;
+    if (viewState.searchQuery.isNotEmpty) {
+      final query = viewState.searchQuery.toLowerCase();
+      matchesSearch = res.guest.name.toLowerCase().contains(query) ||
+          res.guest.phone.toLowerCase().contains(query) ||
+          res.reservationId.toLowerCase().contains(query);
     }
+
+    return matchesDate && matchesSearch;
+  }).toList();
+}
+
+enum ReservationsDateFilter { today, tomorrow, all }
+
+class ReservationsViewState extends Equatable {
+  const ReservationsViewState({
+    this.isListView = true,
+    this.selectedDateFilter = ReservationsDateFilter.all,
+    this.searchQuery = '',
+  });
+
+  final bool isListView;
+  final ReservationsDateFilter selectedDateFilter;
+  final String searchQuery;
+
+  ReservationsViewState copyWith({
+    bool? isListView,
+    ReservationsDateFilter? selectedDateFilter,
+    String? searchQuery,
+  }) {
+    return ReservationsViewState(
+      isListView: isListView ?? this.isListView,
+      selectedDateFilter: selectedDateFilter ?? this.selectedDateFilter,
+      searchQuery: searchQuery ?? this.searchQuery,
+    );
   }
 
-  void _cancelReservation(ReservationEntity reservation) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Cancel Reservation'),
-        content: Text('Cancel reservation for ${reservation.guest.name}?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('No'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              setState(() {
-                final index = _getFilteredReservations(
-                  context.read<ReservationManagementBloc>().state,
-                ).indexWhere(
-                  (r) => r.reservationId == reservation.reservationId,
-                );
-                if (index != -1) {
-                  _getFilteredReservations(
-                    context.read<ReservationManagementBloc>().state,
-                  )[index] = reservation.copyWith(
-                    status: ReservationStatus.cancelled,
-                  );
-                }
-              });
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Reservation cancelled'),
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFEF4444),
-            ),
-            child: const Text('Yes, Cancel'),
-          ),
-        ],
-      ),
-    );
+  @override
+  List<Object?> get props => [isListView, selectedDateFilter, searchQuery];
+}
+
+class ReservationsViewCubit extends Cubit<ReservationsViewState> {
+  ReservationsViewCubit() : super(const ReservationsViewState());
+
+  void setListView(bool isListView) {
+    emit(state.copyWith(isListView: isListView));
+  }
+
+  void setDateFilter(ReservationsDateFilter filter) {
+    emit(state.copyWith(selectedDateFilter: filter));
+  }
+
+  void updateSearchQuery(String query) {
+    emit(state.copyWith(searchQuery: query));
   }
 }

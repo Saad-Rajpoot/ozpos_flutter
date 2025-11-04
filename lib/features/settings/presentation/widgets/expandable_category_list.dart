@@ -1,39 +1,33 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/entities/settings_entities.dart';
 
-class ExpandableCategoryList extends StatefulWidget {
+class ExpandableCategoryList extends StatelessWidget {
   final List<SettingsCategoryEntity> categories;
   final ValueChanged<String> onAction;
   const ExpandableCategoryList(
       {super.key, required this.categories, required this.onAction});
 
   @override
-  State<ExpandableCategoryList> createState() => _ExpandableCategoryListState();
-}
-
-class _ExpandableCategoryListState extends State<ExpandableCategoryList> {
-  final Set<String> _expanded = <String>{};
-
-  @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        for (final cat in widget.categories)
-          _CategoryCard(
-            category: cat,
-            isExpanded: _expanded.contains(cat.id),
-            onAction: widget.onAction,
-            onToggle: () {
-              setState(() {
-                if (_expanded.contains(cat.id)) {
-                  _expanded.remove(cat.id);
-                } else {
-                  _expanded.add(cat.id);
-                }
-              });
-            },
-          ),
-      ],
+    return BlocProvider(
+      create: (_) => ExpandableCategoryCubit(),
+      child: BlocBuilder<ExpandableCategoryCubit, Set<String>>(
+        builder: (context, expanded) {
+          final cubit = context.read<ExpandableCategoryCubit>();
+          return Column(
+            children: [
+              for (final cat in categories)
+                _CategoryCard(
+                  category: cat,
+                  isExpanded: expanded.contains(cat.id),
+                  onAction: onAction,
+                  onToggle: () => cubit.toggleCategory(cat.id),
+                ),
+            ],
+          );
+        },
+      ),
     );
   }
 }
@@ -262,5 +256,19 @@ class _CategoryItemTile extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class ExpandableCategoryCubit extends Cubit<Set<String>> {
+  ExpandableCategoryCubit() : super(<String>{});
+
+  void toggleCategory(String categoryId) {
+    final updated = Set<String>.from(state);
+    if (updated.contains(categoryId)) {
+      updated.remove(categoryId);
+    } else {
+      updated.add(categoryId);
+    }
+    emit(updated);
   }
 }

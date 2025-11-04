@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:equatable/equatable.dart';
 import '../constants/delivery_constants.dart';
 
 enum VehicleType { bike, car, scooter, van }
@@ -10,6 +11,53 @@ class AddDriverModal extends StatefulWidget {
   State<AddDriverModal> createState() => _AddDriverModalState();
 }
 
+class _AddDriverViewState extends Equatable {
+  const _AddDriverViewState({
+    this.selectedVehicle,
+    this.selectedRole = 'Self-managed',
+    this.selectedZones = const [],
+    this.sendWelcomeSms = true,
+    this.enableGpsTracking = true,
+    this.allowCashPayments = false,
+  });
+
+  final VehicleType? selectedVehicle;
+  final String selectedRole;
+  final List<String> selectedZones;
+  final bool sendWelcomeSms;
+  final bool enableGpsTracking;
+  final bool allowCashPayments;
+
+  _AddDriverViewState copyWith({
+    VehicleType? selectedVehicle,
+    String? selectedRole,
+    List<String>? selectedZones,
+    bool? sendWelcomeSms,
+    bool? enableGpsTracking,
+    bool? allowCashPayments,
+  }) {
+    final zones = selectedZones ?? this.selectedZones;
+    return _AddDriverViewState(
+      selectedVehicle: selectedVehicle ?? this.selectedVehicle,
+      selectedRole: selectedRole ?? this.selectedRole,
+      selectedZones: List<String>.from(zones),
+      sendWelcomeSms: sendWelcomeSms ?? this.sendWelcomeSms,
+      enableGpsTracking: enableGpsTracking ?? this.enableGpsTracking,
+      allowCashPayments: allowCashPayments ?? this.allowCashPayments,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        selectedVehicle,
+        selectedRole,
+        selectedZones,
+        sendWelcomeSms,
+        enableGpsTracking,
+        allowCashPayments,
+      ];
+}
+
 class _AddDriverModalState extends State<AddDriverModal> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
@@ -17,18 +65,13 @@ class _AddDriverModalState extends State<AddDriverModal> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
 
-  VehicleType? _selectedVehicle;
-  String _selectedRole = 'Self-managed';
-  final List<String> _selectedZones = [];
-
-  bool _sendWelcomeSms = true;
-  bool _enableGpsTracking = true;
-  bool _allowCashPayments = false;
+  late final ValueNotifier<_AddDriverViewState> _viewNotifier;
 
   @override
   void initState() {
     super.initState();
     _generateCredentials();
+    _viewNotifier = ValueNotifier(const _AddDriverViewState());
   }
 
   void _generateCredentials() {
@@ -36,8 +79,13 @@ class _AddDriverModalState extends State<AddDriverModal> {
     _passwordController.text = 'auto-generated-123';
   }
 
+  void _updateState(_AddDriverViewState newState) {
+    _viewNotifier.value = newState;
+  }
+
   @override
   void dispose() {
+    _viewNotifier.dispose();
     _nameController.dispose();
     _phoneController.dispose();
     _usernameController.dispose();
@@ -47,363 +95,413 @@ class _AddDriverModalState extends State<AddDriverModal> {
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(DeliveryConstants.radiusXl),
-      ),
-      child: Container(
-        width: 600,
-        constraints: const BoxConstraints(maxHeight: 800),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Header
-            Container(
-              padding: const EdgeInsets.all(DeliveryConstants.spacingXl),
-              decoration: const BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(color: DeliveryConstants.borderColor),
-                ),
-              ),
-              child: Row(
-                children: [
-                  const Text(
-                    'Add Driver',
-                    style: DeliveryConstants.headingMedium,
+    return ValueListenableBuilder<_AddDriverViewState>(
+      valueListenable: _viewNotifier,
+      builder: (context, viewState, _) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(DeliveryConstants.radiusXl),
+          ),
+          child: Container(
+            width: 600,
+            constraints: const BoxConstraints(maxHeight: 800),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(DeliveryConstants.spacingXl),
+                  decoration: const BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(color: DeliveryConstants.borderColor),
+                    ),
                   ),
-                  const Spacer(),
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ],
-              ),
-            ),
-
-            // Form content
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(DeliveryConstants.spacingXl),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Row(
                     children: [
-                      // Photo upload
-                      Center(child: _buildPhotoUpload()),
-                      const SizedBox(height: 24),
-
-                      // Driver Name & Phone
-                      Row(
+                      const Text(
+                        'Add Driver',
+                        style: DeliveryConstants.headingMedium,
+                      ),
+                      const Spacer(),
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(DeliveryConstants.spacingXl),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Expanded(
-                            child: _buildTextField(
-                              'Driver Name *',
-                              _nameController,
-                              'Enter full name',
-                            ),
+                          Center(child: _buildPhotoUpload()),
+                          const SizedBox(height: 24),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _buildTextField(
+                                  'Driver Name *',
+                                  _nameController,
+                                  'Enter full name',
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: _buildTextField(
+                                  'Phone Number *',
+                                  _phoneController,
+                                  '+61 4XX XXX XXX',
+                                  keyboardType: TextInputType.phone,
+                                ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: _buildTextField(
-                              'Phone Number *',
-                              _phoneController,
-                              '+61 4XX XXX XXX',
-                              keyboardType: TextInputType.phone,
-                            ),
+                          const SizedBox(height: 24),
+                          const Text(
+                            'Vehicle Type *',
+                            style: DeliveryConstants.labelMedium,
                           ),
-                        ],
-                      ),
-                      const SizedBox(height: 24),
-
-                      // Vehicle Type
-                      const Text(
-                        'Vehicle Type *',
-                        style: DeliveryConstants.labelMedium,
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildVehicleOption(
-                              VehicleType.bike,
-                              Icons.pedal_bike,
-                              'Bike',
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _buildVehicleOption(
-                              VehicleType.car,
-                              Icons.directions_car,
-                              'Car',
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _buildVehicleOption(
-                              VehicleType.scooter,
-                              Icons.electric_scooter,
-                              'Scooter',
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _buildVehicleOption(
-                              VehicleType.van,
-                              Icons.local_shipping,
-                              'Van',
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 24),
-
-                      // Login Credentials
-                      const Text(
-                        'Login Credentials',
-                        style: DeliveryConstants.headingSmall,
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildTextField(
-                              'Username',
-                              _usernameController,
-                              'Auto-generated or custom',
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: _buildTextField(
-                              'Password',
-                              _passwordController,
-                              'auto-generated-123',
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'Credentials will be sent to the driver via SMS. They can change their password later.',
-                        style: DeliveryConstants.caption,
-                      ),
-                      const SizedBox(height: 24),
-
-                      // Driver Role
-                      const Text(
-                        'Driver Role',
-                        style: DeliveryConstants.labelMedium,
-                      ),
-                      const SizedBox(height: 12),
-                      DropdownButtonFormField<String>(
-                        value: _selectedRole,
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: DeliveryConstants.dividerColor,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(
-                              DeliveryConstants.radiusMd,
-                            ),
-                            borderSide: const BorderSide(
-                              color: DeliveryConstants.borderColor,
-                            ),
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 12,
-                          ),
-                        ),
-                        items: [
-                          'Self-managed',
-                          'Company',
-                          'Partner',
-                          'Contractor',
-                        ].map((role) {
-                          return DropdownMenuItem(
-                            value: role,
-                            child: Text(role),
-                          );
-                        }).toList(),
-                        onChanged: (value) =>
-                            setState(() => _selectedRole = value!),
-                      ),
-                      const SizedBox(height: 24),
-
-                      // Zone Assignment
-                      const Text(
-                        'Zone Assignment',
-                        style: DeliveryConstants.labelMedium,
-                      ),
-                      const SizedBox(height: 12),
-                      DropdownButtonFormField<String>(
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: DeliveryConstants.dividerColor,
-                          hintText: 'Select delivery zones',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(
-                              DeliveryConstants.radiusMd,
-                            ),
-                            borderSide: const BorderSide(
-                              color: DeliveryConstants.borderColor,
-                            ),
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 12,
-                          ),
-                        ),
-                        items: [
-                          'Downtown',
-                          'Uptown',
-                          'Suburbs',
-                          'CBD',
-                          'All Zones',
-                        ].map((zone) {
-                          return DropdownMenuItem(
-                            value: zone,
-                            child: Text(zone),
-                          );
-                        }).toList(),
-                        onChanged: (value) {
-                          if (value != null &&
-                              !_selectedZones.contains(value)) {
-                            setState(() => _selectedZones.add(value));
-                          }
-                        },
-                      ),
-                      if (_selectedZones.isNotEmpty) ...[
-                        const SizedBox(height: 12),
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: _selectedZones
-                              .map(
-                                (zone) => Chip(
-                                  label: Text(zone),
-                                  deleteIcon: const Icon(Icons.close, size: 16),
-                                  onDeleted: () => setState(
-                                    () => _selectedZones.remove(zone),
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _buildVehicleOption(
+                                  icon: Icons.pedal_bike,
+                                  label: 'Bike',
+                                  isSelected: viewState.selectedVehicle ==
+                                      VehicleType.bike,
+                                  onTap: () => _updateState(
+                                    viewState.copyWith(
+                                      selectedVehicle: VehicleType.bike,
+                                    ),
                                   ),
                                 ),
-                              )
-                              .toList(),
-                        ),
-                      ],
-                      const SizedBox(height: 8),
-                      const Text(
-                        'Drivers will receive orders primarily from their assigned zones',
-                        style: DeliveryConstants.caption,
-                      ),
-                      const SizedBox(height: 24),
-
-                      // Quick Setup Options
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFEFF6FF),
-                          borderRadius: BorderRadius.circular(
-                            DeliveryConstants.radiusLg,
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: _buildVehicleOption(
+                                  icon: Icons.directions_car,
+                                  label: 'Car',
+                                  isSelected: viewState.selectedVehicle ==
+                                      VehicleType.car,
+                                  onTap: () => _updateState(
+                                    viewState.copyWith(
+                                      selectedVehicle: VehicleType.car,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: _buildVehicleOption(
+                                  icon: Icons.electric_scooter,
+                                  label: 'Scooter',
+                                  isSelected: viewState.selectedVehicle ==
+                                      VehicleType.scooter,
+                                  onTap: () => _updateState(
+                                    viewState.copyWith(
+                                      selectedVehicle: VehicleType.scooter,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: _buildVehicleOption(
+                                  icon: Icons.local_shipping,
+                                  label: 'Van',
+                                  isSelected: viewState.selectedVehicle ==
+                                      VehicleType.van,
+                                  onTap: () => _updateState(
+                                    viewState.copyWith(
+                                      selectedVehicle: VehicleType.van,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Quick Setup Options',
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF1E40AF),
+                          const SizedBox(height: 24),
+                          const Text(
+                            'Login Credentials',
+                            style: DeliveryConstants.headingSmall,
+                          ),
+                          const SizedBox(height: 16),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _buildTextField(
+                                  'Username',
+                                  _usernameController,
+                                  'Auto-generated or custom',
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: _buildTextField(
+                                  'Password',
+                                  _passwordController,
+                                  'auto-generated-123',
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          const Text(
+                            'Credentials will be sent to the driver via SMS. They can change their password later.',
+                            style: DeliveryConstants.caption,
+                          ),
+                          const SizedBox(height: 24),
+                          const Text(
+                            'Driver Role',
+                            style: DeliveryConstants.labelMedium,
+                          ),
+                          const SizedBox(height: 12),
+                          DropdownButtonFormField<String>(
+                            value: viewState.selectedRole,
+                            decoration: InputDecoration(
+                              filled: true,
+                              fillColor: DeliveryConstants.dividerColor,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(
+                                  DeliveryConstants.radiusMd,
+                                ),
+                                borderSide: const BorderSide(
+                                  color: DeliveryConstants.borderColor,
+                                ),
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 12,
                               ),
                             ),
+                            items: const [
+                              'Self-managed',
+                              'Company',
+                              'Partner',
+                              'Contractor',
+                            ].map((role) {
+                              return DropdownMenuItem(
+                                value: role,
+                                child: Text(role),
+                              );
+                            }).toList(),
+                            onChanged: (value) {
+                              if (value != null) {
+                                _updateState(
+                                  viewState.copyWith(selectedRole: value),
+                                );
+                              }
+                            },
+                          ),
+                          const SizedBox(height: 24),
+                          const Text(
+                            'Zone Assignment',
+                            style: DeliveryConstants.labelMedium,
+                          ),
+                          const SizedBox(height: 12),
+                          DropdownButtonFormField<String>(
+                            decoration: InputDecoration(
+                              filled: true,
+                              fillColor: DeliveryConstants.dividerColor,
+                              hintText: 'Select delivery zones',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(
+                                  DeliveryConstants.radiusMd,
+                                ),
+                                borderSide: const BorderSide(
+                                  color: DeliveryConstants.borderColor,
+                                ),
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 12,
+                              ),
+                            ),
+                            items: const [
+                              'Downtown',
+                              'Uptown',
+                              'Suburbs',
+                              'CBD',
+                              'All Zones',
+                            ].map((zone) {
+                              return DropdownMenuItem(
+                                value: zone,
+                                child: Text(zone),
+                              );
+                            }).toList(),
+                            onChanged: (value) {
+                              if (value != null &&
+                                  !viewState.selectedZones.contains(value)) {
+                                final updatedZones =
+                                    List<String>.from(viewState.selectedZones)
+                                      ..add(value);
+                                _updateState(
+                                  viewState.copyWith(
+                                      selectedZones: updatedZones),
+                                );
+                              }
+                            },
+                          ),
+                          if (viewState.selectedZones.isNotEmpty) ...[
                             const SizedBox(height: 12),
-                            CheckboxListTile(
-                              value: _sendWelcomeSms,
-                              onChanged: (val) =>
-                                  setState(() => _sendWelcomeSms = val!),
-                              title: const Text(
-                                'Send welcome SMS with login details',
-                                style: DeliveryConstants.bodyMedium,
-                              ),
-                              controlAffinity: ListTileControlAffinity.leading,
-                              contentPadding: EdgeInsets.zero,
-                              activeColor: const Color(0xFF8B5CF6),
-                            ),
-                            CheckboxListTile(
-                              value: _enableGpsTracking,
-                              onChanged: (val) =>
-                                  setState(() => _enableGpsTracking = val!),
-                              title: const Text(
-                                'Enable GPS tracking',
-                                style: DeliveryConstants.bodyMedium,
-                              ),
-                              controlAffinity: ListTileControlAffinity.leading,
-                              contentPadding: EdgeInsets.zero,
-                              activeColor: const Color(0xFF8B5CF6),
-                            ),
-                            CheckboxListTile(
-                              value: _allowCashPayments,
-                              onChanged: (val) =>
-                                  setState(() => _allowCashPayments = val!),
-                              title: const Text(
-                                'Allow cash payments',
-                                style: DeliveryConstants.bodyMedium,
-                              ),
-                              controlAffinity: ListTileControlAffinity.leading,
-                              contentPadding: EdgeInsets.zero,
-                              activeColor: const Color(0xFF8B5CF6),
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: viewState.selectedZones.map((zone) {
+                                return Chip(
+                                  label: Text(zone),
+                                  deleteIcon: const Icon(Icons.close, size: 16),
+                                  onDeleted: () {
+                                    final updatedZones = List<String>.from(
+                                        viewState.selectedZones)
+                                      ..remove(zone);
+                                    _updateState(
+                                      viewState.copyWith(
+                                        selectedZones: updatedZones,
+                                      ),
+                                    );
+                                  },
+                                );
+                              }).toList(),
                             ),
                           ],
+                          const SizedBox(height: 8),
+                          const Text(
+                            'Drivers will receive orders primarily from their assigned zones',
+                            style: DeliveryConstants.caption,
+                          ),
+                          const SizedBox(height: 24),
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFEFF6FF),
+                              borderRadius: BorderRadius.circular(
+                                  DeliveryConstants.radiusLg),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Quick Setup Options',
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFF1E40AF),
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                CheckboxListTile(
+                                  value: viewState.sendWelcomeSms,
+                                  onChanged: (val) {
+                                    if (val != null) {
+                                      _updateState(
+                                        viewState.copyWith(
+                                          sendWelcomeSms: val,
+                                        ),
+                                      );
+                                    }
+                                  },
+                                  title: const Text(
+                                    'Send welcome SMS with login details',
+                                    style: DeliveryConstants.bodyMedium,
+                                  ),
+                                  controlAffinity:
+                                      ListTileControlAffinity.leading,
+                                  contentPadding: EdgeInsets.zero,
+                                  activeColor: const Color(0xFF8B5CF6),
+                                ),
+                                CheckboxListTile(
+                                  value: viewState.enableGpsTracking,
+                                  onChanged: (val) {
+                                    if (val != null) {
+                                      _updateState(
+                                        viewState.copyWith(
+                                          enableGpsTracking: val,
+                                        ),
+                                      );
+                                    }
+                                  },
+                                  title: const Text(
+                                    'Enable GPS tracking',
+                                    style: DeliveryConstants.bodyMedium,
+                                  ),
+                                  controlAffinity:
+                                      ListTileControlAffinity.leading,
+                                  contentPadding: EdgeInsets.zero,
+                                  activeColor: const Color(0xFF8B5CF6),
+                                ),
+                                CheckboxListTile(
+                                  value: viewState.allowCashPayments,
+                                  onChanged: (val) {
+                                    if (val != null) {
+                                      _updateState(
+                                        viewState.copyWith(
+                                          allowCashPayments: val,
+                                        ),
+                                      );
+                                    }
+                                  },
+                                  title: const Text(
+                                    'Allow cash payments',
+                                    style: DeliveryConstants.bodyMedium,
+                                  ),
+                                  controlAffinity:
+                                      ListTileControlAffinity.leading,
+                                  contentPadding: EdgeInsets.zero,
+                                  activeColor: const Color(0xFF8B5CF6),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.all(DeliveryConstants.spacingXl),
+                  decoration: const BoxDecoration(
+                    border: Border(
+                      top: BorderSide(color: DeliveryConstants.borderColor),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.pop(context),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            side: const BorderSide(
+                              color: DeliveryConstants.borderColor,
+                            ),
+                          ),
+                          child: const Text('Cancel'),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () => _saveDriver(viewState),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFF97316),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                          ),
+                          child: const Text('Save Driver'),
                         ),
                       ),
                     ],
                   ),
                 ),
-              ),
+              ],
             ),
-
-            // Footer
-            Container(
-              padding: const EdgeInsets.all(DeliveryConstants.spacingXl),
-              decoration: const BoxDecoration(
-                border: Border(
-                  top: BorderSide(color: DeliveryConstants.borderColor),
-                ),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => Navigator.pop(context),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        side: const BorderSide(
-                          color: DeliveryConstants.borderColor,
-                        ),
-                      ),
-                      child: const Text('Cancel'),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: _saveDriver,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFF97316),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                      ),
-                      child: const Text('Save Driver'),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
@@ -489,11 +587,14 @@ class _AddDriverModalState extends State<AddDriverModal> {
     );
   }
 
-  Widget _buildVehicleOption(VehicleType type, IconData icon, String label) {
-    final isSelected = _selectedVehicle == type;
-
+  Widget _buildVehicleOption({
+    required IconData icon,
+    required String label,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
     return InkWell(
-      onTap: () => setState(() => _selectedVehicle = type),
+      onTap: onTap,
       borderRadius: BorderRadius.circular(DeliveryConstants.radiusLg),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 20),
@@ -535,8 +636,9 @@ class _AddDriverModalState extends State<AddDriverModal> {
     );
   }
 
-  void _saveDriver() {
-    if (_formKey.currentState!.validate() && _selectedVehicle != null) {
+  void _saveDriver(_AddDriverViewState viewState) {
+    if (_formKey.currentState!.validate() &&
+        viewState.selectedVehicle != null) {
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -544,7 +646,7 @@ class _AddDriverModalState extends State<AddDriverModal> {
           behavior: SnackBarBehavior.floating,
         ),
       );
-    } else if (_selectedVehicle == null) {
+    } else if (viewState.selectedVehicle == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please select a vehicle type'),

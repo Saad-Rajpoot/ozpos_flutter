@@ -267,125 +267,133 @@ class SplitPaymentSection extends StatelessWidget {
   }
 
   void _showAddTenderDialog(BuildContext context) {
-    PaymentMethodType selectedMethod = PaymentMethodType.cash;
+    final parentContext = context;
     final amountController = TextEditingController(
       text: state.splitRemaining.toStringAsFixed(2),
     );
 
     showDialog(
       context: context,
-      builder: (dialogContext) => StatefulBuilder(
-        builder: (statefulContext, setState) => AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          title: const Text('Add Tender'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const Text(
-                'Payment Method',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.black54,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: PaymentMethodType.values.map((method) {
-                  final isSelected = selectedMethod == method;
-                  return GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        selectedMethod = method;
-                      });
-                    },
-                    child: Container(
-                      width: 80,
-                      height: 70,
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? const Color(0xFF2196F3).withOpacity(0.08)
-                            : Colors.white,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: isSelected
-                              ? const Color(0xFF2196F3)
-                              : const Color(0xFFE0E0E0),
-                          width: isSelected ? 2 : 1,
-                        ),
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.payments,
-                            size: 24,
-                            color: isSelected
-                                ? const Color(0xFF2196F3)
-                                : Colors.black54,
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            method.value,
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: isSelected
-                                  ? FontWeight.w600
-                                  : FontWeight.w500,
-                              color: isSelected
-                                  ? const Color(0xFF2196F3)
-                                  : Colors.black87,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: amountController,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  labelText: 'Amount',
-                  prefixText: '\$',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
+      builder: (dialogContext) => BlocProvider(
+        create: (_) => AddTenderDialogCubit(initialMethod: PaymentMethodType.cash),
+        child: BlocBuilder<AddTenderDialogCubit, PaymentMethodType>(
+          builder: (dialogContext, selectedMethod) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            title: const Text('Add Tender'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Text(
+                  'Payment Method',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black54,
                   ),
                 ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: PaymentMethodType.values.map((method) {
+                    final isSelected = selectedMethod == method;
+                    return GestureDetector(
+                      onTap: () => dialogContext
+                          .read<AddTenderDialogCubit>()
+                          .selectMethod(method),
+                      child: Container(
+                        width: 80,
+                        height: 70,
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? const Color(0xFF2196F3).withOpacity(0.08)
+                              : Colors.white,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: isSelected
+                                ? const Color(0xFF2196F3)
+                                : const Color(0xFFE0E0E0),
+                            width: isSelected ? 2 : 1,
+                          ),
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.payments,
+                              size: 24,
+                              color: isSelected
+                                  ? const Color(0xFF2196F3)
+                                  : Colors.black54,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              method.value,
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: isSelected
+                                    ? FontWeight.w600
+                                    : FontWeight.w500,
+                                color: isSelected
+                                    ? const Color(0xFF2196F3)
+                                    : Colors.black87,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: amountController,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: 'Amount',
+                    prefixText: '\$',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  final amount = double.tryParse(amountController.text) ?? 0.0;
+                  if (amount > 0) {
+                    parentContext.read<CheckoutBloc>().add(
+                          AddTender(method: selectedMethod, amount: amount),
+                        );
+                    Navigator.of(dialogContext).pop();
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF2196F3),
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text('Add'),
               ),
             ],
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                final amount = double.tryParse(amountController.text) ?? 0.0;
-                if (amount > 0) {
-                  context.read<CheckoutBloc>().add(
-                        AddTender(method: selectedMethod, amount: amount),
-                      );
-                  Navigator.of(dialogContext).pop();
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF2196F3),
-                foregroundColor: Colors.white,
-              ),
-              child: const Text('Add'),
-            ),
-          ],
         ),
       ),
     );
   }
+}
+
+class AddTenderDialogCubit extends Cubit<PaymentMethodType> {
+  AddTenderDialogCubit({required PaymentMethodType initialMethod})
+      : super(initialMethod);
+
+  void selectMethod(PaymentMethodType method) => emit(method);
 }

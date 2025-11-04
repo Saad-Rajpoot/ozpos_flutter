@@ -1,8 +1,135 @@
+import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../bloc/combo_management_bloc.dart';
 import '../../bloc/combo_management_event.dart';
 import '../../../domain/entities/combo_slot_entity.dart';
+
+const List<Map<String, dynamic>> _kMockCategories = [
+  {'id': 'pizza', 'name': 'Pizzas'},
+  {'id': 'burgers', 'name': 'Burgers'},
+  {'id': 'sides', 'name': 'Sides'},
+  {'id': 'drinks', 'name': 'Drinks'},
+  {'id': 'desserts', 'name': 'Desserts'},
+];
+
+const Map<String, List<Map<String, dynamic>>> _kItemsByCategory = {
+  'pizza': [
+    {
+      'id': 'pizza1',
+      'name': 'Margherita Pizza',
+      'price': 12.50,
+      'sizes': [
+        {'id': 'small', 'name': 'Small'},
+        {'id': 'medium', 'name': 'Medium'},
+        {'id': 'large', 'name': 'Large'},
+      ],
+      'modifiers': [
+        {'id': 'extra_cheese', 'name': 'Extra Cheese'},
+        {'id': 'olives', 'name': 'Olives'},
+      ],
+    },
+    {
+      'id': 'pizza2',
+      'name': 'Pepperoni Pizza',
+      'price': 14.00,
+      'sizes': [
+        {'id': 'small', 'name': 'Small'},
+        {'id': 'medium', 'name': 'Medium'},
+        {'id': 'large', 'name': 'Large'},
+      ],
+      'modifiers': [
+        {'id': 'extra_cheese', 'name': 'Extra Cheese'},
+        {'id': 'extra_pepperoni', 'name': 'Extra Pepperoni'},
+      ],
+    },
+  ],
+  'burgers': [
+    {
+      'id': 'burger1',
+      'name': 'Classic Burger',
+      'price': 11.00,
+      'sizes': [
+        {'id': 'regular', 'name': 'Regular'},
+        {'id': 'large', 'name': 'Large'},
+      ],
+      'modifiers': [
+        {'id': 'cheese', 'name': 'Cheese'},
+        {'id': 'bacon', 'name': 'Bacon'},
+        {'id': 'lettuce', 'name': 'Lettuce'},
+      ],
+    },
+    {
+      'id': 'burger2',
+      'name': 'BBQ Burger',
+      'price': 12.50,
+      'sizes': [
+        {'id': 'regular', 'name': 'Regular'},
+        {'id': 'large', 'name': 'Large'},
+      ],
+      'modifiers': [
+        {'id': 'cheese', 'name': 'Cheese'},
+        {'id': 'onion_rings', 'name': 'Onion Rings'},
+      ],
+    },
+  ],
+  'sides': [
+    {
+      'id': 'fries1',
+      'name': 'French Fries',
+      'price': 4.50,
+      'sizes': [
+        {'id': 'small', 'name': 'Small'},
+        {'id': 'large', 'name': 'Large'},
+      ],
+      'modifiers': [
+        {'id': 'salt', 'name': 'Extra Salt'},
+        {'id': 'ketchup', 'name': 'Ketchup'},
+      ],
+    },
+    {
+      'id': 'wings1',
+      'name': 'Buffalo Wings',
+      'price': 16.50,
+      'sizes': [
+        {'id': '6pc', 'name': '6 pieces'},
+        {'id': '12pc', 'name': '12 pieces'},
+      ],
+      'modifiers': [
+        {'id': 'hot_sauce', 'name': 'Hot Sauce'},
+        {'id': 'ranch', 'name': 'Ranch Dip'},
+      ],
+    },
+  ],
+  'drinks': [
+    {
+      'id': 'drink1',
+      'name': 'Coca Cola',
+      'price': 2.50,
+      'sizes': [
+        {'id': 'regular', 'name': 'Regular'},
+        {'id': 'large', 'name': 'Large'},
+      ],
+      'modifiers': [
+        {'id': 'ice', 'name': 'Extra Ice'},
+        {'id': 'lemon', 'name': 'Lemon'},
+      ],
+    },
+  ],
+  'desserts': [
+    {
+      'id': 'dessert1',
+      'name': 'Chocolate Cake',
+      'price': 6.50,
+      'sizes': [
+        {'id': 'slice', 'name': 'Slice'},
+      ],
+      'modifiers': [
+        {'id': 'ice_cream', 'name': 'Add Ice Cream'},
+      ],
+    },
+  ],
+};
 
 class AddItemDialog extends StatefulWidget {
   const AddItemDialog({super.key});
@@ -12,195 +139,64 @@ class AddItemDialog extends StatefulWidget {
 }
 
 class _AddItemDialogState extends State<AddItemDialog> {
-  String _sourceType = 'specific'; // 'specific' or 'category'
-  String _slotName = '';
-  bool _required = true;
-  bool _defaultIncluded = true;
-  int _maxQuantity = 1;
-  double _price = 0.0;
-  final List<Map<String, dynamic>> _selectedItems = [];
-  String? _selectedCategory;
-  List<Map<String, dynamic>> _availableCategories = [];
-  List<Map<String, dynamic>> _categoryItems = [];
-  final Map<String, List<String>> _selectedSizes = {};
-  final Map<String, List<String>> _selectedModifiers = {};
+  late final ValueNotifier<_AddItemViewState> _stateNotifier;
 
   @override
   void initState() {
     super.initState();
-    _loadCategories();
+    _stateNotifier = ValueNotifier(_AddItemViewState.initial());
   }
 
-  void _loadCategories() {
-    // Mock categories - in real implementation, fetch from database
-    _availableCategories = [
-      {'id': 'pizza', 'name': 'Pizzas'},
-      {'id': 'burgers', 'name': 'Burgers'},
-      {'id': 'sides', 'name': 'Sides'},
-      {'id': 'drinks', 'name': 'Drinks'},
-      {'id': 'desserts', 'name': 'Desserts'},
-    ];
-  }
-
-  void _loadItemsForCategory(String categoryId) {
-    // Mock items for category - in real implementation, fetch from database
-    final itemsByCategory = {
-      'pizza': [
-        {
-          'id': 'pizza1',
-          'name': 'Margherita Pizza',
-          'price': 12.50,
-          'sizes': [
-            {'id': 'small', 'name': 'Small'},
-            {'id': 'medium', 'name': 'Medium'},
-            {'id': 'large', 'name': 'Large'},
-          ],
-          'modifiers': [
-            {'id': 'extra_cheese', 'name': 'Extra Cheese'},
-            {'id': 'olives', 'name': 'Olives'},
-          ],
-        },
-        {
-          'id': 'pizza2',
-          'name': 'Pepperoni Pizza',
-          'price': 14.00,
-          'sizes': [
-            {'id': 'small', 'name': 'Small'},
-            {'id': 'medium', 'name': 'Medium'},
-            {'id': 'large', 'name': 'Large'},
-          ],
-          'modifiers': [
-            {'id': 'extra_cheese', 'name': 'Extra Cheese'},
-            {'id': 'extra_pepperoni', 'name': 'Extra Pepperoni'},
-          ],
-        },
-      ],
-      'burgers': [
-        {
-          'id': 'burger1',
-          'name': 'Classic Burger',
-          'price': 11.00,
-          'sizes': [
-            {'id': 'regular', 'name': 'Regular'},
-            {'id': 'large', 'name': 'Large'},
-          ],
-          'modifiers': [
-            {'id': 'cheese', 'name': 'Cheese'},
-            {'id': 'bacon', 'name': 'Bacon'},
-            {'id': 'lettuce', 'name': 'Lettuce'},
-          ],
-        },
-        {
-          'id': 'burger2',
-          'name': 'BBQ Burger',
-          'price': 12.50,
-          'sizes': [
-            {'id': 'regular', 'name': 'Regular'},
-            {'id': 'large', 'name': 'Large'},
-          ],
-          'modifiers': [
-            {'id': 'cheese', 'name': 'Cheese'},
-            {'id': 'onion_rings', 'name': 'Onion Rings'},
-          ],
-        },
-      ],
-      'sides': [
-        {
-          'id': 'fries1',
-          'name': 'French Fries',
-          'price': 4.50,
-          'sizes': [
-            {'id': 'small', 'name': 'Small'},
-            {'id': 'large', 'name': 'Large'},
-          ],
-          'modifiers': [
-            {'id': 'salt', 'name': 'Extra Salt'},
-            {'id': 'ketchup', 'name': 'Ketchup'},
-          ],
-        },
-        {
-          'id': 'wings1',
-          'name': 'Buffalo Wings',
-          'price': 16.50,
-          'sizes': [
-            {'id': '6pc', 'name': '6 pieces'},
-            {'id': '12pc', 'name': '12 pieces'},
-          ],
-          'modifiers': [
-            {'id': 'hot_sauce', 'name': 'Hot Sauce'},
-            {'id': 'ranch', 'name': 'Ranch Dip'},
-          ],
-        },
-      ],
-      'drinks': [
-        {
-          'id': 'drink1',
-          'name': 'Coca Cola',
-          'price': 2.50,
-          'sizes': [
-            {'id': 'regular', 'name': 'Regular'},
-            {'id': 'large', 'name': 'Large'},
-          ],
-          'modifiers': [
-            {'id': 'ice', 'name': 'Extra Ice'},
-            {'id': 'lemon', 'name': 'Lemon'},
-          ],
-        },
-      ],
-    };
-
-    setState(() {
-      _categoryItems = itemsByCategory[categoryId] ?? [];
-    });
+  @override
+  void dispose() {
+    _stateNotifier.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      child: Container(
-        width: 600,
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header
-            Row(
+    return ValueListenableBuilder<_AddItemViewState>(
+      valueListenable: _stateNotifier,
+      builder: (context, viewState, _) {
+        return Dialog(
+          child: Container(
+            width: 600,
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Add Combo Item',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-                ),
-                const Spacer(),
-                IconButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  icon: const Icon(Icons.close),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-
-            // Scrollable content area
-            Flexible(
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                Row(
                   children: [
-                    // Slot Name
-                    TextField(
-                      decoration: const InputDecoration(
-                        labelText: 'Slot Name',
-                        hintText: 'e.g., Main Item, Side, Drink',
-                        border: OutlineInputBorder(),
-                      ),
-                      onChanged: (value) => setState(() => _slotName = value),
+                    const Text(
+                      'Add Combo Item',
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                     ),
-                    const SizedBox(height: 16),
-
-                    // Source Type Selection
-                    Column(
+                    const Spacer(),
+                    IconButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      icon: const Icon(Icons.close),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                Flexible(
+                  child: SingleChildScrollView(
+                    child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        TextField(
+                          decoration: const InputDecoration(
+                            labelText: 'Slot Name',
+                            hintText: 'e.g., Main Item, Side, Drink',
+                            border: OutlineInputBorder(),
+                          ),
+                          onChanged: (value) => _updateState(
+                            viewState.copyWith(slotName: value),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
                         const Text(
                           'Item Source:',
                           style: TextStyle(fontWeight: FontWeight.w500),
@@ -211,192 +207,255 @@ class _AddItemDialogState extends State<AddItemDialog> {
                             Expanded(
                               child: RadioListTile<String>(
                                 title: const Text('Specific Items'),
-                                subtitle: const Text(
-                                  'Choose individual menu items',
-                                ),
+                                subtitle:
+                                    const Text('Choose individual menu items'),
                                 value: 'specific',
-                                // ignore: deprecated_member_use
-                                groupValue: _sourceType,
-                                // ignore: deprecated_member_use
-                                onChanged: (value) =>
-                                    setState(() => _sourceType = value!),
+                                groupValue: viewState.sourceType,
+                                onChanged: (value) => _updateState(
+                                  viewState.copyWith(
+                                      sourceType: value ?? 'specific'),
+                                ),
                               ),
                             ),
                             Expanded(
                               child: RadioListTile<String>(
                                 title: const Text('Category'),
-                                subtitle: const Text(
-                                  'Any item from a category',
-                                ),
+                                subtitle:
+                                    const Text('Any item from a category'),
                                 value: 'category',
-                                // ignore: deprecated_member_use
-                                groupValue: _sourceType,
-                                // ignore: deprecated_member_use
-                                onChanged: (value) =>
-                                    setState(() => _sourceType = value!),
+                                groupValue: viewState.sourceType,
+                                onChanged: (value) => _updateState(
+                                  viewState.copyWith(
+                                      sourceType: value ?? 'category'),
+                                ),
                               ),
                             ),
                           ],
                         ),
+                        const SizedBox(height: 16),
+                        if (viewState.sourceType == 'specific')
+                          _SpecificItemsSection(
+                            viewState: viewState,
+                            onStateChanged: _updateState,
+                          )
+                        else
+                          _CategorySection(
+                            viewState: viewState,
+                            onStateChanged: _updateState,
+                          ),
+                        const SizedBox(height: 16),
+                        _SettingsSection(
+                          viewState: viewState,
+                          onStateChanged: _updateState,
+                        ),
                       ],
                     ),
-                    const SizedBox(height: 16),
-
-                    // Item/Category Selection
-                    if (_sourceType == 'specific')
-                      _buildSpecificItemsSection()
-                    else
-                      _buildCategorySection(),
-
-                    const SizedBox(height: 16),
-
-                    // Settings
-                    _buildSettingsSection(),
-                  ],
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // Actions
-            Row(
-              children: [
-                const Spacer(),
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Cancel'),
-                ),
-                const SizedBox(width: 12),
-                ElevatedButton(
-                  onPressed: _canSave() ? _saveSlot : null,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF8B5CF6),
-                    foregroundColor: Colors.white,
                   ),
-                  child: Text('Add Item'),
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    const Spacer(),
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text('Cancel'),
+                    ),
+                    const SizedBox(width: 12),
+                    ElevatedButton(
+                      onPressed:
+                          viewState.canSave ? () => _saveSlot(viewState) : null,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF8B5CF6),
+                        foregroundColor: Colors.white,
+                      ),
+                      child: const Text('Add Item'),
+                    ),
+                  ],
                 ),
               ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
-  Widget _buildSpecificItemsSection() {
-    // All available items from all categories
-    final allAvailableItems = <Map<String, dynamic>>[];
+  void _updateState(_AddItemViewState newState) {
+    _stateNotifier.value = newState;
+  }
 
-    // Collect items from all categories
-    final itemsByCategory = {
-      'pizza': [
-        {
-          'id': 'pizza1',
-          'name': 'Margherita Pizza',
-          'price': 12.50,
-          'sizes': [
-            {'id': 'small', 'name': 'Small'},
-            {'id': 'medium', 'name': 'Medium'},
-            {'id': 'large', 'name': 'Large'},
-          ],
-          'modifiers': [
-            {'id': 'extra_cheese', 'name': 'Extra Cheese'},
-            {'id': 'olives', 'name': 'Olives'},
-          ],
-        },
-        {
-          'id': 'pizza2',
-          'name': 'Pepperoni Pizza',
-          'price': 14.00,
-          'sizes': [
-            {'id': 'small', 'name': 'Small'},
-            {'id': 'medium', 'name': 'Medium'},
-            {'id': 'large', 'name': 'Large'},
-          ],
-          'modifiers': [
-            {'id': 'extra_cheese', 'name': 'Extra Cheese'},
-            {'id': 'extra_pepperoni', 'name': 'Extra Pepperoni'},
-          ],
-        },
-      ],
-      'burgers': [
-        {
-          'id': 'burger1',
-          'name': 'Classic Burger',
-          'price': 11.00,
-          'sizes': [
-            {'id': 'regular', 'name': 'Regular'},
-            {'id': 'large', 'name': 'Large'},
-          ],
-          'modifiers': [
-            {'id': 'cheese', 'name': 'Cheese'},
-            {'id': 'bacon', 'name': 'Bacon'},
-            {'id': 'lettuce', 'name': 'Lettuce'},
-          ],
-        },
-        {
-          'id': 'burger2',
-          'name': 'BBQ Burger',
-          'price': 12.50,
-          'sizes': [
-            {'id': 'regular', 'name': 'Regular'},
-            {'id': 'large', 'name': 'Large'},
-          ],
-          'modifiers': [
-            {'id': 'cheese', 'name': 'Cheese'},
-            {'id': 'onion_rings', 'name': 'Onion Rings'},
-          ],
-        },
-      ],
-      'sides': [
-        {
-          'id': 'fries1',
-          'name': 'French Fries',
-          'price': 4.50,
-          'sizes': [
-            {'id': 'small', 'name': 'Small'},
-            {'id': 'large', 'name': 'Large'},
-          ],
-          'modifiers': [
-            {'id': 'salt', 'name': 'Extra Salt'},
-            {'id': 'ketchup', 'name': 'Ketchup'},
-          ],
-        },
-        {
-          'id': 'wings1',
-          'name': 'Buffalo Wings',
-          'price': 16.50,
-          'sizes': [
-            {'id': '6pc', 'name': '6 pieces'},
-            {'id': '12pc', 'name': '12 pieces'},
-          ],
-          'modifiers': [
-            {'id': 'hot_sauce', 'name': 'Hot Sauce'},
-            {'id': 'ranch', 'name': 'Ranch Dip'},
-          ],
-        },
-      ],
-      'drinks': [
-        {
-          'id': 'drink1',
-          'name': 'Coca Cola',
-          'price': 2.50,
-          'sizes': [
-            {'id': 'regular', 'name': 'Regular'},
-            {'id': 'large', 'name': 'Large'},
-          ],
-          'modifiers': [
-            {'id': 'ice', 'name': 'Extra Ice'},
-            {'id': 'lemon', 'name': 'Lemon'},
-          ],
-        },
-      ],
-    };
+  void _saveSlot(_AddItemViewState viewState) {
+    List<String> itemNames = [];
+    List<String> itemIds = [];
 
-    for (final items in itemsByCategory.values) {
-      allAvailableItems.addAll(items);
+    if (viewState.sourceType == 'specific') {
+      itemNames = viewState.selectedItems
+          .map((item) => item['name'] as String)
+          .toList();
+      itemIds =
+          viewState.selectedItems.map((item) => item['id'] as String).toList();
     }
+
+    String? categoryName;
+    if (viewState.sourceType == 'category' &&
+        viewState.selectedCategory != null) {
+      categoryName = viewState.availableCategories.firstWhere(
+        (cat) => cat['id'] == viewState.selectedCategory,
+      )['name'] as String;
+    }
+
+    final slot = ComboSlotEntity(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      name: viewState.slotName,
+      sourceType: viewState.sourceType == 'specific'
+          ? SlotSourceType.specific
+          : SlotSourceType.category,
+      specificItemIds: viewState.sourceType == 'specific' ? itemIds : [],
+      specificItemNames: viewState.sourceType == 'specific' ? itemNames : [],
+      categoryId: viewState.sourceType == 'category'
+          ? viewState.selectedCategory
+          : null,
+      categoryName: categoryName,
+      required: viewState.isRequired,
+      defaultIncluded: viewState.defaultIncluded,
+      maxQuantity: viewState.maxQuantity,
+      defaultPrice: viewState.price,
+      sortOrder: 0,
+      allowedSizeIds:
+          viewState.selectedSizes.values.expand((sizes) => sizes).toList(),
+      modifierGroupAllowed: viewState.selectedModifiers.values
+          .expand((mods) => mods)
+          .fold<Map<String, bool>>({}, (map, modId) {
+        map[modId] = true;
+        return map;
+      }),
+    );
+
+    context.read<ComboManagementBloc>().add(AddComboSlot(slot: slot));
+    Navigator.of(context).pop();
+  }
+}
+
+class _AddItemViewState extends Equatable {
+  const _AddItemViewState({
+    required this.sourceType,
+    required this.slotName,
+    required this.isRequired,
+    required this.defaultIncluded,
+    required this.maxQuantity,
+    required this.price,
+    required this.selectedItems,
+    required this.selectedCategory,
+    required this.availableCategories,
+    required this.categoryItems,
+    required this.selectedSizes,
+    required this.selectedModifiers,
+  });
+
+  final String sourceType;
+  final String slotName;
+  final bool isRequired;
+  final bool defaultIncluded;
+  final int maxQuantity;
+  final double price;
+  final List<Map<String, dynamic>> selectedItems;
+  final String? selectedCategory;
+  final List<Map<String, dynamic>> availableCategories;
+  final List<Map<String, dynamic>> categoryItems;
+  final Map<String, List<String>> selectedSizes;
+  final Map<String, List<String>> selectedModifiers;
+
+  bool get canSave =>
+      slotName.isNotEmpty &&
+      ((sourceType == 'specific' && selectedItems.isNotEmpty) ||
+          (sourceType == 'category' && selectedCategory != null));
+
+  _AddItemViewState copyWith({
+    String? sourceType,
+    String? slotName,
+    bool? isRequired,
+    bool? defaultIncluded,
+    int? maxQuantity,
+    double? price,
+    List<Map<String, dynamic>>? selectedItems,
+    String? selectedCategory,
+    List<Map<String, dynamic>>? availableCategories,
+    List<Map<String, dynamic>>? categoryItems,
+    Map<String, List<String>>? selectedSizes,
+    Map<String, List<String>>? selectedModifiers,
+  }) {
+    return _AddItemViewState(
+      sourceType: sourceType ?? this.sourceType,
+      slotName: slotName ?? this.slotName,
+      isRequired: isRequired ?? this.isRequired,
+      defaultIncluded: defaultIncluded ?? this.defaultIncluded,
+      maxQuantity: maxQuantity ?? this.maxQuantity,
+      price: price ?? this.price,
+      selectedItems:
+          selectedItems ?? List<Map<String, dynamic>>.from(this.selectedItems),
+      selectedCategory: selectedCategory ?? this.selectedCategory,
+      availableCategories: availableCategories ??
+          List<Map<String, dynamic>>.from(this.availableCategories),
+      categoryItems:
+          categoryItems ?? List<Map<String, dynamic>>.from(this.categoryItems),
+      selectedSizes: selectedSizes ??
+          this
+              .selectedSizes
+              .map((key, value) => MapEntry(key, List<String>.from(value))),
+      selectedModifiers: selectedModifiers ??
+          this.selectedModifiers.map(
+                (key, value) => MapEntry(key, List<String>.from(value)),
+              ),
+    );
+  }
+
+  static _AddItemViewState initial() {
+    return _AddItemViewState(
+      sourceType: 'specific',
+      slotName: '',
+      isRequired: true,
+      defaultIncluded: true,
+      maxQuantity: 1,
+      price: 0.0,
+      selectedItems: const [],
+      selectedCategory: null,
+      availableCategories: _kMockCategories,
+      categoryItems: const [],
+      selectedSizes: const {},
+      selectedModifiers: const {},
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        sourceType,
+        slotName,
+        isRequired,
+        defaultIncluded,
+        maxQuantity,
+        price,
+        selectedItems,
+        selectedCategory,
+        availableCategories,
+        categoryItems,
+        selectedSizes,
+        selectedModifiers,
+      ];
+}
+
+class _SpecificItemsSection extends StatelessWidget {
+  const _SpecificItemsSection({
+    required this.viewState,
+    required this.onStateChanged,
+  });
+
+  final _AddItemViewState viewState;
+  final void Function(_AddItemViewState) onStateChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final allAvailableItems =
+        _kItemsByCategory.values.expand((list) => list).toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -416,52 +475,90 @@ class _AddItemDialogState extends State<AddItemDialog> {
             itemCount: allAvailableItems.length,
             itemBuilder: (context, index) {
               final item = allAvailableItems[index];
-              final isSelected = _selectedItems.any(
-                (selected) => selected['id'] == item['id'],
+              final itemId = item['id'] as String;
+              final isSelected = viewState.selectedItems.any(
+                (selected) => selected['id'] == itemId,
               );
 
               return ExpansionTile(
                 leading: Checkbox(
                   value: isSelected,
                   onChanged: (selected) {
-                    setState(() {
-                      if (selected!) {
-                        _selectedItems.add(item);
-                        if (_price == 0) _price = item['price'] as double;
-                        // Initialize with default selections
-                        _selectedSizes[item['id']] = (item['sizes'] as List)
-                            .map((s) => s['id'] as String)
-                            .toList();
-                        _selectedModifiers[item['id']] = [];
-                      } else {
-                        _selectedItems.removeWhere(
-                          (selected) => selected['id'] == item['id'],
-                        );
-                        _selectedSizes.remove(item['id']);
-                        _selectedModifiers.remove(item['id']);
+                    final updatedItems = List<Map<String, dynamic>>.from(
+                      viewState.selectedItems,
+                    );
+                    final updatedSizes = Map<String, List<String>>.from(
+                      viewState.selectedSizes,
+                    );
+                    final updatedModifiers = Map<String, List<String>>.from(
+                      viewState.selectedModifiers,
+                    );
+
+                    if (selected == true) {
+                      updatedItems.add(item);
+                      if (viewState.price == 0) {
+                        onStateChanged(
+                            viewState.copyWith(price: item['price'] as double));
                       }
-                    });
+                      updatedSizes[itemId] = (item['sizes'] as List)
+                          .map((s) => s['id'] as String)
+                          .toList();
+                      updatedModifiers[itemId] = [];
+                    } else {
+                      updatedItems
+                          .removeWhere((selected) => selected['id'] == itemId);
+                      updatedSizes.remove(itemId);
+                      updatedModifiers.remove(itemId);
+                    }
+
+                    onStateChanged(
+                      viewState.copyWith(
+                        selectedItems: updatedItems,
+                        selectedSizes: updatedSizes,
+                        selectedModifiers: updatedModifiers,
+                      ),
+                    );
                   },
                 ),
                 title: Text(item['name'] as String),
-                subtitle: Text(
-                  '\$${(item['price'] as double).toStringAsFixed(2)}',
-                ),
-                children: isSelected ? [_buildItemSizesAndModifiers(item)] : [],
+                subtitle:
+                    Text('	${(item['price'] as double).toStringAsFixed(2)}'),
+                children: isSelected
+                    ? [
+                        _ItemSizesModifiers(
+                          item: item,
+                          selectedSizes: viewState.selectedSizes,
+                          selectedModifiers: viewState.selectedModifiers,
+                          onStateChanged: onStateChanged,
+                          currentState: viewState,
+                        ),
+                      ]
+                    : [],
               );
             },
           ),
         ),
         const SizedBox(height: 8),
         Text(
-          '${_selectedItems.length} item(s) selected',
+          '${viewState.selectedItems.length} item(s) selected',
           style: TextStyle(color: Colors.grey[600], fontSize: 13),
         ),
       ],
     );
   }
+}
 
-  Widget _buildCategorySection() {
+class _CategorySection extends StatelessWidget {
+  const _CategorySection({
+    required this.viewState,
+    required this.onStateChanged,
+  });
+
+  final _AddItemViewState viewState;
+  final void Function(_AddItemViewState) onStateChanged;
+
+  @override
+  Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -475,23 +572,33 @@ class _AddItemDialogState extends State<AddItemDialog> {
             border: OutlineInputBorder(),
             hintText: 'Choose a category',
           ),
-          value: _selectedCategory,
-          items: _availableCategories.map((category) {
+          value: viewState.selectedCategory,
+          items: viewState.availableCategories.map((category) {
             return DropdownMenuItem(
               value: category['id'] as String,
               child: Text(category['name'] as String),
             );
           }).toList(),
           onChanged: (value) {
-            setState(() {
-              _selectedCategory = value;
-              if (value != null) {
-                _loadItemsForCategory(value);
-              }
-            });
+            if (value == null) {
+              onStateChanged(
+                viewState.copyWith(
+                  selectedCategory: null,
+                  categoryItems: const [],
+                ),
+              );
+            } else {
+              onStateChanged(
+                viewState.copyWith(
+                  selectedCategory: value,
+                  categoryItems: _kItemsByCategory[value] ?? const [],
+                ),
+              );
+            }
           },
         ),
-        if (_selectedCategory != null && _categoryItems.isNotEmpty) ...[
+        if (viewState.selectedCategory != null &&
+            viewState.categoryItems.isNotEmpty) ...[
           const SizedBox(height: 16),
           const Text(
             'Items in this category:',
@@ -505,41 +612,68 @@ class _AddItemDialogState extends State<AddItemDialog> {
               borderRadius: BorderRadius.circular(8),
             ),
             child: ListView.builder(
-              itemCount: _categoryItems.length,
+              itemCount: viewState.categoryItems.length,
               itemBuilder: (context, index) {
-                final item = _categoryItems[index];
-                final isSelected = _selectedItems.any(
-                  (selected) => selected['id'] == item['id'],
+                final item = viewState.categoryItems[index];
+                final itemId = item['id'] as String;
+                final isSelected = viewState.selectedItems.any(
+                  (selected) => selected['id'] == itemId,
                 );
 
                 return ExpansionTile(
                   leading: Checkbox(
                     value: isSelected,
                     onChanged: (selected) {
-                      setState(() {
-                        if (selected!) {
-                          _selectedItems.add(item);
-                          if (_price == 0) _price = item['price'] as double;
-                          _selectedSizes[item['id']] = (item['sizes'] as List)
-                              .map((s) => s['id'] as String)
-                              .toList();
-                          _selectedModifiers[item['id']] = [];
-                        } else {
-                          _selectedItems.removeWhere(
-                            (selected) => selected['id'] == item['id'],
-                          );
-                          _selectedSizes.remove(item['id']);
-                          _selectedModifiers.remove(item['id']);
+                      final updatedItems = List<Map<String, dynamic>>.from(
+                        viewState.selectedItems,
+                      );
+                      final updatedSizes = Map<String, List<String>>.from(
+                        viewState.selectedSizes,
+                      );
+                      final updatedModifiers = Map<String, List<String>>.from(
+                        viewState.selectedModifiers,
+                      );
+
+                      if (selected == true) {
+                        updatedItems.add(item);
+                        if (viewState.price == 0) {
+                          onStateChanged(viewState.copyWith(
+                              price: item['price'] as double));
                         }
-                      });
+                        updatedSizes[itemId] = (item['sizes'] as List)
+                            .map((s) => s['id'] as String)
+                            .toList();
+                        updatedModifiers[itemId] = [];
+                      } else {
+                        updatedItems.removeWhere(
+                            (selected) => selected['id'] == itemId);
+                        updatedSizes.remove(itemId);
+                        updatedModifiers.remove(itemId);
+                      }
+
+                      onStateChanged(
+                        viewState.copyWith(
+                          selectedItems: updatedItems,
+                          selectedSizes: updatedSizes,
+                          selectedModifiers: updatedModifiers,
+                        ),
+                      );
                     },
                   ),
                   title: Text(item['name'] as String),
                   subtitle: Text(
                     '\$${(item['price'] as double).toStringAsFixed(2)}',
                   ),
-                  children:
-                      isSelected ? [_buildItemSizesAndModifiers(item)] : [],
+                  children: isSelected
+                      ? [
+                          _ItemSizesModifiers(
+                              item: item,
+                              selectedSizes: viewState.selectedSizes,
+                              selectedModifiers: viewState.selectedModifiers,
+                              onStateChanged: onStateChanged,
+                              currentState: viewState)
+                        ]
+                      : [],
                 );
               },
             ),
@@ -548,8 +682,25 @@ class _AddItemDialogState extends State<AddItemDialog> {
       ],
     );
   }
+}
 
-  Widget _buildItemSizesAndModifiers(Map<String, dynamic> item) {
+class _ItemSizesModifiers extends StatelessWidget {
+  const _ItemSizesModifiers({
+    required this.item,
+    required this.selectedSizes,
+    required this.selectedModifiers,
+    required this.onStateChanged,
+    required this.currentState,
+  });
+
+  final Map<String, dynamic> item;
+  final Map<String, List<String>> selectedSizes;
+  final Map<String, List<String>> selectedModifiers;
+  final void Function(_AddItemViewState) onStateChanged;
+  final _AddItemViewState currentState;
+
+  @override
+  Widget build(BuildContext context) {
     final itemId = item['id'] as String;
     final sizes = item['sizes'] as List<dynamic>;
     final modifiers = item['modifiers'] as List<dynamic>;
@@ -571,20 +722,24 @@ class _AddItemDialogState extends State<AddItemDialog> {
                 final sizeId = size['id'] as String;
                 final sizeName = size['name'] as String;
                 final isSelected =
-                    _selectedSizes[itemId]?.contains(sizeId) ?? false;
+                    selectedSizes[itemId]?.contains(sizeId) ?? false;
 
                 return FilterChip(
                   label: Text(sizeName),
                   selected: isSelected,
                   onSelected: (selected) {
-                    setState(() {
-                      _selectedSizes[itemId] ??= [];
-                      if (selected) {
-                        _selectedSizes[itemId]!.add(sizeId);
-                      } else {
-                        _selectedSizes[itemId]!.remove(sizeId);
-                      }
-                    });
+                    final updatedSizes = Map<String, List<String>>.from(
+                      selectedSizes,
+                    );
+                    if (selected) {
+                      updatedSizes[itemId] ??= [];
+                      updatedSizes[itemId]!.add(sizeId);
+                    } else {
+                      updatedSizes[itemId]!.remove(sizeId);
+                    }
+                    onStateChanged(
+                      currentState.copyWith(selectedSizes: updatedSizes),
+                    );
                   },
                 );
               }).toList(),
@@ -603,20 +758,25 @@ class _AddItemDialogState extends State<AddItemDialog> {
                 final modifierId = modifier['id'] as String;
                 final modifierName = modifier['name'] as String;
                 final isSelected =
-                    _selectedModifiers[itemId]?.contains(modifierId) ?? false;
+                    selectedModifiers[itemId]?.contains(modifierId) ?? false;
 
                 return FilterChip(
                   label: Text(modifierName),
                   selected: isSelected,
                   onSelected: (selected) {
-                    setState(() {
-                      _selectedModifiers[itemId] ??= [];
-                      if (selected) {
-                        _selectedModifiers[itemId]!.add(modifierId);
-                      } else {
-                        _selectedModifiers[itemId]!.remove(modifierId);
-                      }
-                    });
+                    final updatedModifiers = Map<String, List<String>>.from(
+                      selectedModifiers,
+                    );
+                    if (selected) {
+                      updatedModifiers[itemId] ??= [];
+                      updatedModifiers[itemId]!.add(modifierId);
+                    } else {
+                      updatedModifiers[itemId]!.remove(modifierId);
+                    }
+                    onStateChanged(
+                      currentState.copyWith(
+                          selectedModifiers: updatedModifiers),
+                    );
                   },
                 );
               }).toList(),
@@ -626,8 +786,19 @@ class _AddItemDialogState extends State<AddItemDialog> {
       ),
     );
   }
+}
 
-  Widget _buildSettingsSection() {
+class _SettingsSection extends StatelessWidget {
+  const _SettingsSection({
+    required this.viewState,
+    required this.onStateChanged,
+  });
+
+  final _AddItemViewState viewState;
+  final void Function(_AddItemViewState) onStateChanged;
+
+  @override
+  Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -644,16 +815,20 @@ class _AddItemDialogState extends State<AddItemDialog> {
               child: SwitchListTile(
                 title: const Text('Required'),
                 subtitle: const Text('Customer must select'),
-                value: _required,
-                onChanged: (value) => setState(() => _required = value),
+                value: viewState.isRequired,
+                onChanged: (value) => onStateChanged(
+                  viewState.copyWith(isRequired: value),
+                ),
               ),
             ),
             Expanded(
               child: SwitchListTile(
                 title: const Text('Default Included'),
                 subtitle: const Text('Pre-selected for customer'),
-                value: _defaultIncluded,
-                onChanged: (value) => setState(() => _defaultIncluded = value),
+                value: viewState.defaultIncluded,
+                onChanged: (value) => onStateChanged(
+                  viewState.copyWith(defaultIncluded: value),
+                ),
               ),
             ),
           ],
@@ -670,10 +845,11 @@ class _AddItemDialogState extends State<AddItemDialog> {
                 ),
                 keyboardType: TextInputType.number,
                 controller: TextEditingController(
-                  text: _maxQuantity.toString(),
+                  text: viewState.maxQuantity.toString(),
                 ),
-                onChanged: (value) =>
-                    setState(() => _maxQuantity = int.tryParse(value) ?? 1),
+                onChanged: (value) => onStateChanged(
+                  viewState.copyWith(maxQuantity: int.tryParse(value) ?? 1),
+                ),
               ),
             ),
             const SizedBox(width: 16),
@@ -685,10 +861,11 @@ class _AddItemDialogState extends State<AddItemDialog> {
                 ),
                 keyboardType: TextInputType.number,
                 controller: TextEditingController(
-                  text: _price > 0 ? _price.toString() : '',
+                  text: viewState.price > 0 ? viewState.price.toString() : '',
                 ),
-                onChanged: (value) =>
-                    setState(() => _price = double.tryParse(value) ?? 0.0),
+                onChanged: (value) => onStateChanged(
+                  viewState.copyWith(price: double.tryParse(value) ?? 0.0),
+                ),
               ),
             ),
           ],
@@ -752,56 +929,5 @@ class _AddItemDialogState extends State<AddItemDialog> {
         ),
       ],
     );
-  }
-
-  bool _canSave() {
-    return _slotName.isNotEmpty &&
-        ((_sourceType == 'specific' && _selectedItems.isNotEmpty) ||
-            (_sourceType == 'category' && _selectedCategory != null));
-  }
-
-  void _saveSlot() {
-    List<String> itemNames = [];
-    List<String> itemIds = [];
-
-    if (_sourceType == 'specific') {
-      itemNames = _selectedItems.map((item) => item['name'] as String).toList();
-      itemIds = _selectedItems.map((item) => item['id'] as String).toList();
-    }
-
-    String? categoryName;
-    if (_sourceType == 'category' && _selectedCategory != null) {
-      categoryName = _availableCategories.firstWhere(
-        (cat) => cat['id'] == _selectedCategory,
-      )['name'] as String;
-    }
-
-    final slot = ComboSlotEntity(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      name: _slotName,
-      sourceType: _sourceType == 'specific'
-          ? SlotSourceType.specific
-          : SlotSourceType.category,
-      specificItemIds: _sourceType == 'specific' ? itemIds : [],
-      specificItemNames: _sourceType == 'specific' ? itemNames : [],
-      categoryId: _sourceType == 'category' ? _selectedCategory : null,
-      categoryName: categoryName,
-      required: _required,
-      defaultIncluded: _defaultIncluded,
-      maxQuantity: _maxQuantity,
-      defaultPrice: _price,
-      sortOrder: 0,
-      // Include size and modifier restrictions
-      allowedSizeIds: _selectedSizes.values.expand((sizes) => sizes).toList(),
-      modifierGroupAllowed: _selectedModifiers.values
-          .expand((mods) => mods)
-          .fold<Map<String, bool>>({}, (map, modId) {
-        map[modId] = true;
-        return map;
-      }),
-    );
-
-    context.read<ComboManagementBloc>().add(AddComboSlot(slot: slot));
-    Navigator.of(context).pop();
   }
 }

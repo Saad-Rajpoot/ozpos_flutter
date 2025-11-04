@@ -280,7 +280,7 @@ cd android && ./gradlew clean && cd ..
 
 | React/TypeScript | Flutter/Dart |
 |------------------|--------------|
-| `useState` | `StatefulWidget` + `setState` |
+| `useState` | `StatefulWidget`  |
 | Props | Constructor parameters |
 | CSS/Tailwind | Widget properties + Theme |
 | `div`, `span` | `Container`, `Text` |

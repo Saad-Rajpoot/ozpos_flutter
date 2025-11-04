@@ -293,169 +293,189 @@ class _ItemPickerDialog extends StatefulWidget {
 }
 
 class _ItemPickerDialogState extends State<_ItemPickerDialog> {
-  late List<String> _selectedIds;
-  String _searchQuery = '';
-  String _selectedCategory = 'All';
+  late final ValueNotifier<Set<String>> _selectedIdsNotifier;
+  late final ValueNotifier<String> _searchQueryNotifier;
+  late final ValueNotifier<String> _selectedCategoryNotifier;
 
   @override
   void initState() {
     super.initState();
-    _selectedIds = List.from(widget.currentItemIds);
+    _selectedIdsNotifier = ValueNotifier<Set<String>>(
+      Set<String>.from(widget.currentItemIds),
+    );
+    _searchQueryNotifier = ValueNotifier<String>('');
+    _selectedCategoryNotifier = ValueNotifier<String>('All');
+  }
+
+  @override
+  void dispose() {
+    _selectedIdsNotifier.dispose();
+    _searchQueryNotifier.dispose();
+    _selectedCategoryNotifier.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // Build list of unique category names
-    final categoryNames = ['All'];
-    for (final cat in widget.categories) {
-      if (!categoryNames.contains(cat.name)) {
-        categoryNames.add(cat.name);
-      }
-    }
+    final categoryNames = <String>{
+      'All',
+      ...widget.categories.map((c) => c.name)
+    };
 
-    final filteredItems = widget.availableItems.where((item) {
-      final matchesSearch = item.name.toLowerCase().contains(
-        _searchQuery.toLowerCase(),
-      );
+    return ValueListenableBuilder<Set<String>>(
+      valueListenable: _selectedIdsNotifier,
+      builder: (context, selectedIds, _) {
+        return ValueListenableBuilder<String>(
+          valueListenable: _searchQueryNotifier,
+          builder: (context, searchQuery, __) {
+            return ValueListenableBuilder<String>(
+              valueListenable: _selectedCategoryNotifier,
+              builder: (context, selectedCategory, ___) {
+                final filteredItems = widget.availableItems.where((item) {
+                  final matchesSearch = item.name
+                      .toLowerCase()
+                      .contains(searchQuery.toLowerCase());
 
-      // Find category name for this item
-      final category = widget.categories.firstWhere(
-        (cat) => cat.id == item.categoryId,
-        orElse: () => MenuCategoryEntity(
-          id: item.categoryId,
-          name: 'Uncategorized',
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
-        ),
-      );
-
-      final matchesCategory =
-          _selectedCategory == 'All' || category.name == _selectedCategory;
-      return matchesSearch && matchesCategory;
-    }).toList();
-
-    return AlertDialog(
-      title: Text(widget.title),
-      content: SizedBox(
-        width: 500,
-        height: 500,
-        child: Column(
-          children: [
-            // Search field
-            TextField(
-              onChanged: (value) {
-                setState(() {
-                  _searchQuery = value;
-                });
-              },
-              decoration: InputDecoration(
-                hintText: 'Search items...',
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-
-            // Category filter
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                const Text(
-                  'Category:',
-                  style: TextStyle(fontWeight: FontWeight.w500),
-                ),
-                const SizedBox(width: 4),
-                ...categoryNames.map((category) {
-                  return ChoiceChip(
-                    label: Text(category),
-                    selected: _selectedCategory == category,
-                    onSelected: (selected) {
-                      setState(() {
-                        _selectedCategory = category;
-                      });
-                    },
-                  );
-                }),
-              ],
-            ),
-            const SizedBox(height: 16),
-
-            // Items list
-            Expanded(
-              child: filteredItems.isEmpty
-                  ? Center(
-                      child: Text(
-                        'No items found',
-                        style: TextStyle(color: Colors.grey.shade600),
-                      ),
-                    )
-                  : ListView.builder(
-                      itemCount: filteredItems.length,
-                      itemBuilder: (context, index) {
-                        final item = filteredItems[index];
-                        final isSelected = _selectedIds.contains(item.id);
-
-                        // Find category name for this item
-                        final category = widget.categories.firstWhere(
-                          (cat) => cat.id == item.categoryId,
-                          orElse: () => MenuCategoryEntity(
-                            id: item.categoryId,
-                            name: 'Uncategorized',
-                            createdAt: DateTime.now(),
-                            updatedAt: DateTime.now(),
-                          ),
-                        );
-
-                        return CheckboxListTile(
-                          value: isSelected,
-                          onChanged: (value) {
-                            setState(() {
-                              if (value == true) {
-                                _selectedIds.add(item.id);
-                              } else {
-                                _selectedIds.remove(item.id);
-                              }
-                            });
-                          },
-                          title: Text(item.name),
-                          subtitle: Text(
-                            '${category.name} • \$${item.basePrice.toStringAsFixed(2)}',
-                          ),
-                          secondary:
-                              item.image != null && item.image!.isNotEmpty
-                              ? CircleAvatar(
-                                  backgroundImage: NetworkImage(item.image!),
-                                )
-                              : CircleAvatar(
-                                  backgroundColor: Colors.grey.shade200,
-                                  child: Icon(
-                                    Icons.fastfood,
-                                    color: Colors.grey.shade600,
-                                  ),
-                                ),
-                        );
-                      },
+                  final category = widget.categories.firstWhere(
+                    (cat) => cat.id == item.categoryId,
+                    orElse: () => MenuCategoryEntity(
+                      id: item.categoryId,
+                      name: 'Uncategorized',
+                      createdAt: DateTime.now(),
+                      updatedAt: DateTime.now(),
                     ),
-            ),
-          ],
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
-        ),
-        ElevatedButton(
-          onPressed: () {
-            widget.onSelectionChanged(_selectedIds);
-            Navigator.pop(context);
+                  );
+
+                  final matchesCategory = selectedCategory == 'All' ||
+                      category.name == selectedCategory;
+                  return matchesSearch && matchesCategory;
+                }).toList();
+
+                return AlertDialog(
+                  title: Text(widget.title),
+                  content: SizedBox(
+                    width: 500,
+                    height: 500,
+                    child: Column(
+                      children: [
+                        TextField(
+                          onChanged: (value) =>
+                              _searchQueryNotifier.value = value,
+                          decoration: InputDecoration(
+                            hintText: 'Search items...',
+                            prefixIcon: const Icon(Icons.search),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            const Text(
+                              'Category:',
+                              style: TextStyle(fontWeight: FontWeight.w500),
+                            ),
+                            const SizedBox(width: 4),
+                            ...categoryNames.map((category) {
+                              return ChoiceChip(
+                                label: Text(category),
+                                selected: selectedCategory == category,
+                                onSelected: (selected) {
+                                  if (selected) {
+                                    _selectedCategoryNotifier.value = category;
+                                  }
+                                },
+                              );
+                            }),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        Expanded(
+                          child: filteredItems.isEmpty
+                              ? Center(
+                                  child: Text(
+                                    'No items found',
+                                    style:
+                                        TextStyle(color: Colors.grey.shade600),
+                                  ),
+                                )
+                              : ListView.builder(
+                                  itemCount: filteredItems.length,
+                                  itemBuilder: (context, index) {
+                                    final item = filteredItems[index];
+                                    final isSelected =
+                                        selectedIds.contains(item.id);
+
+                                    final category =
+                                        widget.categories.firstWhere(
+                                      (cat) => cat.id == item.categoryId,
+                                      orElse: () => MenuCategoryEntity(
+                                        id: item.categoryId,
+                                        name: 'Uncategorized',
+                                        createdAt: DateTime.now(),
+                                        updatedAt: DateTime.now(),
+                                      ),
+                                    );
+
+                                    return CheckboxListTile(
+                                      value: isSelected,
+                                      onChanged: (value) {
+                                        final updated =
+                                            Set<String>.from(selectedIds);
+                                        if (value == true) {
+                                          updated.add(item.id);
+                                        } else {
+                                          updated.remove(item.id);
+                                        }
+                                        _selectedIdsNotifier.value = updated;
+                                      },
+                                      title: Text(item.name),
+                                      subtitle: Text(
+                                        '${category.name} • \$${item.basePrice.toStringAsFixed(2)}',
+                                      ),
+                                      secondary: item.image != null &&
+                                              item.image!.isNotEmpty
+                                          ? CircleAvatar(
+                                              backgroundImage:
+                                                  NetworkImage(item.image!),
+                                            )
+                                          : CircleAvatar(
+                                              backgroundColor:
+                                                  Colors.grey.shade200,
+                                              child: Icon(
+                                                Icons.fastfood,
+                                                color: Colors.grey.shade600,
+                                              ),
+                                            ),
+                                    );
+                                  },
+                                ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Cancel'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        widget.onSelectionChanged(selectedIds.toList());
+                        Navigator.pop(context);
+                      },
+                      child: Text('Add ${selectedIds.length} Items'),
+                    ),
+                  ],
+                );
+              },
+            );
           },
-          child: Text('Add ${_selectedIds.length} Items'),
-        ),
-      ],
+        );
+      },
     );
   }
 }
