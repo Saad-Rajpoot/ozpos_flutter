@@ -1,12 +1,13 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/base/base_usecase.dart';
+import '../../../../core/base/base_bloc.dart';
 import 'table_management_event.dart';
 import 'table_management_state.dart';
 import '../../domain/usecases/get_tables.dart';
 import '../../domain/usecases/get_available_tables.dart';
 
 class TableManagementBloc
-    extends Bloc<TableManagementEvent, TableManagementState> {
+    extends BaseBloc<TableManagementEvent, TableManagementState> {
   final GetTables _getTables;
   final GetMoveAvailableTables _getMoveAvailableTables;
 

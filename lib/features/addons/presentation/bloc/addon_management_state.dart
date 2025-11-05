@@ -1,11 +1,8 @@
-import 'package:equatable/equatable.dart';
+import '../../../../core/base/base_bloc.dart';
 import '../../domain/entities/addon_management_entities.dart';
 
-abstract class AddonManagementState extends Equatable {
+abstract class AddonManagementState extends BaseState {
   const AddonManagementState();
-
-  @override
-  List<Object?> get props => [];
 }
 
 class AddonManagementInitial extends AddonManagementState {

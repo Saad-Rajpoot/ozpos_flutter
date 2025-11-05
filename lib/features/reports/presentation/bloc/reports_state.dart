@@ -1,11 +1,8 @@
-import 'package:equatable/equatable.dart';
+import '../../../../core/base/base_bloc.dart';
 import '../../domain/entities/reports_entities.dart';
 
-abstract class ReportsState extends Equatable {
+abstract class ReportsState extends BaseState {
   const ReportsState();
-
-  @override
-  List<Object?> get props => [];
 }
 
 class ReportsInitial extends ReportsState {

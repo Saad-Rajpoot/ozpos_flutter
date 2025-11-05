@@ -1,10 +1,7 @@
-import 'package:equatable/equatable.dart';
+import '../../../../core/base/base_bloc.dart';
 
-abstract class TableManagementEvent extends Equatable {
+abstract class TableManagementEvent extends BaseEvent {
   const TableManagementEvent();
-
-  @override
-  List<Object?> get props => [];
 }
 
 /// Load all tables from JSON file

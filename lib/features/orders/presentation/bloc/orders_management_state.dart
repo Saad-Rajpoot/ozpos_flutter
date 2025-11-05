@@ -1,11 +1,8 @@
-import 'package:equatable/equatable.dart';
+import '../../../../core/base/base_bloc.dart';
 import '../../domain/entities/order_entity.dart';
 
-abstract class OrdersManagementState extends Equatable {
+abstract class OrdersManagementState extends BaseState {
   const OrdersManagementState();
-
-  @override
-  List<Object?> get props => [];
 }
 
 class OrdersManagementInitial extends OrdersManagementState {

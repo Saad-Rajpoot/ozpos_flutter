@@ -1,10 +1,7 @@
-import 'package:equatable/equatable.dart';
+import '../../../../core/base/base_bloc.dart';
 
-abstract class ReportsEvent extends Equatable {
+abstract class ReportsEvent extends BaseEvent {
   const ReportsEvent();
-
-  @override
-  List<Object?> get props => [];
 }
 
 /// Load all reports data from JSON file

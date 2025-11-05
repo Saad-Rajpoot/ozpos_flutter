@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/settings_bloc.dart';
+import '../bloc/settings_event.dart';
 import '../bloc/settings_state.dart';
 import '../../../../core/navigation/app_router.dart';
 import '../widgets/appearance_theme_section.dart';
@@ -9,8 +10,20 @@ import '../widgets/expandable_category_list.dart';
 import '../widgets/quick_actions_row.dart';
 import '../widgets/status_overview_row.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
+
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Load settings when screen opens
+    context.read<SettingsBloc>().add(const LoadSettings());
+  }
 
   @override
   Widget build(BuildContext context) {

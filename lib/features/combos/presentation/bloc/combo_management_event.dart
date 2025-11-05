@@ -1,15 +1,12 @@
-import 'package:equatable/equatable.dart';
+import '../../../../core/base/base_bloc.dart';
 import '../../domain/entities/combo_entity.dart';
 import '../../domain/entities/combo_slot_entity.dart';
 import '../../domain/entities/combo_pricing_entity.dart';
 import '../../domain/entities/combo_availability_entity.dart';
 import '../../domain/entities/combo_limits_entity.dart';
 
-abstract class ComboManagementEvent extends Equatable {
+abstract class ComboManagementEvent extends BaseEvent {
   const ComboManagementEvent();
-
-  @override
-  List<Object?> get props => [];
 }
 
 // Loading events

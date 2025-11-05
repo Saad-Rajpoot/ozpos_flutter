@@ -2,6 +2,8 @@ import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
 import '../constants/app_constants.dart';
+import '../navigation/navigation_service.dart';
+import '../navigation/app_router.dart';
 
 /// API Client for making HTTP requests
 class ApiClient {
@@ -63,9 +65,37 @@ class ApiClient {
   }
 
   /// Handle unauthorized access
+  ///
+  /// Clears all authentication data and navigates to dashboard
+  /// when a 401 (Unauthorized) response is received.
   Future<void> _handleUnauthorized() async {
-    await _sharedPreferences.remove(AppConstants.tokenKey);
-    // Navigate to login screen or show error
+    try {
+      // Clear all auth-related data
+      await _sharedPreferences.remove(AppConstants.tokenKey);
+      await _sharedPreferences.remove(AppConstants.userKey);
+
+      // Use NavigationService for safe, context-free navigation
+      // Check if navigator is ready before attempting navigation
+      if (NavigationService.navigatorKey.currentState != null &&
+          NavigationService.navigatorKey.currentContext != null) {
+        // Show snackbar message using NavigationService
+        NavigationService.showSnackBar(
+          'Session expired. Please login again.',
+          duration: const Duration(seconds: 3),
+        );
+
+        // Navigate to dashboard and clear all previous routes
+        // Note: If a login route exists in the future, replace AppRouter.dashboard
+        // with AppRouter.login to redirect to login screen
+        await NavigationService.pushAndClearStack(AppRouter.dashboard);
+      }
+    } catch (e) {
+      // Log error but don't throw - this is called from an interceptor
+      // and we don't want to break the error handling flow
+      if (kDebugMode) {
+        debugPrint('Error handling unauthorized access: $e');
+      }
+    }
   }
 
   /// GET request

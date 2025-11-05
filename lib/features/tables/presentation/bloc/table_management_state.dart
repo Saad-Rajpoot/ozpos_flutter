@@ -1,11 +1,8 @@
-import 'package:equatable/equatable.dart';
+import '../../../../core/base/base_bloc.dart';
 import '../../domain/entities/table_entity.dart';
 
-abstract class TableManagementState extends Equatable {
+abstract class TableManagementState extends BaseState {
   const TableManagementState();
-
-  @override
-  List<Object?> get props => [];
 }
 
 class TableManagementInitial extends TableManagementState {

@@ -1,10 +1,11 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/base/base_usecase.dart';
+import '../../../../core/base/base_bloc.dart';
 import '../../domain/usecases/get_reports_data.dart';
 import 'reports_event.dart';
 import 'reports_state.dart';
 
-class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
+class ReportsBloc extends BaseBloc<ReportsEvent, ReportsState> {
   final GetReportsData _getReportsData;
 
   ReportsBloc({required GetReportsData getReportsData})

@@ -1,11 +1,11 @@
-import 'package:equatable/equatable.dart';
+import '../../../../core/base/base_bloc.dart';
 import '../../domain/entities/combo_entity.dart';
 
 enum ComboLoadingStatus { initial, loading, loaded, error }
 
 enum ComboEditMode { none, create, edit }
 
-class ComboManagementState extends Equatable {
+class ComboManagementState extends BaseState {
   final ComboLoadingStatus status;
   final List<ComboEntity> combos;
   final List<ComboEntity> filteredCombos;

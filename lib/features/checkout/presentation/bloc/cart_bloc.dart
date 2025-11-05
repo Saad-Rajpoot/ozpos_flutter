@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
+import '../../../../core/base/base_bloc.dart';
 import '../../../menu/domain/entities/menu_item_entity.dart';
 import '../../../tables/domain/entities/table_entity.dart';
 
@@ -65,11 +66,8 @@ enum OrderType { dineIn, takeaway, delivery }
 // CART STATE
 // ============================================================================
 
-abstract class CartState extends Equatable {
+abstract class CartState extends BaseState {
   const CartState();
-
-  @override
-  List<Object?> get props => [];
 }
 
 class CartInitial extends CartState {}
@@ -143,11 +141,8 @@ class CartLoaded extends CartState {
 // CART EVENTS
 // ============================================================================
 
-abstract class CartEvent extends Equatable {
+abstract class CartEvent extends BaseEvent {
   const CartEvent();
-
-  @override
-  List<Object?> get props => [];
 }
 
 class InitializeCart extends CartEvent {
@@ -245,7 +240,7 @@ class ClearCart extends CartEvent {}
 // CART BLOC
 // ============================================================================
 
-class CartBloc extends Bloc<CartEvent, CartState> {
+class CartBloc extends BaseBloc<CartEvent, CartState> {
   CartBloc() : super(CartInitial()) {
     on<InitializeCart>(_onInitializeCart);
     on<AddItemToCart>(_onAddItemToCart);

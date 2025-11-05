@@ -1,11 +1,12 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/base/base_usecase.dart';
+import '../../../../core/base/base_bloc.dart';
 import '../../domain/usecases/get_reservations.dart';
 import 'reservation_management_event.dart';
 import 'reservation_management_state.dart';
 
 class ReservationManagementBloc
-    extends Bloc<ReservationManagementEvent, ReservationManagementState> {
+    extends BaseBloc<ReservationManagementEvent, ReservationManagementState> {
   final GetReservations _getReservations;
 
   ReservationManagementBloc({required GetReservations getReservations})

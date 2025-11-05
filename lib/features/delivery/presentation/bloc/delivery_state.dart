@@ -1,11 +1,8 @@
-import 'package:equatable/equatable.dart';
+import '../../../../core/base/base_bloc.dart';
 import '../../domain/entities/delivery_entities.dart';
 
-abstract class DeliveryState extends Equatable {
+abstract class DeliveryState extends BaseState {
   const DeliveryState();
-
-  @override
-  List<Object?> get props => [];
 }
 
 class DeliveryInitial extends DeliveryState {

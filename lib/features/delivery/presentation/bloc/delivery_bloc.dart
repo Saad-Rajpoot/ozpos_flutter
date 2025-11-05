@@ -1,10 +1,11 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/base/base_usecase.dart';
+import '../../../../core/base/base_bloc.dart';
 import 'delivery_event.dart';
 import 'delivery_state.dart';
 import '../../domain/usecases/get_delivery_data.dart';
 
-class DeliveryBloc extends Bloc<DeliveryEvent, DeliveryState> {
+class DeliveryBloc extends BaseBloc<DeliveryEvent, DeliveryState> {
   final GetDeliveryData _getDeliveryData;
 
   DeliveryBloc({required GetDeliveryData getDeliveryData})

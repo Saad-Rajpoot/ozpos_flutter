@@ -1,11 +1,12 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
+import '../../../../core/base/base_bloc.dart';
 import 'docket_designer_event.dart';
 import 'docket_designer_state.dart';
 import '../models/docket_component_model.dart';
 
 class DocketDesignerBloc
-    extends Bloc<DocketDesignerEvent, DocketDesignerState> {
+    extends BaseBloc<DocketDesignerEvent, DocketDesignerState> {
   final Uuid _uuid = const Uuid();
 
   DocketDesignerBloc()

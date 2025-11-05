@@ -1,10 +1,7 @@
-import 'package:equatable/equatable.dart';
+import '../../../../core/base/base_bloc.dart';
 
-abstract class AddonManagementEvent extends Equatable {
+abstract class AddonManagementEvent extends BaseEvent {
   const AddonManagementEvent();
-
-  @override
-  List<Object?> get props => [];
 }
 
 /// Load all addon categories from JSON file

@@ -1,3 +1,9 @@
-abstract class SettingsEvent {}
+import '../../../../core/base/base_bloc.dart';
 
-class LoadSettings extends SettingsEvent {}
+abstract class SettingsEvent extends BaseEvent {
+  const SettingsEvent();
+}
+
+class LoadSettings extends SettingsEvent {
+  const LoadSettings();
+}

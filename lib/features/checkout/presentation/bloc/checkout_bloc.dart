@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
+import '../../../../core/base/base_bloc.dart';
 import '../../domain/entities/tender_entity.dart';
 import '../../domain/entities/voucher_entity.dart';
 import '../../domain/entities/payment_method_type.dart';
@@ -18,11 +19,8 @@ import './cart_bloc.dart';
 // CHECKOUT STATE
 // ============================================================================
 
-abstract class CheckoutState extends Equatable {
+abstract class CheckoutState extends BaseState {
   const CheckoutState();
-
-  @override
-  List<Object?> get props => [];
 }
 
 class CheckoutInitial extends CheckoutState {}
@@ -270,11 +268,8 @@ class CheckoutError extends CheckoutState {
 // CHECKOUT EVENTS
 // ============================================================================
 
-abstract class CheckoutEvent extends Equatable {
+abstract class CheckoutEvent extends BaseEvent {
   const CheckoutEvent();
-
-  @override
-  List<Object?> get props => [];
 }
 
 class InitializeCheckout extends CheckoutEvent {
@@ -409,7 +404,7 @@ class DismissError extends CheckoutEvent {}
 // CHECKOUT BLOC
 // ============================================================================
 
-class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
+class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
   final InitializeCheckoutUseCase _initializeCheckoutUseCase;
   final ProcessPaymentUseCase _processPaymentUseCase;
   final ApplyVoucherUseCase _applyVoucherUseCase;

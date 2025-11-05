@@ -15,9 +15,10 @@ import '../../domain/usecases/delete_combo.dart';
 import '../../domain/usecases/validate_combo.dart';
 import '../../domain/usecases/calculate_pricing.dart';
 import '../../../../core/base/base_usecase.dart';
+import '../../../../core/base/base_bloc.dart';
 
 class ComboManagementBloc
-    extends Bloc<ComboManagementEvent, ComboManagementState> {
+    extends BaseBloc<ComboManagementEvent, ComboManagementState> {
   final Uuid _uuid;
   final GetCombos _getCombos;
   final CreateCombo _createCombo;

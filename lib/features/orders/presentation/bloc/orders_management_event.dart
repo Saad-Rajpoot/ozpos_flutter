@@ -1,10 +1,7 @@
-import 'package:equatable/equatable.dart';
+import '../../../../core/base/base_bloc.dart';
 
-abstract class OrdersManagementEvent extends Equatable {
+abstract class OrdersManagementEvent extends BaseEvent {
   const OrdersManagementEvent();
-
-  @override
-  List<Object?> get props => [];
 }
 
 /// Load all orders from data source

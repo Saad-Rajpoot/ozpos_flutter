@@ -1,11 +1,8 @@
-import 'package:equatable/equatable.dart';
+import '../../../../core/base/base_bloc.dart';
 
 /// Events for Docket Designer
-abstract class DocketDesignerEvent extends Equatable {
+abstract class DocketDesignerEvent extends BaseEvent {
   const DocketDesignerEvent();
-
-  @override
-  List<Object?> get props => [];
 }
 
 /// Load template

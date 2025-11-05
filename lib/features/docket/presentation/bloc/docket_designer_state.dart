@@ -1,12 +1,9 @@
-import 'package:equatable/equatable.dart';
+import '../../../../core/base/base_bloc.dart';
 import '../models/docket_component_model.dart';
 
 /// States for Docket Designer
-abstract class DocketDesignerState extends Equatable {
+abstract class DocketDesignerState extends BaseState {
   const DocketDesignerState();
-
-  @override
-  List<Object?> get props => [];
 }
 
 /// Initial state

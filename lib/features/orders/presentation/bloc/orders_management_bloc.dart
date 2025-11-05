@@ -1,11 +1,12 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/base/base_usecase.dart';
+import '../../../../core/base/base_bloc.dart';
 import 'orders_management_event.dart';
 import 'orders_management_state.dart';
 import '../../domain/usecases/get_orders.dart';
 
 class OrdersManagementBloc
-    extends Bloc<OrdersManagementEvent, OrdersManagementState> {
+    extends BaseBloc<OrdersManagementEvent, OrdersManagementState> {
   final GetOrders _getOrders;
 
   OrdersManagementBloc({required GetOrders getOrders})

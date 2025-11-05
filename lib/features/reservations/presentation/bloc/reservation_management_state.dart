@@ -1,11 +1,8 @@
-import 'package:equatable/equatable.dart';
+import '../../../../core/base/base_bloc.dart';
 import '../../domain/entities/reservation_entity.dart';
 
-abstract class ReservationManagementState extends Equatable {
+abstract class ReservationManagementState extends BaseState {
   const ReservationManagementState();
-
-  @override
-  List<Object?> get props => [];
 }
 
 class ReservationManagementInitial extends ReservationManagementState {

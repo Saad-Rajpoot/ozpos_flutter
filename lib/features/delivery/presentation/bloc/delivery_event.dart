@@ -1,10 +1,7 @@
-import 'package:equatable/equatable.dart';
+import '../../../../core/base/base_bloc.dart';
 
-abstract class DeliveryEvent extends Equatable {
+abstract class DeliveryEvent extends BaseEvent {
   const DeliveryEvent();
-
-  @override
-  List<Object?> get props => [];
 }
 
 /// Load all delivery data from JSON file
