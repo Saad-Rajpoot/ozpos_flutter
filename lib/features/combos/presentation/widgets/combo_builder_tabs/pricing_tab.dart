@@ -32,6 +32,10 @@ class _PricingTabState extends State<PricingTab> {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<ComboManagementBloc, ComboManagementState>(
+      buildWhen: (previous, current) {
+        // Only rebuild if editing combo changes
+        return previous.editingCombo != current.editingCombo;
+      },
       builder: (context, state) {
         final combo = state.editingCombo;
         if (combo == null) return const SizedBox.shrink();

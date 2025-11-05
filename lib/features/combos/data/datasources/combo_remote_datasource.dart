@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import '../../domain/entities/combo_entity.dart';
 import '../../domain/entities/combo_slot_entity.dart';
 import '../../domain/entities/combo_availability_entity.dart';
@@ -6,6 +7,7 @@ import '../../domain/entities/combo_option_entity.dart';
 import '../../domain/entities/combo_pricing_entity.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/errors/exceptions.dart';
+import '../../../../core/utils/exception_helper.dart';
 import '../models/combo_model.dart';
 import '../models/combo_slot_model.dart';
 import '../models/combo_availability_model.dart';
@@ -25,10 +27,20 @@ class ComboRemoteDataSourceImpl implements ComboDataSource {
   Future<List<ComboEntity>> getCombos() async {
     try {
       final response = await _apiClient.get(AppConstants.getCombosEndpoint);
-      final List<dynamic> data = response.data['data'];
+      final data = ExceptionHelper.validateListResponse(
+        response.data,
+        'fetching combos',
+      );
       return data.map((json) => ComboModel.fromJson(json).toEntity()).toList();
+    } on DioException catch (e) {
+      throw ExceptionHelper.handleDioException(e, 'fetching combos');
     } catch (e) {
-      throw ServerException(message: 'Failed to fetch combos');
+      if (e is ServerException || e is NetworkException) {
+        rethrow;
+      }
+      throw ServerException(
+        message: 'Unexpected error fetching combos: $e',
+      );
     }
   }
 
@@ -36,12 +48,22 @@ class ComboRemoteDataSourceImpl implements ComboDataSource {
   Future<List<ComboSlotEntity>> getComboSlots() async {
     try {
       final response = await _apiClient.get(AppConstants.getComboSlotsEndpoint);
-      final List<dynamic> data = response.data['data'];
+      final data = ExceptionHelper.validateListResponse(
+        response.data,
+        'fetching combo slots',
+      );
       return data
           .map((json) => ComboSlotModel.fromJson(json).toEntity())
           .toList();
+    } on DioException catch (e) {
+      throw ExceptionHelper.handleDioException(e, 'fetching combo slots');
     } catch (e) {
-      throw ServerException(message: 'Failed to fetch combo slots');
+      if (e is ServerException || e is NetworkException) {
+        rethrow;
+      }
+      throw ServerException(
+        message: 'Unexpected error fetching combo slots: $e',
+      );
     }
   }
 
@@ -51,12 +73,25 @@ class ComboRemoteDataSourceImpl implements ComboDataSource {
       final response = await _apiClient.get(
         AppConstants.getComboAvailabilityEndpoint,
       );
-      final List<dynamic> data = response.data['data'];
+      final data = ExceptionHelper.validateListResponse(
+        response.data,
+        'fetching combo availability',
+      );
       return data
           .map((json) => ComboAvailabilityModel.fromJson(json).toEntity())
           .toList();
+    } on DioException catch (e) {
+      throw ExceptionHelper.handleDioException(
+        e,
+        'fetching combo availability',
+      );
     } catch (e) {
-      throw ServerException(message: 'Failed to fetch combo availability');
+      if (e is ServerException || e is NetworkException) {
+        rethrow;
+      }
+      throw ServerException(
+        message: 'Unexpected error fetching combo availability: $e',
+      );
     }
   }
 
@@ -66,12 +101,22 @@ class ComboRemoteDataSourceImpl implements ComboDataSource {
       final response = await _apiClient.get(
         AppConstants.getComboLimitsEndpoint,
       );
-      final List<dynamic> data = response.data['data'];
+      final data = ExceptionHelper.validateListResponse(
+        response.data,
+        'fetching combo limits',
+      );
       return data
           .map((json) => ComboLimitsModel.fromJson(json).toEntity())
           .toList();
+    } on DioException catch (e) {
+      throw ExceptionHelper.handleDioException(e, 'fetching combo limits');
     } catch (e) {
-      throw ServerException(message: 'Failed to fetch combo limits');
+      if (e is ServerException || e is NetworkException) {
+        rethrow;
+      }
+      throw ServerException(
+        message: 'Unexpected error fetching combo limits: $e',
+      );
     }
   }
 
@@ -81,12 +126,22 @@ class ComboRemoteDataSourceImpl implements ComboDataSource {
       final response = await _apiClient.get(
         AppConstants.getComboOptionsEndpoint,
       );
-      final List<dynamic> data = response.data['data'];
+      final data = ExceptionHelper.validateListResponse(
+        response.data,
+        'fetching combo options',
+      );
       return data
           .map((json) => ComboOptionModel.fromJson(json).toEntity())
           .toList();
+    } on DioException catch (e) {
+      throw ExceptionHelper.handleDioException(e, 'fetching combo options');
     } catch (e) {
-      throw ServerException(message: 'Failed to fetch combo options');
+      if (e is ServerException || e is NetworkException) {
+        rethrow;
+      }
+      throw ServerException(
+        message: 'Unexpected error fetching combo options: $e',
+      );
     }
   }
 
@@ -96,12 +151,22 @@ class ComboRemoteDataSourceImpl implements ComboDataSource {
       final response = await _apiClient.get(
         AppConstants.getComboPricingEndpoint,
       );
-      final List<dynamic> data = response.data['data'];
+      final data = ExceptionHelper.validateListResponse(
+        response.data,
+        'fetching combo pricing',
+      );
       return data
           .map((json) => ComboPricingModel.fromJson(json).toEntity())
           .toList();
+    } on DioException catch (e) {
+      throw ExceptionHelper.handleDioException(e, 'fetching combo pricing');
     } catch (e) {
-      throw ServerException(message: 'Failed to fetch combo pricing');
+      if (e is ServerException || e is NetworkException) {
+        rethrow;
+      }
+      throw ServerException(
+        message: 'Unexpected error fetching combo pricing: $e',
+      );
     }
   }
 
@@ -112,9 +177,20 @@ class ComboRemoteDataSourceImpl implements ComboDataSource {
         AppConstants.createComboEndpoint,
         data: ComboModel.fromEntity(combo).toJson(),
       );
-      return ComboModel.fromJson(response.data['data']).toEntity();
+      final data = ExceptionHelper.validateResponseData(
+        response.data,
+        'creating combo',
+      );
+      return ComboModel.fromJson(data).toEntity();
+    } on DioException catch (e) {
+      throw ExceptionHelper.handleDioException(e, 'creating combo');
     } catch (e) {
-      throw ServerException(message: 'Failed to create combo');
+      if (e is ServerException || e is NetworkException) {
+        rethrow;
+      }
+      throw ServerException(
+        message: 'Unexpected error creating combo: $e',
+      );
     }
   }
 
@@ -125,9 +201,20 @@ class ComboRemoteDataSourceImpl implements ComboDataSource {
         '${AppConstants.updateComboEndpoint}/${combo.id}',
         data: ComboModel.fromEntity(combo).toJson(),
       );
-      return ComboModel.fromJson(response.data['data']).toEntity();
+      final data = ExceptionHelper.validateResponseData(
+        response.data,
+        'updating combo',
+      );
+      return ComboModel.fromJson(data).toEntity();
+    } on DioException catch (e) {
+      throw ExceptionHelper.handleDioException(e, 'updating combo');
     } catch (e) {
-      throw ServerException(message: 'Failed to update combo');
+      if (e is ServerException || e is NetworkException) {
+        rethrow;
+      }
+      throw ServerException(
+        message: 'Unexpected error updating combo: $e',
+      );
     }
   }
 
@@ -135,8 +222,15 @@ class ComboRemoteDataSourceImpl implements ComboDataSource {
   Future<void> deleteCombo(String comboId) async {
     try {
       await _apiClient.delete('${AppConstants.deleteComboEndpoint}/$comboId');
+    } on DioException catch (e) {
+      throw ExceptionHelper.handleDioException(e, 'deleting combo');
     } catch (e) {
-      throw ServerException(message: 'Failed to delete combo');
+      if (e is ServerException || e is NetworkException) {
+        rethrow;
+      }
+      throw ServerException(
+        message: 'Unexpected error deleting combo: $e',
+      );
     }
   }
 
@@ -147,9 +241,20 @@ class ComboRemoteDataSourceImpl implements ComboDataSource {
         '${AppConstants.duplicateComboEndpoint}/$comboId',
         data: {'newName': newName},
       );
-      return ComboModel.fromJson(response.data['data']).toEntity();
+      final data = ExceptionHelper.validateResponseData(
+        response.data,
+        'duplicating combo',
+      );
+      return ComboModel.fromJson(data).toEntity();
+    } on DioException catch (e) {
+      throw ExceptionHelper.handleDioException(e, 'duplicating combo');
     } catch (e) {
-      throw ServerException(message: 'Failed to duplicate combo');
+      if (e is ServerException || e is NetworkException) {
+        rethrow;
+      }
+      throw ServerException(
+        message: 'Unexpected error duplicating combo: $e',
+      );
     }
   }
 }

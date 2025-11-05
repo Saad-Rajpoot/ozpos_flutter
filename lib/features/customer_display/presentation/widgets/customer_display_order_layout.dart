@@ -389,10 +389,10 @@ class _CartItemCard extends StatelessWidget {
 }
 
 class _TotalsCard extends StatelessWidget {
-  _TotalsCard({required this.totals});
+  const _TotalsCard({required this.totals});
 
   final CustomerDisplayTotalsEntity totals;
-  final NumberFormat currency = NumberFormat.currency(symbol: r'$');
+  static final NumberFormat _currency = NumberFormat.currency(symbol: r'$');
 
   @override
   Widget build(BuildContext context) {
@@ -413,21 +413,21 @@ class _TotalsCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _totalRow('Subtotal', currency.format(totals.subtotal)),
+          _totalRow('Subtotal', _currency.format(totals.subtotal)),
           if (totals.hasDiscount)
             _totalRow(
               'Discount',
-              '-${currency.format(totals.discount)} 🎉',
+              '-${_currency.format(totals.discount)} 🎉',
               valueColor: const Color(0xFF16a34a),
             ),
-          _totalRow('Tax (10%)', currency.format(totals.tax)),
+          _totalRow('Tax (10%)', _currency.format(totals.tax)),
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 16),
             child: Divider(thickness: 2),
           ),
           _totalRow(
             'TOTAL',
-            currency.format(totals.total),
+            _currency.format(totals.total),
             isEmphasis: true,
           ),
           if (totals.hasDiscount) const SizedBox(height: 16),

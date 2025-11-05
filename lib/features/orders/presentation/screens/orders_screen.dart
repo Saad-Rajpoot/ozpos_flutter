@@ -470,6 +470,26 @@ class _OrdersContent extends StatelessWidget {
     final viewState = context.watch<OrdersViewCubit>().state;
 
     return BlocBuilder<OrdersManagementBloc, OrdersManagementState>(
+      buildWhen: (previous, current) {
+        // Always rebuild on state type changes (Loading/Error/Loaded)
+        if (previous.runtimeType != current.runtimeType) {
+          return true;
+        }
+
+        // For OrdersManagementLoaded state, only rebuild if orders list changes
+        if (previous is OrdersManagementLoaded &&
+            current is OrdersManagementLoaded) {
+          return previous.orders != current.orders;
+        }
+
+        // For OrdersManagementError state, only rebuild if error message changes
+        if (previous is OrdersManagementError &&
+            current is OrdersManagementError) {
+          return previous.message != current.message;
+        }
+
+        return false;
+      },
       builder: (context, blocState) {
         if (blocState is OrdersManagementLoading) {
           return const Center(child: CircularProgressIndicator());

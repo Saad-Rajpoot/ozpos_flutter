@@ -80,6 +80,10 @@ class _AvailabilityTabState extends State<AvailabilityTab> {
       valueListenable: _stateNotifier,
       builder: (context, viewState, _) {
         return BlocBuilder<ComboManagementBloc, ComboManagementState>(
+          buildWhen: (previous, current) {
+            // Only rebuild if editing combo changes
+            return previous.editingCombo != current.editingCombo;
+          },
           builder: (context, state) {
             final combo = state.editingCombo;
             if (combo == null) return const SizedBox.shrink();

@@ -23,144 +23,242 @@ class ComboRepositoryImpl implements ComboRepository {
 
   @override
   Future<Either<Failure, List<ComboEntity>>> getCombos() async {
-    if (await networkInfo.isConnected) {
-      try {
-        final combos = await comboDataSource.getCombos();
-        return Right(combos);
-      } on ServerException {
-        return Left(ServerFailure(message: 'Server error'));
-      }
-    } else {
-      return Left(NetworkFailure(message: 'Network error'));
+    if (!await networkInfo.isConnected) {
+      return const Left(
+        NetworkFailure(message: 'No internet connection available'),
+      );
+    }
+
+    try {
+      final combos = await comboDataSource.getCombos();
+      return Right(combos);
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(message: e.message));
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message));
+    } on CacheException catch (e) {
+      return Left(CacheFailure(message: e.message));
+    } catch (e) {
+      return Left(
+        ServerFailure(message: 'Unexpected error loading combos: $e'),
+      );
     }
   }
 
   @override
   Future<Either<Failure, List<ComboSlotEntity>>> getComboSlots() async {
-    if (await networkInfo.isConnected) {
-      try {
-        final comboSlots = await comboDataSource.getComboSlots();
-        return Right(comboSlots);
-      } on ServerException {
-        return Left(ServerFailure(message: 'Server error'));
-      }
-    } else {
-      return Left(NetworkFailure(message: 'Network error'));
+    if (!await networkInfo.isConnected) {
+      return const Left(
+        NetworkFailure(message: 'No internet connection available'),
+      );
+    }
+
+    try {
+      final comboSlots = await comboDataSource.getComboSlots();
+      return Right(comboSlots);
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(message: e.message));
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message));
+    } on CacheException catch (e) {
+      return Left(CacheFailure(message: e.message));
+    } catch (e) {
+      return Left(
+        ServerFailure(message: 'Unexpected error loading combo slots: $e'),
+      );
     }
   }
 
   @override
   Future<Either<Failure, List<ComboAvailabilityEntity>>>
       getComboAvailability() async {
-    if (await networkInfo.isConnected) {
-      try {
-        final comboAvailability = await comboDataSource.getComboAvailability();
-        return Right(comboAvailability);
-      } on ServerException {
-        return Left(ServerFailure(message: 'Server error'));
-      }
-    } else {
-      return Left(NetworkFailure(message: 'Network error'));
+    if (!await networkInfo.isConnected) {
+      return const Left(
+        NetworkFailure(message: 'No internet connection available'),
+      );
+    }
+
+    try {
+      final comboAvailability = await comboDataSource.getComboAvailability();
+      return Right(comboAvailability);
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(message: e.message));
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message));
+    } on CacheException catch (e) {
+      return Left(CacheFailure(message: e.message));
+    } catch (e) {
+      return Left(
+        ServerFailure(
+          message: 'Unexpected error loading combo availability: $e',
+        ),
+      );
     }
   }
 
   @override
   Future<Either<Failure, List<ComboLimitsEntity>>> getComboLimits() async {
-    if (await networkInfo.isConnected) {
-      try {
-        final comboLimits = await comboDataSource.getComboLimits();
-        return Right(comboLimits);
-      } on ServerException {
-        return Left(ServerFailure(message: 'Server error'));
-      }
-    } else {
-      return Left(NetworkFailure(message: 'Network error'));
+    if (!await networkInfo.isConnected) {
+      return const Left(
+        NetworkFailure(message: 'No internet connection available'),
+      );
+    }
+
+    try {
+      final comboLimits = await comboDataSource.getComboLimits();
+      return Right(comboLimits);
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(message: e.message));
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message));
+    } on CacheException catch (e) {
+      return Left(CacheFailure(message: e.message));
+    } catch (e) {
+      return Left(
+        ServerFailure(message: 'Unexpected error loading combo limits: $e'),
+      );
     }
   }
 
   @override
   Future<Either<Failure, List<ComboOptionEntity>>> getComboOptions() async {
-    if (await networkInfo.isConnected) {
-      try {
-        final comboOptions = await comboDataSource.getComboOptions();
-        return Right(comboOptions);
-      } on ServerException {
-        return Left(ServerFailure(message: 'Server error'));
-      }
-    } else {
-      return Left(NetworkFailure(message: 'Network error'));
+    if (!await networkInfo.isConnected) {
+      return const Left(
+        NetworkFailure(message: 'No internet connection available'),
+      );
+    }
+
+    try {
+      final comboOptions = await comboDataSource.getComboOptions();
+      return Right(comboOptions);
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(message: e.message));
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message));
+    } on CacheException catch (e) {
+      return Left(CacheFailure(message: e.message));
+    } catch (e) {
+      return Left(
+        ServerFailure(message: 'Unexpected error loading combo options: $e'),
+      );
     }
   }
 
   @override
   Future<Either<Failure, List<ComboPricingEntity>>> getComboPricing() async {
-    if (await networkInfo.isConnected) {
-      try {
-        final comboPricing = await comboDataSource.getComboPricing();
-        return Right(comboPricing);
-      } on ServerException {
-        return Left(ServerFailure(message: 'Server error'));
-      }
-    } else {
-      return Left(NetworkFailure(message: 'Network error'));
+    if (!await networkInfo.isConnected) {
+      return const Left(
+        NetworkFailure(message: 'No internet connection available'),
+      );
+    }
+
+    try {
+      final comboPricing = await comboDataSource.getComboPricing();
+      return Right(comboPricing);
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(message: e.message));
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message));
+    } on CacheException catch (e) {
+      return Left(CacheFailure(message: e.message));
+    } catch (e) {
+      return Left(
+        ServerFailure(message: 'Unexpected error loading combo pricing: $e'),
+      );
     }
   }
 
   @override
   Future<Either<Failure, ComboEntity>> createCombo(ComboEntity combo) async {
-    if (await networkInfo.isConnected) {
-      try {
-        final createdCombo = await comboDataSource.createCombo(combo);
-        return Right(createdCombo);
-      } on ServerException {
-        return Left(ServerFailure(message: 'Failed to create combo'));
-      }
-    } else {
-      return Left(NetworkFailure(message: 'Network error'));
+    if (!await networkInfo.isConnected) {
+      return const Left(
+        NetworkFailure(message: 'No internet connection available'),
+      );
+    }
+
+    try {
+      final createdCombo = await comboDataSource.createCombo(combo);
+      return Right(createdCombo);
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(message: e.message));
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message));
+    } on ValidationException catch (e) {
+      return Left(ValidationFailure(message: e.message));
+    } catch (e) {
+      return Left(
+        ServerFailure(message: 'Unexpected error creating combo: $e'),
+      );
     }
   }
 
   @override
   Future<Either<Failure, ComboEntity>> updateCombo(ComboEntity combo) async {
-    if (await networkInfo.isConnected) {
-      try {
-        final updatedCombo = await comboDataSource.updateCombo(combo);
-        return Right(updatedCombo);
-      } on ServerException {
-        return Left(ServerFailure(message: 'Failed to update combo'));
-      }
-    } else {
-      return Left(NetworkFailure(message: 'Network error'));
+    if (!await networkInfo.isConnected) {
+      return const Left(
+        NetworkFailure(message: 'No internet connection available'),
+      );
+    }
+
+    try {
+      final updatedCombo = await comboDataSource.updateCombo(combo);
+      return Right(updatedCombo);
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(message: e.message));
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message));
+    } on ValidationException catch (e) {
+      return Left(ValidationFailure(message: e.message));
+    } catch (e) {
+      return Left(
+        ServerFailure(message: 'Unexpected error updating combo: $e'),
+      );
     }
   }
 
   @override
   Future<Either<Failure, void>> deleteCombo(String comboId) async {
-    if (await networkInfo.isConnected) {
-      try {
-        await comboDataSource.deleteCombo(comboId);
-        return const Right(null);
-      } on ServerException {
-        return Left(ServerFailure(message: 'Failed to delete combo'));
-      }
-    } else {
-      return Left(NetworkFailure(message: 'Network error'));
+    if (!await networkInfo.isConnected) {
+      return const Left(
+        NetworkFailure(message: 'No internet connection available'),
+      );
+    }
+
+    try {
+      await comboDataSource.deleteCombo(comboId);
+      return const Right(null);
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(message: e.message));
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message));
+    } catch (e) {
+      return Left(
+        ServerFailure(message: 'Unexpected error deleting combo: $e'),
+      );
     }
   }
 
   @override
   Future<Either<Failure, ComboEntity>> duplicateCombo(String comboId,
       {String? newName}) async {
-    if (await networkInfo.isConnected) {
-      try {
-        final duplicatedCombo =
-            await comboDataSource.duplicateCombo(comboId, newName: newName);
-        return Right(duplicatedCombo);
-      } on ServerException {
-        return Left(ServerFailure(message: 'Failed to duplicate combo'));
-      }
-    } else {
-      return Left(NetworkFailure(message: 'Network error'));
+    if (!await networkInfo.isConnected) {
+      return const Left(
+        NetworkFailure(message: 'No internet connection available'),
+      );
+    }
+
+    try {
+      final duplicatedCombo =
+          await comboDataSource.duplicateCombo(comboId, newName: newName);
+      return Right(duplicatedCombo);
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(message: e.message));
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message));
+    } catch (e) {
+      return Left(
+        ServerFailure(message: 'Unexpected error duplicating combo: $e'),
+      );
     }
   }
 

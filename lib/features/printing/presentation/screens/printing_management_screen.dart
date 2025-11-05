@@ -28,6 +28,36 @@ class PrintingManagementScreen extends StatelessWidget {
         ],
       ),
       body: BlocBuilder<PrintingBloc, PrintingState>(
+        buildWhen: (previous, current) {
+          // Always rebuild on state type changes
+          if (previous.runtimeType != current.runtimeType) {
+            return true;
+          }
+
+          // For PrintersLoaded state, only rebuild if printers or defaultPrinter changes
+          if (previous is PrintersLoaded && current is PrintersLoaded) {
+            return previous.printers != current.printers ||
+                previous.defaultPrinter != current.defaultPrinter;
+          }
+
+          // For PrintingError state, only rebuild if error message changes
+          if (previous is PrintingError && current is PrintingError) {
+            return previous.message != current.message;
+          }
+
+          // For PrintersDiscovered state, only rebuild if discovered printers change
+          if (previous is PrintersDiscovered && current is PrintersDiscovered) {
+            return previous.discoveredPrinters != current.discoveredPrinters;
+          }
+
+          // For PrintJobHistoryLoaded state, only rebuild if print jobs change
+          if (previous is PrintJobHistoryLoaded &&
+              current is PrintJobHistoryLoaded) {
+            return previous.printJobs != current.printJobs;
+          }
+
+          return false;
+        },
         builder: (context, state) {
           if (state is PrintingLoading) {
             return const Center(child: CircularProgressIndicator());

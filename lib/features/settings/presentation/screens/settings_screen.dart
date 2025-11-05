@@ -19,6 +19,24 @@ class SettingsScreen extends StatelessWidget {
         title: const Text('Settings & Configuration'),
       ),
       body: BlocBuilder<SettingsBloc, SettingsState>(
+        buildWhen: (previous, current) {
+          // Always rebuild on state type changes (Loading/Error/Loaded)
+          if (previous.runtimeType != current.runtimeType) {
+            return true;
+          }
+
+          // For SettingsLoaded state, only rebuild if categories change
+          if (previous is SettingsLoaded && current is SettingsLoaded) {
+            return previous.categories != current.categories;
+          }
+
+          // For SettingsError state, only rebuild if error message changes
+          if (previous is SettingsError && current is SettingsError) {
+            return previous.message != current.message;
+          }
+
+          return false;
+        },
         builder: (context, state) {
           if (state is SettingsLoading) {
             return const Center(child: CircularProgressIndicator());

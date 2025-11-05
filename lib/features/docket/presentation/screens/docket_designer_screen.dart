@@ -31,6 +31,29 @@ class DocketDesignerView extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFF3F4F6),
       body: BlocBuilder<DocketDesignerBloc, DocketDesignerState>(
+        buildWhen: (previous, current) {
+          // Always rebuild on state type changes
+          if (previous.runtimeType != current.runtimeType) {
+            return true;
+          }
+
+          // For DocketDesignerLoaded state, only rebuild if relevant data changes
+          if (previous is DocketDesignerLoaded && current is DocketDesignerLoaded) {
+            return previous.templateName != current.templateName ||
+                previous.templateType != current.templateType ||
+                previous.components != current.components ||
+                previous.selectedComponentId != current.selectedComponentId ||
+                previous.zoomLevel != current.zoomLevel ||
+                previous.isPreviewMode != current.isPreviewMode;
+          }
+
+          // For DocketDesignerError state, only rebuild if error message changes
+          if (previous is DocketDesignerError && current is DocketDesignerError) {
+            return previous.message != current.message;
+          }
+
+          return false;
+        },
         builder: (context, state) {
           if (state is DocketDesignerLoading) {
             return const Center(child: CircularProgressIndicator());
@@ -198,6 +221,22 @@ class DocketDesignerView extends StatelessWidget {
           const SizedBox(width: 16),
           // Action buttons
           BlocBuilder<DocketDesignerBloc, DocketDesignerState>(
+            buildWhen: (previous, current) {
+              // Only rebuild if undo/redo availability changes
+              if (previous is DocketDesignerLoaded && current is DocketDesignerLoaded) {
+                final prevCanUndo = previous.historyStack.isNotEmpty &&
+                    previous.historyIndex > 0;
+                final currCanUndo = current.historyStack.isNotEmpty &&
+                    current.historyIndex > 0;
+                final prevCanRedo = previous.historyStack.isNotEmpty &&
+                    previous.historyIndex < previous.historyStack.length - 1;
+                final currCanRedo = current.historyStack.isNotEmpty &&
+                    current.historyIndex < current.historyStack.length - 1;
+                
+                return prevCanUndo != currCanUndo || prevCanRedo != currCanRedo;
+              }
+              return previous.runtimeType != current.runtimeType;
+            },
             builder: (context, blocState) {
               final canUndo = blocState is DocketDesignerLoaded &&
                   blocState.historyStack.isNotEmpty &&

@@ -18,6 +18,15 @@ class ComboBuilderModal extends StatelessWidget {
       backgroundColor: Colors.transparent,
       insetPadding: const EdgeInsets.all(24),
       child: BlocBuilder<ComboManagementBloc, ComboManagementState>(
+        buildWhen: (previous, current) {
+          // Only rebuild if relevant state changes
+          return previous.isBuilderOpen != current.isBuilderOpen ||
+              previous.editingCombo != current.editingCombo ||
+              previous.selectedTab != current.selectedTab ||
+              previous.validationErrors != current.validationErrors ||
+              previous.isSaving != current.isSaving ||
+              previous.saveError != current.saveError;
+        },
         builder: (context, state) {
           if (!state.isBuilderOpen || state.editingCombo == null) {
             return const SizedBox.shrink();

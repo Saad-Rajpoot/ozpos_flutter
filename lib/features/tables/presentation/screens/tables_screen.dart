@@ -54,6 +54,14 @@ class _TablesScreenState extends State<TablesScreen> {
             }
           },
           child: BlocBuilder<TablesViewCubit, TablesViewState>(
+            buildWhen: (previous, current) {
+              // Only rebuild if relevant view state changes
+              return previous.selectedArea != current.selectedArea ||
+                  previous.filterStatus != current.filterStatus ||
+                  previous.searchQuery != current.searchQuery ||
+                  previous.selectedTable != current.selectedTable ||
+                  previous.tableDataList != current.tableDataList;
+            },
             builder: (context, viewState) {
               final isDesktop = MediaQuery.of(context).size.width >= 768;
               final showDetailsPanel =
@@ -351,6 +359,24 @@ class _TablesScreenState extends State<TablesScreen> {
           // Table cards grid
           Expanded(
             child: BlocBuilder<TableManagementBloc, TableManagementState>(
+              buildWhen: (previous, current) {
+                // Always rebuild on state type changes
+                if (previous.runtimeType != current.runtimeType) {
+                  return true;
+                }
+
+                // For TableManagementLoaded state, only rebuild if tables change
+                if (previous is TableManagementLoaded && current is TableManagementLoaded) {
+                  return previous.tables != current.tables;
+                }
+
+                // For TableManagementError state, only rebuild if error message changes
+                if (previous is TableManagementError && current is TableManagementError) {
+                  return previous.message != current.message;
+                }
+
+                return false;
+              },
               builder: (context, state) {
                 if (state is TableManagementLoading) {
                   return const Center(child: CircularProgressIndicator());

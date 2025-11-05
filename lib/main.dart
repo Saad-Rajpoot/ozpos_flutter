@@ -24,6 +24,10 @@ import 'features/printing/presentation/bloc/printing_bloc.dart';
 import 'features/settings/presentation/bloc/settings_bloc.dart';
 import 'features/settings/presentation/bloc/settings_event.dart';
 import 'features/customer_display/presentation/bloc/customer_display_bloc.dart';
+import 'features/tables/presentation/bloc/table_management_bloc.dart';
+import 'features/addons/presentation/bloc/addon_management_bloc.dart';
+import 'features/reports/presentation/bloc/reports_bloc.dart';
+import 'features/orders/presentation/bloc/orders_management_bloc.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -109,6 +113,18 @@ class OzposApp extends StatelessWidget {
         ),
         BlocProvider<CustomerDisplayBloc>(
           create: (_) => GetIt.instance<CustomerDisplayBloc>(),
+        ),
+        BlocProvider<TableManagementBloc>(
+          create: (_) => GetIt.instance<TableManagementBloc>(),
+        ),
+        BlocProvider<AddonManagementBloc>(
+          create: (_) => GetIt.instance<AddonManagementBloc>(),
+        ),
+        BlocProvider<ReportsBloc>(
+          create: (_) => GetIt.instance<ReportsBloc>(),
+        ),
+        BlocProvider<OrdersManagementBloc>(
+          create: (_) => GetIt.instance<OrdersManagementBloc>(),
         ),
       ],
       child: MaterialApp(

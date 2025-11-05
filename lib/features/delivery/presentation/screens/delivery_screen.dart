@@ -149,8 +149,35 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
     return BlocProvider<DeliveryViewCubit>.value(
       value: _viewCubit,
       child: BlocBuilder<DeliveryViewCubit, DeliveryViewState>(
+        buildWhen: (previous, current) {
+          // Only rebuild if relevant view state changes
+          return previous.selectedDateFilter != current.selectedDateFilter ||
+              previous.sourceFilter != current.sourceFilter ||
+              previous.driverFilter != current.driverFilter ||
+              previous.selectedOrderTab != current.selectedOrderTab ||
+              previous.selectedOrder != current.selectedOrder ||
+              previous.selectedDriver != current.selectedDriver;
+        },
         builder: (context, viewState) {
           return BlocBuilder<DeliveryBloc, DeliveryState>(
+            buildWhen: (previous, current) {
+              // Always rebuild on state type changes
+              if (previous.runtimeType != current.runtimeType) {
+                return true;
+              }
+
+              // For DeliveryLoaded state, only rebuild if delivery data changes
+              if (previous is DeliveryLoaded && current is DeliveryLoaded) {
+                return previous.deliveryData != current.deliveryData;
+              }
+
+              // For DeliveryError state, only rebuild if error message changes
+              if (previous is DeliveryError && current is DeliveryError) {
+                return previous.message != current.message;
+              }
+
+              return false;
+            },
             builder: (context, deliveryState) {
               final deliveryData = deliveryState is DeliveryLoaded
                   ? deliveryState.deliveryData
@@ -304,6 +331,24 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
 
   Widget _buildKpiStrip() {
     return BlocBuilder<DeliveryBloc, DeliveryState>(
+      buildWhen: (previous, current) {
+        // Always rebuild on state type changes
+        if (previous.runtimeType != current.runtimeType) {
+          return true;
+        }
+
+        // For DeliveryLoaded state, only rebuild if KPI data changes
+        if (previous is DeliveryLoaded && current is DeliveryLoaded) {
+          return previous.deliveryData.kpiData != current.deliveryData.kpiData;
+        }
+
+        // For DeliveryError state, only rebuild if error message changes
+        if (previous is DeliveryError && current is DeliveryError) {
+          return previous.message != current.message;
+        }
+
+        return false;
+      },
       builder: (context, state) {
         if (state is DeliveryLoading) {
           return Container(
