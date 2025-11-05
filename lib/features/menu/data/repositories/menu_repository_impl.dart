@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/errors/failures.dart';
 import '../../../../core/errors/exceptions.dart';
+import '../../../../core/network/network_info.dart';
 import '../../domain/entities/menu_item_entity.dart';
 import '../../domain/entities/menu_category_entity.dart';
 import '../../domain/repositories/menu_repository.dart';
@@ -9,27 +10,33 @@ import '../datasources/menu_data_source.dart';
 /// Menu repository implementation
 class MenuRepositoryImpl implements MenuRepository {
   final MenuDataSource menuDataSource;
+  final NetworkInfo networkInfo;
 
   MenuRepositoryImpl({
     required this.menuDataSource,
+    required this.networkInfo,
   });
 
   @override
   Future<Either<Failure, List<MenuItemEntity>>> getMenuItems() async {
-    try {
-      final items = await menuDataSource.getMenuItems();
-      return Right(items.map((model) => model.toEntity()).toList());
-    } on CacheException catch (e) {
-      return Left(CacheFailure(message: e.message));
-    } on NetworkException catch (e) {
-      return Left(NetworkFailure(message: e.message));
-    } on ValidationException catch (e) {
-      return Left(ValidationFailure(message: e.message));
-    } on ServerException catch (e) {
-      return Left(ServerFailure(message: e.message));
-    } catch (e) {
-      return Left(
-          ServerFailure(message: 'Unexpected error loading menu items: $e'));
+    if (await networkInfo.isConnected) {
+      try {
+        final items = await menuDataSource.getMenuItems();
+        return Right(items.map((model) => model.toEntity()).toList());
+      } on CacheException catch (e) {
+        return Left(CacheFailure(message: e.message));
+      } on NetworkException catch (e) {
+        return Left(NetworkFailure(message: e.message));
+      } on ValidationException catch (e) {
+        return Left(ValidationFailure(message: e.message));
+      } on ServerException catch (e) {
+        return Left(ServerFailure(message: e.message));
+      } catch (e) {
+        return Left(
+            ServerFailure(message: 'Unexpected error loading menu items: $e'));
+      }
+    } else {
+      return const Left(NetworkFailure(message: 'No network connection'));
     }
   }
 
@@ -75,20 +82,24 @@ class MenuRepositoryImpl implements MenuRepository {
 
   @override
   Future<Either<Failure, List<MenuCategoryEntity>>> getMenuCategories() async {
-    try {
-      final categories = await menuDataSource.getMenuCategories();
-      return Right(categories.map((model) => model.toEntity()).toList());
-    } on CacheException catch (e) {
-      return Left(CacheFailure(message: e.message));
-    } on NetworkException catch (e) {
-      return Left(NetworkFailure(message: e.message));
-    } on ValidationException catch (e) {
-      return Left(ValidationFailure(message: e.message));
-    } on ServerException catch (e) {
-      return Left(ServerFailure(message: e.message));
-    } catch (e) {
-      return Left(ServerFailure(
-          message: 'Unexpected error loading menu categories: $e'));
+    if (await networkInfo.isConnected) {
+      try {
+        final categories = await menuDataSource.getMenuCategories();
+        return Right(categories.map((model) => model.toEntity()).toList());
+      } on CacheException catch (e) {
+        return Left(CacheFailure(message: e.message));
+      } on NetworkException catch (e) {
+        return Left(NetworkFailure(message: e.message));
+      } on ValidationException catch (e) {
+        return Left(ValidationFailure(message: e.message));
+      } on ServerException catch (e) {
+        return Left(ServerFailure(message: e.message));
+      } catch (e) {
+        return Left(ServerFailure(
+            message: 'Unexpected error loading menu categories: $e'));
+      }
+    } else {
+      return const Left(NetworkFailure(message: 'No network connection'));
     }
   }
 
