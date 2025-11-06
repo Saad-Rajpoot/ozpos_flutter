@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/constants/app_constants.dart';
@@ -28,11 +29,21 @@ class MenuScreen extends StatefulWidget {
 }
 
 class _MenuScreenState extends State<MenuScreen> {
+  Timer? _searchDebounce;
+  final TextEditingController _searchController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
     // Load menu data through BLoC
     context.read<MenuBloc>().add(const LoadMenuData());
+  }
+
+  @override
+  void dispose() {
+    _searchDebounce?.cancel();
+    _searchController.dispose();
+    super.dispose();
   }
 
   /// Get category names for tabs - cached to avoid recreation when categories don't change
@@ -325,6 +336,7 @@ class _MenuScreenState extends State<MenuScreen> {
     return Padding(
       padding: const EdgeInsets.all(16),
       child: TextField(
+        controller: _searchController,
         decoration: InputDecoration(
           hintText: 'Search menu items...',
           prefixIcon: const Icon(Icons.search, size: 20),
@@ -348,7 +360,23 @@ class _MenuScreenState extends State<MenuScreen> {
           fillColor: Colors.white,
         ),
         onChanged: (value) {
-          context.read<MenuBloc>().add(SearchMenuItems(query: value));
+          // Cancel previous debounce timer
+          _searchDebounce?.cancel();
+
+          // Sanitize input
+          final sanitized = value.trim();
+
+          // Prevent excessive queries (max 100 characters)
+          if (sanitized.length > 100) {
+            return;
+          }
+
+          // Debounce search - wait 300ms after user stops typing
+          _searchDebounce = Timer(const Duration(milliseconds: 300), () {
+            if (mounted) {
+              context.read<MenuBloc>().add(SearchMenuItems(query: sanitized));
+            }
+          });
         },
       ),
     );

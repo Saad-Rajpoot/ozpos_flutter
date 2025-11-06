@@ -4,6 +4,8 @@ import '../../../../core/base/base_usecase.dart';
 import '../../../../core/errors/failures.dart';
 import '../../domain/usecases/get_menu_items.dart';
 import '../../domain/usecases/get_menu_categories.dart';
+import '../../domain/entities/menu_category_entity.dart';
+import '../../domain/entities/menu_item_entity.dart';
 import 'menu_event.dart';
 import 'menu_state.dart';
 
@@ -69,19 +71,56 @@ class MenuBloc extends BaseBloc<MenuEvent, MenuState> {
   ) async {
     emit(const MenuLoading());
 
-    // Load both categories and items simultaneously
+    // Load both categories and items simultaneously in parallel
     final categoriesResult = await getMenuCategories(const NoParams());
     final itemsResult = await getMenuItems(const NoParams());
 
-    categoriesResult.fold(
-      (failure) => emit(MenuError(message: _mapFailureToMessage(failure))),
-      (categories) {
-        itemsResult.fold(
-          (failure) => emit(MenuError(message: _mapFailureToMessage(failure))),
-          (items) => emit(MenuLoaded(categories: categories, items: items)),
-        );
+    // Preserve existing data if available
+    final existingCategories = state is MenuLoaded
+        ? (state as MenuLoaded).categories
+        : <MenuCategoryEntity>[];
+    final existingItems =
+        state is MenuLoaded ? (state as MenuLoaded).items : <MenuItemEntity>[];
+
+    // Track errors for reporting
+    String? categoriesError;
+    String? itemsError;
+
+    // Handle categories result - preserve partial success
+    final loadedCategories = categoriesResult.fold(
+      (failure) {
+        categoriesError = _mapFailureToMessage(failure);
+        return existingCategories; // Use existing or empty on failure
       },
+      (categories) => categories,
     );
+
+    // Handle items result - preserve partial success
+    final loadedItems = itemsResult.fold(
+      (failure) {
+        itemsError = _mapFailureToMessage(failure);
+        return existingItems; // Use existing or empty on failure
+      },
+      (items) => items,
+    );
+
+    // Determine if we have any data to show
+    final hasCategories = loadedCategories.isNotEmpty;
+    final hasItems = loadedItems.isNotEmpty;
+
+    if (hasCategories || hasItems) {
+      // Emit loaded state with whatever data we have (partial success)
+      // This provides better UX - user sees partial data rather than error screen
+      emit(MenuLoaded(
+        categories: loadedCategories,
+        items: loadedItems,
+      ));
+    } else {
+      // Both failed and no existing data - emit error
+      // Prefer categories error if available, otherwise items error
+      final errorMessage = categoriesError ?? itemsError ?? 'Unknown error';
+      emit(MenuError(message: errorMessage));
+    }
   }
 
   Future<void> _onRefreshMenuData(
@@ -91,18 +130,56 @@ class MenuBloc extends BaseBloc<MenuEvent, MenuState> {
     // Show loading during refresh
     emit(const MenuLoading());
 
+    // Load both categories and items simultaneously in parallel
     final categoriesResult = await getMenuCategories(const NoParams());
     final itemsResult = await getMenuItems(const NoParams());
 
-    categoriesResult.fold(
-      (failure) => emit(MenuError(message: _mapFailureToMessage(failure))),
-      (categories) {
-        itemsResult.fold(
-          (failure) => emit(MenuError(message: _mapFailureToMessage(failure))),
-          (items) => emit(MenuLoaded(categories: categories, items: items)),
-        );
+    // Preserve existing data if available (for offline scenarios)
+    final existingCategories = state is MenuLoaded
+        ? (state as MenuLoaded).categories
+        : <MenuCategoryEntity>[];
+    final existingItems =
+        state is MenuLoaded ? (state as MenuLoaded).items : <MenuItemEntity>[];
+
+    // Track which calls succeeded/failed
+    String? categoriesError;
+    String? itemsError;
+
+    // Handle categories result - preserve partial success
+    final loadedCategories = categoriesResult.fold(
+      (failure) {
+        categoriesError = _mapFailureToMessage(failure);
+        return existingCategories; // Use existing or empty on failure
       },
+      (categories) => categories,
     );
+
+    // Handle items result - preserve partial success
+    final loadedItems = itemsResult.fold(
+      (failure) {
+        itemsError = _mapFailureToMessage(failure);
+        return existingItems; // Use existing or empty on failure
+      },
+      (items) => items,
+    );
+
+    // Determine if we have any data to show
+    final hasCategories = loadedCategories.isNotEmpty;
+    final hasItems = loadedItems.isNotEmpty;
+
+    if (hasCategories || hasItems) {
+      // Emit loaded state with whatever data we have (partial success)
+      // This provides better UX - user sees partial data rather than error screen
+      emit(MenuLoaded(
+        categories: loadedCategories,
+        items: loadedItems,
+      ));
+    } else {
+      // Both failed and no existing data - emit error
+      // Prefer categories error if available, otherwise items error
+      final errorMessage = categoriesError ?? itemsError ?? 'Unknown error';
+      emit(MenuError(message: errorMessage));
+    }
   }
 
   Future<void> _onSearchMenuItems(
@@ -116,8 +193,8 @@ class MenuBloc extends BaseBloc<MenuEvent, MenuState> {
     // Avoid unnecessary filtering if query hasn't changed
     if (currentState.searchQuery == event.query) return;
 
-    // Clear filters when search query is empty
-    if (event.query.isEmpty) {
+    // Clear filters when search query is empty or too short
+    if (event.query.isEmpty || event.query.length < 2) {
       emit(currentState.copyWith(
         filteredItems: null,
         searchQuery: null,
@@ -126,9 +203,12 @@ class MenuBloc extends BaseBloc<MenuEvent, MenuState> {
       return;
     }
 
+    // Perform case-insensitive search on name and description
+    final queryLower = event.query.toLowerCase();
     final filteredItems = currentState.items.where((item) {
-      return item.name.toLowerCase().contains(event.query.toLowerCase()) ||
-          item.description.toLowerCase().contains(event.query.toLowerCase());
+      return item.name.toLowerCase().contains(queryLower) ||
+          (item.description.isNotEmpty &&
+              item.description.toLowerCase().contains(queryLower));
     }).toList();
 
     emit(currentState.copyWith(
