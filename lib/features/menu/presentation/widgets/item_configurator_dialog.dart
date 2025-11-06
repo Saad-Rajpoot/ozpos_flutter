@@ -177,7 +177,7 @@ class ItemConfiguratorDialog extends StatelessWidget {
                       Icon(Icons.star,
                           size: AppConstants.popularBadgeSize,
                           color: AppColors.badgePopular),
-                      SizedBox(width: 4),
+                      const SizedBox(width: 4),
                       Text(
                         'Popular',
                         style: TextStyle(
