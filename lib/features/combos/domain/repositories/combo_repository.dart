@@ -40,9 +40,6 @@ abstract class ComboRepository {
   Future<Either<Failure, ComboEntity>> duplicateCombo(String comboId,
       {String? newName});
 
-  /// Validate a combo
-  Future<Either<Failure, List<String>>> validateCombo(ComboEntity combo);
-
   /// Calculate pricing for a combo
   Future<Either<Failure, ComboPricingEntity>> calculatePricing(
       ComboEntity combo);

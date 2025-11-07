@@ -263,37 +263,6 @@ class ComboRepositoryImpl implements ComboRepository {
   }
 
   @override
-  Future<Either<Failure, List<String>>> validateCombo(ComboEntity combo) async {
-    // Business logic validation
-    final errors = <String>[];
-
-    if (combo.name.isEmpty) {
-      errors.add('Combo name is required');
-    }
-
-    if (combo.description.isEmpty) {
-      errors.add('Combo description is required');
-    }
-
-    if (combo.slots.isEmpty) {
-      errors.add('Combo must have at least one slot');
-    }
-
-    for (final slot in combo.slots) {
-      if (slot.specificItemIds.isEmpty && slot.categoryId == null) {
-        errors.add('All slots must contain at least one item or category');
-        break;
-      }
-    }
-
-    if (combo.pricing.totalIfSeparate <= 0) {
-      errors.add('Combo must have a valid base price');
-    }
-
-    return Right(errors);
-  }
-
-  @override
   Future<Either<Failure, ComboPricingEntity>> calculatePricing(
       ComboEntity combo) async {
     // Business logic for pricing calculation

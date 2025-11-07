@@ -17,7 +17,7 @@ class CustomerDisplayIdleView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (slide == null) {
-      return Container(color: Colors.black);
+      return const ColoredBox(color: Colors.black);
     }
 
     return AnimatedContainer(

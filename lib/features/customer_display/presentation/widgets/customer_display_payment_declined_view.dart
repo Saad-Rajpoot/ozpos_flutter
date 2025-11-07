@@ -13,13 +13,13 @@ class CustomerDisplayPaymentDeclinedView extends StatelessWidget {
           end: Alignment.bottomCenter,
         ),
       ),
-      child: SafeArea(
+      child: const SafeArea(
         child: Center(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 32),
+            padding: EdgeInsets.symmetric(horizontal: 32),
             child: Column(
               mainAxisSize: MainAxisSize.min,
-              children: const [
+              children: <Widget>[
                 _DeclinedIcon(),
                 SizedBox(height: 32),
                 Text(

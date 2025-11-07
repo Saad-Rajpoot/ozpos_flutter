@@ -2,17 +2,22 @@ import 'package:dartz/dartz.dart';
 import '../../../../core/base/base_usecase.dart';
 import '../../../../core/errors/failures.dart';
 import '../entities/combo_entity.dart';
-import '../repositories/combo_repository.dart';
+import '../entities/combo_validator.dart';
 
 /// Validate combo use case
 class ValidateCombo implements UseCase<List<String>, ValidateComboParams> {
-  final ComboRepository repository;
-
-  ValidateCombo({required this.repository});
+  const ValidateCombo();
 
   @override
   Future<Either<Failure, List<String>>> call(ValidateComboParams params) async {
-    return repository.validateCombo(params.combo);
+    try {
+      final errors = ComboValidator.validateCombo(params.combo);
+      return Right(errors);
+    } catch (error) {
+      return Left(
+        ValidationFailure(message: 'Failed to validate combo: $error'),
+      );
+    }
   }
 }
 

@@ -252,10 +252,28 @@ class DatabaseHelper {
     int oldVersion,
     int newVersion,
   ) async {
-    // Handle database upgrades here
-    // For now, we'll just recreate the database
-    if (oldVersion < newVersion) {
-      await _onCreate(db, newVersion);
+    if (oldVersion >= newVersion) {
+      return;
+    }
+
+    await db.transaction((txn) async {
+      for (var version = oldVersion + 1; version <= newVersion; version++) {
+        await _migrateToVersion(txn, version);
+      }
+    });
+  }
+
+  static Future<void> _migrateToVersion(
+    DatabaseExecutor db,
+    int version,
+  ) async {
+    switch (version) {
+      case 1:
+        // Initial schema already created in _onCreate
+        break;
+      default:
+        // No migrations defined for this version yet
+        break;
     }
   }
 

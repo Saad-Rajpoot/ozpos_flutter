@@ -80,12 +80,6 @@ import '../../features/customer_display/data/repositories/customer_display_repos
 import '../../features/customer_display/domain/repositories/customer_display_repository.dart';
 import '../../features/customer_display/domain/usecases/get_customer_display.dart';
 import '../../features/customer_display/presentation/bloc/customer_display_bloc.dart';
-// Removed - docket management feature removed
-// import '../../features/docket/data/datasources/docket_data_source.dart';
-// import '../../features/docket/data/datasources/docket_mock_datasource.dart';
-// import '../../features/docket/data/datasources/docket_remote_datasource.dart';
-// import '../../features/docket/data/repositories/docket_repository_impl.dart';
-// import '../../features/docket/domain/repositories/docket_repository.dart';
 import '../../features/printing/data/datasources/printing_data_source.dart';
 import '../../features/printing/data/datasources/printing_mock_datasource.dart';
 import '../../features/printing/data/datasources/printing_remote_datasource.dart';
@@ -158,7 +152,6 @@ Future<void> init() async {
   await _initReports(sl);
   await _initOrders(sl);
   await _initDelivery(sl);
-  // await _initDocket(sl); // Removed - docket management feature removed
   await _initPrinting(sl);
   await _initSettings(sl);
   await _initCustomerDisplay(sl);
@@ -283,7 +276,7 @@ Future<void> _initCombos(GetIt sl) async {
   sl.registerLazySingleton(() => CreateCombo(repository: sl()));
   sl.registerLazySingleton(() => UpdateCombo(repository: sl()));
   sl.registerLazySingleton(() => DeleteCombo(repository: sl()));
-  sl.registerLazySingleton(() => ValidateCombo(repository: sl()));
+  sl.registerLazySingleton(() => const ValidateCombo());
   sl.registerLazySingleton(() => CalculatePricing(repository: sl()));
 
   // BLoC (Factory - new instance each time)
@@ -451,29 +444,6 @@ Future<void> _initCustomerDisplay(GetIt sl) async {
 
   sl.registerFactory(() => CustomerDisplayBloc(getCustomerDisplay: sl()));
 }
-
-/// Initialize docket feature dependencies
-// Removed - docket management feature removed
-// Future<void> _initDocket(GetIt sl) async {
-//   // Environment-based data source selection
-//   sl.registerLazySingleton<DocketDataSource>(() {
-//     if (AppConfig.instance.environment == AppEnvironment.development) {
-//       // Use mock data source for development
-//       return DocketMockDataSourceImpl();
-//     } else {
-//       // Use remote data source for production
-//       return DocketRemoteDataSourceImpl(apiClient: sl());
-//     }
-//   });
-
-//   // Repository
-//   sl.registerLazySingleton<DocketRepository>(
-//     () => DocketRepositoryImpl(docketDataSource: sl(), networkInfo: sl()),
-//   );
-
-//   // Use cases
-//   // BLoC (Factory - new instance each time)
-// }
 
 /// Initialize printing feature dependencies
 Future<void> _initPrinting(GetIt sl) async {

@@ -15,9 +15,17 @@ class ComboValidator {
       errors.add('Combo name is required');
     }
 
+    if (combo.description.trim().isEmpty) {
+      errors.add('Combo description is required');
+    }
+
     // Slots validation
     if (combo.slots.isEmpty) {
       errors.add('At least one item slot is required');
+    }
+
+    for (final slot in combo.slots) {
+      errors.addAll(validateSlot(slot));
     }
 
     final requiredSlots = combo.slots.where((s) => s.required).length;
@@ -37,6 +45,10 @@ class ComboValidator {
   /// Validates a combo pricing entity and returns a list of validation errors
   static List<String> _validatePricing(ComboPricingEntity pricing) {
     final List<String> errors = [];
+
+    if (pricing.totalIfSeparate <= 0) {
+      errors.add('Combo must have a valid base price');
+    }
 
     switch (pricing.mode) {
       case PricingMode.fixed:
@@ -144,8 +156,8 @@ class ComboValidator {
 
     // Branch restrictions validation
     final commonBranches = limits.allowedBranchIds.toSet().intersection(
-      limits.excludedBranchIds.toSet(),
-    );
+          limits.excludedBranchIds.toSet(),
+        );
     if (commonBranches.isNotEmpty) {
       errors.add('Branches cannot be both allowed and excluded');
     }
