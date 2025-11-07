@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import '../constants/app_constants.dart';
 import '../navigation/navigation_service.dart';
 import '../navigation/app_router.dart';
+import 'retry_interceptor.dart';
 
 /// API Client for making HTTP requests
 class ApiClient {
@@ -32,10 +33,26 @@ class ApiClient {
 
   /// Setup interceptors for authentication, retry, and logging
   void _setupInterceptors() {
+    // Retry interceptor - should be added first to handle retries before other interceptors
+    // Pass the Dio instance so retries can use the same instance with all interceptors
+    _dio.interceptors.add(
+      RetryInterceptor(
+        maxRetries: AppConstants.maxRetries,
+        retryDelay: AppConstants.retryDelay,
+        useExponentialBackoff: false, // Set to true for exponential backoff
+        dio: _dio,
+      ),
+    );
+
     // Auth interceptor
     _dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
+          // Initialize retry count if not present
+          options.extra['retryCount'] = options.extra['retryCount'] ?? 0;
+          // Store Dio instance reference for retry interceptor
+          options.extra['_dio'] = _dio;
+
           final token = _sharedPreferences.getString(AppConstants.tokenKey);
           if (token != null) {
             options.headers['Authorization'] = 'Bearer $token';
@@ -45,6 +62,7 @@ class ApiClient {
         onError: (error, handler) async {
           if (error.response?.statusCode == 401) {
             // Handle token refresh or logout
+            // Don't retry on 401 errors - handle immediately
             await _handleUnauthorized();
           }
           handler.next(error);
@@ -52,7 +70,7 @@ class ApiClient {
       ),
     );
 
-    // Logging interceptor (only in debug mode)
+    // Logging interceptor (only in debug mode) - should be last
     if (kDebugMode) {
       _dio.interceptors.add(
         LogInterceptor(
@@ -81,7 +99,7 @@ class ApiClient {
         // Show snackbar message using NavigationService
         NavigationService.showSnackBar(
           'Session expired. Please login again.',
-          duration: const Duration(seconds: 3),
+          duration: AppConstants.snackbarDefaultDuration,
         );
 
         // Navigate to dashboard and clear all previous routes

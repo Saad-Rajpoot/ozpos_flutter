@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'package:equatable/equatable.dart';
 import 'package:dartz/dartz.dart';
 import '../../../../core/base/base_usecase.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/errors/failures.dart';
 import '../entities/voucher_entity.dart';
 import '../entities/tender_entity.dart';
@@ -46,8 +47,8 @@ class CalculateTotalsUseCase
             params.loyaltyRedemption,
       );
 
-      // Calculate tax (10% GST)
-      final tax = totalBeforeTax * 0.10;
+      // Calculate tax (GST)
+      final tax = totalBeforeTax * AppConstants.gstRate;
 
       // Calculate grand total
       final grandTotal = math.max(0.0, totalBeforeTax + tax);

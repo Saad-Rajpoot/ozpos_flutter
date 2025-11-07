@@ -372,7 +372,7 @@ class _MenuScreenState extends State<MenuScreen> {
           }
 
           // Debounce search - wait 300ms after user stops typing
-          _searchDebounce = Timer(const Duration(milliseconds: 300), () {
+          _searchDebounce = Timer(AppConstants.searchDebounceDelay, () {
             if (mounted) {
               context.read<MenuBloc>().add(SearchMenuItems(query: sanitized));
             }
@@ -525,7 +525,7 @@ class _MenuScreenState extends State<MenuScreen> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text('Added ${item.name} to cart'),
-                duration: const Duration(seconds: 2),
+                duration: AppConstants.snackbarShortDuration,
                 backgroundColor: AppColors.success,
               ),
             );

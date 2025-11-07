@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/base/base_bloc.dart';
 import '../../../../core/base/base_usecase.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/errors/failures.dart';
 import '../../domain/usecases/get_menu_items.dart';
 import '../../domain/usecases/get_menu_categories.dart';
@@ -194,7 +195,8 @@ class MenuBloc extends BaseBloc<MenuEvent, MenuState> {
     if (currentState.searchQuery == event.query) return;
 
     // Clear filters when search query is empty or too short
-    if (event.query.isEmpty || event.query.length < 2) {
+    if (event.query.isEmpty ||
+        event.query.length < AppConstants.minSearchQueryLength) {
       emit(currentState.copyWith(
         filteredItems: null,
         searchQuery: null,

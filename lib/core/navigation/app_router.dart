@@ -9,26 +9,38 @@ import '../../core/di/injection_container.dart' as di;
 import '../../features/menu/domain/entities/menu_item_edit_entity.dart';
 import '../../features/dashboard/presentation/screens/dashboard_screen.dart';
 import '../../features/menu/presentation/screens/menu_screen.dart';
+import '../../features/menu/presentation/bloc/menu_bloc.dart';
+import '../../features/menu/presentation/bloc/menu_event.dart';
 import '../../features/checkout/presentation/screens/checkout_screen.dart';
+import '../../features/checkout/presentation/bloc/checkout_bloc.dart';
 import '../../features/orders/presentation/screens/orders_screen.dart';
 import '../../features/orders/presentation/bloc/orders_management_event.dart';
+import '../../features/orders/presentation/bloc/orders_management_bloc.dart';
 import '../../features/tables/presentation/screens/tables_screen.dart';
 import '../../features/tables/presentation/screens/move_table_screen.dart';
 import '../../features/tables/presentation/bloc/table_management_bloc.dart';
 import '../../features/tables/presentation/bloc/table_management_event.dart';
 import '../../features/delivery/presentation/screens/delivery_screen.dart';
+import '../../features/delivery/presentation/bloc/delivery_bloc.dart';
+import '../../features/delivery/presentation/bloc/delivery_event.dart';
 import '../../features/reservations/presentation/screens/reservations_screen.dart';
+import '../../features/reservations/presentation/bloc/reservation_management_bloc.dart';
+import '../../features/reservations/presentation/bloc/reservation_management_event.dart';
 import '../../features/reports/presentation/screens/reports_screen.dart';
 import '../../features/reports/presentation/bloc/reports_event.dart';
-import '../../features/settings/presentation/screens/settings_screen.dart';
-import '../widgets/error_screen.dart';
 import '../../features/reports/presentation/bloc/reports_bloc.dart';
-import '../../features/orders/presentation/bloc/orders_management_bloc.dart';
+import '../../features/settings/presentation/screens/settings_screen.dart';
+import '../../features/settings/presentation/bloc/settings_bloc.dart';
+import '../../features/settings/presentation/bloc/settings_event.dart';
+import '../widgets/error_screen.dart';
 import '../../features/docket/presentation/screens/docket_designer_screen.dart';
 import '../../features/printing/presentation/bloc/printing_bloc.dart';
 import '../../features/printing/presentation/bloc/printing_event.dart';
 import '../../features/printing/presentation/screens/printing_management_screen.dart';
 import '../../features/customer_display/presentation/screens/customer_display_screen.dart';
+import '../../features/customer_display/presentation/bloc/customer_display_bloc.dart';
+import '../../features/customer_display/presentation/bloc/customer_display_event.dart';
+import '../../features/combos/presentation/bloc/combo_management_bloc.dart';
 
 /// Centralized route management
 ///
@@ -71,26 +83,36 @@ class AppRouter {
     switch (settings.name) {
       case dashboard:
         return MaterialPageRoute(
-          builder: (_) => const DashboardScreen(),
+          builder: (_) => BlocProvider<MenuBloc>(
+            create: (_) => di.sl<MenuBloc>()..add(const LoadMenuData()),
+            child: const DashboardScreen(),
+          ),
           settings: settings,
         );
 
       case menu:
         return MaterialPageRoute(
-          builder: (_) => MenuScreen(orderType: args?['orderType'] as String?),
+          builder: (_) => BlocProvider<MenuBloc>(
+            create: (_) => di.sl<MenuBloc>()..add(const LoadMenuData()),
+            child: MenuScreen(orderType: args?['orderType'] as String?),
+          ),
           settings: settings,
         );
 
       case checkout:
         return MaterialPageRoute(
-          builder: (_) => const CheckoutScreen(),
+          builder: (_) => BlocProvider<CheckoutBloc>(
+            create: (_) => di.sl<CheckoutBloc>(),
+            child: const CheckoutScreen(),
+          ),
           settings: settings,
         );
 
       case orders:
         return MaterialPageRoute(
-          builder: (_) => BlocProvider<OrdersManagementBloc>.value(
-            value: di.sl<OrdersManagementBloc>()..add(const LoadOrdersEvent()),
+          builder: (_) => BlocProvider<OrdersManagementBloc>(
+            create: (_) =>
+                di.sl<OrdersManagementBloc>()..add(const LoadOrdersEvent()),
             child: const OrdersScreen(),
           ),
           settings: settings,
@@ -98,8 +120,9 @@ class AppRouter {
 
       case tables:
         return MaterialPageRoute(
-          builder: (_) => BlocProvider<TableManagementBloc>.value(
-            value: di.sl<TableManagementBloc>()..add(const LoadTablesEvent()),
+          builder: (_) => BlocProvider<TableManagementBloc>(
+            create: (_) =>
+                di.sl<TableManagementBloc>()..add(const LoadTablesEvent()),
             child: const TablesScreen(),
           ),
           settings: settings,
@@ -107,20 +130,29 @@ class AppRouter {
 
       case delivery:
         return MaterialPageRoute(
-          builder: (_) => const DeliveryScreen(),
+          builder: (_) => BlocProvider<DeliveryBloc>(
+            create: (_) =>
+                di.sl<DeliveryBloc>()..add(const LoadDeliveryDataEvent()),
+            child: const DeliveryScreen(),
+          ),
           settings: settings,
         );
 
       case reservations:
         return MaterialPageRoute(
-          builder: (_) => const ReservationsScreen(),
+          builder: (_) => BlocProvider<ReservationManagementBloc>(
+            create: (_) => di.sl<ReservationManagementBloc>()
+              ..add(const LoadReservationsEvent()),
+            child: const ReservationsScreen(),
+          ),
           settings: settings,
         );
 
       case reports:
         return MaterialPageRoute(
-          builder: (_) => BlocProvider<ReportsBloc>.value(
-            value: di.sl<ReportsBloc>()..add(const LoadReportsDataEvent()),
+          builder: (_) => BlocProvider<ReportsBloc>(
+            create: (_) =>
+                di.sl<ReportsBloc>()..add(const LoadReportsDataEvent()),
             child: const ReportsScreen(),
           ),
           settings: settings,
@@ -128,13 +160,27 @@ class AppRouter {
 
       case settingsScreen:
         return MaterialPageRoute(
-          builder: (_) => const SettingsScreen(),
+          builder: (_) => BlocProvider<SettingsBloc>(
+            create: (_) => di.sl<SettingsBloc>()..add(const LoadSettings()),
+            child: const SettingsScreen(),
+          ),
           settings: settings,
         );
 
       case menuEditor:
         return MaterialPageRoute(
-          builder: (_) => const MenuEditorScreen(),
+          builder: (_) => MultiBlocProvider(
+            providers: [
+              BlocProvider<MenuBloc>(
+                create: (_) =>
+                    di.sl<MenuBloc>()..add(const GetMenuItemsEvent()),
+              ),
+              BlocProvider<ComboManagementBloc>(
+                create: (_) => di.sl<ComboManagementBloc>(),
+              ),
+            ],
+            child: const MenuEditorScreen(),
+          ),
           settings: settings,
         );
 
@@ -149,8 +195,8 @@ class AppRouter {
 
       case moveTable:
         return MaterialPageRoute(
-          builder: (_) => BlocProvider<TableManagementBloc>.value(
-            value: di.sl<TableManagementBloc>()
+          builder: (_) => BlocProvider<TableManagementBloc>(
+            create: (_) => di.sl<TableManagementBloc>()
               ..add(const LoadMoveAvailableTablesEvent()),
             child: MoveTableScreen(sourceTable: args?['sourceTable']),
           ),
@@ -159,8 +205,8 @@ class AppRouter {
 
       case addonManagement:
         return MaterialPageRoute(
-          builder: (_) => BlocProvider<AddonManagementBloc>.value(
-            value: di.sl<AddonManagementBloc>()
+          builder: (_) => BlocProvider<AddonManagementBloc>(
+            create: (_) => di.sl<AddonManagementBloc>()
               ..add(const LoadAddonCategoriesEvent()),
             child: const AddonCategoriesScreen(),
           ),
@@ -175,8 +221,8 @@ class AppRouter {
 
       case printingManagement:
         return MaterialPageRoute(
-          builder: (_) => BlocProvider<PrintingBloc>.value(
-            value: di.sl<PrintingBloc>()..add(LoadPrinters()),
+          builder: (_) => BlocProvider<PrintingBloc>(
+            create: (_) => di.sl<PrintingBloc>()..add(LoadPrinters()),
             child: const PrintingManagementScreen(),
           ),
           settings: settings,
@@ -184,7 +230,11 @@ class AppRouter {
 
       case customerDisplay:
         return MaterialPageRoute(
-          builder: (_) => const CustomerDisplayScreen(),
+          builder: (_) => BlocProvider<CustomerDisplayBloc>(
+            create: (_) => di.sl<CustomerDisplayBloc>()
+              ..add(const CustomerDisplayOpened()),
+            child: const CustomerDisplayScreen(),
+          ),
           settings: settings,
           fullscreenDialog: true,
         );

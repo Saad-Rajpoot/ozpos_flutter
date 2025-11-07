@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import '../../../../core/base/base_bloc.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../../domain/entities/tender_entity.dart';
 import '../../domain/entities/voucher_entity.dart';
 import '../../domain/entities/payment_method_type.dart';
@@ -867,7 +868,7 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
     emit(CheckoutProcessing());
 
     // Simulate saving unpaid order
-    await Future.delayed(const Duration(milliseconds: 500));
+    await Future.delayed(AppConstants.shortDelay);
 
     final orderId = 'ORD-${DateTime.now().millisecondsSinceEpoch}-UNPAID';
 

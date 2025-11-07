@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../constants/app_constants.dart';
 
 /// Navigation Service - Context-free navigation using GlobalKey
 ///
@@ -142,7 +143,7 @@ class NavigationService {
   static void showSnackBar(
     String message, {
     Color? backgroundColor,
-    Duration duration = const Duration(seconds: 3),
+    Duration duration = AppConstants.snackbarDefaultDuration,
   }) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(

@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
 import '../../../../core/base/base_bloc.dart';
+import '../../../../core/constants/app_constants.dart';
 import 'docket_designer_event.dart';
 import 'docket_designer_state.dart';
 import '../models/docket_component_model.dart';
@@ -286,10 +287,10 @@ class DocketDesignerBloc
     emit(const DocketDesignerSaving());
 
     // For now, just show saved state
-    Future.delayed(const Duration(milliseconds: 500), () {
+    Future.delayed(AppConstants.shortDelay, () {
       emit(const DocketDesignerSaved());
       // Return to loaded state after showing saved message
-      Future.delayed(const Duration(milliseconds: 1500), () {
+      Future.delayed(AppConstants.mediumDelay, () {
         if (state is DocketDesignerSaved) {
           if (state is DocketDesignerLoaded) {
             // Keep current state

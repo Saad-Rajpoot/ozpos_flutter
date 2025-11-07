@@ -13,20 +13,7 @@ import 'core/navigation/navigation_service.dart';
 import 'core/utils/sentry_bloc_observer.dart';
 import 'core/services/sentry_service.dart';
 import 'core/theme/app_theme.dart';
-import 'features/menu/presentation/bloc/menu_bloc.dart';
-import 'features/combos/presentation/bloc/combo_management_bloc.dart';
 import 'features/checkout/presentation/bloc/cart_bloc.dart';
-import 'features/checkout/presentation/bloc/checkout_bloc.dart';
-import 'features/reservations/presentation/bloc/reservation_management_bloc.dart';
-import 'features/reservations/presentation/bloc/reservation_management_event.dart';
-import 'features/delivery/presentation/bloc/delivery_bloc.dart';
-import 'features/printing/presentation/bloc/printing_bloc.dart';
-import 'features/settings/presentation/bloc/settings_bloc.dart';
-import 'features/customer_display/presentation/bloc/customer_display_bloc.dart';
-import 'features/tables/presentation/bloc/table_management_bloc.dart';
-import 'features/addons/presentation/bloc/addon_management_bloc.dart';
-import 'features/reports/presentation/bloc/reports_bloc.dart';
-import 'features/orders/presentation/bloc/orders_management_bloc.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -88,43 +75,13 @@ class OzposApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Only provide globally shared BLoCs here
+    // Feature-specific BLoCs are provided at route level for lazy initialization
     return MultiBlocProvider(
       providers: [
-        BlocProvider<MenuBloc>(create: (_) => GetIt.instance<MenuBloc>()),
+        // CartBloc is shared across Menu, Checkout, and other screens
+        // Keep it global for easy access throughout the app
         BlocProvider<CartBloc>(create: (_) => GetIt.instance<CartBloc>()),
-        BlocProvider<CheckoutBloc>(
-            create: (_) => GetIt.instance<CheckoutBloc>()),
-        BlocProvider<ComboManagementBloc>(
-          create: (_) => GetIt.instance<ComboManagementBloc>(),
-        ),
-        BlocProvider<ReservationManagementBloc>(
-          create: (_) => GetIt.instance<ReservationManagementBloc>()
-            ..add(const LoadReservationsEvent()),
-        ),
-        BlocProvider<DeliveryBloc>(
-          create: (_) => GetIt.instance<DeliveryBloc>(),
-        ),
-        BlocProvider<PrintingBloc>(
-          create: (_) => GetIt.instance<PrintingBloc>(),
-        ),
-        BlocProvider<SettingsBloc>(
-          create: (_) => GetIt.instance<SettingsBloc>(),
-        ),
-        BlocProvider<CustomerDisplayBloc>(
-          create: (_) => GetIt.instance<CustomerDisplayBloc>(),
-        ),
-        BlocProvider<TableManagementBloc>(
-          create: (_) => GetIt.instance<TableManagementBloc>(),
-        ),
-        BlocProvider<AddonManagementBloc>(
-          create: (_) => GetIt.instance<AddonManagementBloc>(),
-        ),
-        BlocProvider<ReportsBloc>(
-          create: (_) => GetIt.instance<ReportsBloc>(),
-        ),
-        BlocProvider<OrdersManagementBloc>(
-          create: (_) => GetIt.instance<OrdersManagementBloc>(),
-        ),
       ],
       child: MaterialApp(
         title: 'OZPOS - Restaurant POS System',

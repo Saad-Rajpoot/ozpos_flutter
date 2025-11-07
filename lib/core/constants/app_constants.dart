@@ -141,4 +141,17 @@ class AppConstants {
   static const double opacityMedium = 0.5;
   static const double opacityLow = 0.1;
   static const double opacityVeryLow = 0.05;
+
+  // Tax and Financial Constants
+  static const double gstRate = 0.10; // 10% GST (Goods and Services Tax)
+
+  // Search and Filter Constants
+  static const int minSearchQueryLength = 2; // Minimum characters for search to trigger
+
+  // UI Durations
+  static const Duration snackbarDefaultDuration = Duration(seconds: 3);
+  static const Duration snackbarShortDuration = Duration(seconds: 2);
+  static const Duration searchDebounceDelay = Duration(milliseconds: 300);
+  static const Duration shortDelay = Duration(milliseconds: 500);
+  static const Duration mediumDelay = Duration(milliseconds: 1500);
 }

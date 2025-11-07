@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import '../../../../core/base/base_bloc.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../../../menu/domain/entities/menu_item_entity.dart';
 import '../../../tables/domain/entities/table_entity.dart';
 
@@ -105,7 +106,7 @@ class CartLoaded extends CartState {
   }) {
     final newItems = items ?? this.items;
     final newSubtotal = _calculateSubtotal(newItems);
-    final newGst = newSubtotal * 0.10; // 10% GST
+    final newGst = newSubtotal * AppConstants.gstRate;
     final newTotal = newSubtotal + newGst;
 
     return CartLoaded(

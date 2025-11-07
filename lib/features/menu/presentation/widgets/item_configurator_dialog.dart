@@ -656,7 +656,7 @@ class ItemConfiguratorDialog extends StatelessWidget {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Added ${state.item.name} to cart'),
-        duration: const Duration(seconds: 2),
+        duration: AppConstants.snackbarShortDuration,
         backgroundColor: AppColors.success,
       ),
     );
