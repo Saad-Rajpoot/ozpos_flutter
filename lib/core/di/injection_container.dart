@@ -222,8 +222,10 @@ Future<void> _initMenu(GetIt sl) async {
 
 /// Initialize cart feature dependencies
 Future<void> _initCart(GetIt sl) async {
-  // BLoC (Factory - separate cart per user/session)
-  sl.registerFactory(() => CartBloc()..add(const InitializeCart()));
+  // BLoC (Singleton - cart persists across entire app lifecycle)
+  // This is appropriate for a POS system where the cart should persist
+  // across navigation and be accessible from anywhere in the app
+  sl.registerLazySingleton(() => CartBloc()..add(const InitializeCart()));
 }
 
 /// Initialize checkout feature dependencies

@@ -336,23 +336,27 @@ class ComboBuilderModal extends StatelessWidget {
   }
 
   void _onClose(BuildContext context) {
+    // Capture bloc reference before showing dialog
+    final bloc = context.read<ComboManagementBloc>();
+    
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('Discard Changes?'),
         content: const Text(
           'You have unsaved changes. Are you sure you want to close without saving?',
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => Navigator.of(dialogContext).pop(),
             child: const Text('Continue Editing'),
           ),
           TextButton(
             onPressed: () {
-              Navigator.of(context).pop(); // Close dialog
+              // Dispatch event before closing dialogs
+              bloc.add(const CancelComboEdit());
+              Navigator.of(dialogContext).pop(); // Close dialog
               Navigator.of(context).pop(); // Close modal
-              context.read<ComboManagementBloc>().add(const CancelComboEdit());
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('Discard Changes'),

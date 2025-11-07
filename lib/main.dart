@@ -79,8 +79,9 @@ class OzposApp extends StatelessWidget {
     // Feature-specific BLoCs are provided at route level for lazy initialization
     return MultiBlocProvider(
       providers: [
-        // CartBloc is shared across Menu, Checkout, and other screens
-        // Keep it global for easy access throughout the app
+        // CartBloc is a singleton registered in DI (see injection_container.dart)
+        // It persists across navigation and is accessible throughout the app
+        // This is appropriate for a POS system where cart state should persist
         BlocProvider<CartBloc>(create: (_) => GetIt.instance<CartBloc>()),
       ],
       child: MaterialApp(
