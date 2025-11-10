@@ -4,15 +4,24 @@ import '../../../../core/errors/exceptions.dart';
 import '../../domain/repositories/checkout_repository.dart';
 import '../../domain/entities/voucher_entity.dart';
 import '../../domain/entities/order_entity.dart';
+import '../../domain/entities/checkout_metadata_entity.dart';
+import '../../domain/services/payment_processor.dart';
+import '../../domain/services/voucher_validator.dart';
 import '../datasources/checkout_datasource.dart';
 import '../models/order_model.dart';
-import '../../domain/entities/checkout_metadata_entity.dart';
 
 class CheckoutRepositoryImpl implements CheckoutRepository {
   final CheckoutDataSource _checkoutDataSource;
+  final PaymentProcessor _paymentProcessor;
+  final VoucherValidator _voucherValidator;
 
-  CheckoutRepositoryImpl({required CheckoutDataSource checkoutDataSource})
-      : _checkoutDataSource = checkoutDataSource;
+  CheckoutRepositoryImpl({
+    required CheckoutDataSource checkoutDataSource,
+    required PaymentProcessor paymentProcessor,
+    required VoucherValidator voucherValidator,
+  })  : _checkoutDataSource = checkoutDataSource,
+        _paymentProcessor = paymentProcessor,
+        _voucherValidator = voucherValidator;
 
   // Note: _localDataSource is available for future use when implementing
   // local data persistence features
@@ -23,74 +32,16 @@ class CheckoutRepositoryImpl implements CheckoutRepository {
     required double amount,
     CheckoutMetadataEntity? metadata,
   }) async {
-    try {
-      // Validate payment parameters
-      if (paymentMethod.isEmpty) {
-        return Left(ValidationFailure(message: 'Payment method is required'));
-      }
-
-      if (amount <= 0) {
-        return Left(ValidationFailure(
-            message: 'Payment amount must be greater than 0'));
-      }
-
-      // Simulate payment processing delay
-      await Future.delayed(const Duration(milliseconds: 800));
-
-      // Generate order ID
-      final orderId = 'ORD-${DateTime.now().millisecondsSinceEpoch}';
-
-      // In a real implementation, this would:
-      // - For cash: record transaction in local database
-      // - For card/wallet/BNPL: create payment intent server-side
-      // - For split: process all tenders
-
-      return Right(orderId);
-    } on ValidationException catch (e) {
-      return Left(ValidationFailure(message: e.message));
-    } on ServerException catch (e) {
-      return Left(ServerFailure(message: e.message));
-    } on NetworkException catch (e) {
-      return Left(NetworkFailure(message: e.message));
-    } catch (e) {
-      return Left(ServerFailure(message: 'Payment processing failed: $e'));
-    }
+    return _paymentProcessor.processPayment(
+      paymentMethod: paymentMethod,
+      amount: amount,
+      metadata: metadata,
+    );
   }
 
   @override
   Future<Either<Failure, VoucherEntity?>> validateVoucher(String code) async {
-    try {
-      // Validate voucher code
-      if (code.isEmpty) {
-        return Left(ValidationFailure(message: 'Voucher code is required'));
-      }
-
-      // Simple voucher validation (matching existing logic)
-      double voucherAmount = 10.0; // Default
-      final lowerCode = code.toLowerCase();
-
-      if (lowerCode.contains('save5')) voucherAmount = 5.0;
-      if (lowerCode.contains('save15')) voucherAmount = 15.0;
-      if (lowerCode.contains('save20')) voucherAmount = 20.0;
-
-      // Check if voucher is valid (simple validation)
-      if (voucherAmount == 10.0 && !lowerCode.contains('save10')) {
-        return Right(null); // Invalid voucher code
-      }
-
-      final voucher = VoucherEntity(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        code: code,
-        amount: voucherAmount,
-        appliedAt: DateTime.now(),
-      );
-
-      return Right(voucher);
-    } on ValidationException catch (e) {
-      return Left(ValidationFailure(message: e.message));
-    } catch (e) {
-      return Left(ServerFailure(message: 'Voucher validation failed: $e'));
-    }
+    return _voucherValidator.validate(code);
   }
 
   @override

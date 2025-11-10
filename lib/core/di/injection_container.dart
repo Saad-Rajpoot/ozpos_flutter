@@ -23,11 +23,13 @@ import '../../features/checkout/domain/usecases/initialize_checkout.dart';
 import '../../features/checkout/domain/usecases/process_payment.dart';
 import '../../features/checkout/domain/usecases/apply_voucher.dart';
 import '../../features/checkout/domain/usecases/calculate_totals.dart';
-import '../../features/checkout/data/repositories/checkout_repository_impl.dart';
 import '../../features/checkout/data/datasources/checkout_local_datasource.dart';
 import '../../features/checkout/data/datasources/checkout_mock_datasource.dart';
 import '../../features/checkout/data/datasources/checkout_datasource.dart';
+import '../../features/checkout/data/repositories/checkout_repository_impl.dart';
 import '../../features/checkout/domain/repositories/checkout_repository.dart';
+import '../../features/checkout/domain/services/payment_processor.dart';
+import '../../features/checkout/domain/services/voucher_validator.dart';
 import '../../features/combos/presentation/bloc/crud/combo_crud_bloc.dart';
 import '../../features/combos/presentation/bloc/filter/combo_filter_bloc.dart';
 import '../../features/combos/presentation/bloc/editor/combo_editor_bloc.dart';
@@ -235,9 +237,21 @@ Future<void> _initCheckout(GetIt sl) async {
     }
   });
 
+  // Domain services
+  sl.registerLazySingleton<PaymentProcessor>(
+    () => const SimulatedPaymentProcessor(),
+  );
+  sl.registerLazySingleton<VoucherValidator>(
+    () => const InMemoryVoucherValidator(),
+  );
+
   // Repository
   sl.registerLazySingleton<CheckoutRepository>(
-    () => CheckoutRepositoryImpl(checkoutDataSource: sl()),
+    () => CheckoutRepositoryImpl(
+      checkoutDataSource: sl(),
+      paymentProcessor: sl(),
+      voucherValidator: sl(),
+    ),
   );
 
   // Use cases
