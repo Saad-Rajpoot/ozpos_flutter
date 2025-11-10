@@ -25,7 +25,7 @@ class CheckoutMetadata extends Equatable {
       completedOrders: json['completedOrders'] as int,
       pendingOrders: json['pendingOrders'] as int,
       totalRevenue: (json['totalRevenue'] as num).toDouble(),
-      averageOrderValue: (json['totalRevenue'] as num).toDouble(),
+      averageOrderValue: (json['averageOrderValue'] as num).toDouble(),
       lastUpdated: DateTime.parse(json['lastUpdated'] as String),
     );
   }
