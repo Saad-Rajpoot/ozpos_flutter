@@ -1,280 +1,136 @@
-# OZPOS Flutter - Current Status
+# OZPOS Flutter – Current Status
 
-## ✅ Completed Features (Session Update)
+## ✅ Completed Foundations
 
-### 1. **Offline-First Architecture** ✅
-- **SQLite Database**: Fully functional on all platforms
-- **Database Schema**: 8 tables (menu_items, orders, tables, reservations, sync_queue, etc.)
-- **Repository Pattern**: Clean data access layer
-- **Sync Queue**: Tracks offline changes for Firebase sync
+- **Clean architecture & state management** – Presentation uses BLoC throughout (`MenuBloc`, `CartBloc`, `CheckoutBloc`, etc.) with environment-aware dependency injection in `lib/core/di/injection_container.dart`.  
+- **Environment toggling** – `AppConfig` switches between mock JSON data (development) and REST services (production), allowing the app to boot without a backend while keeping the HTTP client ready.  
+- **Cross-feature wiring** – Dashboard routing, menu browsing, checkout flow, addons, combos, orders, tables, delivery, reservations, reports, settings, printing, and customer-display screens are all registered in `AppRouter`. Each route spins up the relevant BLoC and loads mock data successfully in dev mode.  
+- **SQLite schema ready** – `DatabaseHelper` provisions menu, order, table, reservation, printer, cart, and sync queue tables. Checkout already writes to SQLite; other features still use in-memory mocks.  
+- **Theming & layout** – Light/dark themes, responsive breakpoints, gradients, and shared design tokens are consolidated in `lib/core/theme/app_theme.dart` and associated constants.  
+- **Instrumentation** – Sentry integration, global error handlers, and navigation observers are wired in `main.dart`. Connectivity checks, retry interceptor, and token-aware headers are available via `ApiClient`.
 
-### 2. **Core Data Models** ✅
-- CartItem with OrderType enum
-- MenuItem with modifiers
-- OrderAlert for third-party orders
-- Customer details (Takeaway/Delivery)
-- Restaurant tables and reservations
-- All models include JSON serialization
+## 🚧 Gaps & High-Priority Follow-Up
 
-### 3. **Menu & Ordering System** ✅
-- **MenuScreen**: Responsive grid (1-4 columns)
-- **Category Filtering**: Tab-based navigation
-- **MenuItemCard**: Beautiful card with images, shimmer loading
-- **Search**: Built-in but not yet exposed in UI
-- **Offline Data**: Loads from SQLite instantly
-- **Sample Data**: Auto-seeds on first launch
+- Implement real offline caching for read flows (menu/addons/combos/orders) and reconcile the missing `metadata` table used by checkout persistence.  
+- Build a background sync worker (or REST sync path) that uses the existing `sync_queue` schema.  
+- Replace mock JSON loaders with real API calls in production mode, adding DTO-to-entity mapping tests.  
+- Expand automated testing (unit tests for repositories and BLoCs, widget tests for primary screens).  
+- Harden navigation flows with loading/empty/error states once APIs are connected.
 
-### 4. **Cart System** ✅
-- **OrderSummary Widget**: Fixed 384px sidebar (desktop) or bottom sheet (mobile)
-- **Cart Provider**: State management with Provider pattern
-- **Quantity Controls**: +/- buttons with instant updates
-- **Price Calculation**: Subtotal, tax (10%), and total
-- **Clear Cart**: With confirmation dialog
-- **Persistent State**: Survives app restarts (local only for now)
-
-### 5. **Navigation & UI** ✅
-- **Responsive Layout**: Sidebar (desktop) / Bottom Nav (mobile)
-- **Dashboard**: 8 gradient tiles with smooth animations
-- **Theme System**: Complete design matching React app
-- **Section Routing**: Dashboard, Menu, Orders, Tables, etc.
-
-### 6. **Dependencies** ✅
-- **Minimal Plugin Set**: Only essential, cross-platform compatible plugins
-- sqflite + sqflite_common_ffi (all platforms)
-- firebase_core + cloud_firestore (minimal Firebase)
-- connectivity_plus (online/offline detection)
-- provider (state management)
-- cached_network_image + shimmer (UI)
-- Other core utilities
-
-## 📋 TODO - Remaining Work
-
-### High Priority
-- [ ] Firebase Sync Service (background sync with Firestore)
-- [ ] Checkout/Payment Screen
-- [ ] Order management (view, update status)
-- [ ] Table management (assign orders to tables)
-
-### Medium Priority
-- [ ] Reservation system
-- [ ] Delivery tracking
-- [ ] Reports & analytics
-- [ ] Menu editor
-
-### Low Priority
-- [ ] Settings & configuration
-- [ ] Printer integration
-- [ ] Docket designer
-- [ ] Multi-language support
-
-## 🏗️ Architecture Overview
+## 🏛 Architecture Snapshot
 
 ```
-┌─────────────────────────────────────────┐
-│           Flutter UI Layer              │
-│  (Screens, Widgets, Providers)          │
-└──────────────┬──────────────────────────┘
-               │
-               ↓
-┌─────────────────────────────────────────┐
-│        Repository Layer                 │
-│  (MenuRepository, OrderRepository)      │
-└──────────────┬──────────────────────────┘
-               │
-        ┌──────┴──────┐
-        ↓             ↓
-┌──────────────┐  ┌────────────────┐
-│   SQLite     │  │   Firebase     │
-│  (Primary)   │  │ (Sync Target)  │
-│              │  │                │
-│ • menu_items │→→│ • collections  │
-│ • orders     │→→│ • documents    │
-│ • tables     │→→│ • realtime     │
-│ • sync_queue │  │                │
-└──────────────┘  └────────────────┘
+┌──────────────────────────────────────────────┐
+│                 Flutter UI                   │
+│      (Screens + Widgets controlled by BLoC)  │
+└─────────────────┬────────────────────────────┘
+                  │
+                  ↓
+┌──────────────────────────────────────────────┐
+│            Feature Use Cases                 │
+│  (dartz Either + BaseUseCase abstractions)   │
+└─────────────────┬────────────────────────────┘
+                  │
+                  ↓
+┌──────────────────────────────────────────────┐
+│            Repository Implementations        │
+│  - NetworkInfo gate keeps online calls       │
+│  - Maps models <-> domain entities           │
+└─────────────────┬───────────────┬────────────┘
+                  │               │
+                  ↓               ↓
+        ┌────────────────┐  ┌───────────────┐
+        │  Mock JSON     │  │   REST API    │
+        │ (development)  │  │ (production)  │
+        └────────────────┘  └───────────────┘
+                 │
+                 ↓
+        ┌────────────────────────────┐
+        │ SQLite via DatabaseHelper  │
+        │ (currently write-heavy for │
+        │ checkout; read caching TBD)│
+        └────────────────────────────┘
 ```
 
-## 🔄 Data Flow
+## 🔄 Data Flow Examples
 
-### Read Operations (Instant)
-```
-User Action → Provider → Repository → SQLite → UI Update
-```
+### Menu browse (development mode)
+`MenuScreen` → `MenuBloc.LoadMenuData` → use cases → `MenuRepositoryImpl` → `MenuMockDataSourceImpl` → JSON fixtures → UI updates.
 
-### Write Operations (Offline-First)
-```
-User Action → Provider → Repository → 
-  1. SQLite (instant save)
-  2. Sync Queue (for later)
-  3. Return Success
-  4. Background: Firebase Sync (when online)
-```
+### Checkout submit (desktop/mobile)
+`CheckoutBloc.ProcessPayment` → `CheckoutRepositoryImpl` → `CheckoutLocalDataSource` → SQLite `orders` table, then UI success state. Metadata read still requires a table definition.
 
-## 📊 Current Stats
+## 📊 Current Metrics
 
-| Metric | Count |
-|--------|-------|
-| Dart Files | 20+ |
-| Lines of Code | ~3,500+ |
-| Data Models | 5 core models |
-| Screens | 3 (Dashboard, Menu, MainScreen) |
-| Providers | 2 (Cart, Menu) |
-| Database Tables | 8 |
-| Dependencies | 15 (minimal set) |
+| Metric | Value (Nov 2025) |
+| ------ | ---------------- |
+| Dart files | 380 |
+| Dart LOC | 56,899 |
+| Feature modules | 11 (menu, checkout, addons, combos, orders, tables, delivery, reservations, reports, settings, printing, customer display) |
+| BLoC implementations | 20+ |
+| JSON fixtures | 40+ across assets/ |
+| SQLite tables | 10 (including sync queue & cart items) |
+| Flutter/Dart dependencies | 18 runtime / 3 dev |
 
-## 🎯 What Works Right Now
+## 🎯 What Works Today
 
-### You Can:
-1. ✅ Run the app on any platform (iOS, Android, Web, Desktop)
-2. ✅ View sample menu items (auto-generated)
-3. ✅ Filter by category (burgers, pizza, drinks, desserts)
-4. ✅ Add items to cart
-5. ✅ Adjust quantities
-6. ✅ View cart summary
-7. ✅ Clear cart
-8. ✅ Navigate between Dashboard and Menu
-9. ✅ Works 100% offline
-10. ✅ Data persists in SQLite
+- Dashboard navigation with feature entry tiles.  
+- Menu browsing with categories, filters, and cart interactions backed by mock data.  
+- Cart state handled globally via `CartBloc` (quantities, totals, clear/reset).  
+- Checkout flow including payment selection, tips, split payments, and SQLite persistence (orders table).  
+- Addon, combo, orders, tables, delivery, reservations, reports, settings, printing, and customer-display screens render using mock payloads and respond to refresh events.  
+- Sentry logging, connectivity detection, retryable API client, and environment logging.
 
-### What's Coming Next:
-1. Firebase sync (online/offline synchronization)
-2. Checkout flow
-3. Order history
-4. Table assignment
-5. More screens and features
+## 🐞 Known Issues / Risks
 
-## 🚀 How to Run
+1. **Offline read gap** – Without caching, most repositories error when offline (`NetworkFailure`).  
+2. **Checkout metadata table missing** – `CheckoutLocalDataSource` queries a `metadata` table not yet created.  
+3. **Sync queue idle** – Table exists but no service populates it; offline writes beyond checkout are not captured.  
+4. **Mock/real divergence** – Ensure JSON fixtures stay aligned with eventual API contracts to avoid domain mismatches.  
+5. **Test coverage TODO** – Limited automated tests; regressions are possible without unit/widget safeguards.
+
+## 🚀 Running the App
 
 ```bash
-cd ozpos_flutter
-
-# Install dependencies
 flutter pub get
 
-# IMPORTANT: Use the updated main file
-mv lib/main.dart lib/main_old.dart
-mv lib/main_new.dart lib/main.dart
+# default environment: development (mock data)
+flutter run
 
-# Run on your platform
-flutter run                 # Default device
-flutter run -d chrome       # Web
-flutter run -d macos        # macOS
-flutter run -d ios          # iOS Simulator
+# choose a specific target
+flutter run -d chrome
+flutter run -d windows
+
+# switch to production-style wiring
+flutter run --dart-define=APP_ENV=production
 ```
 
-## 📱 What You'll See
+`AppConfig.instance.initialize(...)` in `main.dart` controls the environment. For production runs, configure `API_BASE_URL` (and future auth keys) via `--dart-define`.
 
-1. **Dashboard Screen**:
-   - 8 colorful gradient tiles
-   - Responsive grid layout
-   - Smooth navigation
+## 🔌 Dependency Snapshot
 
-2. **Menu Screen** (Click "New Order"):
-   - Category tabs (All, Burgers, Pizza, Drinks, Desserts)
-   - Grid of menu items with images
-   - Add to cart with + button
-   - Cart sidebar (desktop) or bottom sheet (mobile)
+- **State & DI**: `flutter_bloc`, `bloc`, `get_it`, `dartz`.  
+- **Data**: `sqflite`, `sqflite_common_ffi`, `path`, `path_provider`, `shared_preferences`, `dio`, `connectivity_plus`, `uuid`.  
+- **UI**: `cached_network_image`, `shimmer`, `intl`, `fl_chart`, `image_picker`.  
+- **Observability**: `sentry_flutter`, `package_info_plus`.  
+- **Dev/Test**: `flutter_test`, `flutter_lints`, `mocktail`.
 
-3. **Cart Summary**:
-   - List of items with quantities
-   - Subtotal, tax, total calculations
-   - Clear and Checkout buttons
+## 📚 Reference Docs
 
-## 🔧 Key Files to Know
+- `README.md` – high-level project summary.  
+- `QUICKSTART.md` – environment setup and run instructions.  
+- `OFFLINE_FIRST_GUIDE.md` – detailed view of the current data layer and gaps.  
+- `FLUTTER_CONVERSION_GUIDE.md` – notes from the original migration effort.
 
-### Core App
-- `lib/main_new.dart` - App entry point
-- `lib/screens/main_screen.dart` - Navigation wrapper
-- `lib/screens/dashboard_screen.dart` - Main dashboard
-- `lib/screens/menu_screen.dart` - Menu ordering
+## 🔭 Next Session Focus
 
-### Data Layer
-- `lib/services/database_helper.dart` - SQLite setup (286 lines)
-- `lib/services/menu_repository.dart` - Menu data operations (252 lines)
-
-### State Management
-- `lib/providers/cart_provider.dart` - Cart state (119 lines)
-- `lib/providers/menu_provider.dart` - Menu state (110 lines)
-
-### UI Components
-- `lib/widgets/menu/menu_item_card.dart` - Menu item card
-- `lib/widgets/cart/order_summary.dart` - Cart sidebar/sheet
-
-### Models
-- `lib/models/cart_item.dart` - Cart item model
-- `lib/models/menu_item.dart` - Menu item with modifiers
-- `lib/models/table.dart` - Tables and reservations
-- `lib/models/customer_details.dart` - Customer info
-- `lib/models/order_alert.dart` - Third-party orders
-
-### Theme
-- `lib/theme/app_theme.dart` - Complete design system
-
-## 📚 Documentation
-
-- `QUICKSTART.md` - Getting started guide
-- `FLUTTER_CONVERSION_GUIDE.md` - Complete conversion documentation
-- `OFFLINE_FIRST_GUIDE.md` - Offline architecture details
-- `README.md` - Project overview
-
-## 🎨 Design Features
-
-- ✅ Tailwind-inspired gradients
-- ✅ Section-specific colors
-- ✅ Status badges
-- ✅ Responsive layouts
-- ✅ Smooth animations
-- ✅ Loading states (shimmer)
-- ✅ Empty states
-- ✅ Error handling
-
-## 🔌 Plugin Strategy
-
-**Chosen Approach**: Minimal, widely-supported plugins only
-
-### Core Plugins (All Cross-Platform)
-- ✅ sqflite (iOS, Android, Web*, Desktop)
-- ✅ firebase_core (All platforms)
-- ✅ cloud_firestore (All platforms)
-- ✅ provider (Pure Dart)
-- ✅ connectivity_plus (All platforms)
-- ✅ shared_preferences (All platforms)
-- ✅ cached_network_image (All platforms)
-
-*Web uses sql.js for SQLite
-
-### Avoided
-- ❌ Heavy plugin sets (flutter_form_builder, badges, etc.)
-- ❌ Platform-specific code (unless necessary)
-- ❌ Experimental plugins
-- ❌ Deprecated packages
-
-## 🐛 Known Issues
-
-1. **None!** Core functionality is stable
-
-## 💡 Next Session Tasks
-
-1. Implement Firebase Sync Service
-2. Build Checkout Screen
-3. Add order management
-4. Implement table assignment
-5. Create reservation system
-
-## 🎉 Summary
-
-You now have a **fully functional, offline-first POS system** that:
-- Works on all platforms
-- Loads instantly from local database
-- Has beautiful, responsive UI
-- Follows Flutter best practices
-- Uses minimal, reliable dependencies
-- Ready for Firebase sync integration
-
-The foundation is solid and production-ready for offline use. Firebase sync will make it multi-device capable!
+1. Add SQLite caching (or alternative persistence) for menu/addon data so the UI functions offline.  
+2. Implement sync queue writers and a background task to reconcile pending operations.  
+3. Replace mock sources with real API calls in production mode and backfill missing DTOs.  
+4. Create end-to-end tests for core user flows (menu → cart → checkout).  
+5. Address checkout metadata persistence and seed data for tables/reservations.
 
 ---
 
-**Status**: 🟢 Core Features Complete & Working
-**Last Updated**: Current Session
-**Next Focus**: Firebase Sync Service
+**Status:** Foundations complete, data-sync & offline read scenarios pending  
+**Last Updated:** Current session  

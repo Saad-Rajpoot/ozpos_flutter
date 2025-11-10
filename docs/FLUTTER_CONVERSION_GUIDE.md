@@ -1,440 +1,331 @@
-# OZPOS React to Flutter Conversion Guide
+# OZPOS React → Flutter Conversion Guide
 
 ## Overview
-This document outlines the complete conversion of the OZPOS React/TypeScript application to Flutter/Dart for cross-platform deployment (iOS, Android, Web, Desktop).
 
-## ✅ Completed So Far
+The React/TypeScript OZPOS experience has been ported to Flutter with a clean architecture stack and BLoC-driven presentation. This guide documents the structure now living in `ozpos_flutter/`, the feature parity achieved, and the remaining work needed to finish the migration.
 
-### 1. **Project Setup**
-- ✅ Created Flutter project structure
-- ✅ Configured `pubspec.yaml` with all dependencies:
-  - State Management: `provider`
-  - UI Components: `flutter_svg`, `cached_network_image`, `badges`, `shimmer`
-  - Charts: `fl_chart`
-  - Notifications: `fluttertoast`, `flutter_local_notifications`
-  - Forms: `flutter_form_builder`, `form_builder_validators`
-  - PDF/Printing: `pdf`, `printing`
-  - Maps: `google_maps_flutter`, `geolocator`
-  - Utilities: `uuid`, `shared_preferences`, `http`, `intl`
+## ✅ Converted Foundations
 
-### 2. **Data Models** (lib/models/)
-- ✅ `cart_item.dart` - Cart item with OrderType enum
-- ✅ `order_alert.dart` - Third-party order notifications
-- ✅ `customer_details.dart` - Takeaway and Delivery details
-- ✅ `menu_item.dart` - Menu items with modifiers
-- ✅ `table.dart` - Restaurant tables and reservations
+- **Architecture** – Presentation uses `flutter_bloc`, the domain layer exposes use cases (`dartz` `Either`), and data sources (mock JSON or REST) are wired via dependency injection.
+- **Environment toggle** – `AppConfig` selects development (mock assets) or production (REST API) environments at startup, allowing instant local runs without a backend.
+- **Features** – Dashboard, menu, checkout, addons, combos, orders, tables, delivery, reservations, reports, settings, printing, docket designer, addon management, and customer display screens are all in place with mock data.
+- **SQLite schema** – `DatabaseHelper` provisions tables for menu entities, orders, modifiers, tables, reservations, printers, cart items, and a sync queue. Checkout already writes orders locally.
+- **Design system** – Light/dark themes, gradients, spacing, typography, shadows, and responsive breakpoints are consolidated in `lib/core/theme` and `lib/core/constants`.
+- **Observability & tooling** – Sentry reporting, connectivity checks, retryable `Dio` HTTP client, and navigation logging are enabled from `main.dart`.
 
-### 3. **Theme System** (lib/theme/)
-- ✅ `app_theme.dart` - Complete theme matching React app
-  - Section-specific gradients (Takeaway, Dine-in, Delivery, etc.)
-  - Status indicator colors
-  - Shadow styles
-  - Text themes
+## 🎒 Key Dependencies
 
-### 4. **State Management** (lib/providers/)
-- ✅ `cart_provider.dart` - Cart operations with Provider pattern
+| Area | Packages |
+| ---- | -------- |
+| State & DI | `flutter_bloc`, `bloc`, `get_it`, `dartz` |
+| Data | `sqflite`, `sqflite_common_ffi`, `path`, `path_provider`, `shared_preferences`, `dio`, `connectivity_plus`, `uuid` |
+| UI | `cached_network_image`, `shimmer`, `fl_chart`, `intl`, `image_picker` |
+| Observability | `sentry_flutter`, `package_info_plus` |
+| Dev/Test | `flutter_test`, `flutter_lints`, `mocktail` |
 
-### 5. **Main App** (lib/)
-- ✅ `main_new.dart` - App entry point with Provider setup
+No Firebase packages are present; future sync will target REST endpoints (or Firebase if reintroduced).
 
-## 📋 Directory Structure
+## 📁 Directory Structure (2025)
 
 ```
 lib/
-├── main.dart                    # App entry point
-├── models/                      # Data models
-│   ├── cart_item.dart
-│   ├── customer_details.dart
-│   ├── menu_item.dart
-│   ├── order_alert.dart
-│   └── table.dart
-├── providers/                   # State management
-│   ├── cart_provider.dart
-│   ├── menu_provider.dart       # TODO
-│   ├── table_provider.dart      # TODO
-│   └── order_provider.dart      # TODO
-├── screens/                     # Main screens
-│   ├── main_screen.dart         # TODO - Main navigation wrapper
-│   ├── dashboard_screen.dart    # TODO
-│   ├── menu_screen.dart         # TODO
-│   ├── checkout_screen.dart     # TODO
-│   ├── tables_screen.dart       # TODO
-│   ├── delivery_screen.dart     # TODO
-│   ├── reports_screen.dart      # TODO
-│   └── settings_screen.dart     # TODO
-├── widgets/                     # Reusable widgets
-│   ├── common/
-│   │   ├── gradient_card.dart   # TODO
-│   │   ├── status_badge.dart    # TODO
-│   │   └── custom_button.dart   # TODO
-│   ├── navigation/
-│   │   ├── top_navigation.dart  # TODO
-│   │   ├── left_sidebar.dart    # TODO
-│   │   └── bottom_nav.dart      # TODO
-│   ├── cart/
-│   │   ├── order_summary.dart   # TODO
-│   │   └── cart_item_card.dart  # TODO
-│   └── menu/
-│       ├── menu_item_card.dart  # TODO
-│       ├── category_tabs.dart   # TODO
-│       └── modifier_dialog.dart # TODO
-├── theme/
-│   └── app_theme.dart
-├── services/                    # Business logic & API
-│   ├── api_service.dart         # TODO
-│   ├── print_service.dart       # TODO
-│   └── storage_service.dart     # TODO
-└── utils/                       # Helper functions
-    ├── formatters.dart          # TODO
-    ├── validators.dart          # TODO
-    └── constants.dart           # TODO
+├── core/
+│   ├── base/                 # BaseBloc, BaseState, BaseUseCase
+│   ├── config/               # AppConfig, SentryConfig
+│   ├── constants/            # UI + API constants
+│   ├── di/                   # GetIt registrations
+│   ├── navigation/           # NavigationService + AppRouter
+│   ├── network/              # ApiClient, retry interceptor, NetworkInfo
+│   ├── theme/                # AppTheme + design tokens
+│   └── utils/                # DatabaseHelper, helpers
+├── features/
+│   ├── menu/
+│   │   ├── data/             # Datasources, models, repository impl
+│   │   ├── domain/           # Entities, repositories, use cases
+│   │   └── presentation/     # Bloc, screens, widgets
+│   ├── checkout/
+│   ├── addons/
+│   ├── combos/
+│   ├── orders/
+│   ├── tables/
+│   ├── delivery/
+│   ├── reservations/
+│   ├── reports/
+│   ├── settings/
+│   ├── printing/
+│   └── customer_display/
+└── main.dart                 # Bootstrap (AppConfig, DI, Sentry, router)
+assets/
+├── menu_data/
+├── checkout_data/
+├── orders_data/
+└── … (mock datasets for each feature)
 ```
 
-## 🎯 Screen Conversion Mapping
+This layout mirrors the clean architecture pattern (data → domain → presentation) per feature while sharing cross-cutting infrastructure inside `core/`.
 
-### React → Flutter Screen Mapping
+## 🔄 Feature Mapping
 
-| React Component | Flutter Screen | Status | Priority |
-|----------------|---------------|--------|----------|
-| `DashboardScreen` | `dashboard_screen.dart` | TODO | HIGH |
-| `MenuScreen` | `menu_screen.dart` | TODO | HIGH |
-| `UnifiedCheckoutScreen` | `checkout_screen.dart` | TODO | HIGH |
-| `OrderSummary` | `widgets/cart/order_summary.dart` | TODO | HIGH |
-| `TablesScreen` | `tables_screen.dart` | TODO | MEDIUM |
-| `DeliveryManagerScreen` | `delivery_screen.dart` | TODO | MEDIUM |
-| `ReportsScreen` | `reports_screen.dart` | TODO | MEDIUM |
-| `SettingsScreen` | `settings_screen.dart` | TODO | LOW |
-| `MenuEditorScreen` | `menu_editor_screen.dart` | TODO | LOW |
-| `DocketDesignerScreen` | `docket_designer_screen.dart` | TODO | LOW |
+| React module | Flutter feature | Status | Notes |
+| ------------ | --------------- | ------ | ----- |
+| Dashboard tiles | `features/dashboard` | ✅ | Gradients, navigation wired |
+| Menu browse/editor | `features/menu` | ✅ | BLoC + wizard, mock data |
+| Cart & checkout | `features/checkout` | ✅ | CartBloc global, CheckoutBloc handles flow, writes to SQLite |
+| Addons manager | `features/addons` | ✅ | Mock data, BLoC |
+| Combos | `features/combos` | ✅ | CRUD editor with multi-BLoC wiring |
+| Orders board | `features/orders` | ✅ | Loads mock JSON |
+| Tables & reservations | `features/tables`, `features/reservations` | ✅ | Floor view, availability |
+| Delivery tracking | `features/delivery` | ✅ | Mock drivers/jobs |
+| Reports & analytics | `features/reports` | ✅ | Uses `fl_chart` with mock stats |
+| Settings | `features/settings` | ✅ | Category list from JSON |
+| Printing & docket | `features/printing`, `features/docket` | ✅ | Mock data, ESC/POS stubs |
+| Customer display | `features/customer_display` | ✅ | Popup screen, BLoC |
 
-## 🔧 Key Implementation Patterns
+All features are currently powered by mock data in development mode. Production mode switches repositories to remote data sources backed by the shared `ApiClient`.
 
-### 1. **State Management with Provider**
+## 🧩 Core Implementation Patterns
 
-```dart
-// Access cart in any widget
-final cart = Provider.of<CartProvider>(context);
-final cartItems = cart.cartItems;
+### BLoC orchestration
 
-// Or using Consumer for reactive updates
-Consumer<CartProvider>(
-  builder: (context, cart, child) {
-    return Text('Items: ${cart.itemCount}');
-  },
-)
+```69:124:lib/features/menu/presentation/bloc/menu_bloc.dart
+  Future<void> _onLoadMenuData(
+    LoadMenuData event,
+    Emitter<MenuState> emit,
+  ) async {
+    emit(const MenuLoading());
+
+    final categoriesResult = await getMenuCategories(const NoParams());
+    final itemsResult = await getMenuItems(const NoParams());
+
+    final existingCategories = state is MenuLoaded
+        ? (state as MenuLoaded).categories
+        : <MenuCategoryEntity>[];
+    final existingItems =
+        state is MenuLoaded ? (state as MenuLoaded).items : <MenuItemEntity>[];
+
+    String? categoriesError;
+    String? itemsError;
+
+    final loadedCategories = categoriesResult.fold(
+      (failure) {
+        categoriesError = _mapFailureToMessage(failure);
+        return existingCategories;
+      },
+      (categories) => categories,
+    );
+
+    final loadedItems = itemsResult.fold(
+      (failure) {
+        itemsError = _mapFailureToMessage(failure);
+        return existingItems;
+      },
+      (items) => items;
+    );
+
+    if (loadedCategories.isNotEmpty || loadedItems.isNotEmpty) {
+      emit(MenuLoaded(
+        categories: loadedCategories,
+        items: loadedItems,
+      ));
+    } else {
+      final errorMessage = categoriesError ?? itemsError ?? 'Unknown error';
+      emit(MenuError(message: errorMessage));
+    }
+  }
 ```
 
-### 2. **Navigation Pattern**
+### Environment-driven DI
 
-```dart
-// Navigate to screen
-Navigator.of(context).push(
-  MaterialPageRoute(builder: (_) => MenuScreen()),
-);
+```118:218:lib/core/di/injection_container.dart
+Future<void> init() async {
+  final sharedPreferences = await SharedPreferences.getInstance();
+  sl.registerLazySingleton(() => sharedPreferences);
 
-// Pop back
-Navigator.of(context).pop();
-```
+  try {
+    final database = await DatabaseHelper.database;
+    sl.registerLazySingleton<Database>(() => database);
+  } catch (_) {
+    // Web path: database not available
+  }
 
-### 3. **Gradient Containers (Matching React)**
+  sl.registerLazySingleton<NetworkInfo>(
+    () => NetworkInfoImpl(connectivity: Connectivity()),
+  );
 
-```dart
-Container(
-  decoration: BoxDecoration(
-    gradient: AppTheme.takeawayGradient,
-    borderRadius: BorderRadius.circular(16),
-  ),
-  child: YourWidget(),
-)
-```
+  sl.registerLazySingleton(
+    () => api_client.ApiClient(
+      sharedPreferences: sl(),
+      baseUrl: AppConfig.instance.baseUrl,
+    ),
+  );
 
-### 4. **Toast Notifications (Replacing React toast)**
-
-```dart
-Fluttertoast.showToast(
-  msg: "Item added to cart",
-  backgroundColor: Colors.green,
-  textColor: Colors.white,
-);
-```
-
-### 5. **Responsive Grid (Matching MenuGrid)**
-
-```dart
-GridView.builder(
-  gridDelegate: SliverGridDelegateWithResponsiveColumnCount(
-    crossAxisCount: _getColumnCount(context),
-    crossAxisSpacing: 24,
-    mainAxisSpacing: 24,
-  ),
-  itemBuilder: (context, index) => MenuItemCard(item: items[index]),
-)
-
-int _getColumnCount(BuildContext context) {
-  final width = MediaQuery.of(context).size.width;
-  if (width >= 1280) return 4; // xl
-  if (width >= 1024) return 3; // lg
-  if (width >= 640) return 2;  // sm
-  return 1;
+  await _initMenu(sl);
+  await _initCart(sl);
+  await _initCheckout(sl);
+  // ... other feature initialisers
 }
 ```
 
-## 🎨 Component Conversion Examples
+Each `_initFeature` function registers mock or remote data sources depending on `AppConfig.instance.environment`, then wires repositories, use cases, and BLoCs.
 
-### Example 1: Menu Item Card
+### Mock data sources
 
-**React (MenuItemCard.tsx)**
-```tsx
-<div className="bg-white rounded-lg shadow-md overflow-hidden cursor-pointer
-                hover:shadow-xl transition-all duration-200 hover:scale-105">
-  <img src={item.image} alt={item.name} className="w-full h-48 object-cover" />
-  <div className="p-4">
-    <h3 className="font-semibold text-lg">{item.name}</h3>
-    <p className="text-gray-600 text-sm">{item.description}</p>
-    <p className="text-xl font-bold text-blue-600">${item.price}</p>
-  </div>
-</div>
+```14:69:lib/features/menu/data/datasources/menu_mock_datasource.dart
+class MenuMockDataSourceImpl implements MenuDataSource {
+  static Future<List<MenuCategoryModel>> _getMockCategories() async {
+    final jsonString = await rootBundle.loadString(
+      'assets/menu_data/menu_items.json',
+    );
+    final List<dynamic> menuItemsData = json.decode(jsonString);
+
+    final Map<String, dynamic> categoriesMap = {};
+    for (final item in menuItemsData) {
+      final category = item['category'];
+      if (category != null && category['id'] != null) {
+        categoriesMap[category['id']] = category;
+      }
+    }
+
+    final categories = categoriesMap.values.toList()
+      ..sort((a, b) => (a['sortOrder'] ?? 0).compareTo(b['sortOrder'] ?? 0));
+
+    return categories.map((category) {
+      return MenuCategoryModel(
+        id: category['id'],
+        name: category['name'],
+        description: category['description'],
+        image: category['image'],
+        isActive: category['isActive'] ?? true,
+        sortOrder: category['sortOrder'] ?? 0,
+        createdAt:
+            DateTime.parse(category['createdAt'] ?? '2025-01-08T10:00:00.000Z'),
+        updatedAt:
+            DateTime.parse(category['updatedAt'] ?? '2025-01-08T10:00:00.000Z'),
+      );
+    }).toList();
+  }
 ```
 
-**Flutter (menu_item_card.dart)**
-```dart
-class MenuItemCard extends StatelessWidget {
-  final MenuItem item;
-  final VoidCallback onTap;
+### SQLite persistence
 
-  const MenuItemCard({required this.item, required this.onTap, super.key});
+```7:28:lib/features/checkout/data/datasources/checkout_local_datasource.dart
+class CheckoutLocalDataSource implements CheckoutDataSource {
+  final Database _database;
+
+  CheckoutLocalDataSource({required Database database}) : _database = database;
 
   @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Card(
-        elevation: 2,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
-              child: CachedNetworkImage(
-                imageUrl: item.image,
-                height: 192,
-                width: double.infinity,
-                fit: BoxFit.cover,
-                placeholder: (context, url) => Shimmer.fromColors(
-                  baseColor: Colors.grey[300]!,
-                  highlightColor: Colors.grey[100]!,
-                  child: Container(color: Colors.white),
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    item.name,
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    item.description,
-                    style: Theme.of(context).textTheme.bodySmall,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '\$${item.price.toStringAsFixed(2)}',
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          color: AppTheme.primaryColor,
-                          fontWeight: FontWeight.bold,
-                        ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+  Future<CheckoutEntity> saveOrder(OrderModel orderModel) async {
+    await _database.insert('orders', orderModel.toJson());
+    return CheckoutData.fromJson(
+      {
+        'orders': (await _database
+                .query('orders', where: 'id = ?', whereArgs: [orderModel.id]))
+            .map((json) =>
+                OrderModel.fromJson(json as Map<String, dynamic>).toEntity())
+            .toList(),
+        'metadata': CheckoutData.fromJson(
+          (await _database.query('metadata'))[0],
+        ).toEntity(),
+      },
+    ).toEntity();
+  }
+}
+```
+
+> ⚠️ Action item: `DatabaseHelper` does not yet create the `metadata` table expected here. Add migrations or adjust the data source before shipping.
+
+### Navigation orchestration
+
+```86:206:lib/core/navigation/app_router.dart
+static Route<dynamic> generateRoute(RouteSettings settings) {
+  final args = settings.arguments as Map<String, dynamic>?;
+
+  switch (settings.name) {
+    case dashboard:
+      return MaterialPageRoute(
+        builder: (_) => BlocProvider<MenuBloc>(
+          create: (_) => di.sl<MenuBloc>()..add(const LoadMenuData()),
+          child: const DashboardScreen(),
         ),
-      ),
+        settings: settings,
+      );
+    case checkout:
+      return MaterialPageRoute(
+        builder: (_) => BlocProvider<CheckoutBloc>(
+          create: (_) => di.sl<CheckoutBloc>(),
+          child: const CheckoutScreen(),
+        ),
+        settings: settings,
+      );
+    // ... other routes
+    default:
+      return MaterialPageRoute(
+        builder: (_) => const ErrorScreen(),
+        settings: settings,
     );
   }
 }
 ```
 
-### Example 2: Gradient Dashboard Tile
+## 🔧 React → Flutter Concept Mapping
 
-**React**
-```tsx
-<div className="bg-gradient-to-br from-orange-500 to-amber-500 
-                rounded-2xl p-8 text-white cursor-pointer
-                hover:scale-105 transition-transform shadow-xl">
-  <Icon className="w-12 h-12 mb-4" />
-  <h3 className="text-2xl font-bold">Takeaway</h3>
-  <p className="text-white/80">Manage takeaway orders</p>
-</div>
-```
+| React/TypeScript | Flutter equivalent |
+| ---------------- | ------------------ |
+| Context + reducers | `BlocProvider` + `BlocBuilder` / `Cubit` |
+| Axios + interceptors | `Dio` + custom interceptors in `ApiClient` |
+| Redux store | Feature-specific BLoCs + `GetIt` repositories |
+| Tailwind gradients | `AppTheme` color system + `LinearGradient` |
+| LocalStorage | `SharedPreferences`, SQLite |
+| Multi-step wizard | `MenuItemWizardScreen` + `MenuEditBloc` |
+| Toast notifications | `ScaffoldMessenger`, `SnackBar` |
 
-**Flutter**
-```dart
-class DashboardTile extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final IconData icon;
-  final Gradient gradient;
-  final VoidCallback onTap;
+## 🔜 Remaining Work
 
-  const DashboardTile({
-    required this.title,
-    required this.subtitle,
-    required this.icon,
-    required this.gradient,
-    required this.onTap,
-    super.key,
-  });
+1. **Offline read path** – hydrate SQLite tables from assets or network responses so menu/addon/combos data remains available if connectivity drops.
+2. **Sync queue engine** – the schema is ready, but a background service must write to and flush the queue to achieve eventual consistency.
+3. **API integration** – finalize REST endpoints, extend models, and switch production DI registrations from mock to remote data sources. Add contract tests to guard JSON shape.
+4. **Checkout metadata** – add the missing table/migration in `DatabaseHelper` and seed initial metadata rows.
+5. **Testing** – add unit tests for repositories/use cases, widget tests for dashboard/menu/checkout, and integration tests for end-to-end ordering.
+6. **Performance polish** – audit large widget rebuilds, consider pagination for heavy lists, and enable caching for images/assets.
 
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: gradient,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: AppTheme.elevatedShadow,
-        ),
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(icon, size: 48, color: Colors.white),
-            const SizedBox(height: 16),
-            Text(
-              title,
-              style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              subtitle,
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: Colors.white.withOpacity(0.8),
-                  ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-```
+## 🧪 Validation Checklist
 
-## 🚀 Next Steps
+- [ ] Menu categories/items load via BLoC with mock data.
+- [ ] Cart persists through navigation (CartBloc singleton).
+- [ ] Checkout saves orders to SQLite without runtime errors.
+- [ ] Menu wizard (`MenuItemWizardScreen`) supports create/edit/duplicate/draft flows.
+- [ ] All AppRouter destinations launch successfully.
+- [ ] Sentry captures handled/unhandled errors when enabled.
+- [ ] Production build runs with `APP_ENV=production` and hits configured base URL.
 
-### Phase 1: Core Navigation & Dashboard (Days 1-2)
-1. Create `main_screen.dart` with drawer/sidebar navigation
-2. Implement `dashboard_screen.dart` with gradient tiles
-3. Build `top_navigation.dart` and `left_sidebar.dart` widgets
+## 🐛 Debugging Tips
 
-### Phase 2: Menu & Ordering (Days 3-5)
-1. Build `menu_screen.dart` with category tabs
-2. Create `menu_item_card.dart` widget
-3. Implement modifier/customization dialog
-4. Build `order_summary.dart` cart widget
+- Use `flutter run --verbose` for network/DI issues.
+- Check `Connectivity().checkConnectivity()` output when diagnosing offline failures.
+- Inspect `ozpos.db` via SQLite browser (see `OFFLINE_FIRST_GUIDE.md`) to confirm table schemas.
+- For BLoC debugging, enable `Bloc.observer = SentryBlocObserver()` and watch console logs.
+- Mock data mishaps often surface as JSON decode errors—verify assets and update models accordingly.
 
-### Phase 3: Checkout & Payment (Days 6-7)
-1. Create `checkout_screen.dart` (unified checkout)
-2. Implement payment methods UI
-3. Add split bill functionality
-4. Build receipt generation
+## 📦 Build & Deploy
 
-### Phase 4: Tables & Reservations (Days 8-9)
-1. Create `tables_screen.dart` with table grid
-2. Implement reservation system
-3. Add table operations (move, merge, split)
+| Target | Command | Notes |
+| ------ | ------- | ----- |
+| Android | `flutter build apk` | Configure signing in `android/app` |
+| iOS | `flutter build ipa` | Requires Xcode + provisioning profiles |
+| Web | `flutter build web` | Deploy `build/web` to hosting of choice |
+| Windows | `flutter build windows` | Uses sqflite via FFI |
+| macOS/Linux | `flutter build macos` / `linux` | Ensure desktop support enabled |
 
-### Phase 5: Delivery Management (Day 10)
-1. Build `delivery_screen.dart` with three columns
-2. Integrate Google Maps for tracking
-3. Add driver management
+Remember to set `--dart-define=APP_ENV=production` (and other secrets) for production builds.
 
-### Phase 6: Additional Features (Days 11-14)
-1. Reports screen with charts (fl_chart)
-2. Settings and configuration
-3. Menu editor
-4. Docket designer (drag-and-drop)
-5. Printer integration
+## 📚 Supplemental Docs
 
-## 📱 Platform-Specific Considerations
-
-### Mobile (iOS/Android)
-- Use bottom navigation bar instead of left sidebar
-- Optimize touch targets (minimum 44x44 points)
-- Handle safe areas properly
-- Use native date/time pickers
-
-### Tablet
-- Use split-view layouts where appropriate
-- Maintain sidebar on larger screens
-- Optimize for landscape orientation
-
-### Web
-- Full desktop layout with sidebar
-- Support keyboard shortcuts
-- Handle mouse hover states
-- Responsive breakpoints matching original
-
-### Desktop (macOS/Windows/Linux)
-- Native window controls
-- Menu bar integration
-- File system access for reports
-- Print dialog integration
-
-## 🔨 Running the App
-
-```bash
-# Fetch dependencies
-cd ozpos_flutter
-flutter pub get
-
-# Run on specific platform
-flutter run -d chrome       # Web
-flutter run -d macos        # macOS
-flutter run                 # Default device
-
-# Build for production
-flutter build apk           # Android
-flutter build ios           # iOS
-flutter build web           # Web
-flutter build macos         # macOS
-```
-
-## 📝 Notes
-
-- **State Management**: Using Provider for simplicity. Can migrate to Riverpod for more complex needs.
-- **Responsive Design**: MediaQuery and LayoutBuilder used for breakpoints.
-- **Assets**: Copy all images from React app to `assets/images/`
-- **API Integration**: Create service layer in `lib/services/`
-- **Testing**: Add unit tests in `test/` directory
-
-## 🐛 Known Challenges
-
-1. **Drag-and-drop** for docket designer - Use `flutter_reorderable_grid_view`
-2. **PDF generation** - Different approach than browser-based
-3. **Print integration** - Platform-specific implementations needed
-4. **Maps** - Requires API keys for each platform
-
-## 📚 Resources
-
-- [Flutter Documentation](https://docs.flutter.dev/)
-- [Provider Package](https://pub.dev/packages/provider)
-- [Material Design 3](https://m3.material.io/)
-- [Dart Language Tour](https://dart.dev/guides/language/language-tour)
+- `OFFLINE_FIRST_GUIDE.md` – Data layer & persistence deep dive.
+- `QUICKSTART.md` – High-level steps to run and extend the app.
+- `STATUS.md` – Current milestones, metrics, and roadmap.
+- `MENU_EDITOR_WIZARD_IMPLEMENTATION.md` – Detailed wizard implementation notes.
 
 ---
 
-**Last Updated**: Current session
-**Status**: Foundation Complete - Ready for Screen Development
+The conversion now mirrors the original React experience with a scalable Flutter architecture. Focus next on plugging in real data sources, completing offline behaviour, and shipping automated tests to keep the codebase stable. 🎯

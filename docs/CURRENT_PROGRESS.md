@@ -1,249 +1,82 @@
-# OZPOS Flutter - Current Session Progress
+# OZPOS Flutter – Current Progress
 
-## 🎉 What We've Built Today
+## ✅ Shipped This Session
 
-### ✅ Completed Features
-
-#### 1. **Offline-First Architecture** (COMPLETE)
-- SQLite database with 8 tables
-- Repository pattern for data access
-- Sync queue for Firebase integration (ready)
-- Works on ALL platforms
-
-#### 2. **Core Screens** (3/10 Complete)
-- ✅ **Dashboard Screen** - 8 gradient tiles, responsive grid
-- ✅ **Menu Screen** - Category filtering, grid layout, offline data
-- ✅ **Checkout Screen** - Full payment system with:
-  - Payment methods (Cash, Card, Wallet, BNPL)
-  - Cash keypad with quick amounts
-  - Tip selection (0%, 5%, 10%, 15%, 20%)
-  - Loyalty points redemption
-  - Voucher/discount system
-  - Real-time total calculations
-  - Change calculation
-  - Two-column layout (payment + summary)
-
-#### 3. **UI Components** (COMPLETE)
-- ✅ MenuItemCard - Beautiful cards with images, shimmer loading
-- ✅ OrderSummary - Cart sidebar with quantity controls
-- ✅ Navigation - Responsive sidebar/bottom nav
-- ✅ Theme System - Matching React design exactly
-
-#### 4. **State Management** (COMPLETE)
-- ✅ CartProvider - Full cart operations
-- ✅ MenuProvider - Menu data with filtering
-- ✅ Offline data loading from SQLite
-
-### 📋 Remaining Screens (TODO)
-
-| Screen | Status | Priority | Estimated Time |
-|--------|--------|----------|----------------|
-| Tables Screen | 📋 TODO | 🔴 HIGH | 2-3 hours |
-| Orders Screen | 📋 TODO | 🔴 HIGH | 1-2 hours |
-| Reservations | 📋 TODO | 🟡 MEDIUM | 2-3 hours |
-| Delivery Manager | 📋 TODO | 🟡 MEDIUM | 2-3 hours |
-| Reports | 📋 TODO | 🟡 MEDIUM | 2-3 hours |
-| Settings | 📋 TODO | 🟢 LOW | 1-2 hours |
+- **Architecture hardening** – All feature modules now use BLoC + clean architecture, driven by dependency injection (`lib/core/di/injection_container.dart`). Menu, checkout, addons, combos, orders, tables, delivery, reservations, reports, settings, printing, docket designer, and customer-display flows spin up correctly through `AppRouter`.
+- **Environment-driven data sources** – Development mode loads realistic JSON fixtures from `assets/**`; production mode swaps to REST repositories backed by the shared `ApiClient`.
+- **Checkout persistence** – Checkout writes orders to SQLite via `CheckoutLocalDataSource`. (Metadata table support still pending.)
+- **SQLite schema** – `DatabaseHelper` provisions menu/items/modifiers/tables/reservations/printers/cart/sync tables, ready for full offline caching.
+- **Theming & layout** – Shared gradient palette, responsive breakpoints, typography, shadows, and spacing tokens centralised in `lib/core/theme` and `lib/core/constants`.
+- **Observability** – Sentry bootstrap, connectivity monitoring, and retry-aware HTTP pipeline integrated in `main.dart`.
 
 ## 🎯 What Works Right Now
 
-### You Can Currently:
-1. ✅ View Dashboard with gradient tiles
-2. ✅ Browse menu items by category
-3. ✅ Add items to cart
-4. ✅ Adjust quantities (+/-)
-5. ✅ View cart summary
-6. ✅ Navigate to checkout
-7. ✅ Select payment method
-8. ✅ Enter cash amount with keypad
-9. ✅ Add tips
-10. ✅ Redeem loyalty points
-11. ✅ Apply vouchers
-12. ✅ Complete payment
-13. ✅ View change calculation
-14. ✅ All works 100% offline
+| Area | Status | Notes |
+| ---- | ------ | ----- |
+| Dashboard navigation | ✅ | Gradient tiles route to every feature module. |
+| Menu browsing & editor | ✅ | Mock data via `MenuMockDataSource`; menu wizard fully interactive with `MenuEditBloc`. |
+| Cart & checkout | ✅ | `CartBloc` persists across navigation; `CheckoutBloc` handles tips, split payments, vouchers, and saves orders locally. |
+| Addons & combos | ✅ | CRUD operations backed by mock payloads; BLoCs wired through DI. |
+| Orders, tables, reservations, delivery, reports, settings, printing, customer display | ✅ | Screens load fixtures, respond to refresh events, and demonstrate full UI flows. |
+| Error tracking | ✅ | BLoC observer + Sentry integration capture runtime issues. |
 
-### 🚀 How to Test
+## 🧭 Live Demo Checklist
+
+1. `flutter run` (default is development/mock mode).  
+2. Dashboard → any tile (e.g. Menu).  
+3. Menu → add items to cart, filter categories, launch menu wizard.  
+4. Checkout → test payment flows (cash keypad, tips, split payments, vouchers, loyalty).  
+5. Navigate through Orders, Tables, Delivery, Reservations, Reports, Settings, Printing, Addon Management, Combo Editor, Customer Display to verify BLoC initialisation and mock data rendering.  
+6. Inspect console output for connectivity/network logs and Sentry breadcrumbs (when DSN enabled).
+
+## 📊 Updated Metrics
+
+| Metric | Value |
+| ------ | ----- |
+| Dart files | 380 |
+| Dart LOC | 56,899 |
+| Feature modules | 11 + shared core |
+| Registered BLoCs | 20+ |
+| Mock JSON payloads | 40+ |
+| SQLite tables | 10 |
+| Runtime dependencies | 18 |
+
+## 🪫 Known Gaps / Risks
+
+1. **Offline read behaviour** – Repositories return `NetworkFailure` when offline. Need caching (SQLite or alternative storage) for menu/addon/combos/orders data.  
+2. **Sync queue unused** – Table exists but no background service populates or flushes it.  
+3. **Checkout metadata** – `CheckoutLocalDataSource` expects a `metadata` table that is not yet created by `DatabaseHelper`.  
+4. **API parity** – Mock JSON shape must stay aligned with real endpoints; add contract tests once REST integration lands.  
+5. **Automated testing** – Minimal unit/widget/test coverage; high risk of regressions without additional suites.  
+6. **Performance** – Large fixture loads still happen synchronously; evaluate pagination or lazy loading for production data.
+
+## 📌 Next Focus
+
+| Task | Priority | Notes |
+| ---- | -------- | ----- |
+| Implement SQLite/SQLite-backed caching for read flows | 🔴 High | Seed tables from mock JSON or REST responses; expose cached repositories when offline. |
+| Build sync queue worker | 🔴 High | Persist write operations, replay on connectivity regain. |
+| Finalise REST integration | 🔴 High | Wire production repositories to API endpoints, add DTO → entity mapping tests. |
+| Checkout metadata migration | 🟠 Medium | Add table/migration + seed data. |
+| Test suite expansion | 🟠 Medium | Unit tests for repositories/use cases, widget tests for dashboard/menu/checkout, integration test for order lifecycle. |
+| Performance audit | 🟢 Low | Profile heavy screens, add caching for images/assets. |
+
+## 🔧 Quick Commands
 
 ```bash
-cd ozpos_flutter
-
-# Web (fastest to test)
-flutter run -d chrome --release
-
-# Or rebuild web
-flutter build web --release
-
-# iOS Simulator
-flutter run -d ios
-
-# Android
-flutter run -d android
+flutter pub get
+flutter run                     # dev/mock data
+flutter run --dart-define=APP_ENV=production
+flutter build apk --dart-define=APP_ENV=production
 ```
 
-### 📱 Test Flow
+## 📚 Related Docs
 
-1. **Start App** → Dashboard loads
-2. **Click "New Order"** → Menu screen
-3. **Select Category** → Burgers, Pizza, Drinks, Desserts
-4. **Click + on items** → Adds to cart
-5. **View Cart** → Sidebar (desktop) or tap cart icon (mobile)
-6. **Click Checkout** → Checkout screen opens
-7. **Test Payment**:
-   - Select "Cash"
-   - Click quick amounts ($5, $10, $20...)
-   - Or use keypad
-   - See change calculation
-   - Add tip (0%, 5%, 10%, 15%, 20%)
-   - Redeem loyalty points
-   - Enter voucher code
-   - Click "Complete Payment"
-8. **Success!** → Returns to menu, cart cleared
-
-## 📊 Code Statistics
-
-| Metric | Count |
-|--------|-------|
-| Total Dart Files | 25+ |
-| Lines of Code | ~4,500+ |
-| Screens | 4 (Dashboard, Menu, Checkout, Main) |
-| Widgets | 2 (MenuItemCard, OrderSummary) |
-| Providers | 2 (Cart, Menu) |
-| Models | 5 |
-| Services | 2 (Database, Repository) |
-| Documentation Files | 7 |
-
-## 🎨 Design Features Implemented
-
-### Checkout Screen (NEW!)
-- **Two-Column Layout**: Payment options + Order summary
-- **Payment Methods**: 4 options with icon buttons
-- **Cash Keypad**: 3x4 grid with delete button
-- **Quick Amounts**: $5, $10, $20, $50, $100
-- **Tip Selection**: Chip-based percentage selection
-- **Loyalty Card**: Points display with redeem button
-- **Voucher System**: Text input with apply button
-- **Real-time Calculations**: Subtotal, tips, discounts, tax, total
-- **Change Display**: Green highlight when change due
-- **Responsive**: Adapts to mobile/tablet/desktop
-
-## 🔧 Technical Highlights
-
-### Checkout Implementation
-```dart
-// Two-column layout
-Row(
-  children: [
-    Expanded(child: PaymentOptions()),  // Left side
-    Container(width: 384, child: OrderSummary()),  // Right side
-  ],
-)
-
-// Real-time calculations
-final tipAmount = _tipPercent > 0 
-    ? (subtotal * _tipPercent) / 100 
-    : double.tryParse(_customTip) ?? 0;
-final totalBeforeTax = subtotal + tipAmount - discounts - vouchers - points;
-final tax = totalBeforeTax * 0.1;
-final finalTotal = totalBeforeTax + tax;
-```
-
-### State Management
-- Consumes `CartProvider` for cart operations
-- Clean separation of concerns
-
-## 🐛 Known Issues
-
-**None!** All implemented features are working smoothly.
-
-## 📝 Next Steps
-
-### Immediate Priority (Next Session):
-
-#### 1. **Tables Screen** (2-3 hours)
-Following React design:
-- Grid of table cards with status colors
-- Level filters (Main, 10s, 20s, Patio)
-- Status filters (All, Available, Occupied, Reserved)
-- Table details: number, guests, time, amount, waiter
-- Click to view/manage table
-- Table operations (Move, Merge, Split)
-
-#### 2. **Orders Screen** (1-2 hours)
-Following React design:
-- List of active orders
-- Status management (Pending, Preparing, Ready, Completed)
-- Filter by status
-- Order details view
-- Update order status
-
-#### 3. **Reservations Screen** (2-3 hours)
-Following React design:
-- Calendar view
-- Reservation list
-- Create new reservation
-- Assign tables
-- Status updates
-
-## 📂 File Structure
-
-```
-lib/
-├── main.dart ✅
-├── models/ (5 files) ✅
-│   ├── cart_item.dart
-│   ├── customer_details.dart
-│   ├── menu_item.dart
-│   ├── order_alert.dart
-│   └── table.dart
-├── providers/ (2 files) ✅
-│   ├── cart_provider.dart
-│   └── menu_provider.dart
-├── screens/ (4 files) ✅
-│   ├── main_screen.dart
-│   ├── dashboard_screen.dart
-│   ├── menu_screen.dart
-│   └── checkout_screen.dart ⭐ NEW!
-├── services/ (2 files) ✅
-│   ├── database_helper.dart
-│   └── menu_repository.dart
-├── theme/ (1 file) ✅
-│   └── app_theme.dart
-└── widgets/ (2 directories) ✅
-    ├── cart/
-    │   └── order_summary.dart (updated)
-    └── menu/
-        └── menu_item_card.dart
-```
-
-## 🌟 Highlights of This Session
-
-1. **Full Checkout System** - Complete payment flow matching React design
-2. **Real-time Calculations** - Tips, discounts, vouchers, points, tax, change
-3. **Beautiful UI** - Cards, chips, keypad, responsive layout
-4. **Offline-First** - All data from SQLite, no internet required
-5. **Cross-Platform** - Works on iOS, Android, Web, Desktop
-6. **Production Ready** - Core ordering flow is complete and functional
-
-## 🎉 Summary
-
-You now have a **fully functional POS system** where users can:
-- Browse menu items
-- Add items to cart
-- Navigate to checkout
-- Select payment method
-- Enter cash amount
-- Add tips and discounts
-- Redeem loyalty points
-- Complete payments
-- All working offline!
-
-**The core ordering workflow is COMPLETE!** 🚀
-
-Next session, we'll add tables, orders, and reservations to complete the management features.
+- `STATUS.md` – high-level status & roadmap.  
+- `OFFLINE_FIRST_GUIDE.md` – detailed data/persistence plan.  
+- `FLUTTER_CONVERSION_GUIDE.md` – architecture overview.  
+- `MENU_EDITOR_WIZARD_IMPLEMENTATION.md` – menu wizard specifics.
 
 ---
 
-**Status**: 🟢 Core Ordering Flow Complete
-**Last Updated**: Current Session
-**Next Focus**: Tables & Orders Management
+The Flutter implementation now mirrors the original product surface with mock-backed data. Priorities shift to production APIs, resilient offline behaviour, and automated tests to keep the codebase healthy. 🚀

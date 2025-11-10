@@ -1,179 +1,90 @@
-# OZPOS Flutter - Quick Reference Card
+# OZPOS Flutter – Quick Reference (November 2025)
 
-## 📱 Run Commands
+## 🧱 Architecture at a Glance
+
+- **Pattern**: Clean architecture (BLoC presentation → use cases → repositories → data sources).  
+- **Dependency injection**: `GetIt` registrations in `lib/core/di/injection_container.dart`.  
+- **Environment toggle**: `AppConfig` selects development (mock JSON assets) or production (REST API).  
+- **Navigation**: Centralised in `AppRouter`; `NavigationService` provides global navigation/snackbar helpers.  
+- **Storage**: `DatabaseHelper` provisions menu/order/table/reservation/printer/cart/sync tables. Checkout writes to SQLite; caching for other features is next.  
+- **Observability**: Sentry integration, connectivity monitoring, retry interceptor in `ApiClient`.
+
+## 📁 Directory Structure
+
+```
+lib/
+├── core/
+│   ├── base/
+│   ├── config/
+│   ├── constants/
+│   ├── di/
+│   ├── navigation/
+│   ├── network/
+│   ├── theme/
+│   └── utils/
+├── features/
+│   ├── menu/
+│   ├── checkout/
+│   ├── addons/
+│   ├── combos/
+│   ├── orders/
+│   ├── tables/
+│   ├── delivery/
+│   ├── reservations/
+│   ├── reports/
+│   ├── settings/
+│   ├── printing/
+│   └── customer_display/
+└── main.dart
+```
+
+## 🔧 Key Components
+
+| Area | Files / Notes |
+| ---- | ------------- |
+| Menu BLoC | `lib/features/menu/presentation/bloc` |
+| Menu Wizard | `lib/features/menu/presentation/screens/menu_item_wizard_screen.dart` + widgets |
+| Checkout | `lib/features/checkout/presentation/bloc`, `CheckoutBloc`, `CartBloc` |
+| Data sources | `lib/features/**/data/datasources` (mock + remote implementations) |
+| Repositories | `lib/features/**/data/repositories` |
+| Use cases | `lib/features/**/domain/usecases` |
+| SQLite helper | `lib/core/utils/database_helper.dart` |
+| Navigation | `lib/core/navigation/app_router.dart`, `navigation_service.dart` |
+| DI setup | `lib/core/di/injection_container.dart` |
+
+## 🧪 Testing & Tooling
+
+- Lint: `flutter analyze`  
+- Tests: `flutter test` (expand coverage with `mocktail`)  
+- Logs: Sentry + BLoC observer  
+- Mock data: `assets/**` directories per feature
+
+## 🛠 Commands
 
 ```bash
-# Web (tested and working)
-flutter run -d web-server --web-port=5001
-
-# Mobile
-flutter run -d ios          # iOS Simulator
-flutter run -d android      # Android Emulator
-
-# Desktop
-flutter run -d macos        # macOS
-flutter run -d windows      # Windows
-flutter run -d linux        # Linux
-
-# Analysis
-flutter analyze             # Should show 0 issues ✅
+flutter pub get
+flutter run                          # development (mock data)
+flutter run --dart-define=APP_ENV=production
+flutter build apk --dart-define=APP_ENV=production
+flutter build web  --dart-define=APP_ENV=production
 ```
 
-## 🗂️ Project Structure
+## 📚 Reference Docs
 
-```
-ozpos_flutter/
-├── lib/
-│   ├── main.dart                    # App entry point
-│   ├── screens/                     # 11 complete screens
-│   │   ├── main_screen.dart         # Navigation wrapper
-│   │   ├── dashboard_screen.dart    # Home dashboard
-│   │   ├── menu_screen.dart         # Menu & ordering
-│   │   ├── checkout_screen.dart     # Checkout & payment
-│   │   ├── tables_screen.dart       # Table management
-│   │   ├── orders_screen.dart       # Order management
-│   │   ├── delivery_screen.dart     # Delivery tracking
-│   │   ├── reservations_screen.dart # Reservations
-│   │   ├── reports_screen.dart      # Analytics
-│   │   ├── settings_screen.dart     # Settings
-│   │   ├── menu_editor_screen.dart  # Menu editor
-│   │   └── docket_designer_screen.dart # Receipt designer
-│   ├── models/                      # Data models
-│   ├── providers/                   # State management
-│   ├── services/                    # Database & repos
-│   ├── widgets/                     # Reusable widgets
-│   └── theme/                       # App theming
-└── docs/                            # Documentation
-```
+- `OFFLINE_FIRST_GUIDE.md` – Data & caching strategy  
+- `STATUS.md` / `STATUS_UPDATED.md` – Current status snapshots  
+- `FINAL_STATUS.md` – Feature-by-feature summary  
+- `FLUTTER_CONVERSION_GUIDE.md` – Architecture breakdown  
+- `MENU_EDITOR_WIZARD_IMPLEMENTATION.md` – Wizard details
 
-## 🎯 Navigation Map
+## 🚀 Next Focus
 
-```
-Dashboard → All Sections
-├── New Order → Menu Screen → Checkout
-├── Takeaway → Menu Screen (Takeaway mode)
-├── Dine In → Tables Screen
-├── Delivery → Delivery Manager
-├── Tables → Tables Management
-├── Reservations → Reservations Calendar
-├── Reports → Analytics Dashboard
-└── Settings → Configuration
-
-Sidebar (Desktop/Tablet):
-├── Dashboard
-├── New Order
-├── Orders
-├── Tables
-├── Delivery
-├── Reservations
-├── Menu Editor
-├── Docket Designer
-├── Reports
-└── Settings
-```
-
-## 🎨 Color Schemes
-
-| Section | Gradient | Hex Codes |
-|---------|----------|-----------|
-| Takeaway | Orange | #F97316 → #F59E0B |
-| Dine In | Green | #10B981 → #059669 |
-| Tables | Blue | #3B82F6 → #2563EB |
-| Delivery | Purple | #A855F7 → #C026D3 |
-| Dashboard | Red | #EF4444 → #DC2626 |
-
-## 📊 Key Statistics
-
-| Metric | Value |
-|--------|-------|
-| Total Screens | 11 ✅ |
-| Build Errors | 0 ✅ |
-| Build Warnings | 0 ✅ |
-| Lines of Code | ~7,000+ |
-| Platforms | 6 (All) |
-| Dependencies | 15 (Minimal) |
-
-## 🚀 Quick Test Workflow
-
-1. **Start App**: `flutter run -d web-server --web-port=5001`
-2. **Dashboard**: Click any tile to navigate
-3. **Menu**: Browse items, add to cart
-4. **Checkout**: Select payment method, complete order
-5. **Tables**: View and filter tables by status
-6. **Orders**: Track order progression
-7. **Delivery**: Kanban board for deliveries
-8. **Reports**: View metrics and analytics
-
-## 🔑 Key Features
-
-### ✅ Working Features
-- [x] Offline-first (SQLite)
-- [x] Cart management
-- [x] Multiple payment methods
-- [x] Table status tracking
-- [x] Order workflow
-- [x] Delivery kanban
-- [x] Reservations calendar
-- [x] Reports & analytics
-- [x] Menu editor UI
-- [x] Docket designer
-- [x] Responsive design
-
-### 🚧 TODO (Next Phase)
-- [ ] Firebase sync service
-- [ ] Full CRUD forms
-- [ ] Order details modal
-- [ ] Table operations
-- [ ] Real-time updates
-
-## 📝 Common Tasks
-
-### Add New Screen
-1. Create `lib/screens/new_screen.dart`
-2. Import in `main_screen.dart`
-3. Add case in `_buildMainContent()`
-4. Add navigation item in sidebar
-
-### Update Theme
-Edit `lib/theme/app_theme.dart`:
-- Colors: `primaryColor`, gradients
-- Text: `textTheme`
-- Shadows: `cardShadow`, `elevatedShadow`
-
-### Add Database Table
-Edit `lib/services/database_helper.dart`:
-1. Add CREATE TABLE in `onCreate()`
-2. Add migration if needed
-3. Create repository methods
-
-## 🐛 Troubleshooting
-
-| Issue | Solution |
-|-------|----------|
-| Build fails | Run `flutter clean && flutter pub get` |
-| Hot reload not working | Restart app |
-| Web assets not loading | Check `pubspec.yaml` assets |
-| SQLite error on web | Ensure `sqflite_common_ffi` configured |
-
-## 📚 Documentation
-
-- **FINAL_STATUS.md** - Complete feature list
-- **QUICKSTART.md** - Getting started
-- **FLUTTER_CONVERSION_GUIDE.md** - Conversion details
-- **OFFLINE_FIRST_GUIDE.md** - Architecture
-- **This file** - Quick reference
-
-## 🎯 Access Running App
-
-After running with web-server:
-```
-URL: http://localhost:5001
-```
-
-Open in browser to test all features!
+- Implement caching + sync queue worker.  
+- Wire production REST APIs and add DTO contract tests.  
+- Expand automated test coverage (repositories, BLoCs, end-to-end flows).  
+- Configure Sentry + CI/CD with `--dart-define` secrets.  
+- Profile performance once real data is connected.
 
 ---
 
-**Last Updated**: January 3, 2025  
-**Version**: 1.0.0  
-**Status**: Production Ready ✅
+Use this sheet as a quick refresher on where things live and how to run the project across environments. ✅

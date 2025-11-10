@@ -1,300 +1,128 @@
-# OZPOS Flutter - Quick Start Guide
+# OZPOS Flutter – Quick Start
 
-## ✅ What's Been Done
+## ✅ What’s Ready Out of the Box
 
-Your React/TypeScript OZPOS application has been successfully scaffolded as a Flutter cross-platform app! Here's what's ready:
+- **Clean architecture foundation** – BLoC-based presentation (`flutter_bloc`) with use cases, repositories, and dependency injection via `lib/core/di/injection_container.dart`.  
+- **Environment aware data layer** – `AppConfig` selects mock JSON data in development or REST APIs in production; mock assets cover menu, addons, combos, delivery, reservations, tables, reports, printing, and more.  
+- **UI & navigation** – Responsive dashboard, menu, checkout, orders, tables, delivery, reservations, reports, settings, printing, addon management, combo editor, and customer display screens are all wired through `AppRouter`. Each route spins up the feature BLoC automatically.  
+- **Design system** – Light/dark themes, typography, color tokens, gradients, spacing, and responsive breakpoints live under `lib/core/theme` and `lib/core/constants`.  
+- **Observability** – Sentry, retry-aware `Dio` client, connectivity checks, and structured error handling are enabled from `main.dart`.
 
-### 1. **Project Foundation** ✅
-- Flutter project created at `ozpos_flutter/`
-- All dependencies configured in `pubspec.yaml`
-- 25+ packages added for UI, state management, charts, maps, etc.
+## 🚀 Run It
 
-### 2. **Data Models** ✅ (lib/models/)
-```
-✓ cart_item.dart           - Cart items with order types
-✓ order_alert.dart          - Third-party delivery notifications  
-✓ customer_details.dart     - Takeaway & delivery info
-✓ menu_item.dart            - Menu items with modifiers
-✓ table.dart                - Tables & reservations
-```
-
-### 3. **Theme System** ✅ (lib/theme/)
-```
-✓ app_theme.dart            - Complete design system
-  • Gradient colors matching React (takeaway=orange, dine-in=green, etc.)
-  • Status indicator colors
-  • Typography system
-  • Shadow styles
-```
-
-### 4. **State Management** ✅ (lib/providers/)
-```
-✓ cart_provider.dart        - Cart operations with Provider pattern
-```
-
-### 5. **Core Screens** ✅ (lib/screens/)
-```
-✓ main_screen.dart          - Responsive navigation wrapper
-✓ dashboard_screen.dart     - Gradient tile dashboard
-```
-
-### 6. **Navigation** ✅
-- ✅ Responsive sidebar (desktop/tablet)
-- ✅ Bottom navigation (mobile)
-- ✅ Section routing
-
-## 🚀 Running Your App
-
-### First Time Setup
 ```bash
 cd ozpos_flutter
 flutter pub get
-```
 
-### Run the App
-```bash
-# Default device
+# default (development) environment uses mock JSON data
 flutter run
 
-# Web (Chrome)
-flutter run -d chrome
+# specify a device
+flutter run -d chrome      # web
+flutter run -d windows     # desktop
+flutter run -d ios         # simulator
 
-# macOS Desktop
-flutter run -d macos
-
-# iOS Simulator
-flutter run -d ios
-
-# Android Emulator
-flutter run -d android
+# switch to production wiring
+flutter run --dart-define=APP_ENV=production
 ```
 
-### What You'll See
-When you run the app, you'll see:
-1. **Dashboard** with 8 gradient tiles:
-   - New Order, Takeaway, Dine In, Delivery
-   - Tables, Reservations, Reports, Settings
-2. **Responsive Layout**:
-   - Sidebar on desktop/tablet
-   - Bottom navigation on mobile
-3. **Placeholder screens** for features not yet implemented
+### Environment tips
+`AppConfig.instance.initialize(...)` in `lib/main.dart` sets the baseline environment. Supply `--dart-define=API_BASE_URL=https://api.example.com` when pointing to a real backend. No file renames or manual entry-point swaps are required—the canonical entry point is `lib/main.dart`.
 
-## 📁 Project Structure
+## 📁 Project Layout Cheat Sheet
 
 ```
-ozpos_flutter/
-├── lib/
-│   ├── main_new.dart              ⬅️ USE THIS (updated entry point)
-│   ├── models/                     ✅ Complete
-│   ├── providers/                  🚧 Cart done, more needed
-│   ├── screens/                    🚧 Dashboard done
-│   ├── theme/                      ✅ Complete
-│   └── widgets/                    📋 TODO
-├── FLUTTER_CONVERSION_GUIDE.md     📖 Full documentation
-└── pubspec.yaml                    ✅ All dependencies
+lib/
+├── core/
+│   ├── base/                  # BaseBloc, BaseUseCase abstractions
+│   ├── config/                # AppConfig, SentryConfig
+│   ├── constants/             # Colors, spacing, endpoints, etc.
+│   ├── di/                    # Dependency injection setup
+│   ├── navigation/            # Navigation service + AppRouter
+│   ├── network/               # ApiClient, interceptors, NetworkInfo
+│   ├── theme/                 # Light/Dark themes and tokens
+│   └── utils/                 # DatabaseHelper, helpers
+├── features/
+│   ├── menu/                  # Data, domain, presentation (Bloc + screens)
+│   ├── checkout/              # CartBloc, CheckoutBloc, data layer
+│   ├── addons/, combos/, ...  # Same pattern repeated per feature
+│   └── customer_display/, ... #
+└── main.dart                  # App bootstrap (config, DI, Sentry)
+assets/
+├── menu_data/, checkout_data/ # Mock payloads consumed in dev mode
+└── ...                        # (addons, orders, tables, etc.)
 ```
 
-## ⚠️ Important Note: Entry Point
+## 🛠 First Customisations
 
-The original `main.dart` has Flutter template code. **Use `main_new.dart` instead:**
-
-```bash
-# Option 1: Rename the file
-mv lib/main.dart lib/main_old.dart
-mv lib/main_new.dart lib/main.dart
-flutter run
-
-# Option 2: Specify entry point
-flutter run -t lib/main_new.dart
-```
-
-## 📋 Next Development Steps
-
-### Phase 1: Menu & Ordering (HIGH PRIORITY)
-```bash
-lib/screens/menu_screen.dart             # Menu with item grid
-lib/widgets/menu/menu_item_card.dart     # Menu item card widget
-lib/widgets/menu/category_tabs.dart      # Category tabs
-lib/widgets/cart/order_summary.dart      # Cart sidebar
-```
-
-### Phase 2: Checkout & Payment
-```bash
-lib/screens/checkout_screen.dart         # Unified checkout
-lib/widgets/payment/payment_methods.dart # Payment UI
-```
-
-### Phase 3: Tables & Reservations
-```bash
-lib/screens/tables_screen.dart           # Table grid
-lib/screens/reservations_screen.dart     # Reservation management
-```
-
-### Phase 4: Additional Features
-- Delivery tracking with maps
-- Reports with charts
-- Menu editor
-- Settings
-
-## 🔧 Development Tips
-
-### Adding a New Screen
-
-1. **Create the screen file:**
-```dart
-// lib/screens/my_screen.dart
-import 'package:flutter/material.dart';
-
-class MyScreen extends StatelessWidget {
-  const MyScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('My Screen')),
-      body: const Center(
-        child: Text('My Screen Content'),
-      ),
-    );
-  }
-}
-```
-
-2. **Add to navigation in main_screen.dart:**
-```dart
-case 'my-screen':
-  return const MyScreen();
-```
-
-### Using the Cart Provider
+### Add a new screen + route
+1. Create the screen inside the relevant feature (e.g. `lib/features/reports/presentation/screens/my_report_screen.dart`).  
+2. Register a route in `AppRouter` and decide which BLoC(s) to provide.  
+3. Wire dependencies in `injection_container.dart` if a new use case or repository is required.
 
 ```dart
-// Access cart
-final cart = Provider.of<CartProvider>(context, listen: false);
-
-// Add item
-cart.addToCart(CartItem(
-  id: '1',
-  name: 'Burger',
-  price: 12.99,
-  image: 'url',
-));
-
-// Reactive updates
-Consumer<CartProvider>(
-  builder: (context, cart, child) {
-    return Text('Items: ${cart.itemCount}');
-  },
-)
+// lib/core/navigation/app_router.dart
+case myReports:
+  return MaterialPageRoute(
+    builder: (_) => BlocProvider<MyReportsBloc>(
+      create: (_) => di.sl<MyReportsBloc>()..add(const LoadReports()),
+      child: const MyReportsScreen(),
+    ),
+  );
 ```
 
-### Applying Gradients
-
+### Access shared dependencies
 ```dart
-Container(
-  decoration: BoxDecoration(
-    gradient: AppTheme.takeawayGradient,  // or dineInGradient, etc.
-    borderRadius: BorderRadius.circular(16),
-  ),
-  child: YourWidget(),
-)
+final cartBloc = context.read<CartBloc>();      // Global singleton
+final apiClient = di.sl<ApiClient>();           // From GetIt
+final database = di.sl<Database>();             // When available
 ```
 
-## 📊 Conversion Progress
+### Working with mock assets
+Mock data lives in `assets/**`. Update JSON payloads to reflect new fields or create failure scenarios by editing the matching `*_error.json` files.
 
-| Feature | Status | Priority |
-|---------|--------|----------|
-| Project Setup | ✅ | - |
-| Data Models | ✅ | - |
-| Theme System | ✅ | - |
-| Dashboard | ✅ | - |
-| Navigation | ✅ | - |
-| Menu Screen | 📋 TODO | 🔴 HIGH |
-| Cart/Order Summary | 📋 TODO | 🔴 HIGH |
-| Checkout | 📋 TODO | 🔴 HIGH |
-| Tables | 📋 TODO | 🟡 MEDIUM |
-| Delivery | 📋 TODO | 🟡 MEDIUM |
-| Reservations | 📋 TODO | 🟡 MEDIUM |
-| Reports | 📋 TODO | 🟡 MEDIUM |
-| Settings | 📋 TODO | 🟢 LOW |
-| Menu Editor | 📋 TODO | 🟢 LOW |
-| Docket Designer | 📋 TODO | 🟢 LOW |
+## 🔜 Suggested Next Steps
 
-## 🎯 Suggested Order of Implementation
+1. **Offline read caching** – hydrate SQLite tables from assets or REST responses so menu/addon data is available offline.  
+2. **Sync queue worker** – turn the existing `sync_queue` table into a background service to replay pending writes.  
+3. **API wiring** – swap mock data sources for remote ones in production mode and add DTO → entity tests.  
+4. **Testing** – introduce unit tests for repositories/use cases and widget tests for dashboard → checkout.  
+5. **Checkout metadata** – add the missing table/seeding required by `CheckoutLocalDataSource`.
 
-1. **Menu Screen** (2-3 hours)
-   - Grid layout with responsive columns
-   - Menu item cards with images
-   - Category filtering
+## 💡 Tips & Patterns
 
-2. **Order Summary Widget** (1-2 hours)
-   - Fixed width sidebar (384px)
-   - Cart item list
-   - Quantity controls
-   - Total calculation
+- Use `flutter pub run build_runner watch` only when code generation is added (not required today).  
+- Reuse existing theme helpers (`AppTheme`, `AppColors`, `AppSpacing`) to keep styling consistent.  
+- For feature isolation, each `features/<feature>` folder follows the same structure: `data` (datasources + models) → `domain` (entities + repos + use cases) → `presentation` (bloc + screens + widgets).
 
-3. **Checkout Screen** (2-3 hours)
-   - Two-column layout
-   - Payment methods
-   - Customer details
-   - Receipt printing
+## 📚 Helpful References
 
-4. **Tables Screen** (2-3 hours)
-   - Table grid with status
-   - Table operations
-   - Order assignment
-
-5. **Continue with remaining features...**
-
-## 📚 Resources
-
-- **[FLUTTER_CONVERSION_GUIDE.md](FLUTTER_CONVERSION_GUIDE.md)** - Complete documentation
-- **[Flutter Docs](https://docs.flutter.dev/)** - Official documentation
-- **[Provider Docs](https://pub.dev/packages/provider)** - State management
-- **[Material Design 3](https://m3.material.io/)** - Design guidelines
+- `README.md` – high-level overview.  
+- `OFFLINE_FIRST_GUIDE.md` – detailed data/storage notes.  
+- `STATUS.md` – current progress and roadmap.  
+- Flutter docs: <https://docs.flutter.dev>  
+- flutter_bloc docs: <https://bloclibrary.dev>
 
 ## 🐛 Troubleshooting
 
-### "Package not found" errors
-```bash
-flutter clean
-flutter pub get
-```
+| Symptom | Fix |
+| ------- | --- |
+| Missing package / analyzer errors | `flutter clean && flutter pub get` |
+| Simulator build issues (iOS) | `cd ios && pod install && cd ..` |
+| Android Gradle errors | `cd android && ./gradlew clean && cd ..` |
+| Hot reload stale state | Press `R` (hot restart) or restart the app |
 
-### Hot reload not working
-Press `r` in terminal or restart:
-```bash
-flutter run --hot
-```
+## 🔄 React vs Flutter Quick Mapping
 
-### Platform-specific issues
-```bash
-# iOS
-cd ios && pod install && cd ..
-
-# Android
-cd android && ./gradlew clean && cd ..
-```
-
-## ✨ Key Differences from React
-
-| React/TypeScript | Flutter/Dart |
-|------------------|--------------|
-| `useState` | `StatefulWidget`  |
-| Props | Constructor parameters |
-| CSS/Tailwind | Widget properties + Theme |
-| `div`, `span` | `Container`, `Text` |
-| `onClick` | `onTap`, `onPressed` |
-| Toast | `Fluttertoast.showToast()` |
-| Context API | `Provider` / `InheritedWidget` |
-| React Router | `Navigator` |
-
-## 🎉 You're Ready!
-
-The foundation is solid. Start with the menu screen and build from there. Each screen follows a similar pattern to the dashboard you already have.
-
-**Good luck with your Flutter conversion!** 🚀
+| React / TypeScript | Flutter / Dart |
+| ------------------ | -------------- |
+| `useState`, `useReducer` | `Cubit/BLoC`, `StatefulWidget` |
+| Context providers | `BlocProvider`, `InheritedWidget`, `GetIt` |
+| React Router | `Navigator`, `AppRouter` |
+| CSS / Tailwind | Widget composition + `ThemeData` |
+| Fetch + Axios | `Dio` client with interceptors |
+| LocalStorage | `SharedPreferences`, SQLite |
 
 ---
 
-**Questions?** Check the [FLUTTER_CONVERSION_GUIDE.md](FLUTTER_CONVERSION_GUIDE.md) for detailed examples.
+You’re ready to extend OZPOS in Flutter. Start by enabling caching or wiring real APIs, then iterate feature by feature. 👩‍🍳⚡

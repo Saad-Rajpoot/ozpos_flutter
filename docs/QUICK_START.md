@@ -4,7 +4,7 @@
 
 ### Import & Launch
 ```dart
-import 'package:ozpos_flutter/features/pos/presentation/screens/menu_item_wizard/menu_item_wizard_screen.dart';
+import 'package:ozpos_flutter/features/menu/presentation/screens/menu_item_wizard_screen.dart';
 
 // New item
 Navigator.push(
@@ -184,7 +184,7 @@ void testWizard() {
 - `WIZARD_COMPLETE.md` - Full completion summary
 - `menu_wizard_progress.md` - Progress tracker
 - `wizard_steps_2-4_summary.md` - Steps 2-4 details
-- `menu_item_wizard_implementation_guide.md` - Full guide
+- `MENU_EDITOR_WIZARD_IMPLEMENTATION.md` - Full guide
 - `README.md` - Wizard-specific readme
 
 ## 🎯 Success Checklist
