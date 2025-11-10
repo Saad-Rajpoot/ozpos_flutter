@@ -4,6 +4,7 @@ import '../../../../core/errors/exceptions.dart';
 import '../models/order_model.dart';
 import 'orders_data_source.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/utils/exception_helper.dart';
 
 class OrdersRemoteDataSourceImpl implements OrdersDataSource {
   final ApiClient _apiClient;
@@ -15,7 +16,10 @@ class OrdersRemoteDataSourceImpl implements OrdersDataSource {
   Future<List<OrderEntity>> getOrders() async {
     try {
       final response = await _apiClient.get(AppConstants.getOrdersEndpoint);
-      final List<dynamic> data = response.data['data'];
+      final List<dynamic> data = ExceptionHelper.validateListResponse(
+        response.data,
+        'fetching orders',
+      );
       return data.map((json) => OrderModel.fromJson(json).toEntity()).toList();
     } catch (e) {
       throw ServerException(message: 'Failed to fetch orders');

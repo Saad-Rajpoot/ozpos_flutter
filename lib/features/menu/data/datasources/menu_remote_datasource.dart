@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/errors/exceptions.dart';
+import '../../../../core/utils/exception_helper.dart';
 import '../models/menu_item_model.dart';
 import '../models/menu_category_model.dart';
 import 'menu_data_source.dart';
@@ -31,9 +32,12 @@ class MenuRemoteDataSourceImpl implements MenuDataSource {
   Future<List<MenuItemModel>> getMenuItems() async {
     try {
       final response = await apiClient.get(AppConstants.getMenuItemsEndpoint);
-      final data = response.data as Map<String, dynamic>;
-      return (data['data'] as List)
-          .map((json) => MenuItemModel.fromJson(json))
+      final data = ExceptionHelper.validateListResponse(
+        response.data,
+        'fetching menu items',
+      );
+      return data
+          .map((json) => MenuItemModel.fromJson(json as Map<String, dynamic>))
           .toList();
     } on DioException catch (e) {
       throw _handleDioException(e, 'fetching menu items');
@@ -49,9 +53,12 @@ class MenuRemoteDataSourceImpl implements MenuDataSource {
       final response = await apiClient.get(
         '${AppConstants.getMenuItemsEndpoint}?category_id=$categoryId',
       );
-      final data = response.data as Map<String, dynamic>;
-      return (data['data'] as List)
-          .map((json) => MenuItemModel.fromJson(json))
+      final data = ExceptionHelper.validateListResponse(
+        response.data,
+        'fetching menu items by category',
+      );
+      return data
+          .map((json) => MenuItemModel.fromJson(json as Map<String, dynamic>))
           .toList();
     } on DioException catch (e) {
       throw _handleDioException(e, 'fetching menu items by category');
@@ -66,8 +73,17 @@ class MenuRemoteDataSourceImpl implements MenuDataSource {
     try {
       final response =
           await apiClient.get('${AppConstants.getMenuItemsEndpoint}/$id');
-      final data = response.data as Map<String, dynamic>;
-      return MenuItemModel.fromJson(data['data']);
+      final payload = ExceptionHelper.validateResponseData(
+        response.data,
+        'fetching menu item by ID',
+      );
+      if (payload is! Map<String, dynamic>) {
+        throw ServerException(
+          message:
+              'Invalid response format during fetching menu item by ID: expected Map, got ${payload.runtimeType}',
+        );
+      }
+      return MenuItemModel.fromJson(payload);
     } on DioException catch (e) {
       throw _handleDioException(e, 'fetching menu item by ID');
     } catch (e) {
@@ -81,9 +97,13 @@ class MenuRemoteDataSourceImpl implements MenuDataSource {
     try {
       final response =
           await apiClient.get(AppConstants.getMenuCategoriesEndpoint);
-      final data = response.data as Map<String, dynamic>;
-      return (data['data'] as List)
-          .map((json) => MenuCategoryModel.fromJson(json))
+      final data = ExceptionHelper.validateListResponse(
+        response.data,
+        'fetching menu categories',
+      );
+      return data
+          .map((json) =>
+              MenuCategoryModel.fromJson(json as Map<String, dynamic>))
           .toList();
     } on DioException catch (e) {
       throw _handleDioException(e, 'fetching menu categories');
@@ -98,8 +118,17 @@ class MenuRemoteDataSourceImpl implements MenuDataSource {
     try {
       final response =
           await apiClient.get('${AppConstants.getMenuCategoriesEndpoint}/$id');
-      final data = response.data as Map<String, dynamic>;
-      return MenuCategoryModel.fromJson(data['data']);
+      final payload = ExceptionHelper.validateResponseData(
+        response.data,
+        'fetching menu category by ID',
+      );
+      if (payload is! Map<String, dynamic>) {
+        throw ServerException(
+          message:
+              'Invalid response format during fetching menu category by ID: expected Map, got ${payload.runtimeType}',
+        );
+      }
+      return MenuCategoryModel.fromJson(payload);
     } on DioException catch (e) {
       throw _handleDioException(e, 'fetching menu category by ID');
     } catch (e) {
@@ -114,9 +143,12 @@ class MenuRemoteDataSourceImpl implements MenuDataSource {
       final response = await apiClient.get(
         '${AppConstants.getMenuItemsEndpoint}?search=$query',
       );
-      final data = response.data as Map<String, dynamic>;
-      return (data['data'] as List)
-          .map((json) => MenuItemModel.fromJson(json))
+      final data = ExceptionHelper.validateListResponse(
+        response.data,
+        'searching menu items',
+      );
+      return data
+          .map((json) => MenuItemModel.fromJson(json as Map<String, dynamic>))
           .toList();
     } on DioException catch (e) {
       throw _handleDioException(e, 'searching menu items');
@@ -132,9 +164,12 @@ class MenuRemoteDataSourceImpl implements MenuDataSource {
       final response = await apiClient.get(
         '${AppConstants.getMenuItemsEndpoint}?popular=true',
       );
-      final data = response.data as Map<String, dynamic>;
-      return (data['data'] as List)
-          .map((json) => MenuItemModel.fromJson(json))
+      final data = ExceptionHelper.validateListResponse(
+        response.data,
+        'fetching popular menu items',
+      );
+      return data
+          .map((json) => MenuItemModel.fromJson(json as Map<String, dynamic>))
           .toList();
     } on DioException catch (e) {
       throw _handleDioException(e, 'fetching popular menu items');

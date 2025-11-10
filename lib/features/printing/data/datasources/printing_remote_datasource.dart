@@ -3,6 +3,7 @@ import '../../../../core/errors/exceptions.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../models/printer_model.dart';
 import 'printing_data_source.dart';
+import '../../../../core/utils/exception_helper.dart';
 
 /// Remote data source implementation for printing
 /// Simple CRUD operations via API
@@ -15,9 +16,12 @@ class PrintingRemoteDataSourceImpl implements PrintingDataSource {
   Future<List<PrinterModel>> getPrinters() async {
     try {
       final response = await apiClient.get(AppConstants.getPrintersEndpoint);
-      final data = response.data as Map<String, dynamic>;
-      return (data['data'] as List)
-          .map((json) => PrinterModel.fromJson(json))
+      final data = ExceptionHelper.validateListResponse(
+        response.data,
+        'fetching printers',
+      );
+      return data
+          .map((json) => PrinterModel.fromJson(json as Map<String, dynamic>))
           .toList();
     } catch (e) {
       throw ServerException(message: e.toString());
@@ -29,8 +33,17 @@ class PrintingRemoteDataSourceImpl implements PrintingDataSource {
     try {
       final response =
           await apiClient.get('${AppConstants.getPrintersEndpoint}/$printerId');
-      final data = response.data as Map<String, dynamic>;
-      return PrinterModel.fromJson(data['data']);
+      final payload = ExceptionHelper.validateResponseData(
+        response.data,
+        'fetching printer by ID',
+      );
+      if (payload is! Map<String, dynamic>) {
+        throw ServerException(
+          message:
+              'Invalid response format during fetching printer by ID: expected Map, got ${payload.runtimeType}',
+        );
+      }
+      return PrinterModel.fromJson(payload);
     } catch (e) {
       throw ServerException(message: e.toString());
     }
@@ -43,8 +56,17 @@ class PrintingRemoteDataSourceImpl implements PrintingDataSource {
         AppConstants.getPrintersEndpoint,
         data: printer.toJson(),
       );
-      final data = response.data as Map<String, dynamic>;
-      return PrinterModel.fromJson(data['data']);
+      final payload = ExceptionHelper.validateResponseData(
+        response.data,
+        'adding printer',
+      );
+      if (payload is! Map<String, dynamic>) {
+        throw ServerException(
+          message:
+              'Invalid response format during adding printer: expected Map, got ${payload.runtimeType}',
+        );
+      }
+      return PrinterModel.fromJson(payload);
     } catch (e) {
       throw ServerException(message: e.toString());
     }
@@ -57,8 +79,17 @@ class PrintingRemoteDataSourceImpl implements PrintingDataSource {
         '${AppConstants.getPrintersEndpoint}/${printer.id}',
         data: printer.toJson(),
       );
-      final data = response.data as Map<String, dynamic>;
-      return PrinterModel.fromJson(data['data']);
+      final payload = ExceptionHelper.validateResponseData(
+        response.data,
+        'updating printer',
+      );
+      if (payload is! Map<String, dynamic>) {
+        throw ServerException(
+          message:
+              'Invalid response format during updating printer: expected Map, got ${payload.runtimeType}',
+        );
+      }
+      return PrinterModel.fromJson(payload);
     } catch (e) {
       throw ServerException(message: e.toString());
     }

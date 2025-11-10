@@ -4,6 +4,7 @@ import 'reservations_data_source.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../domain/entities/reservation_entity.dart';
 import '../models/reservation_model.dart';
+import '../../../../core/utils/exception_helper.dart';
 
 class ReservationsRemoteDataSourceImpl implements ReservationsDataSource {
   final ApiClient _apiClient;
@@ -17,7 +18,10 @@ class ReservationsRemoteDataSourceImpl implements ReservationsDataSource {
       final response = await _apiClient.get(
         AppConstants.getReservationsEndpoint,
       );
-      final List<dynamic> data = response.data['data'];
+      final List<dynamic> data = ExceptionHelper.validateListResponse(
+        response.data,
+        'fetching reservations',
+      );
       return data
           .map((json) => ReservationModel.fromJson(json).toEntity())
           .toList();

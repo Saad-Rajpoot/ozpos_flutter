@@ -4,6 +4,7 @@ import '../../../../core/errors/exceptions.dart';
 import '../model/addon_category_model.dart';
 import 'addon_data_source.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/utils/exception_helper.dart';
 
 class AddonRemoteDataSourceImpl implements AddonDataSource {
   final ApiClient _apiClient;
@@ -17,7 +18,10 @@ class AddonRemoteDataSourceImpl implements AddonDataSource {
       final response = await _apiClient.get(
         AppConstants.getAddonCategoriesEndpoint,
       );
-      final List<dynamic> data = response.data['data'];
+      final List<dynamic> data = ExceptionHelper.validateListResponse(
+        response.data,
+        'fetching addon categories',
+      );
       return data
           .map((json) => AddonCategoryModel.fromJson(json).toEntity())
           .toList();
