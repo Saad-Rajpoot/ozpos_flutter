@@ -11,6 +11,7 @@ class ApiClient {
   late final Dio _dio;
   final SharedPreferences _sharedPreferences;
   final String _baseUrl;
+  final Map<String, CancelToken> _trackedCancelTokens = {};
 
   ApiClient({required SharedPreferences sharedPreferences, String? baseUrl})
       : _sharedPreferences = sharedPreferences,
@@ -29,6 +30,64 @@ class ApiClient {
     );
 
     _setupInterceptors();
+  }
+
+  /// Creates a new [CancelToken] and optionally tracks it with a [requestKey].
+  ///
+  /// When [requestKey] is provided, any existing tracked token with the same key
+  /// is cancelled before storing the new one. Use this helper from blocs or
+  /// repositories to tie a network request to a specific lifecycle.
+  CancelToken createTrackedCancelToken({
+    String? requestKey,
+    dynamic cancelReason,
+  }) {
+    final cancelToken = CancelToken();
+    if (requestKey != null) {
+      _trackedCancelTokens.remove(requestKey)?.cancel(
+            cancelReason ?? 'Replaced by a new request: $requestKey',
+          );
+      _trackedCancelTokens[requestKey] = cancelToken;
+    }
+    return cancelToken;
+  }
+
+  /// Cancels a tracked request identified by [requestKey].
+  void cancelTrackedRequest(
+    String requestKey, {
+    dynamic reason = 'Cancelled by lifecycle change',
+  }) {
+    _trackedCancelTokens.remove(requestKey)?.cancel(reason);
+  }
+
+  /// Cancels every tracked request.
+  void cancelAllTrackedRequests({
+    dynamic reason = 'Cancelled by ApiClient.cancelAllTrackedRequests',
+  }) {
+    for (final entry in _trackedCancelTokens.entries) {
+      entry.value.cancel(reason);
+    }
+    _trackedCancelTokens.clear();
+  }
+
+  CancelToken? _resolveCancelToken({
+    CancelToken? overrideToken,
+    String? requestKey,
+  }) {
+    if (overrideToken != null) {
+      if (requestKey != null) {
+        _trackedCancelTokens[requestKey] = overrideToken;
+      }
+      return overrideToken;
+    }
+
+    if (requestKey != null) {
+      return _trackedCancelTokens.putIfAbsent(
+        requestKey,
+        CancelToken.new,
+      );
+    }
+
+    return null;
   }
 
   /// Setup interceptors for authentication, retry, and logging
@@ -121,12 +180,25 @@ class ApiClient {
     String path, {
     Map<String, dynamic>? queryParameters,
     Options? options,
+    CancelToken? cancelToken,
+    String? requestKey,
   }) async {
-    return await _dio.get(
-      path,
-      queryParameters: queryParameters,
-      options: options,
+    final resolvedToken = _resolveCancelToken(
+      overrideToken: cancelToken,
+      requestKey: requestKey,
     );
+    try {
+      return await _dio.get(
+        path,
+        queryParameters: queryParameters,
+        options: options,
+        cancelToken: resolvedToken,
+      );
+    } finally {
+      if (requestKey != null) {
+        _trackedCancelTokens.remove(requestKey);
+      }
+    }
   }
 
   /// POST request
@@ -135,13 +207,26 @@ class ApiClient {
     dynamic data,
     Map<String, dynamic>? queryParameters,
     Options? options,
+    CancelToken? cancelToken,
+    String? requestKey,
   }) async {
-    return await _dio.post(
-      path,
-      data: data,
-      queryParameters: queryParameters,
-      options: options,
+    final resolvedToken = _resolveCancelToken(
+      overrideToken: cancelToken,
+      requestKey: requestKey,
     );
+    try {
+      return await _dio.post(
+        path,
+        data: data,
+        queryParameters: queryParameters,
+        options: options,
+        cancelToken: resolvedToken,
+      );
+    } finally {
+      if (requestKey != null) {
+        _trackedCancelTokens.remove(requestKey);
+      }
+    }
   }
 
   /// PUT request
@@ -150,13 +235,26 @@ class ApiClient {
     dynamic data,
     Map<String, dynamic>? queryParameters,
     Options? options,
+    CancelToken? cancelToken,
+    String? requestKey,
   }) async {
-    return await _dio.put(
-      path,
-      data: data,
-      queryParameters: queryParameters,
-      options: options,
+    final resolvedToken = _resolveCancelToken(
+      overrideToken: cancelToken,
+      requestKey: requestKey,
     );
+    try {
+      return await _dio.put(
+        path,
+        data: data,
+        queryParameters: queryParameters,
+        options: options,
+        cancelToken: resolvedToken,
+      );
+    } finally {
+      if (requestKey != null) {
+        _trackedCancelTokens.remove(requestKey);
+      }
+    }
   }
 
   /// DELETE request
@@ -165,12 +263,25 @@ class ApiClient {
     dynamic data,
     Map<String, dynamic>? queryParameters,
     Options? options,
+    CancelToken? cancelToken,
+    String? requestKey,
   }) async {
-    return await _dio.delete(
-      path,
-      data: data,
-      queryParameters: queryParameters,
-      options: options,
+    final resolvedToken = _resolveCancelToken(
+      overrideToken: cancelToken,
+      requestKey: requestKey,
     );
+    try {
+      return await _dio.delete(
+        path,
+        data: data,
+        queryParameters: queryParameters,
+        options: options,
+        cancelToken: resolvedToken,
+      );
+    } finally {
+      if (requestKey != null) {
+        _trackedCancelTokens.remove(requestKey);
+      }
+    }
   }
 }
