@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../bloc/combo_management_bloc.dart';
-import '../../bloc/combo_management_event.dart';
-import '../../bloc/combo_management_state.dart';
+import '../../bloc/editor/combo_editor_bloc.dart';
+import '../../bloc/editor/combo_editor_event.dart';
+import '../../bloc/editor/combo_editor_state.dart';
 import '../../../domain/entities/combo_pricing_entity.dart';
 
 class PricingTab extends StatefulWidget {
@@ -31,13 +31,13 @@ class _PricingTabState extends State<PricingTab> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ComboManagementBloc, ComboManagementState>(
+    return BlocBuilder<ComboEditorBloc, ComboEditorState>(
       buildWhen: (previous, current) {
         // Only rebuild if editing combo changes
-        return previous.editingCombo != current.editingCombo;
+        return previous.draft != current.draft;
       },
       builder: (context, state) {
-        final combo = state.editingCombo;
+        final combo = state.draft;
         if (combo == null) return const SizedBox.shrink();
 
         return SingleChildScrollView(
@@ -621,8 +621,8 @@ class _PricingTabState extends State<PricingTab> {
         break;
     }
 
-    context.read<ComboManagementBloc>().add(
-          UpdateComboPricing(pricing: newPricing),
+    context.read<ComboEditorBloc>().add(
+          ComboPricingChanged(pricing: newPricing),
         );
   }
 
@@ -667,8 +667,8 @@ class _PricingTabState extends State<PricingTab> {
         break;
     }
 
-    context.read<ComboManagementBloc>().add(
-          UpdateComboPricing(pricing: newPricing),
+    context.read<ComboEditorBloc>().add(
+          ComboPricingChanged(pricing: newPricing),
         );
   }
 }

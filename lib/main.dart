@@ -45,13 +45,11 @@ void main() async {
 
   // Initialize Sentry based on configuration
   if (SentryConfig.enableSentry) {
-    // Initialize Sentry and run app
-    SentryFlutter.init(
-      (options) => _configureSentry(options),
+    await SentryFlutter.init(
+      _configureSentry,
       appRunner: () => runApp(const OzposApp()),
     );
   } else {
-    // Run app without Sentry
     runApp(const OzposApp());
   }
 }

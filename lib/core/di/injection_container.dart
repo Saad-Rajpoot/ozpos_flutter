@@ -28,7 +28,9 @@ import '../../features/checkout/data/datasources/checkout_local_datasource.dart'
 import '../../features/checkout/data/datasources/checkout_mock_datasource.dart';
 import '../../features/checkout/data/datasources/checkout_datasource.dart';
 import '../../features/checkout/domain/repositories/checkout_repository.dart';
-import '../../features/combos/presentation/bloc/combo_management_bloc.dart';
+import '../../features/combos/presentation/bloc/crud/combo_crud_bloc.dart';
+import '../../features/combos/presentation/bloc/filter/combo_filter_bloc.dart';
+import '../../features/combos/presentation/bloc/editor/combo_editor_bloc.dart';
 import '../../features/addons/data/datasources/addon_data_source.dart';
 import '../../features/addons/data/datasources/addon_mock_datasource.dart';
 import '../../features/addons/data/datasources/addon_remote_datasource.dart';
@@ -279,16 +281,27 @@ Future<void> _initCombos(GetIt sl) async {
   sl.registerLazySingleton(() => const ValidateCombo());
   sl.registerLazySingleton(() => CalculatePricing(repository: sl()));
 
-  // BLoC (Factory - new instance each time)
-  sl.registerFactory(() => ComboManagementBloc(
+  // BLoCs (Factory - new instance each time)
+  sl.registerFactory(() => ComboCrudBloc(
         uuid: const Uuid(),
         getCombos: sl(),
         createCombo: sl(),
         updateCombo: sl(),
         deleteCombo: sl(),
-        validateCombo: sl(),
-        calculatePricing: sl(),
       ));
+
+  sl.registerFactoryParam<ComboFilterBloc, ComboCrudBloc, void>(
+    (crudBloc, _) => ComboFilterBloc(crudBloc: crudBloc),
+  );
+
+  sl.registerFactoryParam<ComboEditorBloc, ComboCrudBloc, void>(
+    (crudBloc, _) => ComboEditorBloc(
+      uuid: const Uuid(),
+      validateCombo: sl(),
+      calculatePricing: sl(),
+      crudBloc: crudBloc,
+    ),
+  );
 }
 
 /// Initialize addon feature dependencies

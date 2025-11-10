@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../bloc/combo_management_bloc.dart';
-import '../../bloc/combo_management_event.dart';
-import '../../bloc/combo_management_state.dart';
+import '../../bloc/editor/combo_editor_bloc.dart';
+import '../../bloc/editor/combo_editor_event.dart';
+import '../../bloc/editor/combo_editor_state.dart';
+import '../../bloc/filter/combo_filter_bloc.dart';
+import '../../bloc/filter/combo_filter_state.dart';
 
 class DetailsTab extends StatefulWidget {
   const DetailsTab({super.key});
@@ -34,9 +36,9 @@ class _DetailsTabState extends State<DetailsTab> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<ComboManagementBloc, ComboManagementState>(
+    return BlocConsumer<ComboEditorBloc, ComboEditorState>(
       listener: (context, state) {
-        final combo = state.editingCombo;
+        final combo = state.draft;
         if (combo != null) {
           if (_nameController.text != combo.name) {
             _nameController.text = combo.name;
@@ -51,15 +53,16 @@ class _DetailsTabState extends State<DetailsTab> {
         }
       },
       builder: (context, state) {
-        final combo = state.editingCombo;
+        final combo = state.draft;
         if (combo == null) return const SizedBox.shrink();
+        final filterState = context.watch<ComboFilterBloc>().state;
 
         return SingleChildScrollView(
           padding: const EdgeInsets.all(32),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildComboInformationSection(context, state),
+              _buildComboInformationSection(context, state, filterState),
               const SizedBox(height: 32),
               _buildGettingStartedSection(context, state),
             ],
@@ -71,9 +74,10 @@ class _DetailsTabState extends State<DetailsTab> {
 
   Widget _buildComboInformationSection(
     BuildContext context,
-    ComboManagementState state,
+    ComboEditorState state,
+    ComboFilterState filterState,
   ) {
-    final combo = state.editingCombo!;
+    final combo = state.draft!;
 
     return Container(
       padding: const EdgeInsets.all(24),
@@ -134,8 +138,8 @@ class _DetailsTabState extends State<DetailsTab> {
                     vertical: 12,
                   ),
                 ),
-                onChanged: (value) => context.read<ComboManagementBloc>().add(
-                      UpdateComboName(name: value),
+                onChanged: (value) => context.read<ComboEditorBloc>().add(
+                      ComboNameChanged(name: value),
                     ),
               ),
               // Show validation error if name is empty
@@ -187,8 +191,8 @@ class _DetailsTabState extends State<DetailsTab> {
                     vertical: 12,
                   ),
                 ),
-                onChanged: (value) => context.read<ComboManagementBloc>().add(
-                      UpdateComboDescription(description: value),
+                onChanged: (value) => context.read<ComboEditorBloc>().add(
+                      ComboDescriptionChanged(description: value),
                     ),
               ),
             ],
@@ -246,7 +250,7 @@ class _DetailsTabState extends State<DetailsTab> {
                         ),
                         // Add current combo's category if it's not already in the list and not null
                         if (combo.categoryTag != null &&
-                            !state.availableCategories.contains(
+                            !filterState.availableCategories.contains(
                               combo.categoryTag,
                             ))
                           DropdownMenuItem(
@@ -256,8 +260,8 @@ class _DetailsTabState extends State<DetailsTab> {
                             ),
                           ),
                         // Add all available categories from loaded combos, or show loading indicator if none available
-                        if (state.availableCategories.isNotEmpty)
-                          ...state.availableCategories.map(
+                        if (filterState.availableCategories.isNotEmpty)
+                          ...filterState.availableCategories.map(
                             (category) => DropdownMenuItem(
                               value: category,
                               child: Text(_formatCategoryName(category)),
@@ -270,8 +274,8 @@ class _DetailsTabState extends State<DetailsTab> {
                           ),
                       ],
                       onChanged: (value) => context
-                          .read<ComboManagementBloc>()
-                          .add(UpdateComboCategory(categoryTag: value)),
+                          .read<ComboEditorBloc>()
+                          .add(ComboCategoryChanged(categoryTag: value)),
                     ),
                   ],
                 ),
@@ -323,8 +327,8 @@ class _DetailsTabState extends State<DetailsTab> {
                       keyboardType: TextInputType.number,
                       onChanged: (value) {
                         final points = int.tryParse(value);
-                        context.read<ComboManagementBloc>().add(
-                              UpdateComboPointsReward(pointsReward: points),
+                        context.read<ComboEditorBloc>().add(
+                              ComboPointsRewardChanged(pointsReward: points),
                             );
                       },
                     ),
@@ -340,7 +344,7 @@ class _DetailsTabState extends State<DetailsTab> {
 
   Widget _buildGettingStartedSection(
     BuildContext context,
-    ComboManagementState state,
+    ComboEditorState state,
   ) {
     return Container(
       padding: const EdgeInsets.all(20),

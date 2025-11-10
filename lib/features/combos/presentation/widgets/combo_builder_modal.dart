@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../bloc/combo_management_bloc.dart';
-import '../bloc/combo_management_event.dart';
-import '../bloc/combo_management_state.dart';
+import '../bloc/editor/combo_editor_bloc.dart';
+import '../bloc/editor/combo_editor_event.dart';
+import '../bloc/editor/combo_editor_state.dart';
+import '../bloc/crud/combo_crud_bloc.dart';
+import '../bloc/crud/combo_crud_state.dart';
 import 'combo_builder_tabs/details_tab.dart';
 import 'combo_builder_tabs/items_tab.dart';
 import 'combo_builder_tabs/pricing_tab.dart';
@@ -17,20 +19,22 @@ class ComboBuilderModal extends StatelessWidget {
     return Dialog(
       backgroundColor: Colors.transparent,
       insetPadding: const EdgeInsets.all(24),
-      child: BlocBuilder<ComboManagementBloc, ComboManagementState>(
+      child: BlocBuilder<ComboEditorBloc, ComboEditorState>(
         buildWhen: (previous, current) {
           // Only rebuild if relevant state changes
           return previous.isBuilderOpen != current.isBuilderOpen ||
-              previous.editingCombo != current.editingCombo ||
+              previous.draft != current.draft ||
               previous.selectedTab != current.selectedTab ||
               previous.validationErrors != current.validationErrors ||
-              previous.isSaving != current.isSaving ||
+              previous.isAwaitingSave != current.isAwaitingSave ||
               previous.saveError != current.saveError;
         },
         builder: (context, state) {
-          if (!state.isBuilderOpen || state.editingCombo == null) {
+          if (!state.isBuilderOpen || state.draft == null) {
             return const SizedBox.shrink();
           }
+
+          final crudState = context.watch<ComboCrudBloc>().state;
 
           return Container(
             width: MediaQuery.of(context).size.width * 0.9,
@@ -53,7 +57,7 @@ class ComboBuilderModal extends StatelessWidget {
                 Expanded(
                   child: _buildTabContent(context, state),
                 ),
-                _buildFooter(context, state),
+                _buildFooter(context, state, crudState),
               ],
             ),
           );
@@ -62,8 +66,8 @@ class ComboBuilderModal extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader(BuildContext context, ComboManagementState state) {
-    final isEditing = state.editMode == ComboEditMode.edit;
+  Widget _buildHeader(BuildContext context, ComboEditorState state) {
+    final isEditing = state.mode == ComboEditMode.edit;
 
     return Container(
       padding: const EdgeInsets.all(24),
@@ -123,7 +127,7 @@ class ComboBuilderModal extends StatelessWidget {
     );
   }
 
-  Widget _buildTabBar(BuildContext context, ComboManagementState state) {
+  Widget _buildTabBar(BuildContext context, ComboEditorState state) {
     const tabs = [
       {'id': 'details', 'icon': Icons.info_outline, 'label': 'Details'},
       {'id': 'items', 'icon': Icons.add, 'label': 'Items'},
@@ -145,8 +149,8 @@ class ComboBuilderModal extends StatelessWidget {
 
           return Expanded(
             child: InkWell(
-              onTap: () => context.read<ComboManagementBloc>().add(
-                    SelectTab(tabId: tab['id'] as String),
+              onTap: () => context.read<ComboEditorBloc>().add(
+                    ComboTabSelected(tabId: tab['id'] as String),
                   ),
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 16),
@@ -213,7 +217,7 @@ class ComboBuilderModal extends StatelessWidget {
     );
   }
 
-  Widget _buildTabContent(BuildContext context, ComboManagementState state) {
+  Widget _buildTabContent(BuildContext context, ComboEditorState state) {
     switch (state.selectedTab) {
       case 'items':
         return const ItemsTab();
@@ -229,9 +233,14 @@ class ComboBuilderModal extends StatelessWidget {
     }
   }
 
-  Widget _buildFooter(BuildContext context, ComboManagementState state) {
-    final combo = state.editingCombo!;
+  Widget _buildFooter(
+    BuildContext context,
+    ComboEditorState state,
+    ComboCrudState crudState,
+  ) {
+    final combo = state.draft!;
     final hasErrors = state.validationErrors.isNotEmpty;
+    final isSaving = state.isAwaitingSave || crudState.isSaving;
 
     return Container(
       padding: const EdgeInsets.all(24),
@@ -283,9 +292,8 @@ class ComboBuilderModal extends StatelessWidget {
           ),
           const SizedBox(width: 12),
           ElevatedButton.icon(
-            onPressed:
-                state.isSaving || hasErrors ? null : () => _onSave(context),
-            icon: state.isSaving
+            onPressed: isSaving || hasErrors ? null : () => _onSave(context),
+            icon: isSaving
                 ? const SizedBox(
                     width: 16,
                     height: 16,
@@ -295,7 +303,7 @@ class ComboBuilderModal extends StatelessWidget {
                     ),
                   )
                 : const Icon(Icons.save, size: 18),
-            label: Text(state.isSaving ? 'Saving...' : 'Save Combo'),
+            label: Text(isSaving ? 'Saving...' : 'Save Combo'),
             style: ElevatedButton.styleFrom(
               backgroundColor:
                   hasErrors ? Colors.grey[400] : const Color(0xFF8B5CF6),
@@ -312,7 +320,7 @@ class ComboBuilderModal extends StatelessWidget {
     );
   }
 
-  bool _tabHasErrors(String tabId, ComboManagementState state) {
+  bool _tabHasErrors(String tabId, ComboEditorState state) {
     if (state.validationErrors.isEmpty) return false;
 
     // Define which validation errors belong to which tabs
@@ -330,14 +338,14 @@ class ComboBuilderModal extends StatelessWidget {
   }
 
   void _onSave(BuildContext context) {
-    context.read<ComboManagementBloc>().add(
-          const SaveComboChanges(exitAfterSave: true),
+    context.read<ComboEditorBloc>().add(
+          const ComboSaveRequested(exitAfterSave: true),
         );
   }
 
   void _onClose(BuildContext context) {
     // Capture bloc reference before showing dialog
-    final bloc = context.read<ComboManagementBloc>();
+    final bloc = context.read<ComboEditorBloc>();
     
     showDialog(
       context: context,
@@ -354,7 +362,7 @@ class ComboBuilderModal extends StatelessWidget {
           TextButton(
             onPressed: () {
               // Dispatch event before closing dialogs
-              bloc.add(const CancelComboEdit());
+              bloc.add(const ComboEditingCancelled());
               Navigator.of(dialogContext).pop(); // Close dialog
               Navigator.of(context).pop(); // Close modal
             },

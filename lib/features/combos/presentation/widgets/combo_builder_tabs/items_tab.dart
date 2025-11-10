@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../bloc/combo_management_bloc.dart';
-import '../../bloc/combo_management_event.dart';
-import '../../bloc/combo_management_state.dart';
+import '../../bloc/editor/combo_editor_bloc.dart';
+import '../../bloc/editor/combo_editor_event.dart';
+import '../../bloc/editor/combo_editor_state.dart';
 import '../../../domain/entities/combo_slot_entity.dart';
 import 'add_item_dialog.dart';
 
@@ -16,13 +16,13 @@ class ItemsTab extends StatefulWidget {
 class _ItemsTabState extends State<ItemsTab> {
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ComboManagementBloc, ComboManagementState>(
+    return BlocBuilder<ComboEditorBloc, ComboEditorState>(
       buildWhen: (previous, current) {
         // Only rebuild if editing combo changes
-        return previous.editingCombo != current.editingCombo;
+        return previous.draft != current.draft;
       },
       builder: (context, state) {
-        final combo = state.editingCombo;
+        final combo = state.draft;
         if (combo == null) return const SizedBox.shrink();
 
         return SingleChildScrollView(
@@ -292,14 +292,14 @@ class _ItemsTabState extends State<ItemsTab> {
   }
 
   void _duplicateSlot(BuildContext context, ComboSlotEntity slot) {
-    context.read<ComboManagementBloc>().add(
-          DuplicateComboSlot(slotId: slot.id),
+    context.read<ComboEditorBloc>().add(
+          ComboSlotDuplicated(slotId: slot.id),
         );
   }
 
   void _deleteSlot(BuildContext context, ComboSlotEntity slot) {
-    context.read<ComboManagementBloc>().add(
-          RemoveComboSlot(slotId: slot.id),
+    context.read<ComboEditorBloc>().add(
+          ComboSlotRemoved(slotId: slot.id),
         );
   }
 }

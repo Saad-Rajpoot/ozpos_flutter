@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart' as di;
-import '../../bloc/combo_management_bloc.dart';
-import '../../bloc/combo_management_state.dart';
+import '../../bloc/crud/combo_crud_bloc.dart';
+import '../../bloc/crud/combo_crud_state.dart';
 import '../../../domain/entities/combo_entity.dart';
 import 'debug_combo_dialog_state.dart';
 import 'debug_combo_dialog_content.dart';
@@ -26,13 +26,13 @@ class ComboBuilderDebugDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Try to get ComboManagementBloc from rootContext if available
-    final comboBloc = _getComboBlocIfAvailable(rootContext);
+    // Try to get ComboCrudBloc from rootContext if available
+    final comboBloc = _getCrudBlocIfAvailable(rootContext);
 
     return BlocProvider(
       create: (_) => DebugDialogCubit(initialSavedCombo),
       child: comboBloc != null
-          ? BlocProvider<ComboManagementBloc>.value(
+          ? BlocProvider<ComboCrudBloc>.value(
               value: comboBloc,
               child: _ComboBuilderDebugDialogBody(
                 rootContext: rootContext,
@@ -50,16 +50,16 @@ class ComboBuilderDebugDialog extends StatelessWidget {
     );
   }
 
-  /// Safely get ComboManagementBloc if available in context
+  /// Safely get ComboCrudBloc if available in context
   /// Falls back to creating a new instance from DI if not in context
-  ComboManagementBloc? _getComboBlocIfAvailable(BuildContext context) {
+  ComboCrudBloc? _getCrudBlocIfAvailable(BuildContext context) {
     try {
       // Try to read from context first
-      return context.read<ComboManagementBloc>();
+      return context.read<ComboCrudBloc>();
     } catch (e) {
       // If not in context, try to get from DI
       try {
-        return di.GetIt.instance<ComboManagementBloc>();
+        return di.GetIt.instance<ComboCrudBloc>();
       } catch (e) {
         // If not available in DI either, return null
         // The dialog will work without the listener
@@ -84,7 +84,7 @@ class _ComboBuilderDebugDialogBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // If ComboManagementBloc is available, listen to it
+    // If ComboCrudBloc is available, listen to it
     // Otherwise, just build the dialog without the listener
     Widget content = BlocBuilder<DebugDialogCubit, DebugDialogState>(
       builder: (context, dialogState) {
@@ -144,9 +144,9 @@ class _ComboBuilderDebugDialogBody extends StatelessWidget {
       },
     );
 
-    // Wrap with BlocListener only if ComboManagementBloc is available
+    // Wrap with BlocListener only if ComboCrudBloc is available
     if (hasComboBloc) {
-      content = BlocListener<ComboManagementBloc, ComboManagementState>(
+      content = BlocListener<ComboCrudBloc, ComboCrudState>(
         listenWhen: (previous, current) =>
             previous.lastSavedCombo != current.lastSavedCombo,
         listener: (context, state) {

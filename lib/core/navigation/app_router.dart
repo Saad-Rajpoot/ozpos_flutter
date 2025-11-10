@@ -40,7 +40,9 @@ import '../../features/printing/presentation/screens/printing_management_screen.
 import '../../features/customer_display/presentation/screens/customer_display_screen.dart';
 import '../../features/customer_display/presentation/bloc/customer_display_bloc.dart';
 import '../../features/customer_display/presentation/bloc/customer_display_event.dart';
-import '../../features/combos/presentation/bloc/combo_management_bloc.dart';
+import '../../features/combos/presentation/bloc/crud/combo_crud_bloc.dart';
+import '../../features/combos/presentation/bloc/filter/combo_filter_bloc.dart';
+import '../../features/combos/presentation/bloc/editor/combo_editor_bloc.dart';
 
 /// Centralized route management
 ///
@@ -175,8 +177,18 @@ class AppRouter {
                 create: (_) =>
                     di.sl<MenuBloc>()..add(const GetMenuItemsEvent()),
               ),
-              BlocProvider<ComboManagementBloc>(
-                create: (_) => di.sl<ComboManagementBloc>(),
+              BlocProvider<ComboCrudBloc>(
+                create: (_) => di.sl<ComboCrudBloc>(),
+              ),
+              BlocProvider<ComboFilterBloc>(
+                create: (context) => di.sl<ComboFilterBloc>(
+                  param1: context.read<ComboCrudBloc>(),
+                ),
+              ),
+              BlocProvider<ComboEditorBloc>(
+                create: (context) => di.sl<ComboEditorBloc>(
+                  param1: context.read<ComboCrudBloc>(),
+                ),
               ),
             ],
             child: const MenuEditorScreen(),

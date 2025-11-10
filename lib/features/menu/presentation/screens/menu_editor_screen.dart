@@ -9,11 +9,14 @@ import '../bloc/menu_event.dart';
 import '../bloc/menu_state.dart';
 import '../../domain/entities/menu_item_entity.dart';
 import '../../domain/entities/menu_item_edit_entity.dart';
-import '../../../combos/presentation/bloc/combo_management_bloc.dart';
+import '../../../combos/presentation/bloc/crud/combo_crud_bloc.dart';
+import '../../../combos/presentation/bloc/crud/combo_crud_event.dart';
+import '../../../combos/presentation/bloc/filter/combo_filter_bloc.dart';
+import '../../../combos/presentation/bloc/filter/combo_filter_state.dart';
+import '../../../combos/presentation/bloc/editor/combo_editor_bloc.dart';
+import '../../../combos/presentation/bloc/editor/combo_editor_event.dart';
 import '../../../combos/presentation/widgets/combo_card.dart';
 import '../../../combos/presentation/widgets/combo_builder_modal.dart';
-import '../../../combos/presentation/bloc/combo_management_event.dart';
-import '../../../combos/presentation/bloc/combo_management_state.dart';
 import '../../../combos/domain/entities/combo_entity.dart';
 
 /// Menu Editor Screen - Matches reference UI design
@@ -473,8 +476,11 @@ class _MenuEditorScreenState extends State<MenuEditorScreen> {
   }
 
   Widget _buildComboDealsSection() {
-    return BlocBuilder<ComboManagementBloc, ComboManagementState>(
-      builder: (context, state) {
+    return BlocBuilder<ComboFilterBloc, ComboFilterState>(
+      builder: (context, filterState) {
+        final crudState = context.watch<ComboCrudBloc>().state;
+        final combos = filterState.filteredCombos;
+
         return Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
@@ -485,7 +491,6 @@ class _MenuEditorScreenState extends State<MenuEditorScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header
               Row(
                 children: [
                   Container(
@@ -520,7 +525,7 @@ class _MenuEditorScreenState extends State<MenuEditorScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
-                      '${state.filteredCombos.length} combos',
+                      '${combos.length} combos',
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
@@ -573,18 +578,15 @@ class _MenuEditorScreenState extends State<MenuEditorScreen> {
                   ),
                 ],
               ),
-
               const SizedBox(height: 24),
-
-              // Combo Cards
-              if (state.isLoading)
+              if (crudState.isLoading)
                 const Center(
                   child: Padding(
                     padding: EdgeInsets.all(24),
                     child: CircularProgressIndicator(color: Color(0xFF8B5CF6)),
                   ),
                 )
-              else if (state.hasError)
+              else if (crudState.hasError)
                 Center(
                   child: Padding(
                     padding: const EdgeInsets.all(24),
@@ -606,7 +608,9 @@ class _MenuEditorScreenState extends State<MenuEditorScreen> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          state.currentErrorMessage ?? 'Something went wrong',
+                          crudState.errorMessage ??
+                              crudState.saveError ??
+                              'Something went wrong',
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.grey[600],
@@ -617,7 +621,7 @@ class _MenuEditorScreenState extends State<MenuEditorScreen> {
                     ),
                   ),
                 )
-              else if (state.filteredCombos.isEmpty)
+              else if (combos.isEmpty)
                 Center(
                   child: Padding(
                     padding: const EdgeInsets.all(32),
@@ -626,9 +630,7 @@ class _MenuEditorScreenState extends State<MenuEditorScreen> {
                         Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: const Color(
-                              0xFF8B5CF6,
-                            ).withOpacity(0.1),
+                            color: const Color(0xFF8B5CF6).withOpacity(0.1),
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(
@@ -670,7 +672,6 @@ class _MenuEditorScreenState extends State<MenuEditorScreen> {
                   ),
                 )
               else
-                // Combo Grid
                 GridView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
@@ -680,9 +681,9 @@ class _MenuEditorScreenState extends State<MenuEditorScreen> {
                     mainAxisSpacing: 16,
                     childAspectRatio: 1.1,
                   ),
-                  itemCount: state.filteredCombos.length,
+                  itemCount: combos.length,
                   itemBuilder: (context, index) {
-                    final combo = state.filteredCombos[index];
+                    final combo = combos[index];
                     return ComboCard(
                       combo: combo,
                       onEdit: () => _editCombo(context, combo.id),
@@ -710,23 +711,27 @@ class _MenuEditorScreenState extends State<MenuEditorScreen> {
   }
 
   void _editCombo(BuildContext context, String comboId) {
-    final comboBloc = context.read<ComboManagementBloc>();
-    comboBloc.add(StartComboEdit(comboId: comboId));
+    final crudBloc = context.read<ComboCrudBloc>();
+    final filterBloc = context.read<ComboFilterBloc>();
+    final editorBloc = context.read<ComboEditorBloc>()
+      ..add(ComboEditingStarted(comboId: comboId));
 
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => BlocProvider.value(
-        value: comboBloc,
+      builder: (context) => MultiBlocProvider(
+        providers: [
+          BlocProvider<ComboCrudBloc>.value(value: crudBloc),
+          BlocProvider<ComboFilterBloc>.value(value: filterBloc),
+          BlocProvider<ComboEditorBloc>.value(value: editorBloc),
+        ],
         child: const ComboBuilderModal(),
       ),
     );
   }
 
   void _duplicateCombo(BuildContext context, String comboId) {
-    context
-        .read<ComboManagementBloc>()
-        .add(DuplicateComboEvent(comboId: comboId));
+    context.read<ComboCrudBloc>().add(ComboDuplicated(comboId: comboId));
   }
 
   void _toggleComboVisibility(BuildContext context, combo) {
@@ -734,8 +739,8 @@ class _MenuEditorScreenState extends State<MenuEditorScreen> {
         ? ComboStatus.hidden
         : ComboStatus.active;
 
-    context.read<ComboManagementBloc>().add(
-          ToggleComboVisibility(comboId: combo.id, newStatus: newStatus),
+    context.read<ComboCrudBloc>().add(
+          ComboVisibilityToggled(comboId: combo.id, newStatus: newStatus),
         );
   }
 
@@ -755,8 +760,8 @@ class _MenuEditorScreenState extends State<MenuEditorScreen> {
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();
-              context.read<ComboManagementBloc>().add(
-                    DeleteComboEvent(comboId: comboId),
+              context.read<ComboCrudBloc>().add(
+                    ComboDeleted(comboId: comboId),
                   );
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
@@ -1067,15 +1072,20 @@ class _MenuEditorScreenState extends State<MenuEditorScreen> {
   }
 
   void _openComboCreator(BuildContext context) {
-    // Get or create ComboManagementBloc
-    final comboBloc = context.read<ComboManagementBloc>();
-    comboBloc.add(const StartComboEdit());
+    final crudBloc = context.read<ComboCrudBloc>();
+    final filterBloc = context.read<ComboFilterBloc>();
+    final editorBloc = context.read<ComboEditorBloc>()
+      ..add(const ComboEditingStarted());
 
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => BlocProvider.value(
-        value: comboBloc,
+      builder: (context) => MultiBlocProvider(
+        providers: [
+          BlocProvider<ComboCrudBloc>.value(value: crudBloc),
+          BlocProvider<ComboFilterBloc>.value(value: filterBloc),
+          BlocProvider<ComboEditorBloc>.value(value: editorBloc),
+        ],
         child: const ComboBuilderModal(),
       ),
     );

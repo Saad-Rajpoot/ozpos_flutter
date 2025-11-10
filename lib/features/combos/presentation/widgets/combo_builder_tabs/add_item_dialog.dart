@@ -1,8 +1,8 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../bloc/combo_management_bloc.dart';
-import '../../bloc/combo_management_event.dart';
+import '../../bloc/editor/combo_editor_bloc.dart';
+import '../../bloc/editor/combo_editor_event.dart';
 import '../../../domain/entities/combo_slot_entity.dart';
 
 const List<Map<String, dynamic>> _kMockCategories = [
@@ -331,7 +331,7 @@ class _AddItemDialogState extends State<AddItemDialog> {
       }),
     );
 
-    context.read<ComboManagementBloc>().add(AddComboSlot(slot: slot));
+    context.read<ComboEditorBloc>().add(ComboSlotAdded(slot: slot));
     Navigator.of(context).pop();
   }
 }

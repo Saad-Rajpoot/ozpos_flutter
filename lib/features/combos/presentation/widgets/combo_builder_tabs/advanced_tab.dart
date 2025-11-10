@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
-import '../../bloc/combo_management_bloc.dart';
-import '../../bloc/combo_management_state.dart';
+import '../../bloc/editor/combo_editor_bloc.dart';
+import '../../bloc/editor/combo_editor_state.dart';
 import '../../../domain/entities/combo_entity.dart';
 
 class AdvancedTab extends StatefulWidget {
@@ -73,13 +73,13 @@ class _AdvancedTabState extends State<AdvancedTab> {
     return ValueListenableBuilder<_AdvancedSettingsViewState>(
       valueListenable: _stateNotifier,
       builder: (context, viewState, _) {
-        return BlocBuilder<ComboManagementBloc, ComboManagementState>(
+        return BlocBuilder<ComboEditorBloc, ComboEditorState>(
           buildWhen: (previous, current) {
             // Only rebuild if editing combo changes
-            return previous.editingCombo != current.editingCombo;
+            return previous.draft != current.draft;
           },
           builder: (context, state) {
-            final combo = state.editingCombo;
+            final combo = state.draft;
             if (combo == null) return const SizedBox.shrink();
 
             return SingleChildScrollView(

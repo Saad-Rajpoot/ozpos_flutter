@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart' as di;
-import '../bloc/combo_management_bloc.dart';
-import '../bloc/combo_management_event.dart';
+import '../bloc/crud/combo_crud_bloc.dart';
+import '../bloc/filter/combo_filter_bloc.dart';
+import '../bloc/editor/combo_editor_bloc.dart';
+import '../bloc/editor/combo_editor_event.dart';
 import '../../domain/entities/combo_entity.dart';
 import 'combo_builder_modal.dart';
 import 'debug/debug_combo_dialog.dart';
@@ -105,16 +107,23 @@ class _DebugComboBuilderButtonView extends StatelessWidget {
   }
 
   Future<void> _openComboBuilder(BuildContext rootContext) async {
-    // Try to get ComboManagementBloc from context, fall back to DI
-    ComboManagementBloc? comboBloc;
+    late final ComboCrudBloc crudBloc;
+    late final ComboFilterBloc filterBloc;
+    late final ComboEditorBloc editorBloc;
+    var createdLocally = false;
+
     try {
-      comboBloc = rootContext.read<ComboManagementBloc>();
-    } catch (e) {
-      // If not in context, get from DI
+      crudBloc = rootContext.read<ComboCrudBloc>();
+      filterBloc = rootContext.read<ComboFilterBloc>();
+      editorBloc = rootContext.read<ComboEditorBloc>();
+    } catch (_) {
+      // If blocs not available in context, create standalone instances
       try {
-        comboBloc = di.GetIt.instance<ComboManagementBloc>();
-      } catch (e) {
-        // If not available, show error or create a new instance
+        createdLocally = true;
+        crudBloc = di.GetIt.instance<ComboCrudBloc>();
+        filterBloc = di.GetIt.instance<ComboFilterBloc>(param1: crudBloc);
+        editorBloc = di.GetIt.instance<ComboEditorBloc>(param1: crudBloc);
+      } catch (error) {
         if (rootContext.mounted) {
           ScaffoldMessenger.of(rootContext).showSnackBar(
             const SnackBar(
@@ -126,15 +135,27 @@ class _DebugComboBuilderButtonView extends StatelessWidget {
       }
     }
 
-    comboBloc.add(const StartComboEdit());
+    editorBloc.add(const ComboEditingStarted());
 
     await showDialog<void>(
       context: rootContext,
       barrierDismissible: false,
-      builder: (dialogContext) => BlocProvider<ComboManagementBloc>.value(
-        value: comboBloc!,
+      builder: (dialogContext) => MultiBlocProvider(
+        providers: [
+          BlocProvider<ComboCrudBloc>.value(value: crudBloc),
+          BlocProvider<ComboFilterBloc>.value(value: filterBloc),
+          BlocProvider<ComboEditorBloc>.value(value: editorBloc),
+        ],
         child: const ComboBuilderModal(),
       ),
     );
+
+    if (createdLocally) {
+      await Future.wait([
+        editorBloc.close(),
+        filterBloc.close(),
+        crudBloc.close(),
+      ]);
+    }
   }
 }

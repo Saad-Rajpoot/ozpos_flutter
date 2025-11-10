@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../bloc/combo_management_bloc.dart';
-import '../bloc/combo_management_event.dart';
-import '../bloc/combo_management_state.dart';
+import '../bloc/crud/combo_crud_bloc.dart';
+import '../bloc/crud/combo_crud_event.dart';
+import '../bloc/crud/combo_crud_state.dart';
+import '../bloc/filter/combo_filter_bloc.dart';
+import '../bloc/filter/combo_filter_event.dart';
+import '../bloc/filter/combo_filter_state.dart';
+import '../bloc/editor/combo_editor_bloc.dart';
+import '../bloc/editor/combo_editor_event.dart';
+import '../bloc/editor/combo_editor_state.dart';
 import '../../domain/entities/combo_entity.dart';
 import '../widgets/combo_card.dart';
 import '../widgets/combo_builder_modal.dart';
@@ -31,8 +37,8 @@ class _ComboDashboardScreenState extends State<ComboDashboardScreen> {
   }
 
   void _onSearchChanged() {
-    context.read<ComboManagementBloc>().add(
-          SearchCombos(query: _searchController.text),
+    context.read<ComboFilterBloc>().add(
+          ComboFilterSearchChanged(query: _searchController.text),
         );
   }
 
@@ -40,31 +46,51 @@ class _ComboDashboardScreenState extends State<ComboDashboardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      body: BlocConsumer<ComboManagementBloc, ComboManagementState>(
-        listener: (context, state) {
-          if (state.saveError != null) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.saveError!),
-                backgroundColor: Colors.red[600],
+      body: MultiBlocListener(
+        listeners: [
+          BlocListener<ComboCrudBloc, ComboCrudState>(
+            listenWhen: (previous, current) =>
+                previous.saveError != current.saveError &&
+                current.saveError != null,
+            listener: (context, state) {
+              if (state.saveError != null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(state.saveError!),
+                    backgroundColor: Colors.red[600],
+                  ),
+                );
+              }
+            },
+          ),
+        ],
+        child: Column(
+          children: [
+            BlocBuilder<ComboEditorBloc, ComboEditorState>(
+              builder: (context, editorState) =>
+                  _buildTopBar(context, editorState),
+            ),
+            BlocBuilder<ComboFilterBloc, ComboFilterState>(
+              builder: (context, filterState) =>
+                  _buildComboSection(context, filterState),
+            ),
+            Expanded(
+              child: BlocBuilder<ComboCrudBloc, ComboCrudState>(
+                builder: (context, crudState) {
+                  return BlocBuilder<ComboFilterBloc, ComboFilterState>(
+                    builder: (context, filterState) =>
+                        _buildComboGrid(context, crudState, filterState),
+                  );
+                },
               ),
-            );
-          }
-        },
-        builder: (context, state) {
-          return Column(
-            children: [
-              _buildTopBar(context, state),
-              _buildComboSection(context, state),
-              Expanded(child: _buildComboGrid(context, state)),
-            ],
-          );
-        },
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildTopBar(BuildContext context, ComboManagementState state) {
+  Widget _buildTopBar(BuildContext context, ComboEditorState state) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: const BoxDecoration(
@@ -171,9 +197,9 @@ class _ComboDashboardScreenState extends State<ComboDashboardScreen> {
             icon: Icons.save,
             label: 'Save All',
             onPressed: state.hasUnsavedChanges
-                ? () => context.read<ComboManagementBloc>().add(
-                      const SaveAllCombos(),
-                    )
+                ? () => context
+                    .read<ComboEditorBloc>()
+                    .add(const ComboUnsavedResetRequested())
                 : null,
           ),
         ],
@@ -205,7 +231,10 @@ class _ComboDashboardScreenState extends State<ComboDashboardScreen> {
     );
   }
 
-  Widget _buildComboSection(BuildContext context, ComboManagementState state) {
+  Widget _buildComboSection(
+    BuildContext context,
+    ComboFilterState state,
+  ) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
       decoration: const BoxDecoration(
@@ -291,14 +320,18 @@ class _ComboDashboardScreenState extends State<ComboDashboardScreen> {
     );
   }
 
-  Widget _buildComboGrid(BuildContext context, ComboManagementState state) {
-    if (state.isLoading) {
+  Widget _buildComboGrid(
+    BuildContext context,
+    ComboCrudState crudState,
+    ComboFilterState filterState,
+  ) {
+    if (crudState.isLoading) {
       return const Center(
         child: CircularProgressIndicator(color: Color(0xFF8B5CF6)),
       );
     }
 
-    if (state.hasError) {
+    if (crudState.hasError) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -315,15 +348,16 @@ class _ComboDashboardScreenState extends State<ComboDashboardScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              state.currentErrorMessage ?? 'Something went wrong',
+              crudState.errorMessage ??
+                  crudState.saveError ??
+                  'Something went wrong',
               style: TextStyle(fontSize: 14, color: Colors.grey[600]),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
             ElevatedButton(
-              onPressed: () => context.read<ComboManagementBloc>().add(
-                    const RefreshCombos(),
-                  ),
+              onPressed: () =>
+                  context.read<ComboCrudBloc>().add(const CombosRefreshed()),
               child: const Text('Try Again'),
             ),
           ],
@@ -331,7 +365,7 @@ class _ComboDashboardScreenState extends State<ComboDashboardScreen> {
       );
     }
 
-    if (state.isEmpty) {
+    if (crudState.hasData && filterState.filteredCombos.isEmpty) {
       return _buildEmptyState(context);
     }
 
@@ -344,9 +378,9 @@ class _ComboDashboardScreenState extends State<ComboDashboardScreen> {
           mainAxisSpacing: 24,
           childAspectRatio: 1.1, // Slightly taller cards
         ),
-        itemCount: state.filteredCombos.length,
+        itemCount: filterState.filteredCombos.length,
         itemBuilder: (context, index) {
-          final combo = state.filteredCombos[index];
+          final combo = filterState.filteredCombos[index];
           return ComboCard(
             combo: combo,
             onEdit: () => _editCombo(context, combo.id),
@@ -416,7 +450,7 @@ class _ComboDashboardScreenState extends State<ComboDashboardScreen> {
   }
 
   void _showComboBuilder(BuildContext context) {
-    context.read<ComboManagementBloc>().add(const StartComboEdit());
+    context.read<ComboEditorBloc>().add(const ComboEditingStarted());
 
     showDialog(
       context: context,
@@ -426,7 +460,7 @@ class _ComboDashboardScreenState extends State<ComboDashboardScreen> {
   }
 
   void _editCombo(BuildContext context, String comboId) {
-    context.read<ComboManagementBloc>().add(StartComboEdit(comboId: comboId));
+    context.read<ComboEditorBloc>().add(ComboEditingStarted(comboId: comboId));
 
     showDialog(
       context: context,
@@ -436,9 +470,7 @@ class _ComboDashboardScreenState extends State<ComboDashboardScreen> {
   }
 
   void _duplicateCombo(BuildContext context, String comboId) {
-    context
-        .read<ComboManagementBloc>()
-        .add(DuplicateComboEvent(comboId: comboId));
+    context.read<ComboCrudBloc>().add(ComboDuplicated(comboId: comboId));
   }
 
   void _toggleComboVisibility(BuildContext context, ComboEntity combo) {
@@ -446,8 +478,8 @@ class _ComboDashboardScreenState extends State<ComboDashboardScreen> {
         ? ComboStatus.hidden
         : ComboStatus.active;
 
-    context.read<ComboManagementBloc>().add(
-          ToggleComboVisibility(comboId: combo.id, newStatus: newStatus),
+    context.read<ComboCrudBloc>().add(
+          ComboVisibilityToggled(comboId: combo.id, newStatus: newStatus),
         );
   }
 
@@ -467,8 +499,8 @@ class _ComboDashboardScreenState extends State<ComboDashboardScreen> {
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();
-              context.read<ComboManagementBloc>().add(
-                    DeleteComboEvent(comboId: comboId),
+              context.read<ComboCrudBloc>().add(
+                    ComboDeleted(comboId: comboId),
                   );
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
