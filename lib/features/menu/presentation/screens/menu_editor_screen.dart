@@ -745,24 +745,25 @@ class _MenuEditorScreenState extends State<MenuEditorScreen> {
   }
 
   void _deleteCombo(BuildContext context, String comboId) {
+    final crudBloc = context.read<ComboCrudBloc>();
+    final navigator = Navigator.of(context);
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('Delete Combo'),
         content: const Text(
           'Are you sure you want to delete this combo? This action cannot be undone.',
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => navigator.pop(),
             child: const Text('Cancel'),
           ),
           TextButton(
             onPressed: () {
-              Navigator.of(context).pop();
-              context.read<ComboCrudBloc>().add(
-                    ComboDeleted(comboId: comboId),
-                  );
+              navigator.pop();
+              crudBloc.add(ComboDeleted(comboId: comboId));
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('Delete'),
