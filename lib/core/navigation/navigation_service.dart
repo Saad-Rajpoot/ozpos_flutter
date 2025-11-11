@@ -13,9 +13,23 @@ class NavigationService {
   static final GlobalKey<NavigatorState> navigatorKey =
       GlobalKey<NavigatorState>();
 
-  static BuildContext get context => navigatorKey.currentContext!;
+  /// Current navigator context; null until the widget tree attaches the key.
+  static BuildContext? get context => navigatorKey.currentContext;
 
-  static NavigatorState get navigator => navigatorKey.currentState!;
+  /// Current navigator instance; null until the widget tree attaches the key.
+  static NavigatorState? get navigator => navigatorKey.currentState;
+
+  static void _logNavigatorMissing(String method) {
+    debugPrint(
+      'NavigationService.$method ignored: navigator is not ready yet.',
+    );
+  }
+
+  static void _logContextMissing(String method) {
+    debugPrint(
+      'NavigationService.$method ignored: context is not ready yet.',
+    );
+  }
 
   // ========================================================================
   // NAVIGATION METHODS
@@ -23,7 +37,12 @@ class NavigationService {
 
   /// Push a route by name
   static Future<T?> push<T>(String routeName) {
-    return navigator.pushNamed<T>(routeName);
+    final nav = navigator;
+    if (nav == null) {
+      _logNavigatorMissing('push');
+      return Future.value(null);
+    }
+    return nav.pushNamed<T>(routeName);
   }
 
   /// Push a route by name with arguments
@@ -33,24 +52,44 @@ class NavigationService {
     Map<String, String>? pathParameters,
     Map<String, dynamic>? queryParameters,
   }) {
-    return navigator.pushNamed<T>(routeName, arguments: arguments);
+    final nav = navigator;
+    if (nav == null) {
+      _logNavigatorMissing('pushNamed');
+      return Future.value(null);
+    }
+    return nav.pushNamed<T>(routeName, arguments: arguments);
   }
 
   /// Pop the current route
   static void pop<T>([T? result]) {
-    if (canPop()) {
-      navigator.pop<T>(result);
+    final nav = navigator;
+    if (nav == null) {
+      _logNavigatorMissing('pop');
+      return;
+    }
+    if (nav.canPop()) {
+      nav.pop<T>(result);
     }
   }
 
   /// Pop until a specific route
   static void popUntil(String routeName) {
-    navigator.popUntil(ModalRoute.withName(routeName));
+    final nav = navigator;
+    if (nav == null) {
+      _logNavigatorMissing('popUntil');
+      return;
+    }
+    nav.popUntil(ModalRoute.withName(routeName));
   }
 
   /// Replace current route with a new one
   static Future<T?> replace<T>(String routeName) {
-    return navigator.pushReplacementNamed<T, dynamic>(routeName);
+    final nav = navigator;
+    if (nav == null) {
+      _logNavigatorMissing('replace');
+      return Future.value(null);
+    }
+    return nav.pushReplacementNamed<T, dynamic>(routeName);
   }
 
   /// Replace current route with arguments
@@ -60,7 +99,12 @@ class NavigationService {
     Map<String, String>? pathParameters,
     Map<String, dynamic>? queryParameters,
   }) {
-    return navigator.pushReplacementNamed<T, dynamic>(
+    final nav = navigator;
+    if (nav == null) {
+      _logNavigatorMissing('replaceNamed');
+      return Future.value(null);
+    }
+    return nav.pushReplacementNamed<T, dynamic>(
       routeName,
       arguments: arguments,
     );
@@ -72,7 +116,12 @@ class NavigationService {
     bool Function(Route<dynamic>) predicate, {
     Object? arguments,
   }) {
-    return navigator.pushNamedAndRemoveUntil<T>(
+    final nav = navigator;
+    if (nav == null) {
+      _logNavigatorMissing('pushAndRemoveUntil');
+      return Future.value(null);
+    }
+    return nav.pushNamedAndRemoveUntil<T>(
       routeName,
       predicate,
       arguments: arguments,
@@ -84,7 +133,12 @@ class NavigationService {
     String routeName, {
     Object? arguments,
   }) {
-    return navigator.pushNamedAndRemoveUntil<T>(
+    final nav = navigator;
+    if (nav == null) {
+      _logNavigatorMissing('pushAndClearStack');
+      return Future.value(null);
+    }
+    return nav.pushNamedAndRemoveUntil<T>(
       routeName,
       (route) => false,
       arguments: arguments,
@@ -97,12 +151,20 @@ class NavigationService {
 
   /// Check if we can pop the current route
   static bool canPop() {
-    return navigator.canPop();
+    final nav = navigator;
+    if (nav == null) {
+      return false;
+    }
+    return nav.canPop();
   }
 
   /// Get the current route name
   static String getCurrentLocation() {
-    return ModalRoute.of(context)?.settings.name ?? '';
+    final ctx = context;
+    if (ctx == null) {
+      return '';
+    }
+    return ModalRoute.of(ctx)?.settings.name ?? '';
   }
 
   /// Check if the current route matches the given route name
@@ -112,7 +174,11 @@ class NavigationService {
 
   /// Get the current route arguments
   static Object? getCurrentArguments() {
-    return ModalRoute.of(context)?.settings.arguments;
+    final ctx = context;
+    if (ctx == null) {
+      return null;
+    }
+    return ModalRoute.of(ctx)?.settings.arguments;
   }
 
   /// Show a dialog
@@ -120,8 +186,13 @@ class NavigationService {
     required Widget Function(BuildContext) builder,
     bool barrierDismissible = true,
   }) {
+    final ctx = context;
+    if (ctx == null) {
+      _logContextMissing('showAppDialog');
+      return Future.value(null);
+    }
     return showDialog<T>(
-      context: context,
+      context: ctx,
       barrierDismissible: barrierDismissible,
       builder: builder,
     );
@@ -132,8 +203,13 @@ class NavigationService {
     required Widget Function(BuildContext) builder,
     bool isDismissible = true,
   }) {
+    final ctx = context;
+    if (ctx == null) {
+      _logContextMissing('showAppBottomSheet');
+      return Future.value(null);
+    }
     return showModalBottomSheet<T>(
-      context: context,
+      context: ctx,
       isDismissible: isDismissible,
       builder: builder,
     );
@@ -145,7 +221,12 @@ class NavigationService {
     Color? backgroundColor,
     Duration duration = AppConstants.snackbarDefaultDuration,
   }) {
-    ScaffoldMessenger.of(context).showSnackBar(
+    final ctx = context;
+    if (ctx == null) {
+      _logContextMissing('showSnackBar');
+      return;
+    }
+    ScaffoldMessenger.of(ctx).showSnackBar(
       SnackBar(
         content: Text(message),
         backgroundColor: backgroundColor,

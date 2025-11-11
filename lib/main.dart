@@ -43,15 +43,10 @@ void main() async {
   AppConfig.instance.printConfig();
   SentryConfig.printConfig();
 
-  // Initialize Sentry based on configuration
-  if (SentryConfig.enableSentry) {
-    await SentryFlutter.init(
-      _configureSentry,
-      appRunner: () => runApp(const OzposApp()),
-    );
-  } else {
-    runApp(const OzposApp());
-  }
+  await SentryFlutter.init(
+    _configureSentry,
+    appRunner: () => runApp(const OzposApp()),
+  );
 }
 
 /// Configure Sentry options for error tracking and performance monitoring
@@ -105,33 +100,30 @@ void _setupErrorHandlers() {
     FlutterError.presentError(details);
 
     // Send to Sentry using the package's built-in method
-    if (SentryConfig.enableSentry) {
-      Sentry.captureException(
-        details.exception,
-        stackTrace: details.stack,
-        withScope: (scope) {
-          scope.setTag('error_type', 'flutter_framework');
-          scope.setTag('library', details.library ?? 'unknown');
-          scope.setTag('is_fatal', (!details.silent).toString());
-          scope.setContexts('flutter_error', {
-            'context': details.context?.toString() ?? 'No context',
-            'library': details.library ?? 'Unknown',
-          });
-        },
-      );
-    }
+
+    Sentry.captureException(
+      details.exception,
+      stackTrace: details.stack,
+      withScope: (scope) {
+        scope.setTag('error_type', 'flutter_framework');
+        scope.setTag('library', details.library ?? 'unknown');
+        scope.setTag('is_fatal', (!details.silent).toString());
+        scope.setContexts('flutter_error', {
+          'context': details.context?.toString() ?? 'No context',
+          'library': details.library ?? 'Unknown',
+        });
+      },
+    );
   };
 
   // Capture platform/async errors that Flutter doesn't catch
   PlatformDispatcher.instance.onError = (error, stack) {
-    if (SentryConfig.enableSentry) {
-      SentryService.reportError(
-        error,
-        stack,
-        hint: 'Platform/Async Error',
-        extra: {'error_source': 'platform_dispatcher'},
-      );
-    }
+    SentryService.reportError(
+      error,
+      stack,
+      hint: 'Platform/Async Error',
+      extra: {'error_source': 'platform_dispatcher'},
+    );
     return true;
   };
 }

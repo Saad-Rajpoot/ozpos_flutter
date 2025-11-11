@@ -14,9 +14,6 @@ class SentryConfig {
   /// App version for Sentry releases
   static const String appVersion = '1.0.0+1';
 
-  /// Check if we should enable Sentry error reporting
-  static bool get enableSentry => true; // Always enabled for testing
-
   /// Get Sentry sample rates (automatically based on environment)
   static double get sentrySampleRate {
     if (AppConfig.instance.environment == AppEnvironment.development) {
@@ -74,7 +71,6 @@ class SentryConfig {
   static void printConfig() {
     if (kDebugMode) {
       print('🔧 Sentry Configuration:');
-      print('   Enabled: $enableSentry');
       print('   Sample Rate: $sentrySampleRate');
       print('   Performance Sample Rate: $sentryPerformanceSampleRate');
       print('   Debug Logging: $sentryDebug');
