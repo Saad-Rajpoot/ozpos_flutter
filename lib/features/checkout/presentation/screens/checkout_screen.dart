@@ -43,18 +43,32 @@ class _CheckoutScreenContent extends StatelessWidget {
     final isCompact = CheckoutConstants.isCompact(screenWidth);
 
     // Get cart items from shared CartBloc using BlocBuilder for proper state access
-    return BlocListener<CartBloc, CartState>(
-      listenWhen: (previous, current) =>
-          previous != current && current is CartLoaded,
-      listener: (context, cartState) {
-        if (cartState is! CartLoaded) return;
-        debugPrint(
-          '✅ Checkout: Syncing ${cartState.items.length} items from CartBloc to CheckoutBloc',
-        );
-        context
-            .read<CheckoutBloc>()
-            .add(InitializeCheckout(items: cartState.items));
-      },
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<CartBloc, CartState>(
+          listenWhen: (previous, current) =>
+              previous != current && current is CartLoaded,
+          listener: (context, cartState) {
+            if (cartState is! CartLoaded) return;
+            debugPrint(
+              '✅ Checkout: Syncing ${cartState.items.length} items from CartBloc to CheckoutBloc',
+            );
+            context
+                .read<CheckoutBloc>()
+                .add(InitializeCheckout(items: cartState.items));
+          },
+        ),
+        BlocListener<CheckoutBloc, CheckoutState>(
+          listenWhen: (previous, current) => current is CheckoutSuccess,
+          listener: (context, checkoutState) {
+            context.read<CartBloc>().add(ClearCart());
+            Navigator.of(context).pushNamedAndRemoveUntil(
+              AppRouter.dashboard,
+              (route) => false,
+            );
+          },
+        ),
+      ],
       child: BlocBuilder<CartBloc, CartState>(
         builder: (context, cartState) {
           // Extract cart items
@@ -100,19 +114,39 @@ class _CheckoutScreenContent extends StatelessWidget {
             backgroundColor: CheckoutConstants.background,
             appBar: isCompact ? _buildCompactAppBar(context) : null,
             endDrawer: isCompact ? _buildOrderDrawer(context) : null,
-            body: Row(
-              children: [
-                // Sidebar navigation (only on desktop)
-                if (!isCompact)
-                  const SidebarNav(activeRoute: AppRouter.checkout),
+            body: BlocBuilder<CheckoutBloc, CheckoutState>(
+              builder: (context, checkoutState) {
+                final showBlockingOverlay =
+                    checkoutState is CheckoutProcessing ||
+                        checkoutState is CheckoutInitial;
 
-                // Main content
-                Expanded(
-                  child: isCompact
-                      ? _buildCompactLayout(context)
-                      : _buildDesktopLayout(context, screenWidth),
-                ),
-              ],
+                return Stack(
+                  children: [
+                    Positioned.fill(
+                      child: Row(
+                        children: [
+                          if (!isCompact)
+                            const SidebarNav(activeRoute: AppRouter.checkout),
+                          Expanded(
+                            child: isCompact
+                                ? _buildCompactLayout(context)
+                                : _buildDesktopLayout(context, screenWidth),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (showBlockingOverlay)
+                      Positioned.fill(
+                        child: AbsorbPointer(
+                          absorbing: true,
+                          child: const Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                        ),
+                      ),
+                  ],
+                );
+              },
             ),
           );
         },

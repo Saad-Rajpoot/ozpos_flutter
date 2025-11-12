@@ -40,7 +40,9 @@ class OrderItemsPanel extends StatelessWidget {
       decoration: BoxDecoration(
         color: CheckoutConstants.surface,
         borderRadius: BorderRadius.circular(CheckoutConstants.radiusCard),
-        border: Border.all(color: CheckoutConstants.border),
+        border: state.items.isEmpty
+            ? null
+            : Border.all(color: CheckoutConstants.border),
         boxShadow: CheckoutConstants.shadowCard,
       ),
       child: Column(
@@ -123,14 +125,9 @@ class OrderItemsPanel extends StatelessWidget {
   }
 
   Widget _buildLoadingSkeleton() {
-    return Container(
+    return SizedBox(
       width: width,
-      decoration: BoxDecoration(
-        color: CheckoutConstants.surface,
-        borderRadius: BorderRadius.circular(CheckoutConstants.radiusCard),
-        border: Border.all(color: CheckoutConstants.border),
-      ),
-      child: const Center(child: CircularProgressIndicator()),
+      child: const SizedBox.shrink(),
     );
   }
 }

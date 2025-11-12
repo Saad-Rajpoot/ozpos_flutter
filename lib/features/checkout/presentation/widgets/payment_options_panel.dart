@@ -14,7 +14,7 @@ class PaymentOptionsPanel extends StatelessWidget {
     return BlocBuilder<CheckoutBloc, CheckoutState>(
       builder: (context, state) {
         if (state is! CheckoutLoaded) {
-          return const Center(child: CircularProgressIndicator());
+          return const SizedBox.shrink();
         }
 
         return Column(
