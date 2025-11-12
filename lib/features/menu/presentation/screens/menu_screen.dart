@@ -132,7 +132,7 @@ class _MenuScreenState extends State<MenuScreen> {
                   _buildSearchBar(),
                   // Menu content with BLoC state management
                   Expanded(
-                    child: BlocConsumer<MenuBloc, MenuState>(
+                    child: BlocListener<MenuBloc, MenuState>(
                       listener: (context, state) {
                         // Handle error states
                         if (state is MenuError) {
@@ -144,84 +144,115 @@ class _MenuScreenState extends State<MenuScreen> {
                           );
                         }
                       },
-                      buildWhen: (previous, current) {
-                        // Always rebuild on state type changes (Loading/Error/Loaded)
-                        if (previous.runtimeType != current.runtimeType) {
-                          return true;
-                        }
+                      child: Column(
+                        children: [
+                          BlocBuilder<MenuBloc, MenuState>(
+                            buildWhen: (previous, current) {
+                              if (previous.runtimeType != current.runtimeType) {
+                                return true;
+                              }
 
-                        // For MenuLoaded state, only rebuild if relevant data changes
-                        if (previous is MenuLoaded && current is MenuLoaded) {
-                          return previous.categories != current.categories ||
-                              previous.items != current.items ||
-                              previous.filteredItems != current.filteredItems ||
-                              previous.selectedCategory !=
-                                  current.selectedCategory ||
-                              previous.searchQuery != current.searchQuery;
-                        }
+                              if (previous is MenuLoaded &&
+                                  current is MenuLoaded) {
+                                return previous.categories !=
+                                        current.categories ||
+                                    previous.selectedCategory !=
+                                        current.selectedCategory ||
+                                    previous.searchQuery != current.searchQuery;
+                              }
 
-                        return false;
-                      },
-                      builder: (context, state) {
-                        if (state is MenuLoading) {
-                          return const Center(
-                            child: CircularProgressIndicator(),
-                          );
-                        }
+                              return false;
+                            },
+                            builder: (context, state) {
+                              if (state is MenuLoaded) {
+                                final categoryNames =
+                                    _getCategoryNames(state.categories);
+                                return _buildCategoryTabs(
+                                  categoryNames,
+                                  state.categories,
+                                  state,
+                                );
+                              }
 
-                        if (state is MenuError) {
-                          return Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(
-                                  Icons.error_outline,
-                                  size: 64,
-                                  color: Colors.red,
-                                ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  state.message,
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.red,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                const SizedBox(height: 16),
-                                ElevatedButton(
-                                  onPressed: () {
-                                    context
-                                        .read<MenuBloc>()
-                                        .add(const LoadMenuData());
-                                  },
-                                  child: const Text('Retry'),
-                                ),
-                              ],
+                              if (state is MenuLoading) {
+                                return const SizedBox(height: 50);
+                              }
+
+                              return const SizedBox.shrink();
+                            },
+                          ),
+                          Expanded(
+                            child: BlocBuilder<MenuBloc, MenuState>(
+                              buildWhen: (previous, current) {
+                                if (previous.runtimeType !=
+                                    current.runtimeType) {
+                                  return true;
+                                }
+
+                                if (previous is MenuLoaded &&
+                                    current is MenuLoaded) {
+                                  return previous.items != current.items ||
+                                      previous.filteredItems !=
+                                          current.filteredItems;
+                                }
+
+                                return false;
+                              },
+                              builder: (context, state) {
+                                if (state is MenuLoading) {
+                                  return const Center(
+                                    child: CircularProgressIndicator(),
+                                  );
+                                }
+
+                                if (state is MenuError) {
+                                  return Center(
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        const Icon(
+                                          Icons.error_outline,
+                                          size: 64,
+                                          color: Colors.red,
+                                        ),
+                                        const SizedBox(height: 16),
+                                        Text(
+                                          state.message,
+                                          style: const TextStyle(
+                                            fontSize: 16,
+                                            color: Colors.red,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 16),
+                                        ElevatedButton(
+                                          onPressed: () {
+                                            context
+                                                .read<MenuBloc>()
+                                                .add(const LoadMenuData());
+                                          },
+                                          child: const Text('Retry'),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }
+
+                                if (state is MenuLoaded) {
+                                  final itemsToShow =
+                                      state.filteredItems ?? state.items;
+                                  return _buildMenuGrid(itemsToShow);
+                                }
+
+                                return const Center(
+                                  child: Text('No menu data available'),
+                                );
+                              },
                             ),
-                          );
-                        }
-
-                        if (state is MenuLoaded) {
-                          final categoryNames =
-                              _getCategoryNames(state.categories);
-                          final itemsToShow =
-                              state.filteredItems ?? state.items;
-                          return Column(
-                            children: [
-                              // Category tabs
-                              _buildCategoryTabs(
-                                  categoryNames, state.categories, state),
-                              // Menu grid
-                              Expanded(child: _buildMenuGrid(itemsToShow)),
-                            ],
-                          );
-                        }
-
-                        return const Center(
-                          child: Text('No menu data available'),
-                        );
-                      },
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],
