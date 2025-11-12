@@ -545,24 +545,29 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
     );
   }
 
-  void _onSelectPaymentMethod(
+  Future<void> _onSelectPaymentMethod(
     SelectPaymentMethod event,
     Emitter<CheckoutState> emit,
-  ) {
+  ) async {
     if (state is! CheckoutLoaded) return;
     final currentState = state as CheckoutLoaded;
 
-    emit(
-      currentState.copyWith(
-        payment: currentState.payment.copyWith(
-          selectedMethod: event.method,
-          cashReceived: '', // Reset cash when changing method
-        ),
-      ),
+    final updatedPayment = currentState.payment.copyWith(
+      selectedMethod: event.method,
+      cashReceived: '', // Reset cash when changing method
+    );
+
+    await _emitWithRecalculatedTotals(
+      emit: emit,
+      baseState: currentState,
+      payment: updatedPayment,
     );
   }
 
-  void _onKeypadPress(KeypadPress event, Emitter<CheckoutState> emit) {
+  Future<void> _onKeypadPress(
+    KeypadPress event,
+    Emitter<CheckoutState> emit,
+  ) async {
     if (state is! CheckoutLoaded) return;
     final currentState = state as CheckoutLoaded;
 
@@ -584,15 +589,20 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
       }
     }
 
-    emit(currentState.copyWith(
-      payment: currentState.payment.copyWith(cashReceived: newValue),
-    ));
+    final updatedPayment =
+        currentState.payment.copyWith(cashReceived: newValue);
+
+    await _emitWithRecalculatedTotals(
+      emit: emit,
+      baseState: currentState,
+      payment: updatedPayment,
+    );
   }
 
-  void _onQuickAmountPress(
+  Future<void> _onQuickAmountPress(
     QuickAmountPress event,
     Emitter<CheckoutState> emit,
-  ) {
+  ) async {
     if (state is! CheckoutLoaded) return;
     final currentState = state as CheckoutLoaded;
 
@@ -600,44 +610,58 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
     final current = currentState.cashReceivedNum;
     final newAmount = current == 0 ? event.amount : current + event.amount;
 
-    emit(currentState.copyWith(
-      payment:
-          currentState.payment.copyWith(cashReceived: newAmount.toString()),
-    ));
+    final updatedPayment =
+        currentState.payment.copyWith(cashReceived: newAmount.toString());
+
+    await _emitWithRecalculatedTotals(
+      emit: emit,
+      baseState: currentState,
+      payment: updatedPayment,
+    );
   }
 
-  void _onSelectTipPercent(
+  Future<void> _onSelectTipPercent(
     SelectTipPercent event,
     Emitter<CheckoutState> emit,
-  ) {
+  ) async {
     if (state is! CheckoutLoaded) return;
     final currentState = state as CheckoutLoaded;
 
-    emit(
-      currentState.copyWith(
-        discounts: currentState.discounts.copyWith(
-          tipPercent: event.percent,
-          customTipAmount: '', // Clear custom tip
-        ),
-      ),
+    final updatedDiscounts = currentState.discounts.copyWith(
+      tipPercent: event.percent,
+      customTipAmount: '', // Clear custom tip
+    );
+
+    await _emitWithRecalculatedTotals(
+      emit: emit,
+      baseState: currentState,
+      discounts: updatedDiscounts,
     );
   }
 
-  void _onSetCustomTip(SetCustomTip event, Emitter<CheckoutState> emit) {
+  Future<void> _onSetCustomTip(
+    SetCustomTip event,
+    Emitter<CheckoutState> emit,
+  ) async {
     if (state is! CheckoutLoaded) return;
     final currentState = state as CheckoutLoaded;
 
-    emit(
-      currentState.copyWith(
-        discounts: currentState.discounts.copyWith(
-          customTipAmount: event.amount,
-          tipPercent: 0, // Clear percentage tip
-        ),
-      ),
+    final updatedDiscounts = currentState.discounts.copyWith(
+      customTipAmount: event.amount,
+      tipPercent: 0, // Clear percentage tip
+    );
+
+    await _emitWithRecalculatedTotals(
+      emit: emit,
+      baseState: currentState,
+      discounts: updatedDiscounts,
     );
   }
 
-  void _onApplyVoucher(ApplyVoucher event, Emitter<CheckoutState> emit) async {
+  Future<void> _onApplyVoucher(
+    ApplyVoucher event,
+    Emitter<CheckoutState> emit,
+  ) async {
     if (state is! CheckoutLoaded) return;
     final currentState = state as CheckoutLoaded;
 
@@ -645,110 +669,139 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
       ApplyVoucherParams(code: event.code),
     );
 
-    resultEither.fold(
-      (failure) {
-        // Handle error - show dismissible error state
-        emit(CheckoutError(
-          message: failure.message,
-          canDismiss: true,
-        ));
+    await resultEither.fold<Future<void>>(
+      (failure) async {
+        emit(
+          CheckoutError(
+            message: failure.message,
+            canDismiss: true,
+          ),
+        );
       },
-      (result) {
+      (result) async {
         if (result.isSuccess && result.voucher != null) {
           final updatedVouchers = List<VoucherEntity>.from(
             currentState.appliedVouchers,
           )..add(result.voucher!);
 
-          emit(currentState.copyWith(
-            discounts: currentState.discounts
-                .copyWith(appliedVouchers: updatedVouchers),
-          ));
+          final updatedDiscounts =
+              currentState.discounts.copyWith(appliedVouchers: updatedVouchers);
+
+          await _emitWithRecalculatedTotals(
+            emit: emit,
+            baseState: currentState,
+            discounts: updatedDiscounts,
+          );
         } else {
-          // Handle voucher failure - show dismissible error
-          emit(CheckoutError(
-            message: result.errorMessage ?? 'Failed to apply voucher',
-            canDismiss: true,
-          ));
+          emit(
+            CheckoutError(
+              message: result.errorMessage ?? 'Failed to apply voucher',
+              canDismiss: true,
+            ),
+          );
         }
       },
     );
   }
 
-  void _onRemoveVoucher(RemoveVoucher event, Emitter<CheckoutState> emit) {
+  Future<void> _onRemoveVoucher(
+    RemoveVoucher event,
+    Emitter<CheckoutState> emit,
+  ) async {
     if (state is! CheckoutLoaded) return;
     final currentState = state as CheckoutLoaded;
 
     final updatedVouchers =
         currentState.appliedVouchers.where((v) => v.id != event.id).toList();
 
-    emit(currentState.copyWith(
-      discounts:
-          currentState.discounts.copyWith(appliedVouchers: updatedVouchers),
-    ));
+    final updatedDiscounts =
+        currentState.discounts.copyWith(appliedVouchers: updatedVouchers);
+
+    await _emitWithRecalculatedTotals(
+      emit: emit,
+      baseState: currentState,
+      discounts: updatedDiscounts,
+    );
   }
 
-  void _onSetDiscountPercent(
+  Future<void> _onSetDiscountPercent(
     SetDiscountPercent event,
     Emitter<CheckoutState> emit,
-  ) {
+  ) async {
     if (state is! CheckoutLoaded) return;
     final currentState = state as CheckoutLoaded;
 
-    emit(currentState.copyWith(
-      discounts:
-          currentState.discounts.copyWith(discountPercent: event.percent),
-    ));
+    final updatedDiscounts =
+        currentState.discounts.copyWith(discountPercent: event.percent);
+
+    await _emitWithRecalculatedTotals(
+      emit: emit,
+      baseState: currentState,
+      discounts: updatedDiscounts,
+    );
   }
 
-  void _onRedeemLoyaltyPoints(
+  Future<void> _onRedeemLoyaltyPoints(
     RedeemLoyaltyPoints event,
     Emitter<CheckoutState> emit,
-  ) {
+  ) async {
     if (state is! CheckoutLoaded) return;
     final currentState = state as CheckoutLoaded;
 
-    emit(
-      currentState.copyWith(
-        discounts: currentState.discounts.copyWith(
-          loyaltyRedemption: event.amount,
-          isLoyaltyRedeemed: true,
-        ),
-      ),
+    final updatedDiscounts = currentState.discounts.copyWith(
+      loyaltyRedemption: event.amount,
+      isLoyaltyRedeemed: true,
+    );
+
+    await _emitWithRecalculatedTotals(
+      emit: emit,
+      baseState: currentState,
+      discounts: updatedDiscounts,
     );
   }
 
-  void _onUndoLoyaltyRedemption(
+  Future<void> _onUndoLoyaltyRedemption(
     UndoLoyaltyRedemption event,
     Emitter<CheckoutState> emit,
-  ) {
+  ) async {
     if (state is! CheckoutLoaded) return;
     final currentState = state as CheckoutLoaded;
 
-    emit(
-      currentState.copyWith(
-        discounts: currentState.discounts.copyWith(
-          loyaltyRedemption: 0.0,
-          isLoyaltyRedeemed: false,
-        ),
-      ),
+    final updatedDiscounts = currentState.discounts.copyWith(
+      loyaltyRedemption: 0.0,
+      isLoyaltyRedeemed: false,
+    );
+
+    await _emitWithRecalculatedTotals(
+      emit: emit,
+      baseState: currentState,
+      discounts: updatedDiscounts,
     );
   }
 
-  void _onToggleSplitMode(ToggleSplitMode event, Emitter<CheckoutState> emit) {
+  Future<void> _onToggleSplitMode(
+    ToggleSplitMode event,
+    Emitter<CheckoutState> emit,
+  ) async {
     if (state is! CheckoutLoaded) return;
     final currentState = state as CheckoutLoaded;
 
-    emit(
-      currentState.copyWith(
-        splitPayment: currentState.splitPayment.copyWith(
-          isSplitMode: !currentState.isSplitMode,
-          tenders: [], // Reset tenders when toggling
-        ),
-      ),
+    final updatedSplit = currentState.splitPayment.copyWith(
+      isSplitMode: !currentState.isSplitMode,
+      tenders: [], // Reset tenders when toggling
+    );
+
+    await _emitWithRecalculatedTotals(
+      emit: emit,
+      baseState: currentState,
+      split: updatedSplit,
     );
   }
 
-  void _onAddTender(AddTender event, Emitter<CheckoutState> emit) {
+  Future<void> _onAddTender(
+    AddTender event,
+    Emitter<CheckoutState> emit,
+  ) async {
     if (state is! CheckoutLoaded) return;
     final currentState = state as CheckoutLoaded;
 
@@ -763,24 +816,40 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
     final updatedTenders = List<TenderEntity>.from(currentState.tenders)
       ..add(newTender);
 
-    emit(currentState.copyWith(
-      splitPayment: currentState.splitPayment.copyWith(tenders: updatedTenders),
-    ));
+    final updatedSplit =
+        currentState.splitPayment.copyWith(tenders: updatedTenders);
+
+    await _emitWithRecalculatedTotals(
+      emit: emit,
+      baseState: currentState,
+      split: updatedSplit,
+    );
   }
 
-  void _onRemoveTender(RemoveTender event, Emitter<CheckoutState> emit) {
+  Future<void> _onRemoveTender(
+    RemoveTender event,
+    Emitter<CheckoutState> emit,
+  ) async {
     if (state is! CheckoutLoaded) return;
     final currentState = state as CheckoutLoaded;
 
     final updatedTenders =
         currentState.tenders.where((t) => t.id != event.id).toList();
 
-    emit(currentState.copyWith(
-      splitPayment: currentState.splitPayment.copyWith(tenders: updatedTenders),
-    ));
+    final updatedSplit =
+        currentState.splitPayment.copyWith(tenders: updatedTenders);
+
+    await _emitWithRecalculatedTotals(
+      emit: emit,
+      baseState: currentState,
+      split: updatedSplit,
+    );
   }
 
-  void _onSplitEvenly(SplitEvenly event, Emitter<CheckoutState> emit) {
+  Future<void> _onSplitEvenly(
+    SplitEvenly event,
+    Emitter<CheckoutState> emit,
+  ) async {
     if (state is! CheckoutLoaded) return;
     final currentState = state as CheckoutLoaded;
 
@@ -797,9 +866,92 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
       ),
     );
 
-    emit(currentState.copyWith(
-      splitPayment: currentState.splitPayment.copyWith(tenders: tenders),
-    ));
+    final updatedSplit = currentState.splitPayment.copyWith(tenders: tenders);
+
+    await _emitWithRecalculatedTotals(
+      emit: emit,
+      baseState: currentState,
+      split: updatedSplit,
+    );
+  }
+
+  Future<void> _emitWithRecalculatedTotals({
+    required Emitter<CheckoutState> emit,
+    required CheckoutLoaded baseState,
+    CheckoutPaymentState? payment,
+    CheckoutDiscountState? discounts,
+    CheckoutSplitState? split,
+    CheckoutCartState? cart,
+  }) async {
+    final updatedPayment = payment ?? baseState.payment;
+    final updatedDiscounts = discounts ?? baseState.discounts;
+    final updatedSplit = split ?? baseState.splitPayment;
+    final updatedCart = cart ?? baseState.cart;
+
+    final domainItems = _mapCartItemsToEntities(updatedCart.items);
+
+    try {
+      final totalsEither = await _calculateTotalsUseCase(
+        CalculateTotalsParams(
+          items: domainItems,
+          tipPercent: updatedDiscounts.tipPercent,
+          customTipAmount: updatedDiscounts.customTipAmount,
+          discountPercent: updatedDiscounts.discountPercent,
+          appliedVouchers: updatedDiscounts.appliedVouchers,
+          loyaltyRedemption: updatedDiscounts.loyaltyRedemption,
+          tenders: updatedSplit.tenders,
+          isSplitMode: updatedSplit.isSplitMode,
+          selectedMethod: updatedPayment.selectedMethod,
+          cashReceived: updatedPayment.cashReceived,
+        ),
+      );
+
+      await totalsEither.fold<Future<void>>(
+        (failure) async {
+          emit(
+            CheckoutError(
+              message: failure.message,
+              canDismiss: true,
+            ),
+          );
+        },
+        (totals) async {
+          emit(
+            baseState.copyWith(
+              payment: updatedPayment,
+              discounts: updatedDiscounts,
+              splitPayment: updatedSplit,
+              cart: updatedCart.copyWith(totals: totals),
+            ),
+          );
+        },
+      );
+    } catch (error) {
+      emit(
+        CheckoutError(
+          message: 'Failed to update totals: $error',
+          canDismiss: true,
+        ),
+      );
+    }
+  }
+
+  List<CartLineItemEntity> _mapCartItemsToEntities(List<CartLineItem> items) {
+    return items
+        .map(
+          (item) => CartLineItemEntity(
+            id: item.id,
+            menuItem: item.menuItem,
+            quantity: item.quantity,
+            lineTotal: item.lineTotal,
+            modifiers: item.selectedModifiers.values
+                .expand((options) => options)
+                .toList(),
+            specialInstructions:
+                item.modifierSummary.isEmpty ? null : item.modifierSummary,
+          ),
+        )
+        .toList();
   }
 
   void _onProcessPayment(
