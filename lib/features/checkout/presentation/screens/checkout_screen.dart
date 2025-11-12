@@ -43,41 +43,80 @@ class _CheckoutScreenContent extends StatelessWidget {
     final isCompact = CheckoutConstants.isCompact(screenWidth);
 
     // Get cart items from shared CartBloc using BlocBuilder for proper state access
-    return BlocBuilder<CartBloc, CartState>(
-      builder: (context, cartState) {
-        // Extract cart items
-        List<CartLineItem> items = [];
-        if (cartState is CartLoaded) {
-          items = cartState.items;
-          debugPrint('✅ Checkout: Loaded ${items.length} items from CartBloc');
-        } else {
-          debugPrint(
-            '⚠️ Checkout: CartBloc state is not CartLoaded, state type: ${cartState.runtimeType}',
-          );
-        }
-
-        // Initialize checkout with cart items
-        context.read<CheckoutBloc>().add(InitializeCheckout(items: items));
-
-        return Scaffold(
-          backgroundColor: CheckoutConstants.background,
-          appBar: isCompact ? _buildCompactAppBar(context) : null,
-          endDrawer: isCompact ? _buildOrderDrawer(context) : null,
-          body: Row(
-            children: [
-              // Sidebar navigation (only on desktop)
-              if (!isCompact) const SidebarNav(activeRoute: AppRouter.checkout),
-
-              // Main content
-              Expanded(
-                child: isCompact
-                    ? _buildCompactLayout(context)
-                    : _buildDesktopLayout(context, screenWidth),
-              ),
-            ],
-          ),
+    return BlocListener<CartBloc, CartState>(
+      listenWhen: (previous, current) =>
+          previous != current && current is CartLoaded,
+      listener: (context, cartState) {
+        if (cartState is! CartLoaded) return;
+        debugPrint(
+          '✅ Checkout: Syncing ${cartState.items.length} items from CartBloc to CheckoutBloc',
         );
+        context
+            .read<CheckoutBloc>()
+            .add(InitializeCheckout(items: cartState.items));
       },
+      child: BlocBuilder<CartBloc, CartState>(
+        builder: (context, cartState) {
+          // Extract cart items
+          List<CartLineItem> items = [];
+          if (cartState is CartLoaded) {
+            items = cartState.items;
+            final checkoutState = context.read<CheckoutBloc>().state;
+            final needsInitialSync = checkoutState is CheckoutInitial ||
+                checkoutState is CheckoutError;
+
+            if (needsInitialSync) {
+              final itemsSnapshot = List<CartLineItem>.from(items);
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (!context.mounted) return;
+
+                final currentCheckoutState = context.read<CheckoutBloc>().state;
+                final isAlreadySynced =
+                    currentCheckoutState is CheckoutLoaded ||
+                        currentCheckoutState is CheckoutProcessing ||
+                        currentCheckoutState is CheckoutSuccess;
+
+                if (isAlreadySynced) return;
+
+                debugPrint(
+                  '✅ Checkout: Initial sync with ${itemsSnapshot.length} cart items',
+                );
+                context
+                    .read<CheckoutBloc>()
+                    .add(InitializeCheckout(items: itemsSnapshot));
+              });
+            } else {
+              debugPrint(
+                '✅ Checkout: Loaded ${items.length} items from CartBloc',
+              );
+            }
+          } else {
+            debugPrint(
+              '⚠️ Checkout: CartBloc state is not CartLoaded, state type: ${cartState.runtimeType}',
+            );
+          }
+
+          return Scaffold(
+            backgroundColor: CheckoutConstants.background,
+            appBar: isCompact ? _buildCompactAppBar(context) : null,
+            endDrawer: isCompact ? _buildOrderDrawer(context) : null,
+            body: Row(
+              children: [
+                // Sidebar navigation (only on desktop)
+                if (!isCompact)
+                  const SidebarNav(activeRoute: AppRouter.checkout),
+
+                // Main content
+                Expanded(
+                  child: isCompact
+                      ? _buildCompactLayout(context)
+                      : _buildDesktopLayout(context, screenWidth),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 
