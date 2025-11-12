@@ -421,7 +421,24 @@ class CartPane extends StatelessWidget {
   }
 
   void _handlePayNow(BuildContext context) {
-    final cartState = context.read<CartBloc>().state as CartLoaded;
+    final cartState = context.read<CartBloc>().state;
+
+    if (cartState is! CartLoaded) {
+      debugPrint('💳 Cart: Pay Now tapped before cart finished loading.');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Preparing your cart, please try again.')),
+      );
+      return;
+    }
+
+    if (cartState.items.isEmpty) {
+      debugPrint('💳 Cart: Pay Now tapped with an empty cart.');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Add items to the cart before checking out.')),
+      );
+      return;
+    }
 
     debugPrint(
       '💳 Cart: Navigating to checkout with ${cartState.items.length} items',
