@@ -64,6 +64,10 @@ class _MenuScreenState extends State<MenuScreen> {
     final Map<String, dynamic>? navigationArgs =
         args is Map<String, dynamic> ? args : null;
     final orderTypeString = navigationArgs?['orderType'] as String?;
+    final cartBlocInstance = context.read<cart_bloc.CartBloc>();
+    final cartState = cartBlocInstance.state;
+    final currentOrderType =
+        cartState is cart_bloc.CartLoaded ? cartState.orderType : null;
 
     // Convert string to OrderType enum and update cart order type
     if (orderTypeString != null && orderTypeString.isNotEmpty) {
@@ -85,13 +89,20 @@ class _MenuScreenState extends State<MenuScreen> {
       }
 
       // Update the shared CartBloc's order type if specified and valid
-      if (orderType != null) {
+      if (orderType != null && orderType != currentOrderType) {
+        final desiredOrderType = orderType;
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (context.mounted) {
-            context.read<cart_bloc.CartBloc>().add(
-                  cart_bloc.ChangeOrderType(orderType: orderType!),
-                );
+          if (!mounted) return;
+
+          final latestState = context.read<cart_bloc.CartBloc>().state;
+          if (latestState is cart_bloc.CartLoaded &&
+              latestState.orderType == desiredOrderType) {
+            return;
           }
+
+          context.read<cart_bloc.CartBloc>().add(
+                cart_bloc.ChangeOrderType(orderType: desiredOrderType),
+              );
         });
       }
     }
