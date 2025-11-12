@@ -50,46 +50,33 @@ class CheckoutLocalDataSource implements CheckoutDataSource {
   }
 
   Future<CheckoutMetadata> _buildMetadata() async {
-    final totalOrders = Sqflite.firstIntValue(
-          await _database.rawQuery('SELECT COUNT(*) FROM orders'),
-        ) ??
-        0;
-
-    final completedOrders = Sqflite.firstIntValue(
-          await _database.rawQuery(
-            'SELECT COUNT(*) FROM orders WHERE status = ?',
-            ['completed'],
-          ),
-        ) ??
-        0;
-
-    final pendingOrders = Sqflite.firstIntValue(
-          await _database.rawQuery(
-            'SELECT COUNT(*) FROM orders WHERE status NOT IN (?, ?)',
-            ['completed', 'cancelled'],
-          ),
-        ) ??
-        0;
-
-    final totals = await _database.rawQuery(
+    final result = await _database.rawQuery(
       '''
       SELECT
+        COUNT(*) AS total_orders,
+        SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) AS completed_orders,
+        SUM(
+          CASE
+            WHEN status NOT IN ('completed', 'cancelled') THEN 1
+            ELSE 0
+          END
+        ) AS pending_orders,
         COALESCE(SUM(total_amount), 0) AS total_revenue,
-        COALESCE(AVG(total_amount), 0) AS average_order_value
+        COALESCE(AVG(total_amount), 0) AS average_order_value,
+        MAX(updated_at) AS last_updated
       FROM orders
       ''',
     );
 
-    final totalRevenue =
-        (totals.first['total_revenue'] as num?)?.toDouble() ?? 0.0;
-    final averageOrderValue =
-        (totals.first['average_order_value'] as num?)?.toDouble() ?? 0.0;
+    final row = result.isNotEmpty ? result.first : <String, Object?>{};
 
-    final lastUpdatedResult = await _database.rawQuery(
-      'SELECT MAX(updated_at) AS last_updated FROM orders',
-    );
-    final lastUpdatedString =
-        lastUpdatedResult.first['last_updated'] as String?;
+    final totalOrders = (row['total_orders'] as num?)?.toInt() ?? 0;
+    final completedOrders = (row['completed_orders'] as num?)?.toInt() ?? 0;
+    final pendingOrders = (row['pending_orders'] as num?)?.toInt() ?? 0;
+    final totalRevenue = (row['total_revenue'] as num?)?.toDouble() ?? 0.0;
+    final averageOrderValue =
+        (row['average_order_value'] as num?)?.toDouble() ?? 0.0;
+    final lastUpdatedString = row['last_updated'] as String?;
     final lastUpdated = lastUpdatedString != null
         ? DateTime.tryParse(lastUpdatedString) ?? DateTime.now()
         : DateTime.now();

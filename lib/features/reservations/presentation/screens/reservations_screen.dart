@@ -89,23 +89,23 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
   }
 
   void _cancelReservation(ReservationEntity reservation) {
+    final reservationsBloc = context.read<ReservationManagementBloc>();
+    final messenger = ScaffoldMessenger.of(context);
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('Cancel Reservation'),
         content: Text('Cancel reservation for ${reservation.guest.name}?'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('No'),
           ),
           ElevatedButton(
             onPressed: () {
-              Navigator.pop(context);
-              context
-                  .read<ReservationManagementBloc>()
-                  .add(const LoadReservationsEvent());
-              ScaffoldMessenger.of(context).showSnackBar(
+              Navigator.pop(dialogContext);
+              reservationsBloc.add(const LoadReservationsEvent());
+              messenger.showSnackBar(
                 const SnackBar(
                   content: Text('Reservation cancelled'),
                   behavior: SnackBarBehavior.floating,
