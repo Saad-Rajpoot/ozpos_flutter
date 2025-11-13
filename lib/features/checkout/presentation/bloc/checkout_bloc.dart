@@ -281,6 +281,16 @@ class InitializeCheckout extends CheckoutEvent {
   List<Object?> get props => [items];
 }
 
+class SyncCartItems extends CheckoutEvent {
+  final List<CartLineItem> items;
+
+  SyncCartItems({required List<CartLineItem> items})
+      : items = List<CartLineItem>.unmodifiable(items);
+
+  @override
+  List<Object?> get props => [items];
+}
+
 class SelectPaymentMethod extends CheckoutEvent {
   final PaymentMethodType method;
 
@@ -422,6 +432,7 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
         _calculateTotalsUseCase = calculateTotalsUseCase,
         super(CheckoutInitial()) {
     on<InitializeCheckout>(_onInitializeCheckout);
+    on<SyncCartItems>(_onSyncCartItems);
     on<SelectPaymentMethod>(_onSelectPaymentMethod);
     on<KeypadPress>(_onKeypadPress);
     on<QuickAmountPress>(_onQuickAmountPress);
@@ -445,13 +456,15 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
     InitializeCheckout event,
     Emitter<CheckoutState> emit,
   ) async {
-    debugPrint(
-      '🛒 CheckoutBloc: Initializing with ${event.items.length} items',
-    );
-    for (var item in event.items) {
+    if (kDebugMode) {
       debugPrint(
-        '  - ${item.menuItem.name} x${item.quantity} = \$${item.lineTotal}',
+        '🛒 CheckoutBloc: Initializing with ${event.items.length} items',
       );
+      for (final item in event.items) {
+        debugPrint(
+          '  - ${item.menuItem.name} x${item.quantity} = \$${item.lineTotal}',
+        );
+      }
     }
 
     // Convert presentation entities to domain entities
@@ -578,6 +591,27 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
           },
         );
       },
+    );
+  }
+
+  Future<void> _onSyncCartItems(
+    SyncCartItems event,
+    Emitter<CheckoutState> emit,
+  ) async {
+    if (state is! CheckoutLoaded) return;
+
+    final currentState = state as CheckoutLoaded;
+
+    if (_areCartItemsEqual(currentState.items, event.items)) {
+      return;
+    }
+
+    final updatedCart = currentState.cart.copyWith(items: event.items);
+
+    await _emitWithRecalculatedTotals(
+      emit: emit,
+      baseState: currentState,
+      cart: updatedCart,
     );
   }
 
@@ -909,6 +943,20 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
       baseState: currentState,
       split: updatedSplit,
     );
+  }
+
+  bool _areCartItemsEqual(
+    List<CartLineItem> a,
+    List<CartLineItem> b,
+  ) {
+    if (identical(a, b)) return true;
+    if (a.length != b.length) return false;
+
+    for (var i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+
+    return true;
   }
 
   Future<void> _emitWithRecalculatedTotals({

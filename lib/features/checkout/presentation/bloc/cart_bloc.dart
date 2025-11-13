@@ -103,11 +103,24 @@ class CartLoaded extends CartState {
     String? customerName,
     String? customerPhone,
     bool clearTable = false,
+    double? subtotal,
+    double? gst,
+    double? total,
   }) {
     final newItems = items ?? this.items;
-    final newSubtotal = _calculateSubtotal(newItems);
-    final newGst = newSubtotal * AppConstants.gstRate;
-    final newTotal = newSubtotal + newGst;
+    final shouldRecalculateTotals =
+        subtotal == null && gst == null && total == null && items != null;
+
+    final newSubtotal = subtotal ??
+        (shouldRecalculateTotals
+            ? _calculateSubtotal(newItems)
+            : this.subtotal);
+    final newGst = gst ??
+        (shouldRecalculateTotals
+            ? newSubtotal * AppConstants.gstRate
+            : this.gst);
+    final newTotal =
+        total ?? (shouldRecalculateTotals ? newSubtotal + newGst : this.total);
 
     return CartLoaded(
       items: newItems,
@@ -355,12 +368,21 @@ class CartBloc extends BaseBloc<CartEvent, CartState> {
           : existingItem.selectedModifiers;
 
       final updatedItems = List<CartLineItem>.from(currentState.items);
-      updatedItems[existingItemIndex] = existingItem.copyWith(
+      final updatedItem = existingItem.copyWith(
         quantity: updatedQuantity,
         selectedModifiers: finalModifiers,
       );
+      updatedItems[existingItemIndex] = updatedItem;
 
-      emit(currentState.copyWith(items: updatedItems));
+      final subtotalDelta = updatedItem.lineTotal - existingItem.lineTotal;
+      final newSubtotal = currentState.subtotal + subtotalDelta;
+
+      _emitStateWithTotals(
+        emit: emit,
+        baseState: currentState,
+        items: updatedItems,
+        subtotal: newSubtotal,
+      );
     } else {
       // Add new item to cart
       // Generate unique line item ID
@@ -385,7 +407,14 @@ class CartBloc extends BaseBloc<CartEvent, CartState> {
       final updatedItems = List<CartLineItem>.from(currentState.items)
         ..add(newLineItem);
 
-      emit(currentState.copyWith(items: updatedItems));
+      final newSubtotal = currentState.subtotal + newLineItem.lineTotal;
+
+      _emitStateWithTotals(
+        emit: emit,
+        baseState: currentState,
+        items: updatedItems,
+        subtotal: newSubtotal,
+      );
     }
   }
 
@@ -403,14 +432,24 @@ class CartBloc extends BaseBloc<CartEvent, CartState> {
       return;
     }
 
-    final updatedItems = currentState.items.map((item) {
-      if (item.id == event.lineItemId) {
-        return item.copyWith(quantity: event.newQuantity);
-      }
-      return item;
-    }).toList();
+    final index =
+        currentState.items.indexWhere((item) => item.id == event.lineItemId);
+    if (index == -1) return;
 
-    emit(currentState.copyWith(items: updatedItems));
+    final updatedItems = List<CartLineItem>.from(currentState.items);
+    final existingItem = updatedItems[index];
+    final updatedItem = existingItem.copyWith(quantity: event.newQuantity);
+    updatedItems[index] = updatedItem;
+
+    final subtotalDelta = updatedItem.lineTotal - existingItem.lineTotal;
+    final newSubtotal = currentState.subtotal + subtotalDelta;
+
+    _emitStateWithTotals(
+      emit: emit,
+      baseState: currentState,
+      items: updatedItems,
+      subtotal: newSubtotal,
+    );
   }
 
   void _onRemoveLineItem(RemoveLineItem event, Emitter<CartState> emit) {
@@ -418,11 +457,42 @@ class CartBloc extends BaseBloc<CartEvent, CartState> {
 
     final currentState = state as CartLoaded;
 
-    final updatedItems = currentState.items
-        .where((item) => item.id != event.lineItemId)
-        .toList();
+    final index =
+        currentState.items.indexWhere((item) => item.id == event.lineItemId);
+    if (index == -1) return;
 
-    emit(currentState.copyWith(items: updatedItems));
+    final removedItem = currentState.items[index];
+    final updatedItems = List<CartLineItem>.from(currentState.items)
+      ..removeAt(index);
+
+    final newSubtotal = currentState.subtotal - removedItem.lineTotal;
+
+    _emitStateWithTotals(
+      emit: emit,
+      baseState: currentState,
+      items: updatedItems,
+      subtotal: newSubtotal,
+    );
+  }
+
+  void _emitStateWithTotals({
+    required Emitter<CartState> emit,
+    required CartLoaded baseState,
+    required List<CartLineItem> items,
+    required double subtotal,
+  }) {
+    final adjustedSubtotal = subtotal <= 0.0 ? 0.0 : subtotal;
+    final newGst = adjustedSubtotal * AppConstants.gstRate;
+    final newTotal = adjustedSubtotal + newGst;
+
+    emit(
+      baseState.copyWith(
+        items: items,
+        subtotal: adjustedSubtotal,
+        gst: newGst,
+        total: newTotal,
+      ),
+    );
   }
 
   void _onChangeOrderType(ChangeOrderType event, Emitter<CartState> emit) {

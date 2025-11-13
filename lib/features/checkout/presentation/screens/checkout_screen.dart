@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/navigation/app_router.dart';
@@ -50,12 +51,20 @@ class _CheckoutScreenContent extends StatelessWidget {
               previous != current && current is CartLoaded,
           listener: (context, cartState) {
             if (cartState is! CartLoaded) return;
-            debugPrint(
-              '✅ Checkout: Syncing ${cartState.items.length} items from CartBloc to CheckoutBloc',
-            );
-            context
-                .read<CheckoutBloc>()
-                .add(InitializeCheckout(items: cartState.items));
+            final checkoutBloc = context.read<CheckoutBloc>();
+            final checkoutState = checkoutBloc.state;
+
+            if (checkoutState is! CheckoutLoaded) {
+              return;
+            }
+
+            if (kDebugMode) {
+              debugPrint(
+                '✅ Checkout: Syncing ${cartState.items.length} items from CartBloc to CheckoutBloc',
+              );
+            }
+
+            checkoutBloc.add(SyncCartItems(items: cartState.items));
           },
         ),
         BlocListener<CheckoutBloc, CheckoutState>(
@@ -92,22 +101,22 @@ class _CheckoutScreenContent extends StatelessWidget {
 
                 if (isAlreadySynced) return;
 
-                debugPrint(
-                  '✅ Checkout: Initial sync with ${itemsSnapshot.length} cart items',
-                );
+                if (kDebugMode) {
+                  debugPrint(
+                    '✅ Checkout: Initial sync with ${itemsSnapshot.length} cart items',
+                  );
+                }
                 context
                     .read<CheckoutBloc>()
                     .add(InitializeCheckout(items: itemsSnapshot));
               });
-            } else {
-              debugPrint(
-                '✅ Checkout: Loaded ${items.length} items from CartBloc',
-              );
             }
           } else {
-            debugPrint(
-              '⚠️ Checkout: CartBloc state is not CartLoaded, state type: ${cartState.runtimeType}',
-            );
+            if (kDebugMode) {
+              debugPrint(
+                '⚠️ Checkout: CartBloc state is not CartLoaded, state type: ${cartState.runtimeType}',
+              );
+            }
           }
 
           return Scaffold(
