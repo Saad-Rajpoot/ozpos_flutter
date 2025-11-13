@@ -22,31 +22,118 @@ void main() async {
   Bloc.observer = SentryBlocObserver();
 
   // Initialize AppConfig FIRST (environment-based configuration)
-  AppConfig.instance.initialize(
-    environment:
-        AppEnvironment.development, // Change to production for remote API
-  );
-
-  // Initialize SQLite for desktop platforms (Windows/Linux/macOS)
-  if (!kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
-    sqfliteFfiInit();
-    databaseFactory = databaseFactoryFfi;
-  }
-
-  // Initialize dependency injection
-  await di.init();
-
-  // Set up Flutter error handlers to capture ALL errors
-  _setupErrorHandlers();
-
-  // Print configuration in debug mode
-  AppConfig.instance.printConfig();
-  SentryConfig.printConfig();
+  AppConfig.instance.initialize(environment: AppEnvironment.development);
 
   await SentryFlutter.init(
     _configureSentry,
-    appRunner: () => runApp(const OzposApp()),
+    appRunner: () async {
+      try {
+        // Set up Flutter error handlers to capture ALL errors
+        _setupErrorHandlers();
+
+        await _initializeDesktopDatabase();
+        await _initializeDependencies();
+
+        if (kDebugMode) {
+          AppConfig.instance.printConfig();
+          SentryConfig.printConfig();
+        }
+
+        runApp(const OzposApp());
+      } catch (error, stackTrace) {
+        if (error is BootstrapException) {
+          await _reportBootstrapError(
+            error.hint,
+            error.cause,
+            error.originalStackTrace,
+          );
+          Error.throwWithStackTrace(error, error.originalStackTrace);
+        } else {
+          await _reportBootstrapError(
+            'App bootstrap failed',
+            error,
+            stackTrace,
+          );
+          rethrow;
+        }
+      }
+    },
   );
+}
+
+Future<void> _initializeDesktopDatabase() async {
+  if (kIsWeb || !(Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
+    return;
+  }
+
+  try {
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi;
+  } catch (error, stackTrace) {
+    throw BootstrapException(
+      'Desktop database initialization failed',
+      error,
+      stackTrace,
+      extra: {'platform': Platform.operatingSystem},
+    );
+  }
+}
+
+Future<void> _initializeDependencies() async {
+  try {
+    await di.init();
+  } catch (error, stackTrace) {
+    throw BootstrapException(
+      'Dependency injection initialization failed',
+      error,
+      stackTrace,
+    );
+  }
+}
+
+Future<void> _reportBootstrapError(
+  String hint,
+  Object error,
+  StackTrace stackTrace, {
+  Map<String, dynamic>? extra,
+}) async {
+  if (kDebugMode) {
+    debugPrint('$hint: $error');
+  }
+
+  if (!AppConfig.instance.enableCrashReporting) {
+    return;
+  }
+
+  try {
+    await SentryService.reportError(
+      error,
+      stackTrace,
+      hint: hint,
+      extra: extra,
+    );
+  } catch (reportError, _) {
+    if (kDebugMode) {
+      debugPrint('Sentry reporting failed: $reportError');
+    }
+  }
+}
+
+class BootstrapException implements Exception {
+  BootstrapException(
+    this.hint,
+    this.cause,
+    this.originalStackTrace, {
+    this.extra,
+  });
+
+  final String hint;
+  final Object cause;
+  final StackTrace originalStackTrace;
+  final Map<String, dynamic>? extra;
+
+  @override
+  String toString() => 'BootstrapException($hint, $cause)';
 }
 
 /// Configure Sentry options for error tracking and performance monitoring
