@@ -13,21 +13,22 @@ class PaymentOptionsPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<CheckoutBloc, CheckoutState>(
       builder: (context, state) {
-        if (state is! CheckoutLoaded) {
+        final viewState = state.viewState;
+        if (viewState == null) {
           return const SizedBox.shrink();
         }
 
         return Column(
           children: [
             // Payment method tiles
-            _buildPaymentMethods(context, state),
+            _buildPaymentMethods(context, viewState),
             const SizedBox(height: CheckoutConstants.gapNormal),
 
             // Spacer to push actions to bottom
             const Spacer(),
 
             // Action buttons (sticky at bottom)
-            _buildActionButtons(context, state),
+            _buildActionButtons(context, viewState),
           ],
         );
       },

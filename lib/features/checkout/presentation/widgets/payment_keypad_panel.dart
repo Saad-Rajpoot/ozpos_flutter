@@ -19,18 +19,19 @@ class PaymentKeypadPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<CheckoutBloc, CheckoutState>(
       builder: (context, state) {
-        if (state is! CheckoutLoaded) {
+        final viewState = state.viewState;
+        if (viewState == null) {
           return const SizedBox.shrink();
         }
 
-        final isCash = state.selectedMethod == PaymentMethodType.cash;
+        final isCash = viewState.selectedMethod == PaymentMethodType.cash;
 
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             // Cash display (only for cash payments)
             if (isCash) ...[
-              _buildCashDisplay(state),
+              _buildCashDisplay(viewState),
               const SizedBox(height: CheckoutConstants.gapNormal),
             ],
 
@@ -41,7 +42,7 @@ class PaymentKeypadPanel extends StatelessWidget {
             ],
 
             // Totals card (always shown)
-            _buildTotalsCard(state),
+            _buildTotalsCard(viewState),
           ],
         );
       },

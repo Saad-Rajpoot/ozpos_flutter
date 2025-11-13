@@ -54,7 +54,7 @@ class _CheckoutScreenContent extends StatelessWidget {
             final checkoutBloc = context.read<CheckoutBloc>();
             final checkoutState = checkoutBloc.state;
 
-            if (checkoutState is! CheckoutLoaded) {
+            if (checkoutState.viewState == null) {
               return;
             }
 
@@ -129,6 +129,8 @@ class _CheckoutScreenContent extends StatelessWidget {
                     checkoutState is CheckoutProcessing ||
                         checkoutState is CheckoutInitial ||
                         checkoutState is CheckoutSuccess;
+                final checkoutError =
+                    checkoutState is CheckoutError ? checkoutState : null;
 
                 return Stack(
                   children: [
@@ -145,6 +147,21 @@ class _CheckoutScreenContent extends StatelessWidget {
                         ],
                       ),
                     ),
+                    if (checkoutError != null)
+                      Positioned(
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        child: SafeArea(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: CheckoutConstants.pageHorizontal,
+                              vertical: CheckoutConstants.gapNormal,
+                            ),
+                            child: _CheckoutErrorBanner(error: checkoutError),
+                          ),
+                        ),
+                      ),
                     if (showBlockingOverlay)
                       Positioned.fill(
                         child: AbsorbPointer(
@@ -260,15 +277,17 @@ class _CheckoutScreenContent extends StatelessWidget {
         // Cart icon with badge
         BlocBuilder<CheckoutBloc, CheckoutState>(
           builder: (context, state) {
-            final itemCount = state is CheckoutLoaded ? state.items.length : 0;
+            final itemCount = state.viewState?.items.length ?? 0;
 
             return Stack(
               children: [
-                IconButton(
-                  icon: const Icon(Icons.shopping_bag_outlined),
-                  onPressed: () {
-                    Scaffold.of(context).openEndDrawer();
-                  },
+                Builder(
+                  builder: (buttonContext) => IconButton(
+                    icon: const Icon(Icons.shopping_bag_outlined),
+                    onPressed: () {
+                      Scaffold.of(buttonContext).openEndDrawer();
+                    },
+                  ),
                 ),
                 if (itemCount > 0)
                   Positioned(
@@ -350,7 +369,8 @@ class _CheckoutScreenContent extends StatelessWidget {
           // Item count badge
           BlocBuilder<CheckoutBloc, CheckoutState>(
             builder: (context, state) {
-              if (state is! CheckoutLoaded) return const SizedBox.shrink();
+              final loaded = state.viewState;
+              if (loaded == null) return const SizedBox.shrink();
 
               return Container(
                 padding: const EdgeInsets.symmetric(
@@ -362,7 +382,7 @@ class _CheckoutScreenContent extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
-                  '${state.items.length} ${state.items.length == 1 ? 'item' : 'items'}',
+                  '${loaded.items.length} ${loaded.items.length == 1 ? 'item' : 'items'}',
                   style: CheckoutConstants.textBody.copyWith(
                     color: CheckoutConstants.primary,
                     fontWeight: CheckoutConstants.weightSemiBold,
@@ -387,6 +407,52 @@ class _CheckoutScreenContent extends StatelessWidget {
     return Drawer(
       width: drawerWidth,
       child: OrderItemsPanel(width: drawerWidth),
+    );
+  }
+}
+
+class _CheckoutErrorBanner extends StatelessWidget {
+  const _CheckoutErrorBanner({required this.error});
+
+  final CheckoutError error;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      elevation: 2,
+      borderRadius: BorderRadius.circular(12),
+      color: CheckoutConstants.errorLight,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: CheckoutConstants.cardPadding,
+          vertical: CheckoutConstants.gapSmall,
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.error_outline,
+              color: CheckoutConstants.error,
+            ),
+            const SizedBox(width: CheckoutConstants.gapSmall),
+            Expanded(
+              child: Text(
+                error.message,
+                style: CheckoutConstants.textBody.copyWith(
+                  color: CheckoutConstants.error,
+                  fontWeight: CheckoutConstants.weightSemiBold,
+                ),
+              ),
+            ),
+            if (error.canDismiss)
+              TextButton(
+                onPressed: () =>
+                    context.read<CheckoutBloc>().add(DismissError()),
+                child: const Text('Dismiss'),
+              ),
+          ],
+        ),
+      ),
     );
   }
 }

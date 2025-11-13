@@ -23,11 +23,12 @@ class OrderItemsPanel extends StatelessWidget {
     return BlocBuilder<CheckoutBloc, CheckoutState>(
       buildWhen: _shouldRebuildShell,
       builder: (context, state) {
-        if (state is! CheckoutLoaded) {
+        final viewState = state.viewState;
+        if (viewState == null) {
           return _buildLoadingSkeleton();
         }
 
-        if (state.items.isEmpty) {
+        if (viewState.items.isEmpty) {
           return _buildEmptyState();
         }
 
@@ -37,8 +38,8 @@ class OrderItemsPanel extends StatelessWidget {
   }
 
   bool _shouldRebuildShell(CheckoutState previous, CheckoutState current) {
-    final previousLoaded = previous is CheckoutLoaded ? previous : null;
-    final currentLoaded = current is CheckoutLoaded ? current : null;
+    final previousLoaded = previous.viewState;
+    final currentLoaded = current.viewState;
 
     if (previousLoaded == null && currentLoaded == null) {
       return previous.runtimeType != current.runtimeType;
@@ -129,13 +130,9 @@ class _OrderItemsHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final itemCount = context.select<CheckoutBloc, int>((bloc) {
-      final state = bloc.state;
-      if (state is CheckoutLoaded) {
-        return state.items.length;
-      }
-      return 0;
-    });
+    final itemCount = context.select<CheckoutBloc, int>(
+      (bloc) => bloc.state.viewState?.items.length ?? 0,
+    );
 
     return Container(
       padding: const EdgeInsets.all(CheckoutConstants.cardPadding),
@@ -164,8 +161,7 @@ class _OrderItemsList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocSelector<CheckoutBloc, CheckoutState, List<CartLineItem>>(
-      selector: (state) =>
-          state is CheckoutLoaded ? state.items : const <CartLineItem>[],
+      selector: (state) => state.viewState?.items ?? const <CartLineItem>[],
       builder: (context, items) {
         return ListView.builder(
           padding: EdgeInsets.zero,
@@ -185,7 +181,7 @@ class _OrderItemsSummary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocSelector<CheckoutBloc, CheckoutState, CheckoutLoaded?>(
-      selector: (state) => state is CheckoutLoaded ? state : null,
+      selector: (state) => state.viewState,
       builder: (context, checkoutState) {
         if (checkoutState == null) {
           return const SizedBox.shrink();

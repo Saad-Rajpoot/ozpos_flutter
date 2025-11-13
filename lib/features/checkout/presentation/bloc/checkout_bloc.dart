@@ -241,27 +241,43 @@ class CheckoutError extends CheckoutState {
   final String message;
   final DateTime timestamp;
   final bool canDismiss;
+  final CheckoutLoaded? previousState;
 
   CheckoutError({
     required this.message,
     this.canDismiss = true,
     DateTime? timestamp,
+    this.previousState,
   }) : timestamp = timestamp ?? DateTime.now();
 
   CheckoutError copyWith({
     String? message,
     bool? canDismiss,
     DateTime? timestamp,
+    CheckoutLoaded? previousState,
   }) {
     return CheckoutError(
       message: message ?? this.message,
       canDismiss: canDismiss ?? this.canDismiss,
       timestamp: timestamp ?? this.timestamp,
+      previousState: previousState ?? this.previousState,
     );
   }
 
   @override
-  List<Object?> get props => [message, timestamp, canDismiss];
+  List<Object?> get props => [message, timestamp, canDismiss, previousState];
+}
+
+extension CheckoutStateView on CheckoutState {
+  CheckoutLoaded? get viewState {
+    if (this is CheckoutLoaded) {
+      return this as CheckoutLoaded;
+    }
+    if (this is CheckoutError) {
+      return (this as CheckoutError).previousState;
+    }
+    return null;
+  }
 }
 
 // ============================================================================
@@ -421,6 +437,16 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
   final CalculateTotalsUseCase _calculateTotalsUseCase;
   CheckoutLoaded? _lastKnownLoadedState;
 
+  CheckoutLoaded? _currentLoadedState() {
+    if (state is CheckoutLoaded) {
+      return state as CheckoutLoaded;
+    }
+    if (state is CheckoutError) {
+      return (state as CheckoutError).previousState;
+    }
+    return null;
+  }
+
   CheckoutBloc({
     required InitializeCheckoutUseCase initializeCheckoutUseCase,
     required ProcessPaymentUseCase processPaymentUseCase,
@@ -490,6 +516,7 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
           CheckoutError(
             message: failure.message,
             canDismiss: true,
+            previousState: _lastKnownLoadedState,
           ),
         );
       },
@@ -519,6 +546,7 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
               CheckoutError(
                 message: failure.message,
                 canDismiss: true,
+                previousState: _lastKnownLoadedState,
               ),
             );
           },
@@ -598,9 +626,8 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
     SyncCartItems event,
     Emitter<CheckoutState> emit,
   ) async {
-    if (state is! CheckoutLoaded) return;
-
-    final currentState = state as CheckoutLoaded;
+    final currentState = _currentLoadedState();
+    if (currentState == null) return;
 
     if (_areCartItemsEqual(currentState.items, event.items)) {
       return;
@@ -619,8 +646,8 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
     SelectPaymentMethod event,
     Emitter<CheckoutState> emit,
   ) async {
-    if (state is! CheckoutLoaded) return;
-    final currentState = state as CheckoutLoaded;
+    final currentState = _currentLoadedState();
+    if (currentState == null) return;
 
     final updatedPayment = currentState.payment.copyWith(
       selectedMethod: event.method,
@@ -638,8 +665,8 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
     KeypadPress event,
     Emitter<CheckoutState> emit,
   ) async {
-    if (state is! CheckoutLoaded) return;
-    final currentState = state as CheckoutLoaded;
+    final currentState = _currentLoadedState();
+    if (currentState == null) return;
 
     String newValue;
     if (event.key == '⌫') {
@@ -673,8 +700,8 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
     QuickAmountPress event,
     Emitter<CheckoutState> emit,
   ) async {
-    if (state is! CheckoutLoaded) return;
-    final currentState = state as CheckoutLoaded;
+    final currentState = _currentLoadedState();
+    if (currentState == null) return;
 
     // If empty or zero, set to quick amount; otherwise add to it (matching React line 106-108)
     final current = currentState.cashReceivedNum;
@@ -694,8 +721,8 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
     SelectTipPercent event,
     Emitter<CheckoutState> emit,
   ) async {
-    if (state is! CheckoutLoaded) return;
-    final currentState = state as CheckoutLoaded;
+    final currentState = _currentLoadedState();
+    if (currentState == null) return;
 
     final updatedDiscounts = currentState.discounts.copyWith(
       tipPercent: event.percent,
@@ -713,8 +740,8 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
     SetCustomTip event,
     Emitter<CheckoutState> emit,
   ) async {
-    if (state is! CheckoutLoaded) return;
-    final currentState = state as CheckoutLoaded;
+    final currentState = _currentLoadedState();
+    if (currentState == null) return;
 
     final updatedDiscounts = currentState.discounts.copyWith(
       customTipAmount: event.amount,
@@ -732,8 +759,8 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
     ApplyVoucher event,
     Emitter<CheckoutState> emit,
   ) async {
-    if (state is! CheckoutLoaded) return;
-    final currentState = state as CheckoutLoaded;
+    final currentState = _currentLoadedState();
+    if (currentState == null) return;
 
     final resultEither = await _applyVoucherUseCase(
       ApplyVoucherParams(code: event.code),
@@ -745,6 +772,7 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
           CheckoutError(
             message: failure.message,
             canDismiss: true,
+            previousState: currentState,
           ),
         );
       },
@@ -767,6 +795,7 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
             CheckoutError(
               message: result.errorMessage ?? 'Failed to apply voucher',
               canDismiss: true,
+              previousState: currentState,
             ),
           );
         }
@@ -778,8 +807,8 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
     RemoveVoucher event,
     Emitter<CheckoutState> emit,
   ) async {
-    if (state is! CheckoutLoaded) return;
-    final currentState = state as CheckoutLoaded;
+    final currentState = _currentLoadedState();
+    if (currentState == null) return;
 
     final updatedVouchers =
         currentState.appliedVouchers.where((v) => v.id != event.id).toList();
@@ -798,8 +827,8 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
     SetDiscountPercent event,
     Emitter<CheckoutState> emit,
   ) async {
-    if (state is! CheckoutLoaded) return;
-    final currentState = state as CheckoutLoaded;
+    final currentState = _currentLoadedState();
+    if (currentState == null) return;
 
     final updatedDiscounts =
         currentState.discounts.copyWith(discountPercent: event.percent);
@@ -815,8 +844,8 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
     RedeemLoyaltyPoints event,
     Emitter<CheckoutState> emit,
   ) async {
-    if (state is! CheckoutLoaded) return;
-    final currentState = state as CheckoutLoaded;
+    final currentState = _currentLoadedState();
+    if (currentState == null) return;
 
     final updatedDiscounts = currentState.discounts.copyWith(
       loyaltyRedemption: event.amount,
@@ -834,8 +863,8 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
     UndoLoyaltyRedemption event,
     Emitter<CheckoutState> emit,
   ) async {
-    if (state is! CheckoutLoaded) return;
-    final currentState = state as CheckoutLoaded;
+    final currentState = _currentLoadedState();
+    if (currentState == null) return;
 
     final updatedDiscounts = currentState.discounts.copyWith(
       loyaltyRedemption: 0.0,
@@ -853,8 +882,8 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
     ToggleSplitMode event,
     Emitter<CheckoutState> emit,
   ) async {
-    if (state is! CheckoutLoaded) return;
-    final currentState = state as CheckoutLoaded;
+    final currentState = _currentLoadedState();
+    if (currentState == null) return;
 
     final updatedSplit = currentState.splitPayment.copyWith(
       isSplitMode: !currentState.isSplitMode,
@@ -872,8 +901,8 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
     AddTender event,
     Emitter<CheckoutState> emit,
   ) async {
-    if (state is! CheckoutLoaded) return;
-    final currentState = state as CheckoutLoaded;
+    final currentState = _currentLoadedState();
+    if (currentState == null) return;
 
     final newTender = TenderEntity(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -900,8 +929,8 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
     RemoveTender event,
     Emitter<CheckoutState> emit,
   ) async {
-    if (state is! CheckoutLoaded) return;
-    final currentState = state as CheckoutLoaded;
+    final currentState = _currentLoadedState();
+    if (currentState == null) return;
 
     final updatedTenders =
         currentState.tenders.where((t) => t.id != event.id).toList();
@@ -920,8 +949,8 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
     SplitEvenly event,
     Emitter<CheckoutState> emit,
   ) async {
-    if (state is! CheckoutLoaded) return;
-    final currentState = state as CheckoutLoaded;
+    final currentState = _currentLoadedState();
+    if (currentState == null) return;
 
     final amountPerPerson = currentState.grandTotal / event.ways;
 
@@ -996,6 +1025,7 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
             CheckoutError(
               message: failure.message,
               canDismiss: true,
+              previousState: baseState,
             ),
           );
         },
@@ -1016,6 +1046,7 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
         CheckoutError(
           message: 'Failed to update totals: $error',
           canDismiss: true,
+          previousState: baseState,
         ),
       );
     }
@@ -1043,15 +1074,18 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
     ProcessPayment event,
     Emitter<CheckoutState> emit,
   ) async {
-    if (state is! CheckoutLoaded) return;
-    final currentState = state as CheckoutLoaded;
+    final currentState = _currentLoadedState();
+    if (currentState == null) return;
 
     if (!currentState.canPay) {
-      emit(CheckoutError(
-        message:
-            'Insufficient payment amount. Please adjust payment method or amount.',
-        canDismiss: true,
-      ));
+      emit(
+        CheckoutError(
+          message:
+              'Insufficient payment amount. Please adjust payment method or amount.',
+          canDismiss: true,
+          previousState: currentState,
+        ),
+      );
       return;
     }
 
@@ -1075,10 +1109,13 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
     resultEither.fold(
       (failure) {
         // Handle payment error - show dismissible error
-        emit(CheckoutError(
-          message: failure.message,
-          canDismiss: true,
-        ));
+        emit(
+          CheckoutError(
+            message: failure.message,
+            canDismiss: true,
+            previousState: currentState,
+          ),
+        );
       },
       (result) {
         if (result.isSuccess) {
@@ -1090,17 +1127,21 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
           );
         } else {
           // Handle payment failure - show dismissible error
-          emit(CheckoutError(
-            message: result.errorMessage ?? 'Payment failed',
-            canDismiss: true,
-          ));
+          emit(
+            CheckoutError(
+              message: result.errorMessage ?? 'Payment failed',
+              canDismiss: true,
+              previousState: currentState,
+            ),
+          );
         }
       },
     );
   }
 
   void _onPayLater(PayLater event, Emitter<CheckoutState> emit) async {
-    if (state is! CheckoutLoaded) return;
+    final currentState = _currentLoadedState();
+    if (currentState == null) return;
 
     emit(CheckoutProcessing());
 
