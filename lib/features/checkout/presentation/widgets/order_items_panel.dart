@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../checkout/presentation/bloc/cart_bloc.dart';
 import '../../../checkout/presentation/bloc/checkout_bloc.dart';
 import '../constant/checkout_constants.dart';
 import 'compact_order_line.dart';
@@ -20,6 +21,7 @@ class OrderItemsPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<CheckoutBloc, CheckoutState>(
+      buildWhen: _shouldRebuildShell,
       builder: (context, state) {
         if (state is! CheckoutLoaded) {
           return _buildLoadingSkeleton();
@@ -29,60 +31,24 @@ class OrderItemsPanel extends StatelessWidget {
           return _buildEmptyState();
         }
 
-        return _buildItemsList(state);
+        return _OrderItemsContent(width: width);
       },
     );
   }
 
-  Widget _buildItemsList(CheckoutLoaded state) {
-    return Container(
-      width: width,
-      decoration: BoxDecoration(
-        color: CheckoutConstants.surface,
-        borderRadius: BorderRadius.circular(CheckoutConstants.radiusCard),
-        border: state.items.isEmpty
-            ? null
-            : Border.all(color: CheckoutConstants.border),
-        boxShadow: CheckoutConstants.shadowCard,
-      ),
-      child: Column(
-        children: [
-          // Header
-          Container(
-            padding: const EdgeInsets.all(CheckoutConstants.cardPadding),
-            decoration: BoxDecoration(
-              border: Border(
-                bottom: BorderSide(color: CheckoutConstants.border, width: 1),
-              ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('Order Items', style: CheckoutConstants.textTitle),
-                Text(
-                  '${state.items.length} ${state.items.length == 1 ? 'item' : 'items'}',
-                  style: CheckoutConstants.textLabel,
-                ),
-              ],
-            ),
-          ),
+  bool _shouldRebuildShell(CheckoutState previous, CheckoutState current) {
+    final previousLoaded = previous is CheckoutLoaded ? previous : null;
+    final currentLoaded = current is CheckoutLoaded ? current : null;
 
-          // Scrollable items list
-          Expanded(
-            child: ListView.builder(
-              padding: EdgeInsets.zero,
-              itemCount: state.items.length,
-              itemBuilder: (context, index) {
-                return CompactOrderLine(item: state.items[index]);
-              },
-            ),
-          ),
+    if (previousLoaded == null && currentLoaded == null) {
+      return previous.runtimeType != current.runtimeType;
+    }
 
-          // Sticky summary at bottom (non-scrolling)
-          CompactSummaryCard(state: state),
-        ],
-      ),
-    );
+    if (previousLoaded == null || currentLoaded == null) {
+      return true;
+    }
+
+    return previousLoaded.items.isNotEmpty != currentLoaded.items.isNotEmpty;
   }
 
   Widget _buildEmptyState() {
@@ -128,6 +94,104 @@ class OrderItemsPanel extends StatelessWidget {
     return SizedBox(
       width: width,
       child: const SizedBox.shrink(),
+    );
+  }
+}
+
+class _OrderItemsContent extends StatelessWidget {
+  final double width;
+
+  const _OrderItemsContent({required this.width});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: width,
+      decoration: BoxDecoration(
+        color: CheckoutConstants.surface,
+        borderRadius: BorderRadius.circular(CheckoutConstants.radiusCard),
+        border: Border.all(color: CheckoutConstants.border),
+        boxShadow: CheckoutConstants.shadowCard,
+      ),
+      child: const Column(
+        children: [
+          _OrderItemsHeader(),
+          Expanded(child: _OrderItemsList()),
+          _OrderItemsSummary(),
+        ],
+      ),
+    );
+  }
+}
+
+class _OrderItemsHeader extends StatelessWidget {
+  const _OrderItemsHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    final itemCount = context.select<CheckoutBloc, int>((bloc) {
+      final state = bloc.state;
+      if (state is CheckoutLoaded) {
+        return state.items.length;
+      }
+      return 0;
+    });
+
+    return Container(
+      padding: const EdgeInsets.all(CheckoutConstants.cardPadding),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(color: CheckoutConstants.border, width: 1),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text('Order Items', style: CheckoutConstants.textTitle),
+          Text(
+            '$itemCount ${itemCount == 1 ? 'item' : 'items'}',
+            style: CheckoutConstants.textLabel,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _OrderItemsList extends StatelessWidget {
+  const _OrderItemsList();
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocSelector<CheckoutBloc, CheckoutState, List<CartLineItem>>(
+      selector: (state) =>
+          state is CheckoutLoaded ? state.items : const <CartLineItem>[],
+      builder: (context, items) {
+        return ListView.builder(
+          padding: EdgeInsets.zero,
+          itemCount: items.length,
+          itemBuilder: (context, index) {
+            return CompactOrderLine(item: items[index]);
+          },
+        );
+      },
+    );
+  }
+}
+
+class _OrderItemsSummary extends StatelessWidget {
+  const _OrderItemsSummary();
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocSelector<CheckoutBloc, CheckoutState, CheckoutLoaded?>(
+      selector: (state) => state is CheckoutLoaded ? state : null,
+      builder: (context, checkoutState) {
+        if (checkoutState == null) {
+          return const SizedBox.shrink();
+        }
+        return CompactSummaryCard(state: checkoutState);
+      },
     );
   }
 }
