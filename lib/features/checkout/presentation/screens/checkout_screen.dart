@@ -118,7 +118,8 @@ class _CheckoutScreenContent extends StatelessWidget {
               builder: (context, checkoutState) {
                 final showBlockingOverlay =
                     checkoutState is CheckoutProcessing ||
-                        checkoutState is CheckoutInitial;
+                        checkoutState is CheckoutInitial ||
+                        checkoutState is CheckoutSuccess;
 
                 return Stack(
                   children: [
