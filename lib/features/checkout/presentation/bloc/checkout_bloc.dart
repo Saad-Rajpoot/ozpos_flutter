@@ -13,7 +13,6 @@ import '../../domain/usecases/process_payment.dart';
 import '../../domain/usecases/apply_voucher.dart';
 import '../../domain/usecases/calculate_totals.dart';
 import '../../domain/entities/cart_line_item_entity.dart';
-import '../../../menu/domain/entities/menu_item_entity.dart';
 import './cart_bloc.dart';
 
 // ============================================================================
@@ -410,6 +409,7 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
   final ProcessPaymentUseCase _processPaymentUseCase;
   final ApplyVoucherUseCase _applyVoucherUseCase;
   final CalculateTotalsUseCase _calculateTotalsUseCase;
+  CheckoutLoaded? _lastKnownLoadedState;
 
   CheckoutBloc({
     required InitializeCheckoutUseCase initializeCheckoutUseCase,
@@ -471,77 +471,113 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
       InitializeCheckoutParams(items: domainItems),
     );
 
-    final result = resultEither.fold(
-      (failure) => throw Exception(failure.message),
-      (success) => success,
-    );
+    await resultEither.fold<Future<void>>(
+      (failure) async {
+        emit(
+          CheckoutError(
+            message: failure.message,
+            canDismiss: true,
+          ),
+        );
+      },
+      (result) async {
+        final originalItemsById = {
+          for (final item in event.items) item.id: item,
+        };
 
-    // Calculate totals using use case
-    final totalsEither = await _calculateTotalsUseCase(
-      CalculateTotalsParams(
-        items: result.items,
-        tipPercent: result.tipPercent,
-        customTipAmount: result.customTipAmount,
-        discountPercent: result.discountPercent,
-        appliedVouchers: result.appliedVouchers,
-        loyaltyRedemption: result.loyaltyRedemption,
-        tenders: result.tenders,
-        isSplitMode: result.isSplitMode,
-        selectedMethod: result.selectedMethod,
-        cashReceived: result.cashReceived,
-      ),
-    );
+        final totalsEither = await _calculateTotalsUseCase(
+          CalculateTotalsParams(
+            items: result.items,
+            tipPercent: result.tipPercent,
+            customTipAmount: result.customTipAmount,
+            discountPercent: result.discountPercent,
+            appliedVouchers: result.appliedVouchers,
+            loyaltyRedemption: result.loyaltyRedemption,
+            tenders: result.tenders,
+            isSplitMode: result.isSplitMode,
+            selectedMethod: result.selectedMethod,
+            cashReceived: result.cashReceived,
+          ),
+        );
 
-    final totals = totalsEither.fold(
-      (failure) => throw Exception(failure.message),
-      (success) => success,
-    );
-
-    final cartItems = result.items
-        .map((domainItem) => CartLineItem(
-              id: domainItem.id,
-              menuItem: MenuItemEntity(
-                id: domainItem.menuItem.id,
-                name: domainItem.menuItem.name,
-                description: domainItem.menuItem.description,
-                categoryId: domainItem.menuItem.categoryId,
-                basePrice: domainItem.menuItem.basePrice,
-                tags: domainItem.menuItem.tags,
-                modifierGroups: domainItem.menuItem.modifierGroups,
-                comboOptions: domainItem.menuItem.comboOptions,
-                recommendedAddOnIds: domainItem.menuItem.recommendedAddOnIds,
-                image: domainItem.menuItem.image,
+        await totalsEither.fold<Future<void>>(
+          (failure) async {
+            emit(
+              CheckoutError(
+                message: failure.message,
+                canDismiss: true,
               ),
-              quantity: domainItem.quantity,
-              unitPrice: domainItem.menuItem.basePrice,
-              selectedModifiers: {},
-              modifierSummary: domainItem.specialInstructions ?? '',
-            ))
-        .toList();
+            );
+          },
+          (totals) async {
+            final cartItems = result.items.map((domainItem) {
+              final sourceItem = originalItemsById[domainItem.id];
 
-    emit(
-      CheckoutLoaded(
-        payment: CheckoutPaymentState(
-          selectedMethod: result.selectedMethod,
-          cashReceived: result.cashReceived,
-        ),
-        discounts: CheckoutDiscountState(
-          tipPercent: result.tipPercent,
-          customTipAmount: result.customTipAmount,
-          discountPercent: result.discountPercent,
-          appliedVouchers: result.appliedVouchers,
-          loyaltyRedemption: result.loyaltyRedemption,
-          isLoyaltyRedeemed: result.isLoyaltyRedeemed,
-        ),
-        splitPayment: CheckoutSplitState(
-          isSplitMode: result.isSplitMode,
-          tenders: result.tenders,
-        ),
-        cart: CheckoutCartState(
-          items: cartItems,
-          totals: totals,
-        ),
-      ),
+              final resolvedQuantity = domainItem.quantity == 0
+                  ? (sourceItem?.quantity ?? 1)
+                  : domainItem.quantity;
+              final safeQuantity = resolvedQuantity == 0 ? 1 : resolvedQuantity;
+
+              final unitPrice = domainItem.quantity == 0
+                  ? (sourceItem?.unitPrice ??
+                      (safeQuantity == 0
+                          ? domainItem.menuItem.basePrice
+                          : domainItem.lineTotal / safeQuantity))
+                  : domainItem.lineTotal / safeQuantity;
+
+              final selectedModifiers =
+                  sourceItem != null && sourceItem.selectedModifiers.isNotEmpty
+                      ? Map<String, List<String>>.from(
+                          sourceItem.selectedModifiers,
+                        )
+                      : domainItem.modifiers.isEmpty
+                          ? <String, List<String>>{}
+                          : {
+                              '__flat__':
+                                  List<String>.from(domainItem.modifiers),
+                            };
+
+              return CartLineItem(
+                id: domainItem.id,
+                menuItem: domainItem.menuItem,
+                quantity: safeQuantity,
+                unitPrice: unitPrice,
+                selectedComboId: sourceItem?.selectedComboId,
+                selectedModifiers: selectedModifiers,
+                modifierSummary: domainItem.specialInstructions ??
+                    sourceItem?.modifierSummary ??
+                    '',
+              );
+            }).toList();
+
+            _emitCheckoutLoaded(
+              emit,
+              CheckoutLoaded(
+                payment: CheckoutPaymentState(
+                  selectedMethod: result.selectedMethod,
+                  cashReceived: result.cashReceived,
+                ),
+                discounts: CheckoutDiscountState(
+                  tipPercent: result.tipPercent,
+                  customTipAmount: result.customTipAmount,
+                  discountPercent: result.discountPercent,
+                  appliedVouchers: result.appliedVouchers,
+                  loyaltyRedemption: result.loyaltyRedemption,
+                  isLoyaltyRedeemed: result.isLoyaltyRedeemed,
+                ),
+                splitPayment: CheckoutSplitState(
+                  isSplitMode: result.isSplitMode,
+                  tenders: result.tenders,
+                ),
+                cart: CheckoutCartState(
+                  items: cartItems,
+                  totals: totals,
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -916,7 +952,8 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
           );
         },
         (totals) async {
-          emit(
+          _emitCheckoutLoaded(
+            emit,
             baseState.copyWith(
               payment: updatedPayment,
               discounts: updatedDiscounts,
@@ -1036,7 +1073,19 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
     // For now, emit initial state - in a real app you'd want to store previous state
     // This could be improved by adding a previous state to CheckoutError
     if (state is CheckoutError) {
-      emit(CheckoutInitial());
+      if (_lastKnownLoadedState != null) {
+        emit(_lastKnownLoadedState!);
+      } else {
+        emit(CheckoutInitial());
+      }
     }
+  }
+
+  void _emitCheckoutLoaded(
+    Emitter<CheckoutState> emit,
+    CheckoutLoaded state,
+  ) {
+    _lastKnownLoadedState = state;
+    emit(state);
   }
 }
