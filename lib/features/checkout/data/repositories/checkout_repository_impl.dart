@@ -1,6 +1,6 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/errors/failures.dart';
-import '../../../../core/errors/exceptions.dart';
+import '../../../../core/utils/repository_error_handler.dart';
 import '../../domain/repositories/checkout_repository.dart';
 import '../../domain/entities/voucher_entity.dart';
 import '../../domain/entities/order_entity.dart';
@@ -45,41 +45,46 @@ class CheckoutRepositoryImpl implements CheckoutRepository {
   }
 
   @override
-  double calculateTax(double amount, {double taxRate = 0.10}) {
-    // Pure function - no need for Either pattern
+  Either<Failure, double> calculateTax(double amount, {double taxRate = 0.10}) {
+    // Validate input before calculation
     if (amount < 0) {
-      throw ValidationException(message: 'Amount cannot be negative');
+      return const Left(
+        ValidationFailure(message: 'Amount cannot be negative'),
+      );
     }
-    return amount * taxRate;
+
+    if (taxRate < 0 || taxRate > 1) {
+      return const Left(
+        ValidationFailure(message: 'Tax rate must be between 0 and 1'),
+      );
+    }
+
+    // Perform calculation
+    final tax = amount * taxRate;
+    return Right(tax);
   }
 
   @override
   Future<Either<Failure, String>> saveUnpaidOrder(
       OrderEntity orderEntity) async {
-    try {
-      // Validate order entity
-      if (orderEntity.id.isEmpty) {
-        return Left(ValidationFailure(message: 'Order ID is required'));
-      }
-
-      // Convert entity to model for data layer
-      final orderModel = OrderModel.fromEntity(orderEntity);
-
-      // Save to local data source
-      await _checkoutDataSource.saveOrder(orderModel);
-
-      final orderId = 'ORD-${DateTime.now().millisecondsSinceEpoch}-UNPAID';
-      return Right(orderId);
-    } on ValidationException catch (e) {
-      return Left(ValidationFailure(message: e.message));
-    } on CacheException catch (e) {
-      return Left(CacheFailure(message: e.message));
-    } on ServerException catch (e) {
-      return Left(ServerFailure(message: e.message));
-    } on NetworkException catch (e) {
-      return Left(NetworkFailure(message: e.message));
-    } catch (e) {
-      return Left(ServerFailure(message: 'Failed to save unpaid order: $e'));
+    // Validate order entity before processing
+    if (orderEntity.id.isEmpty) {
+      return const Left(ValidationFailure(message: 'Order ID is required'));
     }
+
+    // Use error handler for local operation (database save)
+    return RepositoryErrorHandler.handleLocalOperation<String>(
+      operation: () async {
+        // Convert entity to model for data layer
+        final orderModel = OrderModel.fromEntity(orderEntity);
+
+        // Save to local data source
+        await _checkoutDataSource.saveOrder(orderModel);
+
+        final orderId = 'ORD-${DateTime.now().millisecondsSinceEpoch}-UNPAID';
+        return orderId;
+      },
+      operationName: 'saving unpaid order',
+    );
   }
 }

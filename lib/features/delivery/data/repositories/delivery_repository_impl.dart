@@ -1,7 +1,7 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/errors/failures.dart';
-import '../../../../core/errors/exceptions.dart';
 import '../../../../core/network/network_info.dart';
+import '../../../../core/utils/repository_error_handler.dart';
 import '../../domain/entities/delivery_entities.dart';
 import '../../domain/repositories/delivery_repository.dart';
 import '../datasources/delivery_data_source.dart';
@@ -18,15 +18,10 @@ class DeliveryRepositoryImpl implements DeliveryRepository {
 
   @override
   Future<Either<Failure, DeliveryData>> getDeliveryData() async {
-    if (await networkInfo.isConnected) {
-      try {
-        final deliveryData = await deliveryDataSource.getDeliveryData();
-        return Right(deliveryData);
-      } on ServerException {
-        return Left(ServerFailure(message: 'Server error'));
-      }
-    } else {
-      return Left(NetworkFailure(message: 'Network error'));
-    }
+    return RepositoryErrorHandler.handleOperation<DeliveryData>(
+      operation: () async => await deliveryDataSource.getDeliveryData(),
+      networkInfo: networkInfo,
+      operationName: 'loading delivery data',
+    );
   }
 }

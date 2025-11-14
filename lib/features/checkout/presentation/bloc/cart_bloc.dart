@@ -1,9 +1,10 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import '../../../../core/base/base_bloc.dart';
-import '../../../../core/constants/app_constants.dart';
 import '../../../menu/domain/entities/menu_item_entity.dart';
+import '../../../menu/domain/services/menu_item_price_calculator.dart';
 import '../../../tables/domain/entities/table_entity.dart';
+import '../../domain/services/cart_calculator.dart';
 
 // ============================================================================
 // CART LINE ITEM
@@ -111,16 +112,28 @@ class CartLoaded extends CartState {
     final shouldRecalculateTotals =
         subtotal == null && gst == null && total == null && items != null;
 
-    final newSubtotal = subtotal ??
-        (shouldRecalculateTotals
-            ? _calculateSubtotal(newItems)
-            : this.subtotal);
-    final newGst = gst ??
-        (shouldRecalculateTotals
-            ? newSubtotal * AppConstants.gstRate
-            : this.gst);
-    final newTotal =
-        total ?? (shouldRecalculateTotals ? newSubtotal + newGst : this.total);
+    // Use domain service for calculations
+    double newSubtotal;
+    double newGst;
+    double newTotal;
+
+    if (subtotal != null) {
+      // Use provided subtotal
+      newSubtotal = subtotal;
+      newGst = gst ?? CartCalculator.calculateGst(newSubtotal);
+      newTotal = total ?? CartCalculator.calculateTotal(newSubtotal);
+    } else if (shouldRecalculateTotals) {
+      // Recalculate from items using domain service
+      newSubtotal = CartCalculator.calculateSubtotalFromItems(newItems);
+      final totals = CartCalculator.calculateAllTotals(newSubtotal);
+      newGst = totals['gst']!;
+      newTotal = totals['total']!;
+    } else {
+      // Keep existing values
+      newSubtotal = this.subtotal;
+      newGst = gst ?? this.gst;
+      newTotal = total ?? this.total;
+    }
 
     return CartLoaded(
       items: newItems,
@@ -132,10 +145,6 @@ class CartLoaded extends CartState {
       gst: newGst,
       total: newTotal,
     );
-  }
-
-  static double _calculateSubtotal(List<CartLineItem> items) {
-    return items.fold(0.0, (sum, item) => sum + item.lineTotal);
   }
 
   @override
@@ -280,20 +289,9 @@ class CartBloc extends BaseBloc<CartEvent, CartState> {
   }
 
   /// Helper method to get default modifiers for a menu item
+  /// Uses domain service for business logic
   Map<String, List<String>> _getDefaultModifiers(MenuItemEntity menuItem) {
-    final defaultModifiers = <String, List<String>>{};
-
-    for (final group in menuItem.modifierGroups) {
-      final defaultOptions = group.options
-          .where((opt) => opt.isDefault)
-          .map((opt) => opt.id)
-          .toList();
-      if (defaultOptions.isNotEmpty) {
-        defaultModifiers[group.id] = defaultOptions;
-      }
-    }
-
-    return defaultModifiers;
+    return MenuItemPriceCalculator.getDefaultModifiers(menuItem);
   }
 
   /// Helper method to find index of identical item in cart
@@ -366,9 +364,9 @@ class CartBloc extends BaseBloc<CartEvent, CartState> {
       final existingItem = currentState.items[existingItemIndex];
       final updatedQuantity = existingItem.quantity + event.quantity;
 
-      // Ensure the existing item uses default modifiers if it had empty modifiers
+      // Ensure the existing item uses default modifiers if it had empty modifiers (using domain service)
       final finalModifiers = existingItem.selectedModifiers.isEmpty
-          ? _getDefaultModifiers(event.menuItem)
+          ? MenuItemPriceCalculator.getDefaultModifiers(event.menuItem)
           : existingItem.selectedModifiers;
 
       final updatedItems = List<CartLineItem>.from(currentState.items);
@@ -393,9 +391,9 @@ class CartBloc extends BaseBloc<CartEvent, CartState> {
       final lineItemId =
           '${event.menuItem.id}_${DateTime.now().millisecondsSinceEpoch}';
 
-      // Use default modifiers if event has empty modifiers
+      // Use default modifiers if event has empty modifiers (using domain service)
       final finalModifiers = event.selectedModifiers.isEmpty
-          ? _getDefaultModifiers(event.menuItem)
+          ? MenuItemPriceCalculator.getDefaultModifiers(event.menuItem)
           : event.selectedModifiers;
 
       final newLineItem = CartLineItem(
@@ -485,16 +483,15 @@ class CartBloc extends BaseBloc<CartEvent, CartState> {
     required List<CartLineItem> items,
     required double subtotal,
   }) {
-    final adjustedSubtotal = subtotal <= 0.0 ? 0.0 : subtotal;
-    final newGst = adjustedSubtotal * AppConstants.gstRate;
-    final newTotal = adjustedSubtotal + newGst;
+    // Use domain service for cart calculations
+    final totals = CartCalculator.calculateAllTotals(subtotal);
 
     emit(
       baseState.copyWith(
         items: items,
-        subtotal: adjustedSubtotal,
-        gst: newGst,
-        total: newTotal,
+        subtotal: totals['subtotal']!,
+        gst: totals['gst']!,
+        total: totals['total']!,
       ),
     );
   }

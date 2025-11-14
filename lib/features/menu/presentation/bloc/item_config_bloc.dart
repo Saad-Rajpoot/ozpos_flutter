@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/base/base_bloc.dart';
-import '../../domain/entities/menu_item_entity.dart';
-import '../../domain/entities/modifier_group_entity.dart';
+import '../../domain/services/menu_item_price_calculator.dart';
+import '../../domain/services/modifier_validator.dart';
 import 'item_config_event.dart';
 import 'item_config_state.dart';
 
@@ -22,22 +22,24 @@ class ItemConfigBloc extends BaseBloc<ItemConfigEvent, ItemConfigState> {
     // Initialize with default selections
     final selectedOptions = <String, List<String>>{};
 
-    // Apply defaults for each group
-    for (final group in event.item.modifierGroups) {
-      final defaultOptions = group.options
-          .where((opt) => opt.isDefault)
-          .map((opt) => opt.id)
-          .toList();
-      if (defaultOptions.isNotEmpty) {
-        selectedOptions[group.id] = defaultOptions;
-      }
-    }
+    // Apply defaults for each group using domain service
+    final defaultModifiers = MenuItemPriceCalculator.getDefaultModifiers(
+      event.item,
+    );
+    selectedOptions.addAll(defaultModifiers);
 
-    final initialPrice = _calculatePrice(event.item, selectedOptions, null, 1);
+    // Calculate initial price using domain service
+    final initialPrice = MenuItemPriceCalculator.calculatePrice(
+      item: event.item,
+      selectedModifiers: selectedOptions,
+      selectedComboId: null,
+      quantity: 1,
+    );
 
-    final canAdd = _checkRequiredGroups(
-      event.item.modifierGroups,
-      selectedOptions,
+    // Validate required groups using domain service
+    final canAdd = ModifierValidator.validateRequiredGroups(
+      groups: event.item.modifierGroups,
+      selectedModifiers: selectedOptions,
     );
 
     emit(
@@ -96,16 +98,18 @@ class ItemConfigBloc extends BaseBloc<ItemConfigEvent, ItemConfigState> {
           currentSelections.where((id) => id != event.optionId).toList();
     }
 
-    final newPrice = _calculatePrice(
-      currentState.item,
-      selectedOptions,
-      currentState.selectedComboId,
-      currentState.quantity,
+    // Calculate price using domain service
+    final newPrice = MenuItemPriceCalculator.calculatePrice(
+      item: currentState.item,
+      selectedModifiers: selectedOptions,
+      selectedComboId: currentState.selectedComboId,
+      quantity: currentState.quantity,
     );
 
-    final canAdd = _checkRequiredGroups(
-      currentState.item.modifierGroups,
-      selectedOptions,
+    // Validate required groups using domain service
+    final canAdd = ModifierValidator.validateRequiredGroups(
+      groups: currentState.item.modifierGroups,
+      selectedModifiers: selectedOptions,
     );
 
     emit(
@@ -125,11 +129,12 @@ class ItemConfigBloc extends BaseBloc<ItemConfigEvent, ItemConfigState> {
 
     final currentState = state as ItemConfigLoaded;
 
-    final newPrice = _calculatePrice(
-      currentState.item,
-      currentState.selectedOptions,
-      event.comboId,
-      currentState.quantity,
+    // Calculate price using domain service
+    final newPrice = MenuItemPriceCalculator.calculatePrice(
+      item: currentState.item,
+      selectedModifiers: currentState.selectedOptions,
+      selectedComboId: event.comboId,
+      quantity: currentState.quantity,
     );
 
     emit(
@@ -150,11 +155,12 @@ class ItemConfigBloc extends BaseBloc<ItemConfigEvent, ItemConfigState> {
 
     if (event.quantity < 1) return;
 
-    final newPrice = _calculatePrice(
-      currentState.item,
-      currentState.selectedOptions,
-      currentState.selectedComboId,
-      event.quantity,
+    // Calculate price using domain service
+    final newPrice = MenuItemPriceCalculator.calculatePrice(
+      item: currentState.item,
+      selectedModifiers: currentState.selectedOptions,
+      selectedComboId: currentState.selectedComboId,
+      quantity: event.quantity,
     );
 
     emit(currentState.copyWith(quantity: event.quantity, totalPrice: newPrice));
@@ -170,50 +176,5 @@ class ItemConfigBloc extends BaseBloc<ItemConfigEvent, ItemConfigState> {
 
     // Re-initialize with defaults
     add(InitializeItemConfig(item: currentState.item));
-  }
-
-  double _calculatePrice(
-    MenuItemEntity item,
-    Map<String, List<String>> selectedOptions,
-    String? selectedComboId,
-    int quantity,
-  ) {
-    double base = item.basePrice;
-
-    // Add modifier prices
-    for (final groupEntry in selectedOptions.entries) {
-      final group = item.modifierGroups.firstWhere(
-        (g) => g.id == groupEntry.key,
-      );
-      for (final optionId in groupEntry.value) {
-        final option = group.options.firstWhere((o) => o.id == optionId);
-        base += option.priceDelta;
-      }
-    }
-
-    // Add combo price
-    if (selectedComboId != null && item.comboOptions.isNotEmpty) {
-      final combo = item.comboOptions.firstWhere(
-        (c) => c.id == selectedComboId,
-      );
-      base += combo.priceDelta;
-    }
-
-    return base * quantity;
-  }
-
-  bool _checkRequiredGroups(
-    List<ModifierGroupEntity> groups,
-    Map<String, List<String>> selectedOptions,
-  ) {
-    for (final group in groups) {
-      if (group.isRequired) {
-        final selections = selectedOptions[group.id] ?? [];
-        if (selections.length < group.minSelection) {
-          return false;
-        }
-      }
-    }
-    return true;
   }
 }

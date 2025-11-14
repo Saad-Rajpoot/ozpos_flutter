@@ -1,7 +1,7 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/errors/failures.dart';
-import '../../../../core/errors/exceptions.dart';
 import '../../../../core/network/network_info.dart';
+import '../../../../core/utils/repository_error_handler.dart';
 import '../../domain/entities/printing_entities.dart';
 import '../../domain/repositories/printing_repository.dart';
 import '../datasources/printing_data_source.dart';
@@ -19,72 +19,72 @@ class PrintingRepositoryImpl implements PrintingRepository {
 
   @override
   Future<Either<Failure, List<PrinterEntity>>> getPrinters() async {
-    try {
-      final printers = await printingDataSource.getPrinters();
-      return Right(printers.map((p) => p.toEntity()).toList());
-    } on ServerException catch (e) {
-      return Left(ServerFailure(message: e.message));
-    } catch (e) {
-      return Left(ServerFailure(message: 'Unexpected error: ${e.toString()}'));
-    }
+    // Printing operations may work offline (local printer discovery)
+    // So we skip network check
+    return RepositoryErrorHandler.handleOperation<List<PrinterEntity>>(
+      operation: () async {
+        final printers = await printingDataSource.getPrinters();
+        return printers.map((p) => p.toEntity()).toList();
+      },
+      networkInfo: networkInfo,
+      operationName: 'loading printers',
+      skipNetworkCheck: true,
+    );
   }
 
   @override
   Future<Either<Failure, PrinterEntity>> getPrinterById(
       String printerId) async {
-    try {
-      final printer = await printingDataSource.getPrinterById(printerId);
-      return Right(printer.toEntity());
-    } on ServerException catch (e) {
-      return Left(ServerFailure(message: e.message));
-    } catch (e) {
-      return Left(
-          ServerFailure(message: 'Failed to get printer: ${e.toString()}'));
-    }
+    return RepositoryErrorHandler.handleOperation<PrinterEntity>(
+      operation: () async {
+        final printer = await printingDataSource.getPrinterById(printerId);
+        return printer.toEntity();
+      },
+      networkInfo: networkInfo,
+      operationName: 'loading printer',
+      skipNetworkCheck: true,
+    );
   }
 
   @override
   Future<Either<Failure, PrinterEntity>> addPrinter(
     PrinterEntity printer,
   ) async {
-    try {
-      final printerModel = PrinterModel.fromEntity(printer);
-      final added = await printingDataSource.addPrinter(printerModel);
-      return Right(added.toEntity());
-    } on ServerException catch (e) {
-      return Left(ServerFailure(message: e.message));
-    } catch (e) {
-      return Left(
-          ServerFailure(message: 'Failed to add printer: ${e.toString()}'));
-    }
+    return RepositoryErrorHandler.handleOperation<PrinterEntity>(
+      operation: () async {
+        final printerModel = PrinterModel.fromEntity(printer);
+        final added = await printingDataSource.addPrinter(printerModel);
+        return added.toEntity();
+      },
+      networkInfo: networkInfo,
+      operationName: 'adding printer',
+      skipNetworkCheck: true,
+    );
   }
 
   @override
   Future<Either<Failure, PrinterEntity>> updatePrinter(
     PrinterEntity printer,
   ) async {
-    try {
-      final printerModel = PrinterModel.fromEntity(printer);
-      final updated = await printingDataSource.updatePrinter(printerModel);
-      return Right(updated.toEntity());
-    } on ServerException catch (e) {
-      return Left(ServerFailure(message: e.message));
-    } catch (e) {
-      return Left(
-          ServerFailure(message: 'Failed to update printer: ${e.toString()}'));
-    }
+    return RepositoryErrorHandler.handleOperation<PrinterEntity>(
+      operation: () async {
+        final printerModel = PrinterModel.fromEntity(printer);
+        final updated = await printingDataSource.updatePrinter(printerModel);
+        return updated.toEntity();
+      },
+      networkInfo: networkInfo,
+      operationName: 'updating printer',
+      skipNetworkCheck: true,
+    );
   }
 
   @override
   Future<Either<Failure, void>> deletePrinter(String printerId) async {
-    try {
-      await printingDataSource.deletePrinter(printerId);
-      return const Right(null);
-    } on ServerException catch (e) {
-      return Left(ServerFailure(message: e.message));
-    } catch (e) {
-      return Left(
-          ServerFailure(message: 'Failed to delete printer: ${e.toString()}'));
-    }
+    return RepositoryErrorHandler.handleOperation<void>(
+      operation: () async => await printingDataSource.deletePrinter(printerId),
+      networkInfo: networkInfo,
+      operationName: 'deleting printer',
+      skipNetworkCheck: true,
+    );
   }
 }

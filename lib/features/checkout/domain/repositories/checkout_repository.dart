@@ -16,7 +16,9 @@ abstract class CheckoutRepository {
   Future<Either<Failure, VoucherEntity?>> validateVoucher(String code);
 
   /// Calculate tax for given amount
-  double calculateTax(double amount, {double taxRate = 0.10});
+  /// Returns Either<Failure, double> for consistent error handling
+  /// If amount is negative, returns ValidationFailure
+  Either<Failure, double> calculateTax(double amount, {double taxRate = 0.10});
 
   /// Save unpaid order for later payment
   Future<Either<Failure, String>> saveUnpaidOrder(OrderEntity orderEntity);

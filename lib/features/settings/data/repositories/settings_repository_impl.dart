@@ -1,7 +1,7 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/errors/failures.dart';
-import '../../../../core/errors/exceptions.dart';
 import '../../../../core/network/network_info.dart';
+import '../../../../core/utils/repository_error_handler.dart';
 import '../../domain/entities/settings_entities.dart';
 import '../../domain/repositories/settings_repository.dart';
 import '../datasources/settings_data_source.dart';
@@ -14,23 +14,10 @@ class SettingsRepositoryImpl implements SettingsRepository {
 
   @override
   Future<Either<Failure, List<SettingsCategoryEntity>>> getCategories() async {
-    if (await networkInfo.isConnected) {
-      try {
-        final data = await dataSource.getCategories();
-        return Right(data);
-      } on CacheException catch (e) {
-        return Left(CacheFailure(message: e.message));
-      } on NetworkException catch (e) {
-        return Left(NetworkFailure(message: e.message));
-      } on ValidationException catch (e) {
-        return Left(ValidationFailure(message: e.message));
-      } on ServerException catch (e) {
-        return Left(ServerFailure(message: e.message));
-      } catch (_) {
-        return Left(ServerFailure(message: 'Unexpected error'));
-      }
-    } else {
-      return const Left(NetworkFailure(message: 'Network error'));
-    }
+    return RepositoryErrorHandler.handleOperation<List<SettingsCategoryEntity>>(
+      operation: () async => await dataSource.getCategories(),
+      networkInfo: networkInfo,
+      operationName: 'loading settings categories',
+    );
   }
 }

@@ -1,7 +1,7 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/errors/failures.dart';
-import '../../../../core/errors/exceptions.dart';
 import '../../../../core/network/network_info.dart';
+import '../../../../core/utils/repository_error_handler.dart';
 import '../../domain/entities/reports_entities.dart';
 import '../../domain/repositories/reports_repository.dart';
 import '../datasources/reports_data_source.dart';
@@ -18,17 +18,10 @@ class ReportsRepositoryImpl implements ReportsRepository {
 
   @override
   Future<Either<Failure, ReportsData>> getReportsData() async {
-    if (await networkInfo.isConnected) {
-      try {
-        final reportsData = await reportsDataSource.getReportsData();
-        return Right(reportsData);
-      } on ServerException {
-        return Left(ServerFailure(message: 'Server error'));
-      } on Exception catch (e) {
-        return Left(ServerFailure(message: e.toString()));
-      }
-    } else {
-      return Left(NetworkFailure(message: 'Network error'));
-    }
+    return RepositoryErrorHandler.handleOperation<ReportsData>(
+      operation: () async => await reportsDataSource.getReportsData(),
+      networkInfo: networkInfo,
+      operationName: 'loading reports data',
+    );
   }
 }
