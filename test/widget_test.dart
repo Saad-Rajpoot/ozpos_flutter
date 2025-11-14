@@ -7,13 +7,14 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
+import 'package:ozpos_flutter/core/di/injection_container.dart' as di;
+import 'package:ozpos_flutter/core/auth/auth_cubit.dart';
 import 'package:ozpos_flutter/main.dart';
 
 void main() {
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(const OzposApp());
+    await tester.pumpWidget(OzposApp(authCubit: di.sl<AuthCubit>()));
 
     // Verify that our counter starts at 0.
     expect(find.text('0'), findsOneWidget);

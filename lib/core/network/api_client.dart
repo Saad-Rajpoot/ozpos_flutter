@@ -6,7 +6,11 @@ import '../constants/app_constants.dart';
 import '../config/app_config.dart';
 import '../navigation/navigation_service.dart';
 import '../navigation/app_router.dart';
+import '../storage/secure_storage_service.dart';
+import '../auth/auth_cubit.dart';
+import '../di/injection_container.dart' as di;
 import 'retry_interceptor.dart';
+import 'certificate_pinner.dart';
 
 /// Helper class to track pending requests during token refresh
 class _PendingRequest {
@@ -19,6 +23,7 @@ class _PendingRequest {
 class ApiClient {
   late final Dio _dio;
   final SharedPreferences _sharedPreferences;
+  final SecureStorageService _secureStorage;
   final String _baseUrl;
   final Map<String, CancelToken> _trackedCancelTokens = {};
 
@@ -26,9 +31,16 @@ class ApiClient {
   bool _isRefreshing = false;
   final List<_PendingRequest> _pendingRequests = [];
 
-  ApiClient({required SharedPreferences sharedPreferences, String? baseUrl})
-      : _sharedPreferences = sharedPreferences,
-        _baseUrl = baseUrl ?? AppConstants.baseUrl {
+  ApiClient({
+    required SharedPreferences sharedPreferences,
+    required SecureStorageService secureStorage,
+    String? baseUrl,
+  })  : _sharedPreferences = sharedPreferences,
+        _secureStorage = secureStorage,
+        _baseUrl = baseUrl ?? AppConfig.instance.baseUrl {
+    // Validate base URL
+    _validateBaseUrl(_baseUrl);
+
     _dio = Dio(
       BaseOptions(
         baseUrl: _baseUrl,
@@ -42,7 +54,45 @@ class ApiClient {
       ),
     );
 
+    // Configure certificate pinning if enabled
+    _configureCertificatePinning();
+
     _setupInterceptors();
+  }
+
+  /// Validate base URL for security requirements
+  void _validateBaseUrl(String url) {
+    if (AppConfig.instance.enforceHttps && !url.startsWith('https://')) {
+      throw ArgumentError(
+        'HTTPS is required in production. Provided URL: $url',
+      );
+    }
+
+    if (url.startsWith('http://') &&
+        AppConfig.instance.environment == AppEnvironment.production) {
+      throw ArgumentError(
+        'HTTP is not allowed in production. Use HTTPS. Provided URL: $url',
+      );
+    }
+  }
+
+  /// Configure certificate pinning if enabled
+  void _configureCertificatePinning() {
+    if (AppConfig.instance.isCertificatePinningEnabled) {
+      final pinner = CertificatePinner(AppConfig.instance.certificatePins);
+      _dio.httpClientAdapter = pinner.createPinnedAdapter();
+
+      if (kDebugMode) {
+        debugPrint(
+            '✅ Certificate pinning enabled with ${pinner.pinCount} pin(s)');
+      }
+    } else {
+      if (kDebugMode &&
+          AppConfig.instance.environment == AppEnvironment.production) {
+        debugPrint('⚠️ Certificate pinning is disabled in production');
+        debugPrint('   Consider enabling it for enhanced security');
+      }
+    }
   }
 
   /// Creates a new [CancelToken] and optionally tracks it with a [requestKey].
@@ -126,7 +176,8 @@ class ApiClient {
           // Store Dio instance reference for retry interceptor
           options.extra['_dio'] = _dio;
 
-          final token = _sharedPreferences.getString(AppConstants.tokenKey);
+          // Retrieve token from secure storage
+          final token = await _secureStorage.getAccessToken();
           if (token != null) {
             options.headers['Authorization'] = 'Bearer $token';
           }
@@ -148,8 +199,7 @@ class ApiClient {
             if (refreshed) {
               // Retry the original request with new token
               try {
-                final newToken =
-                    _sharedPreferences.getString(AppConstants.tokenKey);
+                final newToken = await _secureStorage.getAccessToken();
                 if (newToken != null) {
                   error.requestOptions.headers['Authorization'] =
                       'Bearer $newToken';
@@ -245,8 +295,8 @@ class ApiClient {
     _isRefreshing = true;
 
     try {
-      final refreshToken =
-          _sharedPreferences.getString(AppConstants.refreshTokenKey);
+      // Retrieve refresh token from secure storage
+      final refreshToken = await _secureStorage.getRefreshToken();
 
       if (refreshToken == null || refreshToken.isEmpty) {
         if (kDebugMode) {
@@ -262,6 +312,7 @@ class ApiClient {
       }
 
       // Create a new Dio instance without interceptors to avoid infinite loop
+      // But still use certificate pinning if enabled
       final refreshDio = Dio(
         BaseOptions(
           baseUrl: _baseUrl,
@@ -273,6 +324,12 @@ class ApiClient {
           },
         ),
       );
+
+      // Apply certificate pinning to refresh Dio instance if enabled
+      if (AppConfig.instance.isCertificatePinningEnabled) {
+        final pinner = CertificatePinner(AppConfig.instance.certificatePins);
+        refreshDio.httpClientAdapter = pinner.createPinnedAdapter();
+      }
 
       // Make refresh request
       final response = await refreshDio.post(
@@ -302,11 +359,15 @@ class ApiClient {
         }
 
         if (newToken != null && newToken.isNotEmpty) {
-          // Save new tokens
-          await _sharedPreferences.setString(AppConstants.tokenKey, newToken);
+          // Save new tokens to secure storage
           if (newRefreshToken != null && newRefreshToken.isNotEmpty) {
-            await _sharedPreferences.setString(
-                AppConstants.refreshTokenKey, newRefreshToken);
+            await _secureStorage.saveTokens(
+              accessToken: newToken,
+              refreshToken: newRefreshToken,
+            );
+          } else {
+            // Only update access token if refresh token not provided
+            await _secureStorage.saveAccessToken(newToken);
           }
 
           if (kDebugMode) {
@@ -369,9 +430,13 @@ class ApiClient {
   Future<void> _handleUnauthorized() async {
     try {
       // Clear all auth-related data
-      await _sharedPreferences.remove(AppConstants.tokenKey);
-      await _sharedPreferences.remove(AppConstants.refreshTokenKey);
+      // Tokens are stored in secure storage, user data in SharedPreferences
+      await _secureStorage.deleteAllTokens();
       await _sharedPreferences.remove(AppConstants.userKey);
+
+      await di.sl<AuthCubit>().handleUnauthorized(
+            reason: 'Session expired. Please sign in again.',
+          );
 
       // Use NavigationService for safe, context-free navigation
       // Check if navigator is ready before attempting navigation
@@ -386,7 +451,10 @@ class ApiClient {
         // Navigate to dashboard and clear all previous routes
         // Note: If a login route exists in the future, replace AppRouter.dashboard
         // with AppRouter.login to redirect to login screen
-        await NavigationService.pushAndClearStack(AppRouter.dashboard);
+        await NavigationService.pushAndClearStack(
+          AppRouter.login,
+          arguments: {'message': 'Session expired. Please sign in again.'},
+        );
       }
     } catch (e) {
       // Log error but don't throw - this is called from an interceptor

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:equatable/equatable.dart';
 import '../constants/delivery_constants.dart';
+import '../../../../core/validation/input_validators.dart';
+import '../../../../core/validation/input_sanitizer.dart';
 
 enum VehicleType { bike, car, scooter, van }
 
@@ -552,6 +554,7 @@ class _AddDriverModalState extends State<AddDriverModal> {
     TextEditingController controller,
     String hint, {
     TextInputType? keyboardType,
+    String? Function(String?)? customValidator,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -561,6 +564,7 @@ class _AddDriverModalState extends State<AddDriverModal> {
         TextFormField(
           controller: controller,
           keyboardType: keyboardType,
+          obscureText: label.toLowerCase().contains('password'),
           decoration: InputDecoration(
             hintText: hint,
             filled: true,
@@ -576,15 +580,70 @@ class _AddDriverModalState extends State<AddDriverModal> {
               vertical: 12,
             ),
           ),
-          validator: (value) {
-            if (label.contains('*') && (value == null || value.isEmpty)) {
-              return 'Required';
+          validator: customValidator ?? _getDefaultValidator(label),
+          onChanged: (value) {
+            // Sanitize input as user types (optional, can be done on submit)
+            // This provides real-time sanitization
+            if (value.isNotEmpty) {
+              final sanitized = _sanitizeInput(label, value);
+              if (sanitized != value) {
+                // Update controller with sanitized value
+                controller.value = TextEditingValue(
+                  text: sanitized,
+                  selection: TextSelection.collapsed(
+                    offset: sanitized.length,
+                  ),
+                );
+              }
             }
-            return null;
           },
         ),
       ],
     );
+  }
+
+  /// Get default validator based on field label
+  String? Function(String?) _getDefaultValidator(String label) {
+    final lowerLabel = label.toLowerCase();
+
+    if (lowerLabel.contains('name') && label.contains('*')) {
+      return InputValidators.driverName;
+    } else if (lowerLabel.contains('phone') && label.contains('*')) {
+      return InputValidators.driverPhone;
+    } else if (lowerLabel.contains('email')) {
+      return InputValidators.driverEmail;
+    } else if (lowerLabel.contains('username')) {
+      return InputValidators.driverUsername;
+    } else if (lowerLabel.contains('password')) {
+      return (value) {
+        if (value == null || value.isEmpty) {
+          return null; // Password is optional (auto-generated)
+        }
+        return InputValidators.password(value);
+      };
+    } else if (label.contains('*')) {
+      return (value) => InputValidators.required(value,
+          fieldName: label.replaceAll('*', '').trim());
+    }
+
+    return (value) => null; // No validation for optional fields
+  }
+
+  /// Sanitize input based on field type
+  String _sanitizeInput(String label, String value) {
+    final lowerLabel = label.toLowerCase();
+
+    if (lowerLabel.contains('name')) {
+      return InputSanitizer.sanitizeName(value);
+    } else if (lowerLabel.contains('phone')) {
+      return InputSanitizer.sanitizePhone(value);
+    } else if (lowerLabel.contains('email')) {
+      return InputSanitizer.sanitizeEmail(value);
+    } else if (lowerLabel.contains('username')) {
+      return InputSanitizer.sanitizeUsername(value);
+    } else {
+      return InputSanitizer.sanitizeText(value);
+    }
   }
 
   Widget _buildVehicleOption({
@@ -639,10 +698,43 @@ class _AddDriverModalState extends State<AddDriverModal> {
   void _saveDriver(_AddDriverViewState viewState) {
     if (_formKey.currentState!.validate() &&
         viewState.selectedVehicle != null) {
-      Navigator.pop(context);
+      // Sanitize all inputs before saving
+      final sanitizedData = {
+        'name': InputSanitizer.sanitizeName(_nameController.text),
+        'phone': InputSanitizer.sanitizePhone(_phoneController.text),
+        'username': _usernameController.text.isNotEmpty
+            ? InputSanitizer.sanitizeUsername(_usernameController.text)
+            : null,
+        'password': _passwordController.text.isNotEmpty
+            ? _passwordController
+                .text // Don't sanitize password (needs special chars)
+            : null,
+        'vehicle': viewState.selectedVehicle?.toString(),
+        'role': viewState.selectedRole,
+        'zones': viewState.selectedZones,
+        'sendWelcomeSms': viewState.sendWelcomeSms,
+        'enableGpsTracking': viewState.enableGpsTracking,
+        'allowCashPayments': viewState.allowCashPayments,
+      };
+
+      // Additional validation: Check for dangerous patterns
+      final nameValidation =
+          InputValidators.noDangerousPatterns(sanitizedData['name'] as String);
+      if (nameValidation != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(nameValidation),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+
+      Navigator.pop(context, sanitizedData);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Driver ${_nameController.text} added successfully!'),
+          content: Text('Driver ${sanitizedData['name']} added successfully!'),
           behavior: SnackBarBehavior.floating,
         ),
       );

@@ -24,17 +24,63 @@ class AppConfig {
 
   /// Get API base URL based on environment
   /// Can be overridden with --dart-define=API_BASE_URL=your_url
+  ///
+  /// **SECURITY**: HTTPS is enforced in production. HTTP is only allowed in development.
   String get apiBaseUrl {
     const customUrl = String.fromEnvironment('API_BASE_URL');
-    if (customUrl.isNotEmpty) return customUrl;
+    if (customUrl.isNotEmpty) {
+      // Validate HTTPS in production
+      if (_environment == AppEnvironment.production &&
+          !customUrl.startsWith('https://')) {
+        throw StateError(
+          'Production API URL must use HTTPS. Provided: $customUrl',
+        );
+      }
+      return customUrl;
+    }
 
     switch (_environment) {
       case AppEnvironment.production:
         return 'https://api.ozpos.com/v1';
       default:
+        // Allow HTTP only in development
         return 'http://localhost:8000/api/v1';
     }
   }
+
+  /// Whether to enforce HTTPS for all API calls
+  ///
+  /// In production, HTTPS is always enforced.
+  /// In development, HTTP is allowed for local testing.
+  bool get enforceHttps => _environment == AppEnvironment.production;
+
+  /// Certificate pinning configuration
+  ///
+  /// **SECURITY**: Certificate pinning prevents MITM attacks by verifying
+  /// the server's certificate matches expected fingerprints.
+  ///
+  /// To enable certificate pinning, provide certificate SHA-256 fingerprints
+  /// via --dart-define=CERT_PIN_1=sha256/... --dart-define=CERT_PIN_2=sha256/...
+  ///
+  /// To get certificate fingerprints:
+  ///   openssl s_client -servername api.ozpos.com -connect api.ozpos.com:443 < /dev/null 2>/dev/null | openssl x509 -fingerprint -sha256 -noout -in /dev/stdin
+  ///
+  /// Returns empty list if not configured (pinning disabled).
+  List<String> get certificatePins {
+    const pin1 = String.fromEnvironment('CERT_PIN_1');
+    const pin2 = String.fromEnvironment('CERT_PIN_2');
+    const pin3 = String.fromEnvironment('CERT_PIN_3');
+
+    final pins = <String>[];
+    if (pin1.isNotEmpty) pins.add(pin1);
+    if (pin2.isNotEmpty) pins.add(pin2);
+    if (pin3.isNotEmpty) pins.add(pin3);
+
+    return pins;
+  }
+
+  /// Whether certificate pinning is enabled
+  bool get isCertificatePinningEnabled => certificatePins.isNotEmpty;
 
   /// Get Firebase project configuration based on environment
   Map<String, String> get firebaseConfig {
@@ -75,6 +121,16 @@ class AppConfig {
       print('   Performance Monitoring: $enablePerformanceMonitoring');
       print('   Network Logging: $logNetworkRequests');
       print('   Database Logging: $logDatabaseQueries');
+      print('   HTTPS Enforced: $enforceHttps');
+      if (isCertificatePinningEnabled) {
+        print(
+            '   Certificate Pinning: ✅ Enabled (${certificatePins.length} pins)');
+      } else {
+        print('   Certificate Pinning: ⚠️  Disabled');
+        if (_environment == AppEnvironment.production) {
+          print('      To enable: --dart-define=CERT_PIN_1=sha256/...');
+        }
+      }
       print('');
     }
   }

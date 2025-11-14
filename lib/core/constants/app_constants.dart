@@ -1,6 +1,10 @@
 /// Application constants
 class AppConstants {
   // API Endpoints
+  // DEPRECATED: Use AppConfig.instance.baseUrl instead
+  // This constant is kept for backward compatibility but should not be used
+  // for new code. It will be removed in a future version.
+  @Deprecated('Use AppConfig.instance.baseUrl instead')
   static const String baseUrl = 'https://api.ozpos.com';
 
   // Auth endpoints

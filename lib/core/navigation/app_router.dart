@@ -43,6 +43,9 @@ import '../../features/customer_display/presentation/bloc/customer_display_event
 import '../../features/combos/presentation/bloc/crud/combo_crud_bloc.dart';
 import '../../features/combos/presentation/bloc/filter/combo_filter_bloc.dart';
 import '../../features/combos/presentation/bloc/editor/combo_editor_bloc.dart';
+import '../../features/auth/presentation/screens/login_screen.dart';
+import '../../features/auth/presentation/screens/auth_splash_screen.dart';
+import '../../core/auth/auth_cubit.dart';
 
 /// Centralized route management
 ///
@@ -53,6 +56,8 @@ class AppRouter {
   // ROUTE NAMES - ALL routes must be defined here
   // ========================================================================
 
+  static const String splash = '/splash';
+  static const String login = '/login';
   static const String dashboard = '/';
   static const String menu = '/menu';
   static const String checkout = '/checkout';
@@ -69,6 +74,7 @@ class AppRouter {
   static const String docketDesigner = '/docket-designer';
   static const String printingManagement = '/printing-management';
   static const String customerDisplay = '/customer-display';
+  static const Set<String> _publicRoutes = {splash, login};
 
   // ========================================================================
   // ROUTE GENERATOR
@@ -81,8 +87,34 @@ class AppRouter {
   static Route<dynamic> generateRoute(RouteSettings settings) {
     // Extract arguments if any
     final args = settings.arguments as Map<String, dynamic>?;
+    final requiresAuth = !_publicRoutes.contains(settings.name);
+    if (requiresAuth) {
+      final authCubit = di.sl<AuthCubit>();
+      if (!authCubit.state.isAuthenticated) {
+        return MaterialPageRoute(
+          builder: (_) => LoginScreen(
+            initialMessage: authCubit.state.message,
+          ),
+          settings: const RouteSettings(name: login),
+        );
+      }
+    }
 
     switch (settings.name) {
+      case splash:
+        return MaterialPageRoute(
+          builder: (_) => const AuthSplashScreen(),
+          settings: settings,
+        );
+
+      case login:
+        return MaterialPageRoute(
+          builder: (_) => LoginScreen(
+            initialMessage: args?['message'] as String?,
+          ),
+          settings: settings,
+        );
+
       case dashboard:
         return MaterialPageRoute(
           builder: (_) => BlocProvider<MenuBloc>(

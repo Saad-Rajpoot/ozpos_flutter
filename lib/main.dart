@@ -14,6 +14,10 @@ import 'core/utils/sentry_bloc_observer.dart';
 import 'core/services/sentry_service.dart';
 import 'core/theme/app_theme.dart';
 import 'features/checkout/presentation/bloc/cart_bloc.dart';
+import 'core/auth/auth_cubit.dart';
+import 'core/auth/auth_state.dart';
+import 'core/auth/session_timeout_manager.dart';
+import 'core/widgets/user_interaction_listener.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,43 +26,68 @@ void main() async {
   Bloc.observer = SentryBlocObserver();
 
   // Initialize AppConfig FIRST (environment-based configuration)
-  AppConfig.instance.initialize(environment: AppEnvironment.development);
+  const envString =
+      String.fromEnvironment('APP_ENV', defaultValue: 'development');
+  final env = envString.toLowerCase() == 'production'
+      ? AppEnvironment.production
+      : AppEnvironment.development;
+  AppConfig.instance.initialize(environment: env);
 
-  await SentryFlutter.init(
-    _configureSentry,
-    appRunner: () async {
-      try {
-        // Set up Flutter error handlers to capture ALL errors
-        _setupErrorHandlers();
+  // Initialize Sentry only if DSN is configured
+  // In production, this will throw if DSN is missing (via validatedDsn)
+  // In development, Sentry will be disabled if DSN is not provided
+  if (SentryConfig.isConfigured) {
+    await SentryFlutter.init(
+      _configureSentry,
+      appRunner: () async {
+        await _runApp();
+      },
+    );
+  } else {
+    // Development mode: run app without Sentry if DSN not configured
+    if (kDebugMode) {
+      debugPrint(
+          '⚠️  Sentry DSN not configured. Running without error tracking.');
+      debugPrint('   To enable: --dart-define=SENTRY_DSN=your_dsn');
+    }
+    await _runApp();
+  }
+}
 
-        await _initializeDesktopDatabase();
-        await _initializeDependencies();
+Future<void> _runApp() async {
+  try {
+    // Set up Flutter error handlers to capture ALL errors
+    _setupErrorHandlers();
 
-        if (kDebugMode) {
-          AppConfig.instance.printConfig();
-          SentryConfig.printConfig();
-        }
+    await _initializeDesktopDatabase();
+    await _initializeDependencies();
 
-        runApp(const OzposApp());
-      } catch (error, stackTrace) {
-        if (error is BootstrapException) {
-          await _reportBootstrapError(
-            error.hint,
-            error.cause,
-            error.originalStackTrace,
-          );
-          Error.throwWithStackTrace(error, error.originalStackTrace);
-        } else {
-          await _reportBootstrapError(
-            'App bootstrap failed',
-            error,
-            stackTrace,
-          );
-          rethrow;
-        }
-      }
-    },
-  );
+    if (kDebugMode) {
+      AppConfig.instance.printConfig();
+      SentryConfig.printConfig();
+    }
+
+    final authCubit = di.sl<AuthCubit>();
+    SessionTimeoutManager.instance.configure(authCubit: authCubit);
+
+    runApp(OzposApp(authCubit: authCubit));
+  } catch (error, stackTrace) {
+    if (error is BootstrapException) {
+      await _reportBootstrapError(
+        error.hint,
+        error.cause,
+        error.originalStackTrace,
+      );
+      Error.throwWithStackTrace(error, error.originalStackTrace);
+    } else {
+      await _reportBootstrapError(
+        'App bootstrap failed',
+        error,
+        stackTrace,
+      );
+      rethrow;
+    }
+  }
 }
 
 Future<void> _initializeDesktopDatabase() async {
@@ -101,7 +130,7 @@ Future<void> _reportBootstrapError(
     debugPrint('$hint: $error');
   }
 
-  if (!AppConfig.instance.enableCrashReporting) {
+  if (!AppConfig.instance.enableCrashReporting || !SentryConfig.isConfigured) {
     return;
   }
 
@@ -138,7 +167,8 @@ class BootstrapException implements Exception {
 
 /// Configure Sentry options for error tracking and performance monitoring
 void _configureSentry(SentryFlutterOptions options) {
-  options.dsn = SentryConfig.sentryDsn;
+  // Use validatedDsn which will throw in production if not configured
+  options.dsn = SentryConfig.validatedDsn;
   options.environment = AppConfig.instance.environment.name;
   options.release = 'ozpos-flutter@${SentryConfig.appVersion}';
   options.tracesSampleRate = SentryConfig.sentrySampleRate;
@@ -151,7 +181,9 @@ void _configureSentry(SentryFlutterOptions options) {
 }
 
 class OzposApp extends StatelessWidget {
-  const OzposApp({super.key});
+  const OzposApp({super.key, required this.authCubit});
+
+  final AuthCubit authCubit;
 
   @override
   Widget build(BuildContext context) {
@@ -159,21 +191,52 @@ class OzposApp extends StatelessWidget {
     // Feature-specific BLoCs are provided at route level for lazy initialization
     return MultiBlocProvider(
       providers: [
+        BlocProvider<AuthCubit>.value(value: authCubit),
         // CartBloc is a singleton registered in DI (see injection_container.dart)
         // It persists across navigation and is accessible throughout the app
         // This is appropriate for a POS system where cart state should persist
         BlocProvider<CartBloc>(create: (_) => GetIt.instance<CartBloc>()),
       ],
-      child: MaterialApp(
-        title: 'OZPOS - Restaurant POS System',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.lightTheme,
-        darkTheme: AppTheme.darkTheme,
-        themeMode: ThemeMode.light,
-        navigatorKey: NavigationService.navigatorKey,
-        onGenerateRoute: AppRouter.generateRoute,
-        initialRoute: AppRouter.dashboard,
-        navigatorObservers: [SentryNavigatorObserver()],
+      child: BlocListener<AuthCubit, AuthState>(
+        listener: (context, state) {
+          final manager = SessionTimeoutManager.instance;
+          if (state.status == AuthStatus.authenticated) {
+            manager.start();
+            if (!NavigationService.isCurrentRoute(AppRouter.dashboard)) {
+              NavigationService.pushAndClearStack(AppRouter.dashboard);
+            }
+          } else if (state.status == AuthStatus.unauthenticated) {
+            manager.stop();
+            if (!NavigationService.isCurrentRoute(AppRouter.login)) {
+              NavigationService.pushAndClearStack(
+                AppRouter.login,
+                arguments:
+                    state.message == null ? null : {'message': state.message},
+              );
+            }
+          } else if (state.status == AuthStatus.locked) {
+            manager.stop();
+            NavigationService.pushAndClearStack(
+              AppRouter.login,
+              arguments:
+                  state.message == null ? null : {'message': state.message},
+            );
+          }
+        },
+        child: MaterialApp(
+          title: 'OZPOS - Restaurant POS System',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: ThemeMode.light,
+          navigatorKey: NavigationService.navigatorKey,
+          onGenerateRoute: AppRouter.generateRoute,
+          initialRoute: AppRouter.dashboard,
+          navigatorObservers: [SentryNavigatorObserver()],
+          builder: (context, child) => UserInteractionListener(
+            child: child ?? const SizedBox.shrink(),
+          ),
+        ),
       ),
     );
   }
@@ -186,31 +249,41 @@ void _setupErrorHandlers() {
     // Let Flutter handle the error first (for debugging)
     FlutterError.presentError(details);
 
-    // Send to Sentry using the package's built-in method
-
-    Sentry.captureException(
-      details.exception,
-      stackTrace: details.stack,
-      withScope: (scope) {
-        scope.setTag('error_type', 'flutter_framework');
-        scope.setTag('library', details.library ?? 'unknown');
-        scope.setTag('is_fatal', (!details.silent).toString());
-        scope.setContexts('flutter_error', {
-          'context': details.context?.toString() ?? 'No context',
-          'library': details.library ?? 'Unknown',
-        });
-      },
-    );
+    // Send to Sentry only if configured
+    if (SentryConfig.isConfigured) {
+      try {
+        Sentry.captureException(
+          details.exception,
+          stackTrace: details.stack,
+          withScope: (scope) {
+            scope.setTag('error_type', 'flutter_framework');
+            scope.setTag('library', details.library ?? 'unknown');
+            scope.setTag('is_fatal', (!details.silent).toString());
+            scope.setContexts('flutter_error', {
+              'context': details.context?.toString() ?? 'No context',
+              'library': details.library ?? 'Unknown',
+            });
+          },
+        );
+      } catch (e) {
+        // Silently fail if Sentry is not available
+        if (kDebugMode) {
+          debugPrint('Failed to report error to Sentry: $e');
+        }
+      }
+    }
   };
 
   // Capture platform/async errors that Flutter doesn't catch
   PlatformDispatcher.instance.onError = (error, stack) {
-    SentryService.reportError(
-      error,
-      stack,
-      hint: 'Platform/Async Error',
-      extra: {'error_source': 'platform_dispatcher'},
-    );
+    if (SentryConfig.isConfigured) {
+      SentryService.reportError(
+        error,
+        stack,
+        hint: 'Platform/Async Error',
+        extra: {'error_source': 'platform_dispatcher'},
+      );
+    }
     return true;
   };
 }

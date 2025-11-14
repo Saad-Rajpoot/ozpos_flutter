@@ -4,12 +4,34 @@ import 'package:ozpos_flutter/core/config/app_config.dart';
 /// Sentry configuration for the OZPOS application
 class SentryConfig {
   /// Sentry DSN for error reporting
-  /// Can be overridden with --dart-define=SENTRY_DSN=your_dsn
-  static const String sentryDsn = String.fromEnvironment(
-    'SENTRY_DSN',
-    defaultValue:
-        'https://5043c056bceb3ca2e4a92d2e6e2b0235@o4509604948869120.ingest.us.sentry.io/4510112203341824',
-  );
+  ///
+  /// **SECURITY**: Must be provided via --dart-define=SENTRY_DSN=your_dsn
+  /// Never hard-code DSN values in source code as they will be exposed in compiled builds.
+  ///
+  /// Example build command:
+  /// flutter build apk --dart-define=SENTRY_DSN=https://your-dsn@sentry.io/project-id
+  static const String sentryDsn = String.fromEnvironment('SENTRY_DSN');
+
+  /// Check if Sentry DSN is configured
+  static bool get isConfigured => sentryDsn.isNotEmpty;
+
+  /// Get Sentry DSN with validation
+  ///
+  /// Throws [StateError] if DSN is not configured in production.
+  /// Returns empty string in development if not configured (allows graceful degradation).
+  static String get validatedDsn {
+    if (sentryDsn.isEmpty) {
+      if (AppConfig.instance.environment == AppEnvironment.production) {
+        throw StateError(
+          'SENTRY_DSN is required in production. '
+          'Provide it via --dart-define=SENTRY_DSN=your_dsn',
+        );
+      }
+      // In development, allow empty DSN (Sentry will be disabled)
+      return '';
+    }
+    return sentryDsn;
+  }
 
   /// App version for Sentry releases
   static const String appVersion = '1.0.0+1';
@@ -71,6 +93,15 @@ class SentryConfig {
   static void printConfig() {
     if (kDebugMode) {
       print('🔧 Sentry Configuration:');
+      if (isConfigured) {
+        final preview = sentryDsn.length > 20
+            ? '${sentryDsn.substring(0, 20)}...'
+            : sentryDsn;
+        print('   DSN: Configured ($preview)');
+      } else {
+        print('   DSN: ⚠️  NOT CONFIGURED (Sentry disabled)');
+        print('   To enable: --dart-define=SENTRY_DSN=your_dsn');
+      }
       print('   Sample Rate: $sentrySampleRate');
       print('   Performance Sample Rate: $sentryPerformanceSampleRate');
       print('   Debug Logging: $sentryDebug');

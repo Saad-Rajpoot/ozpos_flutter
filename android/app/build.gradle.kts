@@ -32,11 +32,63 @@ android {
         versionName = flutter.versionName
     }
 
+    // Signing configurations
+    signingConfigs {
+        // Load keystore properties from keystore.properties file
+        // Create this file in android/ directory with your signing credentials
+        // See keystore.properties.example for format
+        val keystorePropertiesFile = rootProject.file("keystore.properties")
+        val keystoreProperties = java.util.Properties()
+        
+        if (keystorePropertiesFile.exists()) {
+            keystoreProperties.load(java.io.FileInputStream(keystorePropertiesFile))
+            create("release") {
+                keyAlias = keystoreProperties["keyAlias"] as String
+                keyPassword = keystoreProperties["keyPassword"] as String
+                storeFile = file(keystoreProperties["storeFile"] as String)
+                storePassword = keystoreProperties["storePassword"] as String
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
+            // Use release signing config if available, otherwise fall back to debug
+            // SECURITY: Always use release signing for production builds
+            signingConfig = if (signingConfigs.findByName("release") != null) {
+                signingConfigs.getByName("release")
+            } else {
+                // Fallback to debug for development - REMOVE THIS IN PRODUCTION
+                signingConfigs.getByName("debug")
+            }
+            
+            // Enable code minification and obfuscation
+            isMinifyEnabled = true
+            
+            // Enable resource shrinking (removes unused resources)
+            isShrinkResources = true
+            
+            // ProGuard rules for code obfuscation and optimization
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+            
+            // Disable debug features in release builds
+            isDebuggable = false
+            
+            // Optimize APK
+            isJniDebuggable = false
+            isRenderscriptDebuggable = false
+            renderscriptOptimLevel = 3
+        }
+        
+        debug {
+            // Debug builds remain unchanged for development
             signingConfig = signingConfigs.getByName("debug")
+            isMinifyEnabled = false
+            isShrinkResources = false
+            isDebuggable = true
         }
     }
 }
