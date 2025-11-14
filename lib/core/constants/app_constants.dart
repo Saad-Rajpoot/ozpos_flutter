@@ -86,6 +86,7 @@ class AppConstants {
 
   // Storage keys
   static const String tokenKey = 'token';
+  static const String refreshTokenKey = 'refresh_token';
   static const String userKey = 'user';
   static const String settingsKey = 'settings';
 
@@ -146,7 +147,8 @@ class AppConstants {
   static const double gstRate = 0.10; // 10% GST (Goods and Services Tax)
 
   // Search and Filter Constants
-  static const int minSearchQueryLength = 2; // Minimum characters for search to trigger
+  static const int minSearchQueryLength =
+      2; // Minimum characters for search to trigger
 
   // UI Durations
   static const Duration snackbarDefaultDuration = Duration(seconds: 3);

@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'dart:math' show Random;
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import '../constants/app_constants.dart';
@@ -194,17 +195,28 @@ class RetryInterceptor extends Interceptor {
   /// Calculates the delay before retrying
   ///
   /// Uses exponential backoff if enabled, otherwise uses fixed delay
+  /// Adds random jitter to prevent thundering herd problem
   Duration _calculateDelay(int retryCount) {
+    final baseDelay = retryDelay.inMilliseconds;
+    int delayMs;
+
     if (useExponentialBackoff) {
       // Exponential backoff: delay = baseDelay * (exponentialBase ^ (retryCount - 1))
       // Example: retryCount=1 -> delay=baseDelay, retryCount=2 -> delay=baseDelay*base, etc.
       final exponentialMultiplier = math.pow(exponentialBase, retryCount - 1);
-      final delayMs =
-          (retryDelay.inMilliseconds * exponentialMultiplier).round();
-      return Duration(milliseconds: delayMs.clamp(100, 30000)); // Cap at 30s
+      delayMs = (baseDelay * exponentialMultiplier).round();
+      delayMs = delayMs.clamp(100, 30000); // Cap at 30s
     } else {
       // Fixed delay
-      return retryDelay;
+      delayMs = baseDelay;
     }
+
+    // Add random jitter (±20%) to prevent thundering herd problem
+    // This helps when multiple clients retry simultaneously
+    final jitterRange = (delayMs * 0.2).round();
+    final jitter = Random().nextInt(jitterRange * 2) - jitterRange;
+    delayMs = (delayMs + jitter).clamp(100, 30000);
+
+    return Duration(milliseconds: delayMs);
   }
 }

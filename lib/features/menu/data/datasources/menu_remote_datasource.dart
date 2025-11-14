@@ -4,6 +4,8 @@ import '../../../../core/network/api_client.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/errors/exceptions.dart';
 import '../../../../core/utils/exception_helper.dart';
+import '../../../../core/models/pagination_params.dart';
+import '../../../../core/models/paginated_response.dart';
 import '../models/menu_item_model.dart';
 import '../models/menu_category_model.dart';
 import 'menu_data_source.dart';
@@ -48,10 +50,34 @@ class MenuRemoteDataSourceImpl implements MenuDataSource {
   }
 
   @override
+  Future<PaginatedResponse<MenuItemModel>> getMenuItemsPaginated({
+    PaginationParams? pagination,
+  }) async {
+    try {
+      final params = pagination ?? const PaginationParams();
+      final response = await apiClient.get(
+        AppConstants.getMenuItemsEndpoint,
+        queryParameters: params.toQueryParams(),
+      );
+      return ExceptionHelper.validatePaginatedResponse<MenuItemModel>(
+        response.data,
+        (json) => MenuItemModel.fromJson(json),
+        'fetching menu items',
+      );
+    } on DioException catch (e) {
+      throw _handleDioException(e, 'fetching menu items');
+    } catch (e) {
+      throw ServerException(
+          message: 'Unexpected error fetching menu items: $e');
+    }
+  }
+
+  @override
   Future<List<MenuItemModel>> getMenuItemsByCategory(String categoryId) async {
     try {
       final response = await apiClient.get(
-        '${AppConstants.getMenuItemsEndpoint}?category_id=$categoryId',
+        AppConstants.getMenuItemsEndpoint,
+        queryParameters: {'category_id': categoryId},
       );
       final data = ExceptionHelper.validateListResponse(
         response.data,
@@ -60,6 +86,34 @@ class MenuRemoteDataSourceImpl implements MenuDataSource {
       return data
           .map((json) => MenuItemModel.fromJson(json as Map<String, dynamic>))
           .toList();
+    } on DioException catch (e) {
+      throw _handleDioException(e, 'fetching menu items by category');
+    } catch (e) {
+      throw ServerException(
+          message: 'Unexpected error fetching menu items by category: $e');
+    }
+  }
+
+  @override
+  Future<PaginatedResponse<MenuItemModel>> getMenuItemsByCategoryPaginated(
+    String categoryId, {
+    PaginationParams? pagination,
+  }) async {
+    try {
+      final params = pagination ?? const PaginationParams();
+      final queryParams = {
+        'category_id': categoryId,
+        ...params.toQueryParams(),
+      };
+      final response = await apiClient.get(
+        AppConstants.getMenuItemsEndpoint,
+        queryParameters: queryParams,
+      );
+      return ExceptionHelper.validatePaginatedResponse<MenuItemModel>(
+        response.data,
+        (json) => MenuItemModel.fromJson(json),
+        'fetching menu items by category',
+      );
     } on DioException catch (e) {
       throw _handleDioException(e, 'fetching menu items by category');
     } catch (e) {
@@ -114,6 +168,29 @@ class MenuRemoteDataSourceImpl implements MenuDataSource {
   }
 
   @override
+  Future<PaginatedResponse<MenuCategoryModel>> getMenuCategoriesPaginated({
+    PaginationParams? pagination,
+  }) async {
+    try {
+      final params = pagination ?? const PaginationParams();
+      final response = await apiClient.get(
+        AppConstants.getMenuCategoriesEndpoint,
+        queryParameters: params.toQueryParams(),
+      );
+      return ExceptionHelper.validatePaginatedResponse<MenuCategoryModel>(
+        response.data,
+        (json) => MenuCategoryModel.fromJson(json),
+        'fetching menu categories',
+      );
+    } on DioException catch (e) {
+      throw _handleDioException(e, 'fetching menu categories');
+    } catch (e) {
+      throw ServerException(
+          message: 'Unexpected error fetching menu categories: $e');
+    }
+  }
+
+  @override
   Future<MenuCategoryModel> getMenuCategoryById(String id) async {
     try {
       final response =
@@ -141,7 +218,8 @@ class MenuRemoteDataSourceImpl implements MenuDataSource {
   Future<List<MenuItemModel>> searchMenuItems(String query) async {
     try {
       final response = await apiClient.get(
-        '${AppConstants.getMenuItemsEndpoint}?search=$query',
+        AppConstants.getMenuItemsEndpoint,
+        queryParameters: {'search': query},
       );
       final data = ExceptionHelper.validateListResponse(
         response.data,
@@ -159,10 +237,39 @@ class MenuRemoteDataSourceImpl implements MenuDataSource {
   }
 
   @override
+  Future<PaginatedResponse<MenuItemModel>> searchMenuItemsPaginated(
+    String query, {
+    PaginationParams? pagination,
+  }) async {
+    try {
+      final params = pagination ?? const PaginationParams();
+      final queryParams = {
+        'search': query,
+        ...params.toQueryParams(),
+      };
+      final response = await apiClient.get(
+        AppConstants.getMenuItemsEndpoint,
+        queryParameters: queryParams,
+      );
+      return ExceptionHelper.validatePaginatedResponse<MenuItemModel>(
+        response.data,
+        (json) => MenuItemModel.fromJson(json),
+        'searching menu items',
+      );
+    } on DioException catch (e) {
+      throw _handleDioException(e, 'searching menu items');
+    } catch (e) {
+      throw ServerException(
+          message: 'Unexpected error searching menu items: $e');
+    }
+  }
+
+  @override
   Future<List<MenuItemModel>> getPopularMenuItems() async {
     try {
       final response = await apiClient.get(
-        '${AppConstants.getMenuItemsEndpoint}?popular=true',
+        AppConstants.getMenuItemsEndpoint,
+        queryParameters: {'popular': 'true'},
       );
       final data = ExceptionHelper.validateListResponse(
         response.data,
@@ -171,6 +278,33 @@ class MenuRemoteDataSourceImpl implements MenuDataSource {
       return data
           .map((json) => MenuItemModel.fromJson(json as Map<String, dynamic>))
           .toList();
+    } on DioException catch (e) {
+      throw _handleDioException(e, 'fetching popular menu items');
+    } catch (e) {
+      throw ServerException(
+          message: 'Unexpected error fetching popular menu items: $e');
+    }
+  }
+
+  @override
+  Future<PaginatedResponse<MenuItemModel>> getPopularMenuItemsPaginated({
+    PaginationParams? pagination,
+  }) async {
+    try {
+      final params = pagination ?? const PaginationParams();
+      final queryParams = {
+        'popular': 'true',
+        ...params.toQueryParams(),
+      };
+      final response = await apiClient.get(
+        AppConstants.getMenuItemsEndpoint,
+        queryParameters: queryParams,
+      );
+      return ExceptionHelper.validatePaginatedResponse<MenuItemModel>(
+        response.data,
+        (json) => MenuItemModel.fromJson(json),
+        'fetching popular menu items',
+      );
     } on DioException catch (e) {
       throw _handleDioException(e, 'fetching popular menu items');
     } catch (e) {

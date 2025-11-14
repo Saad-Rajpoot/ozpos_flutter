@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import '../errors/exceptions.dart';
+import '../models/paginated_response.dart';
 
 /// Global exception helper for handling DioException and other API errors
 /// This provides a standardized error handling pattern across all data sources
@@ -36,8 +37,21 @@ class ExceptionHelper {
       final statusCode = e.response?.statusCode;
       final statusMessage = e.response?.statusMessage ?? 'Unknown error';
 
+      // Try to extract detailed error message from response body
+      String? detailedMessage;
+      if (e.response?.data is Map<String, dynamic>) {
+        final errorData = e.response!.data as Map<String, dynamic>;
+        detailedMessage = errorData['message'] ??
+            errorData['error'] ??
+            errorData['errors']?.toString() ??
+            errorData['data']?['message'];
+      } else if (e.response?.data is String) {
+        detailedMessage = e.response!.data as String;
+      }
+
       return ServerException(
-        message: 'Server error during $operation ($statusCode): $statusMessage',
+        message: detailedMessage ??
+            'Server error during $operation ($statusCode): $statusMessage',
       );
     }
 
@@ -115,5 +129,58 @@ class ExceptionHelper {
     }
 
     return data;
+  }
+
+  /// Validate and extract paginated response from API response
+  ///
+  /// [responseData] - The response.data from API call
+  /// [fromJson] - Function to convert JSON item to T
+  /// [operation] - Description of the operation for error messages
+  /// [dataKey] - Key containing the data array (default: 'data')
+  /// [pageKey] - Key containing current page (default: 'current_page')
+  /// [totalPagesKey] - Key containing total pages (default: 'last_page')
+  /// [totalItemsKey] - Key containing total items (default: 'total')
+  /// [perPageKey] - Key containing items per page (default: 'per_page')
+  ///
+  /// Returns PaginatedResponse<T> or throws ServerException if invalid
+  static PaginatedResponse<T> validatePaginatedResponse<T>(
+    dynamic responseData,
+    T Function(Map<String, dynamic>) fromJson,
+    String operation, {
+    String dataKey = 'data',
+    String pageKey = 'current_page',
+    String totalPagesKey = 'last_page',
+    String totalItemsKey = 'total',
+    String perPageKey = 'per_page',
+  }) {
+    if (responseData == null) {
+      throw ServerException(
+        message:
+            'Invalid response format during $operation: response data is null',
+      );
+    }
+
+    if (responseData is! Map<String, dynamic>) {
+      throw ServerException(
+        message:
+            'Invalid response format during $operation: expected Map, got ${responseData.runtimeType}',
+      );
+    }
+
+    try {
+      return PaginatedResponse<T>.fromJson(
+        responseData,
+        fromJson,
+        dataKey: dataKey,
+        pageKey: pageKey,
+        totalPagesKey: totalPagesKey,
+        totalItemsKey: totalItemsKey,
+        perPageKey: perPageKey,
+      );
+    } catch (e) {
+      throw ServerException(
+        message: 'Invalid paginated response format during $operation: $e',
+      );
+    }
   }
 }

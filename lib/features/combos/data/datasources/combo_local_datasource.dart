@@ -5,6 +5,8 @@ import '../../domain/entities/combo_limits_entity.dart';
 import '../../domain/entities/combo_option_entity.dart';
 import '../../domain/entities/combo_pricing_entity.dart';
 import '../../../../core/errors/exceptions.dart';
+import '../../../../core/models/pagination_params.dart';
+import '../../../../core/models/paginated_response.dart';
 import '../models/combo_model.dart';
 import '../models/combo_slot_model.dart';
 import '../models/combo_availability_model.dart';
@@ -145,5 +147,209 @@ class ComboLocalDataSourceImpl implements ComboDataSource {
             .insert('combos', ComboModel.fromEntity(combo).toJson())
             .then((value) =>
                 ComboModel.fromJson(value as Map<String, dynamic>).toEntity()));
+  }
+
+  @override
+  Future<PaginatedResponse<ComboEntity>> getCombosPaginated({
+    PaginationParams? pagination,
+  }) async {
+    try {
+      final params = pagination ?? const PaginationParams();
+      final allMaps = await database.query('combos');
+      final allItems = allMaps
+          .map((json) => ComboModel.fromJson(json).toEntity())
+          .toList();
+      
+      final totalItems = allItems.length;
+      final totalPages = (totalItems / params.limit).ceil();
+      final startIndex = (params.page - 1) * params.limit;
+      final endIndex = (startIndex + params.limit).clamp(0, totalItems);
+      final paginatedItems = allItems.sublist(
+        startIndex.clamp(0, totalItems),
+        endIndex,
+      );
+
+      return PaginatedResponse<ComboEntity>(
+        data: paginatedItems,
+        currentPage: params.page,
+        totalPages: totalPages,
+        totalItems: totalItems,
+        perPage: params.limit,
+      );
+    } catch (e) {
+      throw ServerException(
+        message: 'Failed to fetch combos from local database',
+      );
+    }
+  }
+
+  @override
+  Future<PaginatedResponse<ComboSlotEntity>> getComboSlotsPaginated({
+    PaginationParams? pagination,
+  }) async {
+    try {
+      final params = pagination ?? const PaginationParams();
+      final allMaps = await database.query('combo_slots');
+      final allItems = allMaps
+          .map((json) => ComboSlotModel.fromJson(json).toEntity())
+          .toList();
+      
+      final totalItems = allItems.length;
+      final totalPages = (totalItems / params.limit).ceil();
+      final startIndex = (params.page - 1) * params.limit;
+      final endIndex = (startIndex + params.limit).clamp(0, totalItems);
+      final paginatedItems = allItems.sublist(
+        startIndex.clamp(0, totalItems),
+        endIndex,
+      );
+
+      return PaginatedResponse<ComboSlotEntity>(
+        data: paginatedItems,
+        currentPage: params.page,
+        totalPages: totalPages,
+        totalItems: totalItems,
+        perPage: params.limit,
+      );
+    } catch (e) {
+      throw ServerException(
+        message: 'Failed to fetch combo slots from local database',
+      );
+    }
+  }
+
+  @override
+  Future<PaginatedResponse<ComboAvailabilityEntity>> getComboAvailabilityPaginated({
+    PaginationParams? pagination,
+  }) async {
+    try {
+      final params = pagination ?? const PaginationParams();
+      final allMaps = await database.query('combo_availability');
+      final allItems = allMaps
+          .map((json) => ComboAvailabilityModel.fromJson(json).toEntity())
+          .toList();
+      
+      final totalItems = allItems.length;
+      final totalPages = (totalItems / params.limit).ceil();
+      final startIndex = (params.page - 1) * params.limit;
+      final endIndex = (startIndex + params.limit).clamp(0, totalItems);
+      final paginatedItems = allItems.sublist(
+        startIndex.clamp(0, totalItems),
+        endIndex,
+      );
+
+      return PaginatedResponse<ComboAvailabilityEntity>(
+        data: paginatedItems,
+        currentPage: params.page,
+        totalPages: totalPages,
+        totalItems: totalItems,
+        perPage: params.limit,
+      );
+    } catch (e) {
+      throw ServerException(
+        message: 'Failed to fetch combo availability from local database',
+      );
+    }
+  }
+
+  @override
+  Future<PaginatedResponse<ComboLimitsEntity>> getComboLimitsPaginated({
+    PaginationParams? pagination,
+  }) async {
+    try {
+      final params = pagination ?? const PaginationParams();
+      final allMaps = await database.query('combo_limits');
+      final allItems = allMaps
+          .map((json) => ComboLimitsModel.fromJson(json).toEntity())
+          .toList();
+      
+      final totalItems = allItems.length;
+      final totalPages = (totalItems / params.limit).ceil();
+      final startIndex = (params.page - 1) * params.limit;
+      final endIndex = (startIndex + params.limit).clamp(0, totalItems);
+      final paginatedItems = allItems.sublist(
+        startIndex.clamp(0, totalItems),
+        endIndex,
+      );
+
+      return PaginatedResponse<ComboLimitsEntity>(
+        data: paginatedItems,
+        currentPage: params.page,
+        totalPages: totalPages,
+        totalItems: totalItems,
+        perPage: params.limit,
+      );
+    } catch (e) {
+      throw ServerException(
+        message: 'Failed to fetch combo limits from local database',
+      );
+    }
+  }
+
+  @override
+  Future<PaginatedResponse<ComboOptionEntity>> getComboOptionsPaginated({
+    PaginationParams? pagination,
+  }) async {
+    try {
+      final params = pagination ?? const PaginationParams();
+      final allMaps = await database.query('combo_options');
+      final allItems = allMaps
+          .map((json) => ComboOptionModel.fromJson(json).toEntity())
+          .toList();
+      
+      final totalItems = allItems.length;
+      final totalPages = (totalItems / params.limit).ceil();
+      final startIndex = (params.page - 1) * params.limit;
+      final endIndex = (startIndex + params.limit).clamp(0, totalItems);
+      final paginatedItems = allItems.sublist(
+        startIndex.clamp(0, totalItems),
+        endIndex,
+      );
+
+      return PaginatedResponse<ComboOptionEntity>(
+        data: paginatedItems,
+        currentPage: params.page,
+        totalPages: totalPages,
+        totalItems: totalItems,
+        perPage: params.limit,
+      );
+    } catch (e) {
+      throw ServerException(
+        message: 'Failed to fetch combo options from local database',
+      );
+    }
+  }
+
+  @override
+  Future<PaginatedResponse<ComboPricingEntity>> getComboPricingPaginated({
+    PaginationParams? pagination,
+  }) async {
+    try {
+      final params = pagination ?? const PaginationParams();
+      final allMaps = await database.query('combo_pricing');
+      final allItems = allMaps
+          .map((json) => ComboPricingModel.fromJson(json).toEntity())
+          .toList();
+      
+      final totalItems = allItems.length;
+      final totalPages = (totalItems / params.limit).ceil();
+      final startIndex = (params.page - 1) * params.limit;
+      final endIndex = (startIndex + params.limit).clamp(0, totalItems);
+      final paginatedItems = allItems.sublist(
+        startIndex.clamp(0, totalItems),
+        endIndex,
+      );
+
+      return PaginatedResponse<ComboPricingEntity>(
+        data: paginatedItems,
+        currentPage: params.page,
+        totalPages: totalPages,
+        totalItems: totalItems,
+        perPage: params.limit,
+      );
+    } catch (e) {
+      throw ServerException(
+        message: 'Failed to fetch combo pricing from local database',
+      );
+    }
   }
 }

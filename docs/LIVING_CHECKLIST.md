@@ -35,7 +35,7 @@
 - [ ] Flutter: `flutter analyze` clean, `flutter test` green, golden tests updated with review.
 - [ ] **BLoC classes** properly tested and documented.
 - [ ] **Freezed models** with proper equality and toString implementations.
-- [ ] **Dio interceptors** tested for auth, retry, and ETag handling.
+- [ ] **Dio interceptors** tested for auth, retry.
 - [ ] OpenAPI updated and validated; Postman collection regenerated.
 - [ ] New env vars documented in README and `example.env` (server only).
 - [ ] Sentry tags (`vendor_id`, `user_role`, `order_id`, `integration_service`) set where applicable.

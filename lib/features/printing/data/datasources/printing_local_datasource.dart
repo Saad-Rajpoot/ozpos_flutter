@@ -1,5 +1,7 @@
 import 'package:sqflite/sqflite.dart';
 import '../../../../core/errors/exceptions.dart';
+import '../../../../core/models/pagination_params.dart';
+import '../../../../core/models/paginated_response.dart';
 import '../models/printer_model.dart';
 import 'printing_data_source.dart';
 
@@ -150,7 +152,42 @@ class PrintingLocalDataSourceImpl implements PrintingDataSource {
       'is_default': printer.isDefault ? 1 : 0,
       'last_used_at': printer.lastUsedAt,
       if (createdAt != null) 'created_at': createdAt,
-      if (updatedAt != null) 'updated_at': updatedAt,
+      if (updatedAt != null)       'updated_at': updatedAt,
     };
+  }
+
+  @override
+  Future<PaginatedResponse<PrinterModel>> getPrintersPaginated({
+    PaginationParams? pagination,
+  }) async {
+    try {
+      final params = pagination ?? const PaginationParams();
+      final allMaps = await database.query(
+        'printers',
+        orderBy: 'created_at DESC',
+      );
+      final allItems = allMaps.map((map) => _mapToPrinterModel(map)).toList();
+      
+      final totalItems = allItems.length;
+      final totalPages = (totalItems / params.limit).ceil();
+      final startIndex = (params.page - 1) * params.limit;
+      final endIndex = (startIndex + params.limit).clamp(0, totalItems);
+      final paginatedItems = allItems.sublist(
+        startIndex.clamp(0, totalItems),
+        endIndex,
+      );
+
+      return PaginatedResponse<PrinterModel>(
+        data: paginatedItems,
+        currentPage: params.page,
+        totalPages: totalPages,
+        totalItems: totalItems,
+        perPage: params.limit,
+      );
+    } catch (e) {
+      throw ServerException(
+        message: 'Failed to fetch printers from local database: ${e.toString()}',
+      );
+    }
   }
 }

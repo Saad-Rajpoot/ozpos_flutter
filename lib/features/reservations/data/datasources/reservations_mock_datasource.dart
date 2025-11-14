@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
+import '../../../../core/models/pagination_params.dart';
+import '../../../../core/models/paginated_response.dart';
 import '../../domain/entities/reservation_entity.dart';
 import '../models/reservation_model.dart';
 import 'reservations_data_source.dart';
@@ -38,5 +40,31 @@ class ReservationsMockDataSourceImpl implements ReservationsDataSource {
         throw Exception('Failed to load reservations: ${e.toString()}');
       }
     }
+  }
+
+  @override
+  Future<PaginatedResponse<ReservationEntity>> getReservationsPaginated({
+    PaginationParams? pagination,
+  }) async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    final params = pagination ?? const PaginationParams();
+    final allReservations = await getReservations();
+    
+    final totalItems = allReservations.length;
+    final totalPages = (totalItems / params.limit).ceil();
+    final startIndex = (params.page - 1) * params.limit;
+    final endIndex = (startIndex + params.limit).clamp(0, totalItems);
+    final paginatedReservations = allReservations.sublist(
+      startIndex.clamp(0, totalItems),
+      endIndex,
+    );
+
+    return PaginatedResponse<ReservationEntity>(
+      data: paginatedReservations,
+      currentPage: params.page,
+      totalPages: totalPages,
+      totalItems: totalItems,
+      perPage: params.limit,
+    );
   }
 }

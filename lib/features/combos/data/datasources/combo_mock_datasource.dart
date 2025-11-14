@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
+import '../../../../core/models/pagination_params.dart';
+import '../../../../core/models/paginated_response.dart';
 import '../../domain/entities/combo_entity.dart';
 import '../../domain/entities/combo_slot_entity.dart';
 import '../../domain/entities/combo_availability_entity.dart';
@@ -268,5 +270,161 @@ class ComboMockDataSourceImpl implements ComboDataSource {
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
         hasUnsavedChanges: false));
+  }
+
+  @override
+  Future<PaginatedResponse<ComboEntity>> getCombosPaginated({
+    PaginationParams? pagination,
+  }) async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    final params = pagination ?? const PaginationParams();
+    final allCombos = await getCombos();
+    
+    final totalItems = allCombos.length;
+    final totalPages = (totalItems / params.limit).ceil();
+    final startIndex = (params.page - 1) * params.limit;
+    final endIndex = (startIndex + params.limit).clamp(0, totalItems);
+    final paginatedCombos = allCombos.sublist(
+      startIndex.clamp(0, totalItems),
+      endIndex,
+    );
+
+    return PaginatedResponse<ComboEntity>(
+      data: paginatedCombos,
+      currentPage: params.page,
+      totalPages: totalPages,
+      totalItems: totalItems,
+      perPage: params.limit,
+    );
+  }
+
+  @override
+  Future<PaginatedResponse<ComboSlotEntity>> getComboSlotsPaginated({
+    PaginationParams? pagination,
+  }) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    final params = pagination ?? const PaginationParams();
+    final allSlots = await getComboSlots();
+    
+    final totalItems = allSlots.length;
+    final totalPages = (totalItems / params.limit).ceil();
+    final startIndex = (params.page - 1) * params.limit;
+    final endIndex = (startIndex + params.limit).clamp(0, totalItems);
+    final paginatedSlots = allSlots.sublist(
+      startIndex.clamp(0, totalItems),
+      endIndex,
+    );
+
+    return PaginatedResponse<ComboSlotEntity>(
+      data: paginatedSlots,
+      currentPage: params.page,
+      totalPages: totalPages,
+      totalItems: totalItems,
+      perPage: params.limit,
+    );
+  }
+
+  @override
+  Future<PaginatedResponse<ComboAvailabilityEntity>> getComboAvailabilityPaginated({
+    PaginationParams? pagination,
+  }) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    final params = pagination ?? const PaginationParams();
+    final allAvailability = await getComboAvailability();
+    
+    final totalItems = allAvailability.length;
+    final totalPages = (totalItems / params.limit).ceil();
+    final startIndex = (params.page - 1) * params.limit;
+    final endIndex = (startIndex + params.limit).clamp(0, totalItems);
+    final paginatedAvailability = allAvailability.sublist(
+      startIndex.clamp(0, totalItems),
+      endIndex,
+    );
+
+    return PaginatedResponse<ComboAvailabilityEntity>(
+      data: paginatedAvailability,
+      currentPage: params.page,
+      totalPages: totalPages,
+      totalItems: totalItems,
+      perPage: params.limit,
+    );
+  }
+
+  @override
+  Future<PaginatedResponse<ComboLimitsEntity>> getComboLimitsPaginated({
+    PaginationParams? pagination,
+  }) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    final params = pagination ?? const PaginationParams();
+    final allLimits = await getComboLimits();
+    
+    final totalItems = allLimits.length;
+    final totalPages = (totalItems / params.limit).ceil();
+    final startIndex = (params.page - 1) * params.limit;
+    final endIndex = (startIndex + params.limit).clamp(0, totalItems);
+    final paginatedLimits = allLimits.sublist(
+      startIndex.clamp(0, totalItems),
+      endIndex,
+    );
+
+    return PaginatedResponse<ComboLimitsEntity>(
+      data: paginatedLimits,
+      currentPage: params.page,
+      totalPages: totalPages,
+      totalItems: totalItems,
+      perPage: params.limit,
+    );
+  }
+
+  @override
+  Future<PaginatedResponse<ComboOptionEntity>> getComboOptionsPaginated({
+    PaginationParams? pagination,
+  }) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    final params = pagination ?? const PaginationParams();
+    final allOptions = await getComboOptions();
+    
+    final totalItems = allOptions.length;
+    final totalPages = (totalItems / params.limit).ceil();
+    final startIndex = (params.page - 1) * params.limit;
+    final endIndex = (startIndex + params.limit).clamp(0, totalItems);
+    final paginatedOptions = allOptions.sublist(
+      startIndex.clamp(0, totalItems),
+      endIndex,
+    );
+
+    return PaginatedResponse<ComboOptionEntity>(
+      data: paginatedOptions,
+      currentPage: params.page,
+      totalPages: totalPages,
+      totalItems: totalItems,
+      perPage: params.limit,
+    );
+  }
+
+  @override
+  Future<PaginatedResponse<ComboPricingEntity>> getComboPricingPaginated({
+    PaginationParams? pagination,
+  }) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    final params = pagination ?? const PaginationParams();
+    final allPricing = await getComboPricing();
+    
+    final totalItems = allPricing.length;
+    final totalPages = (totalItems / params.limit).ceil();
+    final startIndex = (params.page - 1) * params.limit;
+    final endIndex = (startIndex + params.limit).clamp(0, totalItems);
+    final paginatedPricing = allPricing.sublist(
+      startIndex.clamp(0, totalItems),
+      endIndex,
+    );
+
+    return PaginatedResponse<ComboPricingEntity>(
+      data: paginatedPricing,
+      currentPage: params.page,
+      totalPages: totalPages,
+      totalItems: totalItems,
+      perPage: params.limit,
+    );
   }
 }

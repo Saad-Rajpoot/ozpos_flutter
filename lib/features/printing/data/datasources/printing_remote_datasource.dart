@@ -1,6 +1,8 @@
 import '../../../../core/network/api_client.dart' as api_client;
 import '../../../../core/errors/exceptions.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/models/pagination_params.dart';
+import '../../../../core/models/paginated_response.dart';
 import '../models/printer_model.dart';
 import 'printing_data_source.dart';
 import '../../../../core/utils/exception_helper.dart';
@@ -23,6 +25,26 @@ class PrintingRemoteDataSourceImpl implements PrintingDataSource {
       return data
           .map((json) => PrinterModel.fromJson(json as Map<String, dynamic>))
           .toList();
+    } catch (e) {
+      throw ServerException(message: e.toString());
+    }
+  }
+
+  @override
+  Future<PaginatedResponse<PrinterModel>> getPrintersPaginated({
+    PaginationParams? pagination,
+  }) async {
+    try {
+      final params = pagination ?? const PaginationParams();
+      final response = await apiClient.get(
+        AppConstants.getPrintersEndpoint,
+        queryParameters: params.toQueryParams(),
+      );
+      return ExceptionHelper.validatePaginatedResponse<PrinterModel>(
+        response.data,
+        (json) => PrinterModel.fromJson(json),
+        'fetching printers',
+      );
     } catch (e) {
       throw ServerException(message: e.toString());
     }

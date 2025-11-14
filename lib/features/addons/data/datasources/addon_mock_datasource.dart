@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
+import '../../../../core/models/pagination_params.dart';
+import '../../../../core/models/paginated_response.dart';
 import '../../domain/entities/addon_management_entities.dart';
 import '../model/addon_category_model.dart';
 import 'addon_data_source.dart';
@@ -39,5 +41,31 @@ class AddonMockDataSourceImpl implements AddonDataSource {
         throw Exception('Failed to load addon categories: $e');
       }
     }
+  }
+
+  @override
+  Future<PaginatedResponse<AddonCategory>> getAddonCategoriesPaginated({
+    PaginationParams? pagination,
+  }) async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    final params = pagination ?? const PaginationParams();
+    final allCategories = await getAddonCategories();
+    
+    final totalItems = allCategories.length;
+    final totalPages = (totalItems / params.limit).ceil();
+    final startIndex = (params.page - 1) * params.limit;
+    final endIndex = (startIndex + params.limit).clamp(0, totalItems);
+    final paginatedCategories = allCategories.sublist(
+      startIndex.clamp(0, totalItems),
+      endIndex,
+    );
+
+    return PaginatedResponse<AddonCategory>(
+      data: paginatedCategories,
+      currentPage: params.page,
+      totalPages: totalPages,
+      totalItems: totalItems,
+      perPage: params.limit,
+    );
   }
 }

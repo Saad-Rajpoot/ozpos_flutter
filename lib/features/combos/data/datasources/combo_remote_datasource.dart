@@ -8,6 +8,8 @@ import '../../domain/entities/combo_pricing_entity.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/errors/exceptions.dart';
 import '../../../../core/utils/exception_helper.dart';
+import '../../../../core/models/pagination_params.dart';
+import '../../../../core/models/paginated_response.dart';
 import '../models/combo_model.dart';
 import '../models/combo_slot_model.dart';
 import '../models/combo_availability_model.dart';
@@ -45,6 +47,33 @@ class ComboRemoteDataSourceImpl implements ComboDataSource {
   }
 
   @override
+  Future<PaginatedResponse<ComboEntity>> getCombosPaginated({
+    PaginationParams? pagination,
+  }) async {
+    try {
+      final params = pagination ?? const PaginationParams();
+      final response = await _apiClient.get(
+        AppConstants.getCombosEndpoint,
+        queryParameters: params.toQueryParams(),
+      );
+      return ExceptionHelper.validatePaginatedResponse<ComboEntity>(
+        response.data,
+        (json) => ComboModel.fromJson(json).toEntity(),
+        'fetching combos',
+      );
+    } on DioException catch (e) {
+      throw ExceptionHelper.handleDioException(e, 'fetching combos');
+    } catch (e) {
+      if (e is ServerException || e is NetworkException) {
+        rethrow;
+      }
+      throw ServerException(
+        message: 'Unexpected error fetching combos: $e',
+      );
+    }
+  }
+
+  @override
   Future<List<ComboSlotEntity>> getComboSlots() async {
     try {
       final response = await _apiClient.get(AppConstants.getComboSlotsEndpoint);
@@ -55,6 +84,33 @@ class ComboRemoteDataSourceImpl implements ComboDataSource {
       return data
           .map((json) => ComboSlotModel.fromJson(json).toEntity())
           .toList();
+    } on DioException catch (e) {
+      throw ExceptionHelper.handleDioException(e, 'fetching combo slots');
+    } catch (e) {
+      if (e is ServerException || e is NetworkException) {
+        rethrow;
+      }
+      throw ServerException(
+        message: 'Unexpected error fetching combo slots: $e',
+      );
+    }
+  }
+
+  @override
+  Future<PaginatedResponse<ComboSlotEntity>> getComboSlotsPaginated({
+    PaginationParams? pagination,
+  }) async {
+    try {
+      final params = pagination ?? const PaginationParams();
+      final response = await _apiClient.get(
+        AppConstants.getComboSlotsEndpoint,
+        queryParameters: params.toQueryParams(),
+      );
+      return ExceptionHelper.validatePaginatedResponse<ComboSlotEntity>(
+        response.data,
+        (json) => ComboSlotModel.fromJson(json).toEntity(),
+        'fetching combo slots',
+      );
     } on DioException catch (e) {
       throw ExceptionHelper.handleDioException(e, 'fetching combo slots');
     } catch (e) {
@@ -96,6 +152,36 @@ class ComboRemoteDataSourceImpl implements ComboDataSource {
   }
 
   @override
+  Future<PaginatedResponse<ComboAvailabilityEntity>> getComboAvailabilityPaginated({
+    PaginationParams? pagination,
+  }) async {
+    try {
+      final params = pagination ?? const PaginationParams();
+      final response = await _apiClient.get(
+        AppConstants.getComboAvailabilityEndpoint,
+        queryParameters: params.toQueryParams(),
+      );
+      return ExceptionHelper.validatePaginatedResponse<ComboAvailabilityEntity>(
+        response.data,
+        (json) => ComboAvailabilityModel.fromJson(json).toEntity(),
+        'fetching combo availability',
+      );
+    } on DioException catch (e) {
+      throw ExceptionHelper.handleDioException(
+        e,
+        'fetching combo availability',
+      );
+    } catch (e) {
+      if (e is ServerException || e is NetworkException) {
+        rethrow;
+      }
+      throw ServerException(
+        message: 'Unexpected error fetching combo availability: $e',
+      );
+    }
+  }
+
+  @override
   Future<List<ComboLimitsEntity>> getComboLimits() async {
     try {
       final response = await _apiClient.get(
@@ -108,6 +194,33 @@ class ComboRemoteDataSourceImpl implements ComboDataSource {
       return data
           .map((json) => ComboLimitsModel.fromJson(json).toEntity())
           .toList();
+    } on DioException catch (e) {
+      throw ExceptionHelper.handleDioException(e, 'fetching combo limits');
+    } catch (e) {
+      if (e is ServerException || e is NetworkException) {
+        rethrow;
+      }
+      throw ServerException(
+        message: 'Unexpected error fetching combo limits: $e',
+      );
+    }
+  }
+
+  @override
+  Future<PaginatedResponse<ComboLimitsEntity>> getComboLimitsPaginated({
+    PaginationParams? pagination,
+  }) async {
+    try {
+      final params = pagination ?? const PaginationParams();
+      final response = await _apiClient.get(
+        AppConstants.getComboLimitsEndpoint,
+        queryParameters: params.toQueryParams(),
+      );
+      return ExceptionHelper.validatePaginatedResponse<ComboLimitsEntity>(
+        response.data,
+        (json) => ComboLimitsModel.fromJson(json).toEntity(),
+        'fetching combo limits',
+      );
     } on DioException catch (e) {
       throw ExceptionHelper.handleDioException(e, 'fetching combo limits');
     } catch (e) {
@@ -146,6 +259,33 @@ class ComboRemoteDataSourceImpl implements ComboDataSource {
   }
 
   @override
+  Future<PaginatedResponse<ComboOptionEntity>> getComboOptionsPaginated({
+    PaginationParams? pagination,
+  }) async {
+    try {
+      final params = pagination ?? const PaginationParams();
+      final response = await _apiClient.get(
+        AppConstants.getComboOptionsEndpoint,
+        queryParameters: params.toQueryParams(),
+      );
+      return ExceptionHelper.validatePaginatedResponse<ComboOptionEntity>(
+        response.data,
+        (json) => ComboOptionModel.fromJson(json).toEntity(),
+        'fetching combo options',
+      );
+    } on DioException catch (e) {
+      throw ExceptionHelper.handleDioException(e, 'fetching combo options');
+    } catch (e) {
+      if (e is ServerException || e is NetworkException) {
+        rethrow;
+      }
+      throw ServerException(
+        message: 'Unexpected error fetching combo options: $e',
+      );
+    }
+  }
+
+  @override
   Future<List<ComboPricingEntity>> getComboPricing() async {
     try {
       final response = await _apiClient.get(
@@ -158,6 +298,33 @@ class ComboRemoteDataSourceImpl implements ComboDataSource {
       return data
           .map((json) => ComboPricingModel.fromJson(json).toEntity())
           .toList();
+    } on DioException catch (e) {
+      throw ExceptionHelper.handleDioException(e, 'fetching combo pricing');
+    } catch (e) {
+      if (e is ServerException || e is NetworkException) {
+        rethrow;
+      }
+      throw ServerException(
+        message: 'Unexpected error fetching combo pricing: $e',
+      );
+    }
+  }
+
+  @override
+  Future<PaginatedResponse<ComboPricingEntity>> getComboPricingPaginated({
+    PaginationParams? pagination,
+  }) async {
+    try {
+      final params = pagination ?? const PaginationParams();
+      final response = await _apiClient.get(
+        AppConstants.getComboPricingEndpoint,
+        queryParameters: params.toQueryParams(),
+      );
+      return ExceptionHelper.validatePaginatedResponse<ComboPricingEntity>(
+        response.data,
+        (json) => ComboPricingModel.fromJson(json).toEntity(),
+        'fetching combo pricing',
+      );
     } on DioException catch (e) {
       throw ExceptionHelper.handleDioException(e, 'fetching combo pricing');
     } catch (e) {

@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
 
 import '../../../../core/errors/exceptions.dart';
+import '../../../../core/models/pagination_params.dart';
+import '../../../../core/models/paginated_response.dart';
 import '../models/menu_item_model.dart';
 import '../models/menu_category_model.dart';
 import '../../domain/entities/menu_item_entity.dart';
@@ -182,6 +184,158 @@ class MenuMockDataSourceImpl implements MenuDataSource {
               item.tags.contains('Best Seller'),
         )
         .toList();
+  }
+
+  @override
+  Future<PaginatedResponse<MenuItemModel>> getMenuItemsPaginated({
+    PaginationParams? pagination,
+  }) async {
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    final params = pagination ?? const PaginationParams();
+    final allItems = await _getMockMenuItems();
+    final totalItems = allItems.length;
+    final totalPages = (totalItems / params.limit).ceil();
+    final startIndex = (params.page - 1) * params.limit;
+    final endIndex = (startIndex + params.limit).clamp(0, totalItems);
+    final paginatedItems = allItems.sublist(
+      startIndex.clamp(0, totalItems),
+      endIndex,
+    );
+
+    return PaginatedResponse<MenuItemModel>(
+      data: paginatedItems,
+      currentPage: params.page,
+      totalPages: totalPages,
+      totalItems: totalItems,
+      perPage: params.limit,
+    );
+  }
+
+  @override
+  Future<PaginatedResponse<MenuItemModel>> getMenuItemsByCategoryPaginated(
+    String categoryId, {
+    PaginationParams? pagination,
+  }) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+
+    final params = pagination ?? const PaginationParams();
+    final allItems = await _getMockMenuItems();
+    final filteredItems =
+        allItems.where((item) => item.categoryId == categoryId).toList();
+    final totalItems = filteredItems.length;
+    final totalPages = (totalItems / params.limit).ceil();
+    final startIndex = (params.page - 1) * params.limit;
+    final endIndex = (startIndex + params.limit).clamp(0, totalItems);
+    final paginatedItems = filteredItems.sublist(
+      startIndex.clamp(0, totalItems),
+      endIndex,
+    );
+
+    return PaginatedResponse<MenuItemModel>(
+      data: paginatedItems,
+      currentPage: params.page,
+      totalPages: totalPages,
+      totalItems: totalItems,
+      perPage: params.limit,
+    );
+  }
+
+  @override
+  Future<PaginatedResponse<MenuCategoryModel>> getMenuCategoriesPaginated({
+    PaginationParams? pagination,
+  }) async {
+    await Future.delayed(const Duration(milliseconds: 400));
+
+    final params = pagination ?? const PaginationParams();
+    final allCategories = await _getMockCategories();
+    final totalItems = allCategories.length;
+    final totalPages = (totalItems / params.limit).ceil();
+    final startIndex = (params.page - 1) * params.limit;
+    final endIndex = (startIndex + params.limit).clamp(0, totalItems);
+    final paginatedCategories = allCategories.sublist(
+      startIndex.clamp(0, totalItems),
+      endIndex,
+    );
+
+    return PaginatedResponse<MenuCategoryModel>(
+      data: paginatedCategories,
+      currentPage: params.page,
+      totalPages: totalPages,
+      totalItems: totalItems,
+      perPage: params.limit,
+    );
+  }
+
+  @override
+  Future<PaginatedResponse<MenuItemModel>> searchMenuItemsPaginated(
+    String query, {
+    PaginationParams? pagination,
+  }) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+
+    final params = pagination ?? const PaginationParams();
+    final allItems = await _getMockMenuItems();
+    final lowercaseQuery = query.toLowerCase();
+    final filteredItems = allItems
+        .where(
+          (item) =>
+              item.name.toLowerCase().contains(lowercaseQuery) ||
+              item.description.toLowerCase().contains(lowercaseQuery) ||
+              item.tags.any(
+                (tag) => tag.toLowerCase().contains(lowercaseQuery),
+              ),
+        )
+        .toList();
+    final totalItems = filteredItems.length;
+    final totalPages = (totalItems / params.limit).ceil();
+    final startIndex = (params.page - 1) * params.limit;
+    final endIndex = (startIndex + params.limit).clamp(0, totalItems);
+    final paginatedItems = filteredItems.sublist(
+      startIndex.clamp(0, totalItems),
+      endIndex,
+    );
+
+    return PaginatedResponse<MenuItemModel>(
+      data: paginatedItems,
+      currentPage: params.page,
+      totalPages: totalPages,
+      totalItems: totalItems,
+      perPage: params.limit,
+    );
+  }
+
+  @override
+  Future<PaginatedResponse<MenuItemModel>> getPopularMenuItemsPaginated({
+    PaginationParams? pagination,
+  }) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+
+    final params = pagination ?? const PaginationParams();
+    final allItems = await _getMockMenuItems();
+    final filteredItems = allItems
+        .where(
+          (item) =>
+              item.tags.contains('Popular') ||
+              item.tags.contains('Best Seller'),
+        )
+        .toList();
+    final totalItems = filteredItems.length;
+    final totalPages = (totalItems / params.limit).ceil();
+    final startIndex = (params.page - 1) * params.limit;
+    final endIndex = (startIndex + params.limit).clamp(0, totalItems);
+    final paginatedItems = filteredItems.sublist(
+      startIndex.clamp(0, totalItems),
+      endIndex,
+    );
+
+    return PaginatedResponse<MenuItemModel>(
+      data: paginatedItems,
+      currentPage: params.page,
+      totalPages: totalPages,
+      totalItems: totalItems,
+      perPage: params.limit,
+    );
   }
 
   /// Load menu items from JSON file

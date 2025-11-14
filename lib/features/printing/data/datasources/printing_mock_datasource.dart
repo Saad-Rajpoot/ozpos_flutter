@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
+import '../../../../core/models/pagination_params.dart';
+import '../../../../core/models/paginated_response.dart';
 import '../models/printer_model.dart';
 import 'printing_data_source.dart';
 
@@ -63,5 +65,31 @@ class PrintingMockDataSourceImpl implements PrintingDataSource {
   Future<void> deletePrinter(String printerId) async {
     await Future.delayed(const Duration(milliseconds: 500));
     // In mock, we just return (no actual deletion)
+  }
+
+  @override
+  Future<PaginatedResponse<PrinterModel>> getPrintersPaginated({
+    PaginationParams? pagination,
+  }) async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    final params = pagination ?? const PaginationParams();
+    final allPrinters = await getPrinters();
+    
+    final totalItems = allPrinters.length;
+    final totalPages = (totalItems / params.limit).ceil();
+    final startIndex = (params.page - 1) * params.limit;
+    final endIndex = (startIndex + params.limit).clamp(0, totalItems);
+    final paginatedPrinters = allPrinters.sublist(
+      startIndex.clamp(0, totalItems),
+      endIndex,
+    );
+
+    return PaginatedResponse<PrinterModel>(
+      data: paginatedPrinters,
+      currentPage: params.page,
+      totalPages: totalPages,
+      totalItems: totalItems,
+      perPage: params.limit,
+    );
   }
 }

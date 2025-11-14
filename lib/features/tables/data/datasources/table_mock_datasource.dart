@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
 
 import '../../../../core/errors/exceptions.dart';
+import '../../../../core/models/pagination_params.dart';
+import '../../../../core/models/paginated_response.dart';
 import '../../domain/entities/table_entity.dart';
 import '../models/table_model.dart';
 import 'table_data_source.dart';
@@ -75,5 +77,57 @@ class TableMockDataSourceImpl implements TableDataSource {
         throw CacheException(message: 'Failed to load available tables: $e');
       }
     }
+  }
+
+  @override
+  Future<PaginatedResponse<TableEntity>> getTablesPaginated({
+    PaginationParams? pagination,
+  }) async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    final params = pagination ?? const PaginationParams();
+    final allTables = await getTables();
+    
+    final totalItems = allTables.length;
+    final totalPages = (totalItems / params.limit).ceil();
+    final startIndex = (params.page - 1) * params.limit;
+    final endIndex = (startIndex + params.limit).clamp(0, totalItems);
+    final paginatedTables = allTables.sublist(
+      startIndex.clamp(0, totalItems),
+      endIndex,
+    );
+
+    return PaginatedResponse<TableEntity>(
+      data: paginatedTables,
+      currentPage: params.page,
+      totalPages: totalPages,
+      totalItems: totalItems,
+      perPage: params.limit,
+    );
+  }
+
+  @override
+  Future<PaginatedResponse<TableEntity>> getMoveAvailableTablesPaginated({
+    PaginationParams? pagination,
+  }) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    final params = pagination ?? const PaginationParams();
+    final allTables = await getMoveAvailableTables();
+    
+    final totalItems = allTables.length;
+    final totalPages = (totalItems / params.limit).ceil();
+    final startIndex = (params.page - 1) * params.limit;
+    final endIndex = (startIndex + params.limit).clamp(0, totalItems);
+    final paginatedTables = allTables.sublist(
+      startIndex.clamp(0, totalItems),
+      endIndex,
+    );
+
+    return PaginatedResponse<TableEntity>(
+      data: paginatedTables,
+      currentPage: params.page,
+      totalPages: totalPages,
+      totalItems: totalItems,
+      perPage: params.limit,
+    );
   }
 }
