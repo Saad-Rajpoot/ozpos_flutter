@@ -325,6 +325,8 @@ class CartBloc extends BaseBloc<CartEvent, CartState> {
   }
 
   /// Helper method to compare modifier selections
+  ///
+  /// Uses Sets for O(n) comparison instead of O(n²) list operations
   bool _modifiersMatch(Map<String, List<String>> modifiers1,
       Map<String, List<String>> modifiers2) {
     // Check if both have same modifier groups
@@ -333,13 +335,18 @@ class CartBloc extends BaseBloc<CartEvent, CartState> {
       return false;
     }
 
-    // Check if each modifier group has same options
+    // Check if each modifier group has same options using Sets for O(n) comparison
     for (final groupId in modifiers1.keys) {
       final options1 = modifiers1[groupId] ?? [];
       final options2 = modifiers2[groupId] ?? [];
 
-      if (options1.length != options2.length) return false;
-      if (!options1.every((option) => options2.contains(option))) return false;
+      // Convert to Sets for efficient comparison (O(n) instead of O(n²))
+      final set1 = options1.toSet();
+      final set2 = options2.toSet();
+
+      // Sets are equal if they have the same elements (order doesn't matter)
+      if (set1.length != set2.length) return false;
+      if (!set1.every((option) => set2.contains(option))) return false;
     }
 
     return true;
@@ -349,9 +356,6 @@ class CartBloc extends BaseBloc<CartEvent, CartState> {
     if (state is! CartLoaded) return;
 
     final currentState = state as CartLoaded;
-
-    // If event has empty modifiers, use defaults for comparison
-    if (event.selectedModifiers.isEmpty) {}
 
     // Check if an identical item already exists in the cart
     final existingItemIndex =

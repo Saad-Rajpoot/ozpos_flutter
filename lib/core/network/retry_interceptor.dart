@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import '../constants/app_constants.dart';
@@ -195,10 +196,11 @@ class RetryInterceptor extends Interceptor {
   /// Uses exponential backoff if enabled, otherwise uses fixed delay
   Duration _calculateDelay(int retryCount) {
     if (useExponentialBackoff) {
-      // Exponential backoff: delay = baseDelay * (exponentialBase ^ retryCount)
+      // Exponential backoff: delay = baseDelay * (exponentialBase ^ (retryCount - 1))
+      // Example: retryCount=1 -> delay=baseDelay, retryCount=2 -> delay=baseDelay*base, etc.
+      final exponentialMultiplier = math.pow(exponentialBase, retryCount - 1);
       final delayMs =
-          (retryDelay.inMilliseconds * (exponentialBase * (retryCount - 1)))
-              .round();
+          (retryDelay.inMilliseconds * exponentialMultiplier).round();
       return Duration(milliseconds: delayMs.clamp(100, 30000)); // Cap at 30s
     } else {
       // Fixed delay

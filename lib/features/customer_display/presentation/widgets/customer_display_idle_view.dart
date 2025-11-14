@@ -173,6 +173,11 @@ class _PromoDots extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Guard against division-by-zero when no slides are loaded
+    if (total == 0) {
+      return const SizedBox.shrink();
+    }
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(total, (index) {

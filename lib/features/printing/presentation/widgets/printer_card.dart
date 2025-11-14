@@ -4,7 +4,7 @@ import '../../domain/entities/printing_entities.dart';
 import '../bloc/printing_bloc.dart';
 import '../bloc/printing_event.dart';
 
-class PrinterCard extends StatelessWidget {
+class PrinterCard extends StatefulWidget {
   final PrinterEntity printer;
   final Color color;
   final void Function(PrinterEntity) onEdit;
@@ -14,6 +14,11 @@ class PrinterCard extends StatelessWidget {
       required this.color,
       required this.onEdit});
 
+  @override
+  State<PrinterCard> createState() => _PrinterCardState();
+}
+
+class _PrinterCardState extends State<PrinterCard> {
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -29,12 +34,13 @@ class PrinterCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Icon(
-                  printer.connection == PrinterConnection.bluetooth
+                  widget.printer.connection == PrinterConnection.bluetooth
                       ? Icons.bluetooth
-                      : printer.connection == PrinterConnection.network
+                      : widget.printer.connection == PrinterConnection.network
                           ? Icons.wifi
                           : Icons.usb,
-                  color: printer.isConnected ? color : Colors.grey,
+                  color:
+                      widget.printer.isConnected ? widget.color : Colors.grey,
                 ),
                 const SizedBox(width: 8),
                 Expanded(
@@ -42,14 +48,14 @@ class PrinterCard extends StatelessWidget {
                     children: [
                       Flexible(
                         child: Text(
-                          printer.name,
+                          widget.printer.name,
                           style: Theme.of(context).textTheme.titleMedium,
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
                       const SizedBox(width: 4),
                       InkWell(
-                        onTap: () => onEdit(printer),
+                        onTap: () => widget.onEdit(widget.printer),
                         child: const Icon(Icons.edit_outlined, size: 16),
                       ),
                       const SizedBox(width: 6),
@@ -60,7 +66,7 @@ class PrinterCard extends StatelessWidget {
                             builder: (dialogCtx) => AlertDialog(
                               title: const Text('Delete Printer'),
                               content: Text(
-                                  'Are you sure you want to delete "${printer.name}"?'),
+                                  'Are you sure you want to delete "${widget.printer.name}"?'),
                               actions: [
                                 TextButton(
                                   onPressed: () =>
@@ -77,35 +83,36 @@ class PrinterCard extends StatelessWidget {
                               ],
                             ),
                           );
+                          // Check if widget is still mounted before using context
+                          if (!context.mounted) return;
                           if (confirm == true) {
-                            // ignore: use_build_context_synchronously
                             context.read<PrintingBloc>().add(
-                                  DeletePrinter(printerId: printer.id),
+                                  DeletePrinter(printerId: widget.printer.id),
                                 );
                           }
                         },
                         child: const Icon(Icons.delete_outline,
                             size: 16, color: Colors.redAccent),
                       ),
-                      if (printer.isDefault)
+                      if (widget.printer.isDefault)
                         Container(
                           margin: const EdgeInsets.only(left: 7),
                           padding: const EdgeInsets.symmetric(
                               horizontal: 8, vertical: 2),
                           decoration: BoxDecoration(
-                            color: color.withOpacity(0.1),
+                            color: widget.color.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text('Default',
                               style: TextStyle(
-                                  color: color,
+                                  color: widget.color,
                                   fontWeight: FontWeight.bold,
                                   fontSize: 12)),
                         )
                     ],
                   ),
                 ),
-                printer.isConnected
+                widget.printer.isConnected
                     ? const Icon(Icons.check_circle,
                         color: Colors.green, size: 18)
                     : const Icon(Icons.cancel, color: Colors.red, size: 18),
@@ -114,37 +121,39 @@ class PrinterCard extends StatelessWidget {
             const SizedBox(height: 6),
             Row(
               children: [
-                Icon(printer.isConnected ? Icons.circle : Icons.error,
-                    color: printer.isConnected ? Colors.green : Colors.red,
+                Icon(widget.printer.isConnected ? Icons.circle : Icons.error,
+                    color:
+                        widget.printer.isConnected ? Colors.green : Colors.red,
                     size: 10),
                 const SizedBox(width: 4),
                 Text(
-                  printer.isConnected ? 'Online' : 'Offline',
+                  widget.printer.isConnected ? 'Online' : 'Offline',
                   style: TextStyle(
-                      color:
-                          printer.isConnected ? Colors.green : Colors.red[700],
+                      color: widget.printer.isConnected
+                          ? Colors.green
+                          : Colors.red[700],
                       fontSize: 12),
                 ),
               ],
             ),
             const SizedBox(height: 7),
-            if (printer.address != null)
+            if (widget.printer.address != null)
               Text(
-                (printer.connection == PrinterConnection.usb
+                (widget.printer.connection == PrinterConnection.usb
                         ? 'USB Port: '
                         : 'IP Address: ') +
-                    (printer.address ?? ''),
+                    (widget.printer.address ?? ''),
                 style: const TextStyle(fontSize: 12, color: Colors.black87),
               ),
-            if (printer.port != null) const SizedBox(height: 2),
-            if (printer.port != null)
-              Text('Port: ${printer.port}',
+            if (widget.printer.port != null) const SizedBox(height: 2),
+            if (widget.printer.port != null)
+              Text('Port: ${widget.printer.port}',
                   style: const TextStyle(fontSize: 12, color: Colors.black87)),
             const SizedBox(height: 10),
             Wrap(
               spacing: 5,
               children: [
-                for (final tag in _assignableTags(printer))
+                for (final tag in _assignableTags(widget.printer))
                   Chip(
                     label: Text(tag, style: const TextStyle(fontSize: 10)),
                     backgroundColor: Colors.grey.withOpacity(0.12),
@@ -158,7 +167,7 @@ class PrinterCard extends StatelessWidget {
                 ElevatedButton(
                   onPressed: () {},
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: color,
+                    backgroundColor: widget.color,
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10)),
                     padding: const EdgeInsets.symmetric(
@@ -169,12 +178,13 @@ class PrinterCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 OutlinedButton(
-                  onPressed: printer.isDefault ? null : () {},
+                  onPressed: widget.printer.isDefault ? null : () {},
                   style: OutlinedButton.styleFrom(
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10)),
                   ),
-                  child: Text(printer.isDefault ? 'Default' : 'Set Default',
+                  child: Text(
+                      widget.printer.isDefault ? 'Default' : 'Set Default',
                       style: const TextStyle(fontSize: 13)),
                 ),
               ],
