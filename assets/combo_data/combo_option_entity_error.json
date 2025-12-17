@@ -1,0 +1,5 @@
+{
+  "error": "Failed to load combo option entities",
+  "message": "Option configuration error - duplicate option IDs detected",
+  "code": "DUPLICATE_OPTION_ID"
+}

@@ -1,0 +1,255 @@
+{
+  "kpiCards": [
+    {
+      "label": "Total Sales",
+      "value": "12,450",
+      "delta": "+8.5% vs yesterday",
+      "positive": true,
+      "color": "0xFF3B82F6"
+    },
+    {
+      "label": "Avg Order Value",
+      "value": "39.84",
+      "delta": "-2.1% vs last week",
+      "positive": false,
+      "color": "0xFF10B981"
+    },
+    {
+      "label": "Orders Completed",
+      "value": "312",
+      "delta": "+12.3% vs yesterday",
+      "positive": true,
+      "color": "0xFF8B5CF6"
+    },
+    {
+      "label": "Avg Turnover Time",
+      "value": "22m",
+      "delta": "-15.2% vs last week",
+      "positive": true,
+      "color": "0xFFF97316"
+    },
+    {
+      "label": "Gross Profit Margin",
+      "value": "68.5%",
+      "delta": "+3.4% vs last month",
+      "positive": true,
+      "color": "0xFF6366F1"
+    },
+    {
+      "label": "Loyalty Points Used",
+      "value": "2847",
+      "delta": "+18.7% points redeemed",
+      "positive": true,
+      "color": "0xFFEC4899"
+    }
+  ],
+  "orderFunnel": [
+    {
+      "label": "Orders Placed",
+      "value": 312,
+      "max": 312,
+      "color": "0xFF3B82F6"
+    },
+    {
+      "label": "In Kitchen",
+      "value": 298,
+      "max": 312,
+      "color": "0xFF8B5CF6"
+    },
+    {
+      "label": "Served",
+      "value": 287,
+      "max": 312,
+      "color": "0xFF10B981"
+    },
+    {
+      "label": "Paid",
+      "value": 281,
+      "max": 312,
+      "color": "0xFFF97316"
+    }
+  ],
+  "serviceSpeed": {
+    "avgTime": "22m",
+    "avgTimeLabel": "Avg Time",
+    "prepTime": "8m",
+    "serviceTime": "14m",
+    "chartSections": [
+      {
+        "value": 36,
+        "color": "0xFF10B981"
+      },
+      {
+        "value": 64,
+        "color": "0xFFF3F4F6"
+      }
+    ]
+  },
+  "paymentMethods": [
+    {
+      "method": "Card",
+      "percentage": 45,
+      "color": "0xFF3B82F6"
+    },
+    {
+      "method": "Cash",
+      "percentage": 30,
+      "color": "0xFF10B981"
+    },
+    {
+      "method": "Online",
+      "percentage": 15,
+      "color": "0xFF8B5CF6"
+    },
+    {
+      "method": "Wallet",
+      "percentage": 10,
+      "color": "0xFFF97316"
+    }
+  ],
+  "discountsImpact": [
+    {
+      "category": "Full",
+      "value": 238
+    },
+    {
+      "category": "5%",
+      "value": 82
+    },
+    {
+      "category": "10%",
+      "value": 45
+    },
+    {
+      "category": "Voucher",
+      "value": 15
+    }
+  ],
+  "hourlySalesTrend": [
+    {
+      "hour": 0,
+      "value": 600
+    },
+    {
+      "hour": 2,
+      "value": 1200
+    },
+    {
+      "hour": 4,
+      "value": 800
+    },
+    {
+      "hour": 6,
+      "value": 1800
+    },
+    {
+      "hour": 8,
+      "value": 1400
+    },
+    {
+      "hour": 10,
+      "value": 2100
+    }
+  ],
+  "categorySales": [
+    {
+      "name": "Burgers",
+      "amount": "4200",
+      "percentage": 0.357,
+      "color": "0xFF3B82F6"
+    },
+    {
+      "name": "Pizza",
+      "amount": "3100",
+      "percentage": 0.269,
+      "color": "0xFF10B981"
+    },
+    {
+      "name": "Drinks",
+      "amount": "2800",
+      "percentage": 0.226,
+      "color": "0xFFF97316"
+    }
+  ],
+  "topSellingItems": [
+    {
+      "emoji": "🍔",
+      "name": "Classic Burger",
+      "revenue": "1125",
+      "rank": "#1",
+      "orders": "45 orders"
+    },
+    {
+      "emoji": "🍕",
+      "name": "Margherita Pizza",
+      "revenue": "950",
+      "rank": "#2",
+      "orders": "38 orders"
+    },
+    {
+      "emoji": "🍗",
+      "name": "Chicken Wings",
+      "revenue": "896",
+      "rank": "#3",
+      "orders": "32 orders"
+    }
+  ],
+  "needsAttention": [
+    {
+      "emoji": "🌮",
+      "name": "Fish Tacos",
+      "revenue": "45",
+      "orders": "3 orders only"
+    },
+    {
+      "emoji": "🥗",
+      "name": "Quinoa Bowl",
+      "revenue": "75",
+      "orders": "5 orders only"
+    },
+    {
+      "emoji": "🌯",
+      "name": "Veggie Wrap",
+      "revenue": "84",
+      "orders": "7 orders only"
+    }
+  ],
+  "staffPerformance": [
+    {
+      "initial": "S",
+      "name": "Sarah M.",
+      "orders": "89",
+      "upsells": "23",
+      "efficiency": "95%",
+      "color": "0xFF3B82F6"
+    },
+    {
+      "initial": "M",
+      "name": "Mike R.",
+      "orders": "76",
+      "upsells": "18",
+      "efficiency": "88%",
+      "color": "0xFF10B981"
+    },
+    {
+      "initial": "L",
+      "name": "Lisa K.",
+      "orders": "82",
+      "upsells": "31",
+      "efficiency": "92%",
+      "color": "0xFF8B5CF6"
+    },
+    {
+      "initial": "T",
+      "name": "Tom W.",
+      "orders": "65",
+      "upsells": "15",
+      "efficiency": "85%",
+      "color": "0xFFF97316"
+    }
+  ],
+  "snapshotBanner": {
+    "title": "Today's Snapshot",
+    "summary": "312 Orders • 12,450 Sales • 22m Avg Turnover Time • 68.5% Profit Margin"
+  }
+}

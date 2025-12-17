@@ -1,0 +1,119 @@
+{
+  "transactions": [
+    {
+      "id": "txn_001",
+      "orderId": "ORD-1703123456789",
+      "transactionId": "TXN-1703123456789",
+      "paymentMethod": "cash",
+      "amount": 38.69,
+      "status": "completed",
+      "tenderId": "tender_001",
+      "processedAt": "2023-12-21T10:30:00Z",
+      "staffId": "staff_001",
+      "staffName": "Sarah Johnson",
+      "terminalId": "TERM-001",
+      "reference": "CASH-001"
+    },
+    {
+      "id": "txn_002",
+      "orderId": "ORD-1703123456790",
+      "transactionId": "TXN-1703123456790",
+      "paymentMethod": "card",
+      "amount": 18.80,
+      "status": "completed",
+      "tenderId": "tender_002",
+      "processedAt": "2023-12-21T11:15:00Z",
+      "staffId": "staff_002",
+      "staffName": "Mike Wilson",
+      "terminalId": "TERM-001",
+      "reference": "CARD-1234567890",
+      "cardLast4": "1234",
+      "cardType": "Visa"
+    },
+    {
+      "id": "txn_003",
+      "orderId": "ORD-1703123456791",
+      "transactionId": "TXN-1703123456791",
+      "paymentMethod": "card",
+      "amount": 82.21,
+      "status": "completed",
+      "tenderId": "tender_003",
+      "processedAt": "2023-12-21T12:00:00Z",
+      "staffId": "staff_001",
+      "staffName": "Sarah Johnson",
+      "terminalId": "TERM-001",
+      "reference": "CARD-0987654321",
+      "cardLast4": "5678",
+      "cardType": "Mastercard"
+    },
+    {
+      "id": "txn_004",
+      "orderId": "ORD-1703123456791",
+      "transactionId": "TXN-1703123456792",
+      "paymentMethod": "cash",
+      "amount": 82.21,
+      "status": "completed",
+      "tenderId": "tender_004",
+      "processedAt": "2023-12-21T12:00:00Z",
+      "staffId": "staff_001",
+      "staffName": "Sarah Johnson",
+      "terminalId": "TERM-001",
+      "reference": "CASH-002"
+    },
+    {
+      "id": "txn_005",
+      "orderId": "ORD-1703123456793",
+      "transactionId": "TXN-1703123456793",
+      "paymentMethod": "wallet",
+      "amount": 25.50,
+      "status": "failed",
+      "tenderId": "tender_005",
+      "processedAt": "2023-12-21T12:45:00Z",
+      "staffId": "staff_003",
+      "staffName": "Lisa Davis",
+      "terminalId": "TERM-001",
+      "reference": "WALLET-001",
+      "errorCode": "INSUFFICIENT_FUNDS",
+      "errorMessage": "Insufficient funds in wallet"
+    }
+  ],
+  "dailySummary": {
+    "date": "2023-12-21",
+    "totalTransactions": 5,
+    "successfulTransactions": 4,
+    "failedTransactions": 1,
+    "totalAmount": 246.41,
+    "cashAmount": 120.90,
+    "cardAmount": 101.01,
+    "walletAmount": 0.00,
+    "averageTransactionValue": 49.28,
+    "refundCount": 0,
+    "refundAmount": 0.00
+  },
+  "paymentMethodSummary": {
+    "cash": {
+      "count": 2,
+      "amount": 120.90,
+      "percentage": 49.1
+    },
+    "card": {
+      "count": 2,
+      "amount": 101.01,
+      "percentage": 41.0
+    },
+    "wallet": {
+      "count": 0,
+      "amount": 0.00,
+      "percentage": 0.0
+    },
+    "bnpl": {
+      "count": 0,
+      "amount": 0.00,
+      "percentage": 0.0
+    }
+  },
+  "metadata": {
+    "lastUpdated": "2023-12-21T12:45:00Z",
+    "totalRecords": 5
+  }
+}

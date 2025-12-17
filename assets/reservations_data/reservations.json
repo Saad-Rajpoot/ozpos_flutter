@@ -1,0 +1,168 @@
+[
+  {
+    "reservationId": "res-001",
+    "vendorId": "vendor-1",
+    "branchId": "branch-1",
+    "tableId": "Table 12",
+    "guest": {
+      "name": "Sarah Johnson",
+      "phone": "+1 234-567-8901"
+    },
+    "party": {
+      "size": 4
+    },
+    "timing": {
+      "startAt": "2025-10-08T19:00:00.000Z",
+      "durationMinutes": 90
+    },
+    "status": "confirmed",
+    "source": "phone",
+    "preferences": {
+      "tags": []
+    },
+    "financials": {},
+    "audit": {
+      "createdBy": "system",
+      "createdAt": "2025-10-08T10:00:00.000Z"
+    }
+  },
+  {
+    "reservationId": "res-002",
+    "vendorId": "vendor-1",
+    "branchId": "branch-1",
+    "tableId": "Table 8",
+    "guest": {
+      "name": "Mike Chen",
+      "phone": "+1 234-567-8902"
+    },
+    "party": {
+      "size": 2
+    },
+    "timing": {
+      "startAt": "2025-10-08T19:30:00.000Z",
+      "durationMinutes": 90
+    },
+    "status": "pending",
+    "source": "website",
+    "preferences": {
+      "tags": []
+    },
+    "financials": {},
+    "audit": {
+      "createdBy": "system",
+      "createdAt": "2025-10-08T10:15:00.000Z"
+    }
+  },
+  {
+    "reservationId": "res-003",
+    "vendorId": "vendor-1",
+    "branchId": "branch-1",
+    "tableId": "Table 15",
+    "guest": {
+      "name": "Emma Wilson",
+      "phone": "+1 234-567-8903"
+    },
+    "party": {
+      "size": 6
+    },
+    "timing": {
+      "startAt": "2025-10-08T18:00:00.000Z",
+      "durationMinutes": 120
+    },
+    "status": "seated",
+    "source": "app",
+    "preferences": {
+      "tags": ["birthday"]
+    },
+    "financials": {},
+    "audit": {
+      "createdBy": "system",
+      "createdAt": "2025-10-08T09:30:00.000Z"
+    }
+  },
+  {
+    "reservationId": "res-004",
+    "vendorId": "vendor-1",
+    "branchId": "branch-1",
+    "tableId": "Table 10",
+    "guest": {
+      "name": "Linda Martinez",
+      "phone": "+1 234-567-8905"
+    },
+    "party": {
+      "size": 2
+    },
+    "timing": {
+      "startAt": "2025-10-08T18:30:00.000Z",
+      "durationMinutes": 90
+    },
+    "status": "cancelled",
+    "source": "phone",
+    "preferences": {
+      "tags": []
+    },
+    "financials": {
+      "cancellationFee": 10.0
+    },
+    "audit": {
+      "createdBy": "system",
+      "createdAt": "2025-10-08T09:45:00.000Z"
+    }
+  },
+  {
+    "reservationId": "res-005",
+    "vendorId": "vendor-1",
+    "branchId": "branch-1",
+    "guest": {
+      "name": "Robert Brown",
+      "phone": "+1 234-567-8906"
+    },
+    "party": {
+      "size": 4
+    },
+    "timing": {
+      "startAt": "2025-10-09T19:00:00.000Z",
+      "durationMinutes": 90
+    },
+    "status": "confirmed",
+    "source": "website",
+    "preferences": {
+      "tags": ["allergy"]
+    },
+    "financials": {
+      "depositAmount": 50.0,
+      "depositStatus": "held"
+    },
+    "audit": {
+      "createdBy": "system",
+      "createdAt": "2025-10-08T11:00:00.000Z"
+    }
+  },
+  {
+    "reservationId": "res-006",
+    "vendorId": "vendor-1",
+    "branchId": "branch-1",
+    "guest": {
+      "name": "Jennifer Lee",
+      "phone": "+1 234-567-8907"
+    },
+    "party": {
+      "size": 8,
+      "specialNeeds": true
+    },
+    "timing": {
+      "startAt": "2025-10-09T20:00:00.000Z",
+      "durationMinutes": 120
+    },
+    "status": "confirmed",
+    "source": "phone",
+    "preferences": {
+      "tags": []
+    },
+    "financials": {},
+    "audit": {
+      "createdBy": "system",
+      "createdAt": "2025-10-08T11:30:00.000Z"
+    }
+  }
+]

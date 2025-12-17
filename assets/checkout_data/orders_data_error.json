@@ -1,0 +1,12 @@
+{
+  "error": {
+    "code": "CHECKOUT_DATA_ERROR",
+    "message": "Failed to load checkout data",
+    "details": "Unable to connect to checkout service",
+    "timestamp": "2023-12-21T12:30:00Z"
+  },
+  "fallbackData": {
+    "orders": [],
+    "message": "No orders available - service temporarily unavailable"
+  }
+}

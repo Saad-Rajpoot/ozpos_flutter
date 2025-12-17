@@ -1,0 +1,242 @@
+{
+  "orders": [
+    {
+      "id": "order_001",
+      "orderId": "ORD-1703123456789",
+      "customerName": "John Doe",
+      "tableNumber": "T-05",
+      "orderType": "dineIn",
+      "items": [
+        {
+          "id": "item_001",
+          "menuItemId": "menu_001",
+          "name": "Chicken Burger",
+          "quantity": 2,
+          "unitPrice": 12.99,
+          "lineTotal": 25.98,
+          "modifiers": [
+            {
+              "name": "Extra Cheese",
+              "price": 1.50
+            },
+            {
+              "name": "Large Size",
+              "price": 2.00
+            }
+          ]
+        },
+        {
+          "id": "item_002",
+          "menuItemId": "menu_002",
+          "name": "French Fries",
+          "quantity": 1,
+          "unitPrice": 5.99,
+          "lineTotal": 5.99,
+          "modifiers": []
+        }
+      ],
+      "payment": {
+        "method": "cash",
+        "subtotal": 31.97,
+        "tipAmount": 3.20,
+        "tipPercent": 10,
+        "discountAmount": 0.00,
+        "discountPercent": 0,
+        "voucherTotal": 0.00,
+        "loyaltyRedemption": 0.00,
+        "tax": 3.52,
+        "totalBeforeTax": 35.17,
+        "grandTotal": 38.69,
+        "cashReceived": 40.00,
+        "change": 1.31
+      },
+      "tenders": [
+        {
+          "id": "tender_001",
+          "method": "cash",
+          "amount": 38.69,
+          "status": "successful",
+          "createdAt": "2023-12-21T10:30:00Z"
+        }
+      ],
+      "vouchers": [],
+      "status": "completed",
+      "createdAt": "2023-12-21T10:25:00Z",
+      "completedAt": "2023-12-21T10:30:00Z",
+      "staffId": "staff_001",
+      "staffName": "Sarah Johnson"
+    },
+    {
+      "id": "order_002",
+      "orderId": "ORD-1703123456790",
+      "customerName": "Jane Smith",
+      "tableNumber": null,
+      "orderType": "takeaway",
+      "items": [
+        {
+          "id": "item_003",
+          "menuItemId": "menu_003",
+          "name": "Pizza Margherita",
+          "quantity": 1,
+          "unitPrice": 15.99,
+          "lineTotal": 15.99,
+          "modifiers": [
+            {
+              "name": "Extra Toppings",
+              "price": 3.00
+            }
+          ]
+        }
+      ],
+      "payment": {
+        "method": "card",
+        "subtotal": 18.99,
+        "tipAmount": 0.00,
+        "tipPercent": 0,
+        "discountAmount": 1.90,
+        "discountPercent": 10,
+        "voucherTotal": 0.00,
+        "loyaltyRedemption": 0.00,
+        "tax": 1.71,
+        "totalBeforeTax": 17.09,
+        "grandTotal": 18.80,
+        "cashReceived": 0.00,
+        "change": 0.00
+      },
+      "tenders": [
+        {
+          "id": "tender_002",
+          "method": "card",
+          "amount": 18.80,
+          "status": "successful",
+          "createdAt": "2023-12-21T11:15:00Z"
+        }
+      ],
+      "vouchers": [],
+      "status": "completed",
+      "createdAt": "2023-12-21T11:10:00Z",
+      "completedAt": "2023-12-21T11:15:00Z",
+      "staffId": "staff_002",
+      "staffName": "Mike Wilson"
+    },
+    {
+      "id": "order_003",
+      "orderId": "ORD-1703123456791",
+      "customerName": "Group Table 8",
+      "tableNumber": "T-08",
+      "orderType": "dineIn",
+      "items": [
+        {
+          "id": "item_004",
+          "menuItemId": "menu_004",
+          "name": "Steak Dinner",
+          "quantity": 3,
+          "unitPrice": 24.99,
+          "lineTotal": 74.97,
+          "modifiers": []
+        },
+        {
+          "id": "item_005",
+          "menuItemId": "menu_005",
+          "name": "Wine Bottle",
+          "quantity": 2,
+          "unitPrice": 35.00,
+          "lineTotal": 70.00,
+          "modifiers": []
+        }
+      ],
+      "payment": {
+        "method": "split",
+        "subtotal": 144.97,
+        "tipAmount": 14.50,
+        "tipPercent": 10,
+        "discountAmount": 0.00,
+        "discountPercent": 0,
+        "voucherTotal": 10.00,
+        "loyaltyRedemption": 0.00,
+        "tax": 14.95,
+        "totalBeforeTax": 149.47,
+        "grandTotal": 164.42,
+        "cashReceived": 0.00,
+        "change": 0.00
+      },
+      "tenders": [
+        {
+          "id": "tender_003",
+          "method": "card",
+          "amount": 82.21,
+          "status": "successful",
+          "createdAt": "2023-12-21T12:00:00Z"
+        },
+        {
+          "id": "tender_004",
+          "method": "cash",
+          "amount": 82.21,
+          "status": "successful",
+          "createdAt": "2023-12-21T12:00:00Z"
+        }
+      ],
+      "vouchers": [
+        {
+          "id": "voucher_001",
+          "code": "SAVE10",
+          "amount": 10.00,
+          "appliedAt": "2023-12-21T11:55:00Z"
+        }
+      ],
+      "status": "completed",
+      "createdAt": "2023-12-21T11:45:00Z",
+      "completedAt": "2023-12-21T12:00:00Z",
+      "staffId": "staff_001",
+      "staffName": "Sarah Johnson"
+    },
+    {
+      "id": "order_004",
+      "orderId": "ORD-1703123456792-UNPAID",
+      "customerName": "Tom Brown",
+      "tableNumber": "T-12",
+      "orderType": "dineIn",
+      "items": [
+        {
+          "id": "item_006",
+          "menuItemId": "menu_006",
+          "name": "Salad Bowl",
+          "quantity": 1,
+          "unitPrice": 9.99,
+          "lineTotal": 9.99,
+          "modifiers": []
+        }
+      ],
+      "payment": {
+        "method": "payLater",
+        "subtotal": 9.99,
+        "tipAmount": 0.00,
+        "tipPercent": 0,
+        "discountAmount": 0.00,
+        "discountPercent": 0,
+        "voucherTotal": 0.00,
+        "loyaltyRedemption": 0.00,
+        "tax": 1.00,
+        "totalBeforeTax": 9.99,
+        "grandTotal": 10.99,
+        "cashReceived": 0.00,
+        "change": 0.00
+      },
+      "tenders": [],
+      "vouchers": [],
+      "status": "pending",
+      "createdAt": "2023-12-21T12:30:00Z",
+      "completedAt": null,
+      "staffId": "staff_003",
+      "staffName": "Lisa Davis"
+    }
+  ],
+  "metadata": {
+    "totalOrders": 4,
+    "completedOrders": 3,
+    "pendingOrders": 1,
+    "totalRevenue": 222.91,
+    "averageOrderValue": 55.73,
+    "lastUpdated": "2023-12-21T12:30:00Z"
+  }
+}

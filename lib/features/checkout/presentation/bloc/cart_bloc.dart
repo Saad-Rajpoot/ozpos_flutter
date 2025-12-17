@@ -1,0 +1,608 @@
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:equatable/equatable.dart';
+import '../../../../core/base/base_bloc.dart';
+import '../../../menu/domain/entities/menu_item_entity.dart';
+import '../../../menu/domain/services/menu_item_price_calculator.dart';
+import '../../../tables/domain/entities/table_entity.dart';
+import '../../../users/domain/entities/user_entity.dart';
+import '../../domain/services/cart_calculator.dart';
+
+// ============================================================================
+// CART LINE ITEM
+// ============================================================================
+
+class CartLineItem extends Equatable {
+  final String id; // Unique ID for this line item
+  final MenuItemEntity menuItem;
+  final int quantity;
+  final double unitPrice; // Price per item (base + modifiers + combo)
+  final String? selectedComboId;
+  final Map<String, List<String>> selectedModifiers; // groupId -> [optionIds]
+  final String modifierSummary; // Display string: "Large, Extra Cheese, BBQ"
+
+  const CartLineItem({
+    required this.id,
+    required this.menuItem,
+    required this.quantity,
+    required this.unitPrice,
+    this.selectedComboId,
+    required this.selectedModifiers,
+    required this.modifierSummary,
+  });
+
+  double get lineTotal => unitPrice * quantity;
+
+  CartLineItem copyWith({
+    int? quantity,
+    Map<String, List<String>>? selectedModifiers,
+  }) {
+    return CartLineItem(
+      id: id,
+      menuItem: menuItem,
+      quantity: quantity ?? this.quantity,
+      unitPrice: unitPrice,
+      selectedComboId: selectedComboId,
+      selectedModifiers: selectedModifiers ?? this.selectedModifiers,
+      modifierSummary: modifierSummary,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        id,
+        menuItem.id,
+        quantity,
+        unitPrice,
+        selectedComboId,
+        selectedModifiers,
+        modifierSummary,
+      ];
+}
+
+// ============================================================================
+// ORDER TYPE
+// ============================================================================
+
+enum OrderType { dineIn, takeaway, delivery }
+
+// ============================================================================
+// CART STATE
+// ============================================================================
+
+abstract class CartState extends BaseState {
+  const CartState();
+}
+
+class CartInitial extends CartState {}
+
+class CartLoaded extends CartState {
+  final List<CartLineItem> items;
+  final OrderType orderType;
+  final TableEntity? selectedTable;
+  final String? customerName;
+  final String? customerPhone;
+  final UserEntity? selectedUser; // For delivery orders
+  final double subtotal;
+  final double gst;
+  final double total;
+
+  const CartLoaded({
+    required this.items,
+    required this.orderType,
+    this.selectedTable,
+    this.customerName,
+    this.customerPhone,
+    this.selectedUser,
+    required this.subtotal,
+    required this.gst,
+    required this.total,
+  });
+
+  int get itemCount => items.fold(0, (sum, item) => sum + item.quantity);
+
+  CartLoaded copyWith({
+    List<CartLineItem>? items,
+    OrderType? orderType,
+    TableEntity? selectedTable,
+    String? customerName,
+    String? customerPhone,
+    UserEntity? selectedUser,
+    bool clearTable = false,
+    bool clearUser = false,
+    double? subtotal,
+    double? gst,
+    double? total,
+  }) {
+    final newItems = items ?? this.items;
+    final shouldRecalculateTotals =
+        subtotal == null && gst == null && total == null && items != null;
+
+    // Use domain service for calculations
+    double newSubtotal;
+    double newGst;
+    double newTotal;
+
+    if (subtotal != null) {
+      // Use provided subtotal
+      newSubtotal = subtotal;
+      newGst = gst ?? CartCalculator.calculateGst(newSubtotal);
+      newTotal = total ?? CartCalculator.calculateTotal(newSubtotal);
+    } else if (shouldRecalculateTotals) {
+      // Recalculate from items using domain service
+      newSubtotal = CartCalculator.calculateSubtotalFromItems(newItems);
+      final totals = CartCalculator.calculateAllTotals(newSubtotal);
+      newGst = totals['gst']!;
+      newTotal = totals['total']!;
+    } else {
+      // Keep existing values
+      newSubtotal = this.subtotal;
+      newGst = gst ?? this.gst;
+      newTotal = total ?? this.total;
+    }
+
+    return CartLoaded(
+      items: newItems,
+      orderType: orderType ?? this.orderType,
+      selectedTable: clearTable ? null : (selectedTable ?? this.selectedTable),
+      customerName: customerName ?? this.customerName,
+      customerPhone: customerPhone ?? this.customerPhone,
+      selectedUser: clearUser ? null : (selectedUser ?? this.selectedUser),
+      subtotal: newSubtotal,
+      gst: newGst,
+      total: newTotal,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        items,
+        orderType,
+        selectedTable,
+        customerName,
+        customerPhone,
+        selectedUser,
+        subtotal,
+        gst,
+        total,
+      ];
+}
+
+// ============================================================================
+// CART EVENTS
+// ============================================================================
+
+abstract class CartEvent extends BaseEvent {
+  const CartEvent();
+}
+
+class InitializeCart extends CartEvent {
+  final OrderType? initialOrderType;
+
+  const InitializeCart({this.initialOrderType});
+
+  @override
+  List<Object?> get props => [initialOrderType];
+}
+
+class AddItemToCart extends CartEvent {
+  final MenuItemEntity menuItem;
+  final int quantity;
+  final double unitPrice;
+  final String? selectedComboId;
+  final Map<String, List<String>> selectedModifiers;
+  final String modifierSummary;
+
+  const AddItemToCart({
+    required this.menuItem,
+    required this.quantity,
+    required this.unitPrice,
+    this.selectedComboId,
+    required this.selectedModifiers,
+    required this.modifierSummary,
+  });
+
+  @override
+  List<Object?> get props => [
+        menuItem.id,
+        quantity,
+        unitPrice,
+        selectedComboId,
+        selectedModifiers,
+        modifierSummary,
+      ];
+}
+
+class UpdateLineItemQuantity extends CartEvent {
+  final String lineItemId;
+  final int newQuantity;
+
+  const UpdateLineItemQuantity({
+    required this.lineItemId,
+    required this.newQuantity,
+  });
+
+  @override
+  List<Object?> get props => [lineItemId, newQuantity];
+}
+
+class RemoveLineItem extends CartEvent {
+  final String lineItemId;
+
+  const RemoveLineItem({required this.lineItemId});
+
+  @override
+  List<Object?> get props => [lineItemId];
+}
+
+class ChangeOrderType extends CartEvent {
+  final OrderType orderType;
+
+  const ChangeOrderType({required this.orderType});
+
+  @override
+  List<Object?> get props => [orderType];
+}
+
+class SelectTable extends CartEvent {
+  final TableEntity table;
+
+  const SelectTable({required this.table});
+
+  @override
+  List<Object?> get props => [table.id];
+}
+
+class ClearTable extends CartEvent {}
+
+class UpdateCustomer extends CartEvent {
+  final String? name;
+  final String? phone;
+
+  const UpdateCustomer({this.name, this.phone});
+
+  @override
+  List<Object?> get props => [name, phone];
+}
+
+class SelectUser extends CartEvent {
+  final UserEntity user;
+
+  const SelectUser({required this.user});
+
+  @override
+  List<Object?> get props => [user];
+}
+
+class ClearUser extends CartEvent {
+  const ClearUser();
+}
+
+class ClearCart extends CartEvent {}
+
+// ============================================================================
+// CART BLOC
+// ============================================================================
+
+class CartBloc extends BaseBloc<CartEvent, CartState> {
+  CartBloc() : super(CartInitial()) {
+    on<InitializeCart>(_onInitializeCart);
+    on<AddItemToCart>(_onAddItemToCart);
+    on<UpdateLineItemQuantity>(_onUpdateLineItemQuantity);
+    on<RemoveLineItem>(_onRemoveLineItem);
+    on<ChangeOrderType>(_onChangeOrderType);
+    on<SelectTable>(_onSelectTable);
+    on<ClearTable>(_onClearTable);
+    on<UpdateCustomer>(_onUpdateCustomer);
+    on<SelectUser>(_onSelectUser);
+    on<ClearUser>(_onClearUser);
+    on<ClearCart>(_onClearCart);
+  }
+
+  void _onInitializeCart(InitializeCart event, Emitter<CartState> emit) {
+    emit(
+      CartLoaded(
+        items: const [],
+        orderType: event.initialOrderType ?? OrderType.dineIn,
+        subtotal: 0.0,
+        gst: 0.0,
+        total: 0.0,
+      ),
+    );
+  }
+
+  /// Helper method to get default modifiers for a menu item
+  /// Uses domain service for business logic
+  Map<String, List<String>> _getDefaultModifiers(MenuItemEntity menuItem) {
+    return MenuItemPriceCalculator.getDefaultModifiers(menuItem);
+  }
+
+  /// Helper method to find index of identical item in cart
+  /// Two items are considered identical if they have same menu item, modifiers, and combo
+  int _findIdenticalItemIndex(List<CartLineItem> items, AddItemToCart event) {
+    for (int i = 0; i < items.length; i++) {
+      final item = items[i];
+
+      // Check if menu item IDs match
+      if (item.menuItem.id != event.menuItem.id) continue;
+
+      // Check if combo selections match (both null or both same)
+      if (item.selectedComboId != event.selectedComboId) continue;
+
+      // Check if modifiers match
+      // If new item has empty modifiers, compare with default modifiers for the menu item
+      final modifiersToCompare = event.selectedModifiers.isEmpty
+          ? _getDefaultModifiers(event.menuItem)
+          : event.selectedModifiers;
+
+      if (!_modifiersMatch(item.selectedModifiers, modifiersToCompare)) {
+        continue;
+      }
+
+      return i;
+    }
+
+    return -1; // No identical item found
+  }
+
+  /// Helper method to compare modifier selections
+  ///
+  /// Uses Sets for O(n) comparison instead of O(n²) list operations
+  bool _modifiersMatch(Map<String, List<String>> modifiers1,
+      Map<String, List<String>> modifiers2) {
+    // Check if both have same modifier groups
+    if (modifiers1.keys.length != modifiers2.keys.length) return false;
+    if (!modifiers1.keys.every((key) => modifiers2.containsKey(key))) {
+      return false;
+    }
+
+    // Check if each modifier group has same options using Sets for O(n) comparison
+    for (final groupId in modifiers1.keys) {
+      final options1 = modifiers1[groupId] ?? [];
+      final options2 = modifiers2[groupId] ?? [];
+
+      // Convert to Sets for efficient comparison (O(n) instead of O(n²))
+      final set1 = options1.toSet();
+      final set2 = options2.toSet();
+
+      // Sets are equal if they have the same elements (order doesn't matter)
+      if (set1.length != set2.length) return false;
+      if (!set1.every((option) => set2.contains(option))) return false;
+    }
+
+    return true;
+  }
+
+  void _onAddItemToCart(AddItemToCart event, Emitter<CartState> emit) {
+    if (state is! CartLoaded) return;
+
+    final currentState = state as CartLoaded;
+
+    // Check if an identical item already exists in the cart
+    final existingItemIndex =
+        _findIdenticalItemIndex(currentState.items, event);
+
+    if (existingItemIndex != -1) {
+      // Update quantity of existing item
+      final existingItem = currentState.items[existingItemIndex];
+      final updatedQuantity = existingItem.quantity + event.quantity;
+
+      // Ensure the existing item uses default modifiers if it had empty modifiers (using domain service)
+      final finalModifiers = existingItem.selectedModifiers.isEmpty
+          ? MenuItemPriceCalculator.getDefaultModifiers(event.menuItem)
+          : existingItem.selectedModifiers;
+
+      final updatedItems = List<CartLineItem>.from(currentState.items);
+      final updatedItem = existingItem.copyWith(
+        quantity: updatedQuantity,
+        selectedModifiers: finalModifiers,
+      );
+      updatedItems[existingItemIndex] = updatedItem;
+
+      final subtotalDelta = updatedItem.lineTotal - existingItem.lineTotal;
+      final newSubtotal = currentState.subtotal + subtotalDelta;
+
+      _emitStateWithTotals(
+        emit: emit,
+        baseState: currentState,
+        items: updatedItems,
+        subtotal: newSubtotal,
+      );
+    } else {
+      // Add new item to cart
+      // Generate unique line item ID
+      final lineItemId =
+          '${event.menuItem.id}_${DateTime.now().millisecondsSinceEpoch}';
+
+      // Use default modifiers if event has empty modifiers (using domain service)
+      final finalModifiers = event.selectedModifiers.isEmpty
+          ? MenuItemPriceCalculator.getDefaultModifiers(event.menuItem)
+          : event.selectedModifiers;
+
+      final newLineItem = CartLineItem(
+        id: lineItemId,
+        menuItem: event.menuItem,
+        quantity: event.quantity,
+        unitPrice: event.unitPrice,
+        selectedComboId: event.selectedComboId,
+        selectedModifiers: finalModifiers,
+        modifierSummary: event.modifierSummary,
+      );
+
+      final updatedItems = List<CartLineItem>.from(currentState.items)
+        ..add(newLineItem);
+
+      final newSubtotal = currentState.subtotal + newLineItem.lineTotal;
+
+      _emitStateWithTotals(
+        emit: emit,
+        baseState: currentState,
+        items: updatedItems,
+        subtotal: newSubtotal,
+      );
+    }
+  }
+
+  void _onUpdateLineItemQuantity(
+    UpdateLineItemQuantity event,
+    Emitter<CartState> emit,
+  ) {
+    if (state is! CartLoaded) return;
+
+    final currentState = state as CartLoaded;
+
+    if (event.newQuantity <= 0) {
+      // Remove item if quantity is 0 or less
+      add(RemoveLineItem(lineItemId: event.lineItemId));
+      return;
+    }
+
+    final index =
+        currentState.items.indexWhere((item) => item.id == event.lineItemId);
+    if (index == -1) return;
+
+    final updatedItems = List<CartLineItem>.from(currentState.items);
+    final existingItem = updatedItems[index];
+    final updatedItem = existingItem.copyWith(quantity: event.newQuantity);
+    updatedItems[index] = updatedItem;
+
+    final subtotalDelta = updatedItem.lineTotal - existingItem.lineTotal;
+    final newSubtotal = currentState.subtotal + subtotalDelta;
+
+    _emitStateWithTotals(
+      emit: emit,
+      baseState: currentState,
+      items: updatedItems,
+      subtotal: newSubtotal,
+    );
+  }
+
+  void _onRemoveLineItem(RemoveLineItem event, Emitter<CartState> emit) {
+    if (state is! CartLoaded) return;
+
+    final currentState = state as CartLoaded;
+
+    final index =
+        currentState.items.indexWhere((item) => item.id == event.lineItemId);
+    if (index == -1) return;
+
+    final removedItem = currentState.items[index];
+    final updatedItems = List<CartLineItem>.from(currentState.items)
+      ..removeAt(index);
+
+    final newSubtotal = currentState.subtotal - removedItem.lineTotal;
+
+    _emitStateWithTotals(
+      emit: emit,
+      baseState: currentState,
+      items: updatedItems,
+      subtotal: newSubtotal,
+    );
+  }
+
+  void _emitStateWithTotals({
+    required Emitter<CartState> emit,
+    required CartLoaded baseState,
+    required List<CartLineItem> items,
+    required double subtotal,
+  }) {
+    // Use domain service for cart calculations
+    final totals = CartCalculator.calculateAllTotals(subtotal);
+
+    emit(
+      baseState.copyWith(
+        items: items,
+        subtotal: totals['subtotal']!,
+        gst: totals['gst']!,
+        total: totals['total']!,
+      ),
+    );
+  }
+
+  void _onChangeOrderType(ChangeOrderType event, Emitter<CartState> emit) {
+    if (state is! CartLoaded) return;
+
+    final currentState = state as CartLoaded;
+
+    emit(
+      currentState.copyWith(
+        orderType: event.orderType,
+        clearTable: event.orderType != OrderType.dineIn,
+        clearUser: event.orderType != OrderType.delivery,
+      ),
+    );
+  }
+
+  void _onSelectTable(SelectTable event, Emitter<CartState> emit) {
+    if (state is! CartLoaded) return;
+
+    final currentState = state as CartLoaded;
+
+    emit(
+      currentState.copyWith(
+        selectedTable: event.table,
+        orderType: OrderType.dineIn,
+      ),
+    );
+  }
+
+  void _onClearTable(ClearTable event, Emitter<CartState> emit) {
+    if (state is! CartLoaded) return;
+
+    final currentState = state as CartLoaded;
+
+    emit(currentState.copyWith(clearTable: true));
+  }
+
+  void _onUpdateCustomer(UpdateCustomer event, Emitter<CartState> emit) {
+    if (state is! CartLoaded) return;
+
+    final currentState = state as CartLoaded;
+
+    emit(
+      currentState.copyWith(
+        customerName: event.name,
+        customerPhone: event.phone,
+      ),
+    );
+  }
+
+  void _onSelectUser(SelectUser event, Emitter<CartState> emit) {
+    if (state is! CartLoaded) return;
+
+    final currentState = state as CartLoaded;
+
+    emit(
+      currentState.copyWith(
+        selectedUser: event.user,
+        customerName: event.user.name,
+        customerPhone: event.user.phone,
+      ),
+    );
+  }
+
+  void _onClearUser(ClearUser event, Emitter<CartState> emit) {
+    if (state is! CartLoaded) return;
+
+    final currentState = state as CartLoaded;
+
+    emit(
+      currentState.copyWith(
+        clearUser: true,
+        customerName: null,
+        customerPhone: null,
+      ),
+    );
+  }
+
+  void _onClearCart(ClearCart event, Emitter<CartState> emit) {
+    emit(
+      const CartLoaded(
+        items: [],
+        orderType: OrderType.dineIn,
+        subtotal: 0.0,
+        gst: 0.0,
+        total: 0.0,
+      ),
+    );
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "error": "Failed to load orders data",
+  "message": "Authentication failed while accessing orders database",
+  "code": "AUTH_FAILED"
+}

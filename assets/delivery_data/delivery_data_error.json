@@ -1,0 +1,5 @@
+{
+  "error": "Failed to load delivery data",
+  "message": "Database connection timeout while fetching delivery information",
+  "code": "DB_TIMEOUT"
+}

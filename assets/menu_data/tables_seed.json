@@ -1,0 +1,167 @@
+[
+  {
+    "id": "table-1",
+    "number": "1",
+    "seats": 2,
+    "status": "available",
+    "floorX": 1,
+    "floorY": 1
+  },
+  {
+    "id": "table-2",
+    "number": "2",
+    "seats": 2,
+    "status": "available",
+    "floorX": 3,
+    "floorY": 1
+  },
+  {
+    "id": "table-3",
+    "number": "3",
+    "seats": 4,
+    "status": "occupied",
+    "serverName": "Sarah K.",
+    "floorX": 5,
+    "floorY": 1
+  },
+  {
+    "id": "table-4",
+    "number": "4",
+    "seats": 4,
+    "status": "occupied",
+    "serverName": "Mike T.",
+    "floorX": 7,
+    "floorY": 1
+  },
+  {
+    "id": "table-5",
+    "number": "5",
+    "seats": 4,
+    "status": "available",
+    "floorX": 1,
+    "floorY": 3
+  },
+  {
+    "id": "table-6",
+    "number": "6",
+    "seats": 4,
+    "status": "occupied",
+    "serverName": "Sarah K.",
+    "floorX": 3,
+    "floorY": 3
+  },
+  {
+    "id": "table-7",
+    "number": "7",
+    "seats": 6,
+    "status": "reserved",
+    "floorX": 1,
+    "floorY": 7
+  },
+  {
+    "id": "table-8",
+    "number": "8",
+    "seats": 4,
+    "status": "cleaning",
+    "floorX": 3,
+    "floorY": 7
+  },
+  {
+    "id": "table-9",
+    "number": "9",
+    "seats": 6,
+    "status": "available",
+    "floorX": 5,
+    "floorY": 3
+  },
+  {
+    "id": "table-10",
+    "number": "10",
+    "seats": 6,
+    "status": "occupied",
+    "serverName": "James P.",
+    "floorX": 7,
+    "floorY": 3
+  },
+  {
+    "id": "table-11",
+    "number": "11",
+    "seats": 8,
+    "status": "reserved",
+    "floorX": 5,
+    "floorY": 5
+  },
+  {
+    "id": "table-12",
+    "number": "12",
+    "seats": 2,
+    "status": "cleaning",
+    "floorX": 7,
+    "floorY": 5
+  },
+  {
+    "id": "table-13",
+    "number": "13",
+    "seats": 2,
+    "status": "available",
+    "floorX": 1,
+    "floorY": 5
+  },
+  {
+    "id": "table-14",
+    "number": "14",
+    "seats": 4,
+    "status": "occupied",
+    "serverName": "Emma L.",
+    "floorX": 3,
+    "floorY": 5
+  },
+  {
+    "id": "table-15",
+    "number": "15",
+    "seats": 4,
+    "status": "available",
+    "floorX": 5,
+    "floorY": 7
+  },
+  {
+    "id": "table-16",
+    "number": "16",
+    "seats": 2,
+    "status": "available",
+    "floorX": 7,
+    "floorY": 7
+  },
+  {
+    "id": "table-17",
+    "number": "17",
+    "seats": 6,
+    "status": "available",
+    "floorX": 1,
+    "floorY": 9
+  },
+  {
+    "id": "table-18",
+    "number": "18",
+    "seats": 4,
+    "status": "available",
+    "floorX": 3,
+    "floorY": 9
+  },
+  {
+    "id": "table-19",
+    "number": "19",
+    "seats": 4,
+    "status": "available",
+    "floorX": 5,
+    "floorY": 9
+  },
+  {
+    "id": "table-20",
+    "number": "20",
+    "seats": 8,
+    "status": "available",
+    "floorX": 7,
+    "floorY": 9
+  }
+]

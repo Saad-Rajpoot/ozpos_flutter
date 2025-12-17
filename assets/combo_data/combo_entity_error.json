@@ -1,0 +1,5 @@
+{
+  "error": "Failed to load combo entities",
+  "message": "Database connection timeout while fetching combo data",
+  "code": "DB_CONNECTION_TIMEOUT"
+}

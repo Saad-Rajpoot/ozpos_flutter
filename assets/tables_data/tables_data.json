@@ -1,0 +1,118 @@
+[
+  {
+    "number": 3,
+    "status": "occupied",
+    "area": "main",
+    "serverTag": "AB",
+    "amount": 17.60,
+    "elapsedTimeMinutes": 8,
+    "guests": 2,
+    "orderId": "#2481",
+    "items": 3,
+    "waiter": "AB",
+    "notes": "No onions, birthday dessert"
+  },
+  {
+    "number": 5,
+    "status": "available",
+    "area": "main",
+    "elapsedTimeMinutes": null,
+    "guests": null,
+    "orderId": null,
+    "items": null,
+    "waiter": null,
+    "notes": null
+  },
+  {
+    "number": 7,
+    "status": "reserved",
+    "area": "main",
+    "elapsedTimeMinutes": null,
+    "guests": 4,
+    "orderId": null,
+    "items": null,
+    "waiter": null,
+    "notes": null
+  },
+  {
+    "number": 9,
+    "status": "cleaning",
+    "area": "main",
+    "elapsedTimeMinutes": null,
+    "guests": null,
+    "orderId": null,
+    "items": null,
+    "waiter": null,
+    "notes": null
+  },
+  {
+    "number": 11,
+    "status": "available",
+    "area": "tens",
+    "elapsedTimeMinutes": null,
+    "guests": null,
+    "orderId": null,
+    "items": null,
+    "waiter": null,
+    "notes": null
+  },
+  {
+    "number": 13,
+    "status": "occupied",
+    "area": "tens",
+    "serverTag": "CD",
+    "amount": 45.30,
+    "elapsedTimeMinutes": 35,
+    "guests": 3,
+    "orderId": null,
+    "items": null,
+    "waiter": null,
+    "notes": null
+  },
+  {
+    "number": 21,
+    "status": "available",
+    "area": "twenties",
+    "elapsedTimeMinutes": null,
+    "guests": null,
+    "orderId": null,
+    "items": null,
+    "waiter": null,
+    "notes": null
+  },
+  {
+    "number": 23,
+    "status": "occupied",
+    "area": "twenties",
+    "serverTag": "EF",
+    "amount": 88.90,
+    "elapsedTimeMinutes": 55,
+    "guests": 5,
+    "orderId": null,
+    "items": null,
+    "waiter": null,
+    "notes": null
+  },
+  {
+    "number": 101,
+    "status": "available",
+    "area": "patio",
+    "elapsedTimeMinutes": null,
+    "guests": null,
+    "orderId": null,
+    "items": null,
+    "waiter": null,
+    "notes": null
+  },
+  {
+    "number": 103,
+    "status": "reserved",
+    "area": "patio",
+    "elapsedTimeMinutes": null,
+    "guests": 6,
+    "orderId": null,
+    "items": null,
+    "waiter": null,
+    "notes": null
+  }
+]

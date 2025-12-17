@@ -1,0 +1,53 @@
+[
+  {
+    "id": "user_1",
+    "name": "John Smith",
+    "email": "john.smith@restaurant.com",
+    "phone": "+61 412 345 678",
+    "role": "admin",
+    "isActive": true,
+    "createdAt": "2024-01-15T10:00:00Z",
+    "lastLoginAt": "2024-12-20T14:30:00Z"
+  },
+  {
+    "id": "user_2",
+    "name": "Sarah Johnson",
+    "email": "sarah.johnson@restaurant.com",
+    "phone": "+61 423 456 789",
+    "role": "manager",
+    "isActive": true,
+    "createdAt": "2024-02-01T09:00:00Z",
+    "lastLoginAt": "2024-12-20T13:15:00Z"
+  },
+  {
+    "id": "user_3",
+    "name": "Mike Wilson",
+    "email": "mike.wilson@restaurant.com",
+    "phone": "+61 434 567 890",
+    "role": "staff",
+    "isActive": true,
+    "createdAt": "2024-03-10T11:00:00Z",
+    "lastLoginAt": "2024-12-20T12:00:00Z"
+  },
+  {
+    "id": "user_4",
+    "name": "Emily Davis",
+    "email": "emily.davis@restaurant.com",
+    "phone": "+61 445 678 901",
+    "role": "staff",
+    "isActive": true,
+    "createdAt": "2024-04-05T08:00:00Z",
+    "lastLoginAt": "2024-12-19T18:30:00Z"
+  },
+  {
+    "id": "user_5",
+    "name": "David Brown",
+    "email": "david.brown@restaurant.com",
+    "phone": "+61 456 789 012",
+    "role": "staff",
+    "isActive": false,
+    "createdAt": "2024-05-20T10:00:00Z",
+    "lastLoginAt": "2024-11-15T16:00:00Z"
+  }
+]
+

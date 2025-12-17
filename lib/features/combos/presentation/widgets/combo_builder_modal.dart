@@ -1,0 +1,376 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../bloc/editor/combo_editor_bloc.dart';
+import '../bloc/editor/combo_editor_event.dart';
+import '../bloc/editor/combo_editor_state.dart';
+import '../bloc/crud/combo_crud_bloc.dart';
+import '../bloc/crud/combo_crud_state.dart';
+import 'combo_builder_tabs/details_tab.dart';
+import 'combo_builder_tabs/items_tab.dart';
+import 'combo_builder_tabs/pricing_tab.dart';
+import 'combo_builder_tabs/availability_tab.dart';
+import 'combo_builder_tabs/advanced_tab.dart';
+
+class ComboBuilderModal extends StatelessWidget {
+  const ComboBuilderModal({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: const EdgeInsets.all(24),
+      child: BlocBuilder<ComboEditorBloc, ComboEditorState>(
+        buildWhen: (previous, current) {
+          // Only rebuild if relevant state changes
+          return previous.isBuilderOpen != current.isBuilderOpen ||
+              previous.draft != current.draft ||
+              previous.selectedTab != current.selectedTab ||
+              previous.validationErrors != current.validationErrors ||
+              previous.isAwaitingSave != current.isAwaitingSave ||
+              previous.saveError != current.saveError;
+        },
+        builder: (context, state) {
+          if (!state.isBuilderOpen || state.draft == null) {
+            return const SizedBox.shrink();
+          }
+
+          final crudState = context.watch<ComboCrudBloc>().state;
+
+          return Container(
+            width: MediaQuery.of(context).size.width * 0.9,
+            height: MediaQuery.of(context).size.height * 0.9,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                _buildHeader(context, state),
+                _buildTabBar(context, state),
+                Expanded(
+                  child: _buildTabContent(context, state),
+                ),
+                _buildFooter(context, state, crudState),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context, ComboEditorState state) {
+    final isEditing = state.mode == ComboEditMode.edit;
+
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF8B5CF6), Color(0xFF7C3AED)],
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+        ),
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(16),
+          topRight: Radius.circular(16),
+        ),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  isEditing ? 'Edit Combo Meal' : 'Edit Combo Meal',
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  'Build a meal deal with custom items and special pricing',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.white70,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Close button
+          IconButton(
+            onPressed: () => _onClose(context),
+            icon: const Icon(
+              Icons.close,
+              color: Colors.white,
+              size: 24,
+            ),
+            style: IconButton.styleFrom(
+              backgroundColor: Colors.white.withOpacity(0.2),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTabBar(BuildContext context, ComboEditorState state) {
+    const tabs = [
+      {'id': 'details', 'icon': Icons.info_outline, 'label': 'Details'},
+      {'id': 'items', 'icon': Icons.add, 'label': 'Items'},
+      {'id': 'pricing', 'icon': Icons.attach_money, 'label': 'Pricing'},
+      {'id': 'availability', 'icon': Icons.schedule, 'label': 'Availability'},
+      {'id': 'advanced', 'icon': Icons.tune, 'label': 'Advanced'},
+    ];
+
+    return Container(
+      decoration: const BoxDecoration(
+        border: Border(
+          bottom: BorderSide(color: Color(0xFFE5E7EB)),
+        ),
+      ),
+      child: Row(
+        children: tabs.map((tab) {
+          final isSelected = state.selectedTab == tab['id'];
+          final hasErrors = _tabHasErrors(tab['id'] as String, state);
+
+          return Expanded(
+            child: InkWell(
+              onTap: () => context.read<ComboEditorBloc>().add(
+                    ComboTabSelected(tabId: tab['id'] as String),
+                  ),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(
+                      color: isSelected
+                          ? const Color(0xFF8B5CF6)
+                          : Colors.transparent,
+                      width: 2,
+                    ),
+                  ),
+                  color: isSelected
+                      ? const Color(0xFF8B5CF6).withOpacity(0.05)
+                      : null,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Icon(
+                          tab['icon'] as IconData,
+                          size: 20,
+                          color: isSelected
+                              ? const Color(0xFF8B5CF6)
+                              : const Color(0xFF6B7280),
+                        ),
+                        if (hasErrors)
+                          Positioned(
+                            top: -4,
+                            right: -4,
+                            child: Container(
+                              width: 8,
+                              height: 8,
+                              decoration: const BoxDecoration(
+                                color: Color(0xFFEF4444),
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      tab['label'] as String,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight:
+                            isSelected ? FontWeight.w600 : FontWeight.w500,
+                        color: isSelected
+                            ? const Color(0xFF8B5CF6)
+                            : const Color(0xFF6B7280),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildTabContent(BuildContext context, ComboEditorState state) {
+    switch (state.selectedTab) {
+      case 'items':
+        return const ItemsTab();
+      case 'pricing':
+        return const PricingTab();
+      case 'availability':
+        return const AvailabilityTab();
+      case 'advanced':
+        return const AdvancedTab();
+      case 'details':
+      default:
+        return const DetailsTab();
+    }
+  }
+
+  Widget _buildFooter(
+    BuildContext context,
+    ComboEditorState state,
+    ComboCrudState crudState,
+  ) {
+    final combo = state.draft!;
+    final hasErrors = state.validationErrors.isNotEmpty;
+    final isSaving = state.isAwaitingSave || crudState.isSaving;
+
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: const BoxDecoration(
+        color: Color(0xFFF9FAFB),
+        border: Border(
+          top: BorderSide(color: Color(0xFFE5E7EB)),
+        ),
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(16),
+          bottomRight: Radius.circular(16),
+        ),
+      ),
+      child: Row(
+        children: [
+          // Item count and savings info
+          Expanded(
+            child: Row(
+              children: [
+                Text(
+                  '${combo.slots.length} item(s)',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: Color(0xFF6B7280),
+                  ),
+                ),
+                if (combo.computedSavings > 0) ...[
+                  const SizedBox(width: 8),
+                  const Text('•', style: TextStyle(color: Color(0xFF6B7280))),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Saves \$${combo.computedSavings.toStringAsFixed(2)}',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF10B981),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+
+          // Action buttons
+          TextButton(
+            onPressed: () => _onClose(context),
+            child: const Text('Cancel'),
+          ),
+          const SizedBox(width: 12),
+          ElevatedButton.icon(
+            onPressed: isSaving || hasErrors ? null : () => _onSave(context),
+            icon: isSaving
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  )
+                : const Icon(Icons.save, size: 18),
+            label: Text(isSaving ? 'Saving...' : 'Save Combo'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor:
+                  hasErrors ? Colors.grey[400] : const Color(0xFF8B5CF6),
+              foregroundColor: Colors.white,
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  bool _tabHasErrors(String tabId, ComboEditorState state) {
+    if (state.validationErrors.isEmpty) return false;
+
+    // Define which validation errors belong to which tabs
+    final tabErrorKeywords = {
+      'details': ['name', 'description'],
+      'items': ['slot', 'item', 'component'],
+      'pricing': ['price', 'pricing', 'discount'],
+      'availability': ['availability', 'time', 'date'],
+      'advanced': ['limit', 'restriction', 'stack'],
+    };
+
+    final keywords = tabErrorKeywords[tabId] ?? [];
+    return state.validationErrors.any((error) =>
+        keywords.any((keyword) => error.toLowerCase().contains(keyword)));
+  }
+
+  void _onSave(BuildContext context) {
+    context.read<ComboEditorBloc>().add(
+          const ComboSaveRequested(exitAfterSave: true),
+        );
+  }
+
+  void _onClose(BuildContext context) {
+    // Capture bloc reference before showing dialog
+    final bloc = context.read<ComboEditorBloc>();
+    
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Discard Changes?'),
+        content: const Text(
+          'You have unsaved changes. Are you sure you want to close without saving?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Continue Editing'),
+          ),
+          TextButton(
+            onPressed: () {
+              // Dispatch event before closing dialogs
+              bloc.add(const ComboEditingCancelled());
+              Navigator.of(dialogContext).pop(); // Close dialog
+              Navigator.of(context).pop(); // Close modal
+            },
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Discard Changes'),
+          ),
+        ],
+      ),
+    );
+  }
+}

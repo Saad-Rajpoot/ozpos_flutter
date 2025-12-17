@@ -1,0 +1,131 @@
+[
+  {
+    "posSystem": true,
+    "onlineMenu": true,
+    "orderTypes": ["dineIn", "takeaway", "delivery"],
+    "timeWindows": [
+      {
+        "id": "lunch",
+        "name": "Lunch",
+        "startTime": {"hour": 11, "minute": 0},
+        "endTime": {"hour": 15, "minute": 0}
+      }
+    ],
+    "daysOfWeek": ["monday", "tuesday", "wednesday", "thursday", "friday"],
+    "startDate": null,
+    "endDate": null
+  },
+  {
+    "posSystem": true,
+    "onlineMenu": true,
+    "orderTypes": ["dineIn", "takeaway", "delivery"],
+    "timeWindows": [],
+    "daysOfWeek": ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"],
+    "startDate": null,
+    "endDate": null
+  },
+  {
+    "posSystem": true,
+    "onlineMenu": true,
+    "orderTypes": ["dineIn", "takeaway"],
+    "timeWindows": [
+      {
+        "id": "dinner",
+        "name": "Dinner",
+        "startTime": {"hour": 17, "minute": 0},
+        "endTime": {"hour": 22, "minute": 0}
+      }
+    ],
+    "daysOfWeek": ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday"],
+    "startDate": null,
+    "endDate": null
+  },
+  {
+    "posSystem": false,
+    "onlineMenu": true,
+    "orderTypes": ["delivery"],
+    "timeWindows": [],
+    "daysOfWeek": ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"],
+    "startDate": null,
+    "endDate": null
+  },
+  {
+    "posSystem": true,
+    "onlineMenu": false,
+    "orderTypes": ["dineIn", "takeaway"],
+    "timeWindows": [
+      {
+        "id": "breakfast",
+        "name": "Breakfast",
+        "startTime": {"hour": 7, "minute": 0},
+        "endTime": {"hour": 11, "minute": 0}
+      }
+    ],
+    "daysOfWeek": ["monday", "tuesday", "wednesday", "thursday", "friday"],
+    "startDate": null,
+    "endDate": null
+  },
+  {
+    "posSystem": true,
+    "onlineMenu": true,
+    "orderTypes": ["dineIn", "takeaway", "delivery"],
+    "timeWindows": [
+      {
+        "id": "happy_hour",
+        "name": "Happy Hour",
+        "startTime": {"hour": 14, "minute": 0},
+        "endTime": {"hour": 18, "minute": 0}
+      }
+    ],
+    "daysOfWeek": ["monday", "tuesday", "wednesday", "thursday", "friday"],
+    "startDate": null,
+    "endDate": null
+  },
+  {
+    "posSystem": true,
+    "onlineMenu": true,
+    "orderTypes": ["dineIn", "takeaway", "delivery"],
+    "timeWindows": [
+      {
+        "id": "weekend_special",
+        "name": "Weekend Special",
+        "startTime": {"hour": 10, "minute": 0},
+        "endTime": {"hour": 22, "minute": 0}
+      }
+    ],
+    "daysOfWeek": ["saturday", "sunday"],
+    "startDate": null,
+    "endDate": null
+  },
+  {
+    "posSystem": true,
+    "onlineMenu": true,
+    "orderTypes": ["dineIn", "takeaway", "delivery"],
+    "timeWindows": [],
+    "daysOfWeek": ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"],
+    "startDate": "2024-12-01T00:00:00Z",
+    "endDate": "2024-12-31T23:59:59Z"
+  },
+  {
+    "posSystem": true,
+    "onlineMenu": true,
+    "orderTypes": ["dineIn"],
+    "timeWindows": [
+      {
+        "id": "lunch_rush",
+        "name": "Lunch Rush",
+        "startTime": {"hour": 11, "minute": 30},
+        "endTime": {"hour": 14, "minute": 30}
+      },
+      {
+        "id": "dinner_rush",
+        "name": "Dinner Rush",
+        "startTime": {"hour": 17, "minute": 30},
+        "endTime": {"hour": 20, "minute": 30}
+      }
+    ],
+    "daysOfWeek": ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"],
+    "startDate": null,
+    "endDate": null
+  }
+]
