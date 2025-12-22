@@ -23,6 +23,8 @@ class _EditUserDialogState extends State<EditUserDialog> {
   late final TextEditingController _nameController;
   late final TextEditingController _emailController;
   late final TextEditingController _phoneController;
+  late final TextEditingController _addressController;
+  late String _addressType;
 
   @override
   void initState() {
@@ -31,6 +33,10 @@ class _EditUserDialogState extends State<EditUserDialog> {
     _nameController = TextEditingController(text: widget.user.name);
     _emailController = TextEditingController(text: widget.user.email);
     _phoneController = TextEditingController(text: widget.user.phone ?? '');
+    
+    // Pre-fill address type and address (default to 'Home' if not set)
+    _addressType = widget.user.addressType;
+    _addressController = TextEditingController(text: widget.user.address);
   }
 
   @override
@@ -38,17 +44,32 @@ class _EditUserDialogState extends State<EditUserDialog> {
     _nameController.dispose();
     _emailController.dispose();
     _phoneController.dispose();
+    _addressController.dispose();
     super.dispose();
   }
 
   void _handleSubmit() {
     if (_formKey.currentState!.validate()) {
+      final address = _addressController.text.trim();
+      
+      if (address.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Address is required'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+
       final updatedUser = widget.user.copyWith(
         name: _nameController.text.trim(),
         email: _emailController.text.trim(),
         phone: _phoneController.text.trim().isEmpty
             ? null
             : _phoneController.text.trim(),
+        addressType: _addressType,
+        address: address,
       );
 
       context.read<UserManagementBloc>().add(UpdateUserEvent(user: updatedUser));
@@ -160,6 +181,8 @@ class _EditUserDialogState extends State<EditUserDialog> {
                           icon: Icons.phone_outlined,
                           keyboardType: TextInputType.phone,
                         ),
+                        const SizedBox(height: 16),
+                        _buildAddressField(),
                       ],
                     ),
                   ),
@@ -263,6 +286,115 @@ class _EditUserDialogState extends State<EditUserDialog> {
             filled: true,
             fillColor: const Color(0xFFF9FAFB),
           ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAddressField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Address type dropdown (required)
+        const Text(
+          'Address Type *',
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: Color(0xFF111827),
+          ),
+        ),
+        const SizedBox(height: 8),
+        DropdownButtonFormField<String>(
+          value: _addressType,
+          decoration: InputDecoration(
+            prefixIcon: const Icon(Icons.category_outlined, size: 20),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 12,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Color(0xFF3B82F6), width: 2),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Color(0xFFEF4444)),
+            ),
+            filled: true,
+            fillColor: const Color(0xFFF9FAFB),
+          ),
+          items: const [
+            DropdownMenuItem<String>(value: 'Home', child: Text('Home')),
+            DropdownMenuItem<String>(value: 'Work', child: Text('Work')),
+            DropdownMenuItem<String>(value: 'Other', child: Text('Other')),
+          ],
+          onChanged: (value) {
+            setState(() {
+              _addressType = value!;
+            });
+          },
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Address type is required';
+            }
+            return null;
+          },
+        ),
+        const SizedBox(height: 16),
+        // Address field (always shown, always required)
+        const Text(
+          'Full Address *',
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: Color(0xFF111827),
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: _addressController,
+          maxLines: 3,
+          decoration: InputDecoration(
+            hintText: 'Enter ${_addressType.toLowerCase()} address',
+            prefixIcon: const Icon(Icons.location_on_outlined, size: 20),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 12,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Color(0xFF3B82F6), width: 2),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Color(0xFFEF4444)),
+            ),
+            filled: true,
+            fillColor: const Color(0xFFF9FAFB),
+          ),
+          validator: (value) {
+            if (value == null || value.trim().isEmpty) {
+              return 'Address is required';
+            }
+            return null;
+          },
         ),
       ],
     );

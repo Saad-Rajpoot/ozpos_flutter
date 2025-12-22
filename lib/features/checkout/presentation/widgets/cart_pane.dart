@@ -208,7 +208,9 @@ class CartPane extends StatelessWidget {
           if (updatedUser.id == state.selectedUser!.id &&
               (updatedUser.name != state.selectedUser!.name ||
                   updatedUser.email != state.selectedUser!.email ||
-                  updatedUser.phone != state.selectedUser!.phone)) {
+                  updatedUser.phone != state.selectedUser!.phone ||
+                  updatedUser.addressType != state.selectedUser!.addressType ||
+                  updatedUser.address != state.selectedUser!.address)) {
             context.read<CartBloc>().add(SelectUser(user: updatedUser));
           }
         }
@@ -231,7 +233,9 @@ class CartPane extends StatelessWidget {
             child: isLoading
                 ? Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 10),
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFFF9FAFB),
                       border: Border.all(
@@ -266,16 +270,18 @@ class CartPane extends StatelessWidget {
                         isRequired: true,
                         onChanged: (UserEntity? selectedUser) {
                           if (selectedUser != null) {
-                            context
-                                .read<CartBloc>()
-                                .add(SelectUser(user: selectedUser));
+                            context.read<CartBloc>().add(
+                                  SelectUser(user: selectedUser),
+                                );
                           }
                         },
                       )
                     : isLoaded && users.isEmpty
                         ? Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 10),
+                              horizontal: 12,
+                              vertical: 10,
+                            ),
                             decoration: BoxDecoration(
                               color: const Color(0xFFF9FAFB),
                               border: Border.all(
@@ -288,8 +294,11 @@ class CartPane extends StatelessWidget {
                             ),
                             child: Row(
                               children: [
-                                const Icon(Icons.person_off_outlined,
-                                    size: 20, color: Color(0xFF6B7280)),
+                                const Icon(
+                                  Icons.person_off_outlined,
+                                  size: 20,
+                                  color: Color(0xFF6B7280),
+                                ),
                                 const SizedBox(width: 8),
                                 Text(
                                   'No users available',
@@ -482,6 +491,18 @@ class CartPane extends StatelessWidget {
   // ==========================================================================
 
   Widget _buildActionButtons(BuildContext context, CartLoaded state) {
+    // Check if buttons should be disabled for Dine-In without table
+    final bool isDineInWithoutTable =
+        state.orderType == OrderType.dineIn && state.selectedTable == null;
+
+    // Check if buttons should be disabled for Delivery without user or address
+    final bool isDeliveryWithoutUserOrAddress =
+        state.orderType == OrderType.delivery &&
+            (state.selectedUser == null || state.selectedUser!.address.isEmpty);
+
+    final bool shouldDisableButtons =
+        isDineInWithoutTable || isDeliveryWithoutUserOrAddress;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -501,10 +522,13 @@ class CartPane extends StatelessWidget {
             width: double.infinity,
             height: 48,
             child: ElevatedButton(
-              onPressed: () => _handlePayNow(context),
+              onPressed:
+                  shouldDisableButtons ? null : () => _handlePayNow(context),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF10B981),
                 foregroundColor: Colors.white,
+                disabledBackgroundColor: Colors.grey.shade300,
+                disabledForegroundColor: Colors.grey.shade600,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -523,10 +547,14 @@ class CartPane extends StatelessWidget {
             width: double.infinity,
             height: 48,
             child: ElevatedButton(
-              onPressed: () => _handleSendToKitchen(context),
+              onPressed: shouldDisableButtons
+                  ? null
+                  : () => _handleSendToKitchen(context),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF3B82F6),
                 foregroundColor: Colors.white,
+                disabledBackgroundColor: Colors.grey.shade300,
+                disabledForegroundColor: Colors.grey.shade600,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -575,21 +603,45 @@ class CartPane extends StatelessWidget {
       debugPrint('💳 Cart: Pay Now tapped with an empty cart.');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content: Text('Add items to the cart before checking out.')),
+          content: Text('Add items to the cart before checking out.'),
+        ),
       );
       return;
     }
 
-    // Validate delivery order requires a user
-    if (cartState.orderType == OrderType.delivery &&
-        cartState.selectedUser == null) {
+    // Validate dine-in order requires a table
+    if (cartState.orderType == OrderType.dineIn &&
+        cartState.selectedTable == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please select a user for delivery orders.'),
+          content: Text('Please select a table for dine-in orders.'),
           backgroundColor: Color(0xFFEF4444),
         ),
       );
       return;
+    }
+
+    // Validate delivery order requires a user with address
+    if (cartState.orderType == OrderType.delivery) {
+      if (cartState.selectedUser == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Please select a user for delivery orders.'),
+            backgroundColor: Color(0xFFEF4444),
+          ),
+        );
+        return;
+      }
+      if (cartState.selectedUser!.address.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+                'Selected user must have an address. Please update the user profile.'),
+            backgroundColor: Color(0xFFEF4444),
+          ),
+        );
+        return;
+      }
     }
 
     debugPrint(
@@ -605,17 +657,44 @@ class CartPane extends StatelessWidget {
 
   void _handleSendToKitchen(BuildContext context) {
     final cartState = context.read<CartBloc>().state;
-    // Validate delivery order requires a user
-    if (cartState is CartLoaded &&
-        cartState.orderType == OrderType.delivery &&
-        cartState.selectedUser == null) {
+
+    if (cartState is! CartLoaded) {
+      return;
+    }
+
+    // Validate dine-in order requires a table
+    if (cartState.orderType == OrderType.dineIn &&
+        cartState.selectedTable == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please select a user for delivery orders.'),
+          content: Text('Please select a table for dine-in orders.'),
           backgroundColor: Color(0xFFEF4444),
         ),
       );
       return;
+    }
+
+    // Validate delivery order requires a user with address
+    if (cartState.orderType == OrderType.delivery) {
+      if (cartState.selectedUser == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Please select a user for delivery orders.'),
+            backgroundColor: Color(0xFFEF4444),
+          ),
+        );
+        return;
+      }
+      if (cartState.selectedUser!.address.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+                'Selected user must have an address. Please update the user profile.'),
+            backgroundColor: Color(0xFFEF4444),
+          ),
+        );
+        return;
+      }
     }
 
     ScaffoldMessenger.of(

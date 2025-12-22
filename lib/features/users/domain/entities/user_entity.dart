@@ -6,6 +6,8 @@ class UserEntity extends Equatable {
   final String name;
   final String email;
   final String? phone;
+  final String addressType; // Required: 'Home', 'Work', or 'Other'
+  final String address; // Required full address
   final DateTime createdAt;
   final DateTime? lastLoginAt;
 
@@ -14,9 +16,11 @@ class UserEntity extends Equatable {
     required this.name,
     required this.email,
     this.phone,
+    String? addressType,
+    required this.address,
     required this.createdAt,
     this.lastLoginAt,
-  });
+  }) : addressType = addressType ?? 'Home';
 
   @override
   List<Object?> get props => [
@@ -24,6 +28,8 @@ class UserEntity extends Equatable {
         name,
         email,
         phone,
+        addressType,
+        address,
         createdAt,
         lastLoginAt,
       ];
@@ -33,6 +39,8 @@ class UserEntity extends Equatable {
     String? name,
     String? email,
     String? phone,
+    String? addressType,
+    String? address,
     DateTime? createdAt,
     DateTime? lastLoginAt,
   }) {
@@ -41,6 +49,8 @@ class UserEntity extends Equatable {
       name: name ?? this.name,
       email: email ?? this.email,
       phone: phone ?? this.phone,
+      addressType: addressType ?? this.addressType,
+      address: address ?? this.address,
       createdAt: createdAt ?? this.createdAt,
       lastLoginAt: lastLoginAt ?? this.lastLoginAt,
     );

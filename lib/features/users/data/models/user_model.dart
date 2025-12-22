@@ -7,6 +7,8 @@ class UserModel extends Equatable {
   final String name;
   final String email;
   final String? phone;
+  final String addressType; // Required: 'Home', 'Work', or 'Other'
+  final String address; // Required full address
   final DateTime createdAt;
   final DateTime? lastLoginAt;
 
@@ -15,9 +17,11 @@ class UserModel extends Equatable {
     required this.name,
     required this.email,
     this.phone,
+    String? addressType,
+    required this.address,
     required this.createdAt,
     this.lastLoginAt,
-  });
+  }) : addressType = addressType ?? 'Home';
 
   /// Convert JSON to UserModel
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -26,6 +30,10 @@ class UserModel extends Equatable {
       name: json['name'] as String? ?? '',
       email: json['email'] as String? ?? '',
       phone: json['phone'] as String?,
+      addressType: json['addressType'] as String? ?? 
+                   json['address_type'] as String? ?? 
+                   'Home',
+      address: json['address'] as String? ?? '',
       createdAt: json['createdAt'] != null
           ? DateTime.parse(json['createdAt'] as String)
           : json['created_at'] != null
@@ -46,6 +54,8 @@ class UserModel extends Equatable {
       'name': name,
       'email': email,
       'phone': phone,
+      'addressType': addressType,
+      'address': address,
       'createdAt': createdAt.toIso8601String(),
       'lastLoginAt': lastLoginAt?.toIso8601String(),
     };
@@ -58,6 +68,8 @@ class UserModel extends Equatable {
       name: name,
       email: email,
       phone: phone,
+      addressType: addressType,
+      address: address,
       createdAt: createdAt,
       lastLoginAt: lastLoginAt,
     );
@@ -70,6 +82,8 @@ class UserModel extends Equatable {
       name: entity.name,
       email: entity.email,
       phone: entity.phone,
+      addressType: entity.addressType,
+      address: entity.address,
       createdAt: entity.createdAt,
       lastLoginAt: entity.lastLoginAt,
     );
@@ -81,6 +95,8 @@ class UserModel extends Equatable {
         name,
         email,
         phone,
+        addressType,
+        address,
         createdAt,
         lastLoginAt,
       ];
