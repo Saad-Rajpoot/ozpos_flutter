@@ -1,6 +1,7 @@
 import 'package:get_it/get_it.dart';
 
 import 'modules/core_module.dart';
+import 'modules/theme_module.dart';
 import 'modules/menu_module.dart';
 import 'modules/cart_module.dart';
 import 'modules/checkout_module.dart';
@@ -26,6 +27,7 @@ Future<void> init() async {
   await CoreModule.init(sl);
 
   // Initialize feature modules
+  await ThemeModule.init(sl);
   await MenuModule.init(sl);
   await CartModule.init(sl);
   await CheckoutModule.init(sl);

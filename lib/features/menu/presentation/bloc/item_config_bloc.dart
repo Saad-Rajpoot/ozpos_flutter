@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/base/base_bloc.dart';
 import '../../domain/services/menu_item_price_calculator.dart';
 import '../../domain/services/modifier_validator.dart';
+import '../../domain/utils/modifier_tree_utils.dart';
 import 'item_config_event.dart';
 import 'item_config_state.dart';
 
@@ -13,6 +14,9 @@ class ItemConfigBloc extends BaseBloc<ItemConfigEvent, ItemConfigState> {
     on<SelectComboOption>(_onSelectCombo);
     on<UpdateQuantity>(_onUpdateQuantity);
     on<ResetConfiguration>(_onReset);
+    on<UpdateSpecialInstructions>(_onUpdateSpecialInstructions);
+    on<ClearFeedbackMessage>(_onClearFeedbackMessage);
+    on<ShowFeedbackMessage>(_onShowFeedbackMessage);
   }
 
   Future<void> _onInitialize(
@@ -36,9 +40,14 @@ class ItemConfigBloc extends BaseBloc<ItemConfigEvent, ItemConfigState> {
       quantity: 1,
     );
 
-    // Validate required groups using domain service
+    // Validate required groups (including nested) using domain service
     final canAdd = ModifierValidator.validateRequiredGroups(
-      groups: event.item.modifierGroups,
+      item: event.item,
+      selectedModifiers: selectedOptions,
+    );
+
+    final totalCalories = MenuItemPriceCalculator.calculateTotalCalories(
+      item: event.item,
       selectedModifiers: selectedOptions,
     );
 
@@ -49,6 +58,7 @@ class ItemConfigBloc extends BaseBloc<ItemConfigEvent, ItemConfigState> {
         selectedComboId: null,
         quantity: 1,
         totalPrice: initialPrice,
+        totalCalories: totalCalories,
         canAddToCart: canAdd,
       ),
     );
@@ -65,10 +75,12 @@ class ItemConfigBloc extends BaseBloc<ItemConfigEvent, ItemConfigState> {
       currentState.selectedOptions,
     );
 
-    // Find the group
-    final group = currentState.item.modifierGroups.firstWhere(
-      (g) => g.id == event.groupId,
+    // Find the group (may be nested)
+    final group = ModifierTreeUtils.findGroupById(
+      currentState.item,
+      event.groupId,
     );
+    if (group == null) return;
 
     if (!selectedOptions.containsKey(event.groupId)) {
       selectedOptions[event.groupId] = [];
@@ -82,8 +94,17 @@ class ItemConfigBloc extends BaseBloc<ItemConfigEvent, ItemConfigState> {
         selectedOptions[event.groupId] = [event.optionId];
       } else {
         // Check max selection
-        if (currentSelections.length >= group.maxSelection) {
-          return; // Max reached, don't add
+        if (currentSelections.length >= group.maxSelection &&
+            !currentSelections.contains(event.optionId)) {
+          final limit = group.maxSelection;
+          emit(
+            currentState.copyWith(
+              feedbackMessage: limit == 1
+                  ? 'Please select only one option for ${group.name}'
+                  : 'You can select up to $limit options for ${group.name}. Deselect one to choose another.',
+            ),
+          );
+          return;
         }
         if (!currentSelections.contains(event.optionId)) {
           selectedOptions[event.groupId] = [
@@ -93,9 +114,12 @@ class ItemConfigBloc extends BaseBloc<ItemConfigEvent, ItemConfigState> {
         }
       }
     } else {
-      // Deselect
+      // Deselect - also clear nested selections for this option
       selectedOptions[event.groupId] =
           currentSelections.where((id) => id != event.optionId).toList();
+      final nestedPrefix =
+          '${event.groupId}${ModifierTreeUtils.modifierPathSeparator}${event.optionId}${ModifierTreeUtils.modifierPathSeparator}';
+      selectedOptions.removeWhere((key, _) => key.startsWith(nestedPrefix));
     }
 
     // Calculate price using domain service
@@ -106,9 +130,14 @@ class ItemConfigBloc extends BaseBloc<ItemConfigEvent, ItemConfigState> {
       quantity: currentState.quantity,
     );
 
-    // Validate required groups using domain service
+    // Validate required groups (including nested) using domain service
     final canAdd = ModifierValidator.validateRequiredGroups(
-      groups: currentState.item.modifierGroups,
+      item: currentState.item,
+      selectedModifiers: selectedOptions,
+    );
+
+    final totalCalories = MenuItemPriceCalculator.calculateTotalCalories(
+      item: currentState.item,
       selectedModifiers: selectedOptions,
     );
 
@@ -116,6 +145,7 @@ class ItemConfigBloc extends BaseBloc<ItemConfigEvent, ItemConfigState> {
       currentState.copyWith(
         selectedOptions: selectedOptions,
         totalPrice: newPrice,
+        totalCalories: totalCalories,
         canAddToCart: canAdd,
       ),
     );
@@ -137,10 +167,16 @@ class ItemConfigBloc extends BaseBloc<ItemConfigEvent, ItemConfigState> {
       quantity: currentState.quantity,
     );
 
+    final totalCalories = MenuItemPriceCalculator.calculateTotalCalories(
+      item: currentState.item,
+      selectedModifiers: currentState.selectedOptions,
+    );
+
     emit(
       currentState.copyWith(
         selectedComboId: event.comboId,
         totalPrice: newPrice,
+        totalCalories: totalCalories,
       ),
     );
   }
@@ -176,5 +212,33 @@ class ItemConfigBloc extends BaseBloc<ItemConfigEvent, ItemConfigState> {
 
     // Re-initialize with defaults
     add(InitializeItemConfig(item: currentState.item));
+  }
+
+  void _onUpdateSpecialInstructions(
+    UpdateSpecialInstructions event,
+    Emitter<ItemConfigState> emit,
+  ) {
+    if (state is! ItemConfigLoaded) return;
+    emit(
+      (state as ItemConfigLoaded).copyWith(
+        specialInstructions: event.instructions.isEmpty ? null : event.instructions,
+      ),
+    );
+  }
+
+  void _onClearFeedbackMessage(
+    ClearFeedbackMessage event,
+    Emitter<ItemConfigState> emit,
+  ) {
+    if (state is! ItemConfigLoaded) return;
+    emit((state as ItemConfigLoaded).copyWith(clearFeedbackMessage: true));
+  }
+
+  void _onShowFeedbackMessage(
+    ShowFeedbackMessage event,
+    Emitter<ItemConfigState> emit,
+  ) {
+    if (state is! ItemConfigLoaded) return;
+    emit((state as ItemConfigLoaded).copyWith(feedbackMessage: event.message));
   }
 }

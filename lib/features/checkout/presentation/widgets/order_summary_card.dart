@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/config/branch_tax_config.dart';
 import '../bloc/checkout_bloc.dart';
 
 /// Order Summary Card - Shows complete breakdown of order totals
@@ -83,7 +84,11 @@ class OrderSummaryCard extends StatelessWidget {
             const SizedBox(height: 12),
 
             // Tax
-            _buildSummaryRow('GST (10%)', state.tax, isImportant: true),
+            _buildSummaryRow(
+              BranchTaxConfigStore.instance.config.displayLabel,
+              state.tax,
+              isImportant: true,
+            ),
 
             const SizedBox(height: 12),
             const Divider(thickness: 2),

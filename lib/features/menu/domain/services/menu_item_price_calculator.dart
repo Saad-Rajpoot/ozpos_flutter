@@ -1,4 +1,5 @@
 import '../entities/menu_item_entity.dart';
+import '../utils/modifier_tree_utils.dart';
 
 /// Domain service for calculating menu item prices
 /// This encapsulates business logic for price calculations including modifiers and combos
@@ -23,26 +24,27 @@ class MenuItemPriceCalculator {
 
     double basePrice = item.basePrice;
 
-    // Add modifier prices
+    // Only add prices for active groups (nested groups only when parent selected)
+    final activeGroupIds = ModifierTreeUtils
+        .getActiveGroups(item, selectedModifiers)
+        .map((g) => g.id)
+        .toSet();
+
     for (final groupEntry in selectedModifiers.entries) {
       final groupId = groupEntry.key;
+      if (!activeGroupIds.contains(groupId)) continue;
+
       final selectedOptionIds = groupEntry.value;
+      final group = ModifierTreeUtils.findGroupById(item, groupId);
+      if (group == null) continue;
 
-      // Find the modifier group
-      final group = item.modifierGroups.firstWhere(
-        (g) => g.id == groupId,
-        orElse: () => throw ArgumentError('Modifier group $groupId not found'),
-      );
-
-      // Add price for each selected option
       for (final optionId in selectedOptionIds) {
-        final option = group.options.firstWhere(
-          (o) => o.id == optionId,
-          orElse: () => throw ArgumentError(
-            'Modifier option $optionId not found in group $groupId',
-          ),
-        );
-        basePrice += option.priceDelta;
+        try {
+          final option = group.options.firstWhere((o) => o.id == optionId);
+          basePrice += option.priceDelta;
+        } catch (_) {
+          // Option not found in group, skip
+        }
       }
     }
 
@@ -80,23 +82,42 @@ class MenuItemPriceCalculator {
     );
   }
 
-  /// Get default modifiers for a menu item
-  /// Returns a map of modifier group ID to list of default option IDs
+  /// Get default modifiers for a menu item.
+  /// Returns empty - required modifiers are not pre-selected; user must select them.
   static Map<String, List<String>> getDefaultModifiers(
     MenuItemEntity item,
   ) {
-    final defaultModifiers = <String, List<String>>{};
+    return {};
+  }
 
-    for (final group in item.modifierGroups) {
-      final defaultOptions = group.options
-          .where((opt) => opt.isDefault)
-          .map((opt) => opt.id)
-          .toList();
-      if (defaultOptions.isNotEmpty) {
-        defaultModifiers[group.id] = defaultOptions;
+  /// Calculate total calories for a menu item with selected modifiers.
+  /// Returns null if item has no calories and no modifier calories.
+  static int? calculateTotalCalories({
+    required MenuItemEntity item,
+    required Map<String, List<String>> selectedModifiers,
+  }) {
+    int baseCal = item.calories ?? 0;
+    int modifierCal = 0;
+
+    final activeGroupIds = ModifierTreeUtils
+        .getActiveGroups(item, selectedModifiers)
+        .map((g) => g.id)
+        .toSet();
+
+    for (final entry in selectedModifiers.entries) {
+      if (!activeGroupIds.contains(entry.key)) continue;
+      final group = ModifierTreeUtils.findGroupById(item, entry.key);
+      if (group == null) continue;
+      for (final optionId in entry.value) {
+        try {
+          final opt =
+              group.options.firstWhere((o) => o.id == optionId);
+          modifierCal += opt.calories ?? 0;
+        } catch (_) {}
       }
     }
 
-    return defaultModifiers;
+    final total = baseCal + modifierCal;
+    return total > 0 ? total : null;
   }
 }

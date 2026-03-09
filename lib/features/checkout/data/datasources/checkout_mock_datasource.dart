@@ -1,4 +1,6 @@
 import '../../domain/entities/checkout_entity.dart';
+import '../models/book_order_request.dart';
+import '../models/book_order_response.dart';
 import '../models/checkout_data.dart';
 import '../models/order_model.dart';
 import 'checkout_datasource.dart';
@@ -36,5 +38,12 @@ class CheckoutMockDataSource implements CheckoutDataSource {
         throw CacheException(message: 'Failed to load orders data: $e');
       }
     }
+  }
+
+  @override
+  Future<BookOrderSuccessResponse> bookOrder(BookOrderRequest request) async {
+    throw UnimplementedError(
+      'bookOrder is only supported via CheckoutRemoteDataSource',
+    );
   }
 }

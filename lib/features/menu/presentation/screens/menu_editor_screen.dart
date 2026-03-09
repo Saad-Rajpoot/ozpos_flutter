@@ -31,7 +31,7 @@ class _MenuEditorScreenState extends State<MenuEditorScreen> {
   @override
   void initState() {
     super.initState();
-    context.read<MenuBloc>().add(const GetMenuItemsEvent());
+    context.read<MenuBloc>().add(const FetchMenuEvent());
   }
 
   @override
@@ -1059,7 +1059,7 @@ class _MenuEditorScreenState extends State<MenuEditorScreen> {
     );
 
     if (result != null && context.mounted) {
-      context.read<MenuBloc>().add(const GetMenuItemsEvent());
+      context.read<MenuBloc>().add(const FetchMenuEvent());
       NavigationService.showSuccess('"${result.name}" saved successfully!');
     }
   }

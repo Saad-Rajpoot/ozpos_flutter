@@ -13,6 +13,7 @@ import '../../features/menu/presentation/bloc/menu_bloc.dart';
 import '../../features/menu/presentation/bloc/menu_event.dart';
 import '../../features/checkout/presentation/screens/checkout_screen.dart';
 import '../../features/checkout/presentation/bloc/checkout_bloc.dart';
+import '../../features/orders/domain/entities/order_entity.dart';
 import '../../features/orders/presentation/screens/orders_screen.dart';
 import '../../features/orders/presentation/bloc/orders_management_event.dart';
 import '../../features/orders/presentation/bloc/orders_management_bloc.dart';
@@ -32,6 +33,7 @@ import '../../features/reports/presentation/bloc/reports_bloc.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
 import '../../features/settings/presentation/bloc/settings_bloc.dart';
 import '../../features/settings/presentation/bloc/settings_event.dart';
+import '../../features/theme/presentation/bloc/theme_bloc.dart';
 import '../widgets/error_screen.dart';
 import '../../features/docket/presentation/screens/docket_designer_screen.dart';
 import '../../features/printing/presentation/bloc/printing_bloc.dart';
@@ -121,7 +123,7 @@ class AppRouter {
       case dashboard:
         return MaterialPageRoute(
           builder: (_) => BlocProvider<MenuBloc>(
-            create: (_) => di.sl<MenuBloc>()..add(const LoadMenuData()),
+            create: (_) => di.sl<MenuBloc>()..add(const FetchMenuEvent()),
             child: const DashboardScreen(),
           ),
           settings: settings,
@@ -130,8 +132,13 @@ class AppRouter {
       case menu:
         return MaterialPageRoute(
           builder: (_) => BlocProvider<MenuBloc>(
-            create: (_) => di.sl<MenuBloc>()..add(const LoadMenuData()),
-            child: MenuScreen(orderType: args?['orderType'] as String?),
+            create: (_) => di.sl<MenuBloc>(),
+            child: MenuScreen(
+              orderType: args?['orderType'] as String?,
+              editOrder: args?['editOrder'] as OrderEntity?,
+              editOrderId: args?['editOrderId'] as String?,
+              editOrderDisplayId: args?['editOrderDisplayId'] as String?,
+            ),
           ),
           settings: settings,
         );
@@ -197,9 +204,12 @@ class AppRouter {
 
       case settingsScreen:
         return MaterialPageRoute(
-          builder: (_) => BlocProvider<SettingsBloc>(
-            create: (_) => di.sl<SettingsBloc>()..add(const LoadSettings()),
-            child: const SettingsScreen(),
+          builder: (context) => BlocProvider<ThemeBloc>.value(
+            value: context.read<ThemeBloc>(),
+            child: BlocProvider<SettingsBloc>(
+              create: (_) => di.sl<SettingsBloc>()..add(const LoadSettings()),
+              child: const SettingsScreen(),
+            ),
           ),
           settings: settings,
         );
@@ -210,7 +220,7 @@ class AppRouter {
             providers: [
               BlocProvider<MenuBloc>(
                 create: (_) =>
-                    di.sl<MenuBloc>()..add(const GetMenuItemsEvent()),
+                    di.sl<MenuBloc>()..add(const FetchMenuEvent()),
               ),
               BlocProvider<ComboCrudBloc>(
                 create: (_) => di.sl<ComboCrudBloc>(),

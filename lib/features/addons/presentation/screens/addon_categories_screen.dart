@@ -4,6 +4,7 @@ import '../bloc/addon_management_bloc.dart';
 import '../bloc/addon_management_event.dart';
 import '../bloc/addon_management_state.dart';
 import '../../domain/entities/addon_management_entities.dart';
+import '../../../../core/theme/theme_context_ext.dart';
 
 /// Standalone screen for managing add-on categories system-wide
 /// Accessible from Menu Editor screen for creating/editing reusable addon sets
@@ -15,13 +16,13 @@ class AddonCategoriesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFB),
+      backgroundColor: context.bgPrimary,
       appBar: AppBar(
         title: const Text(
           'Add-on Categories',
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
       ),
       body: Column(
@@ -83,7 +84,7 @@ class AddonCategoriesScreen extends StatelessWidget {
   Widget _buildHeader(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(24),
-      color: Colors.white,
+      color: Theme.of(context).colorScheme.surface,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -106,12 +107,12 @@ class AddonCategoriesScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Manage Add-on Categories',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFF1F2937),
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -140,12 +141,14 @@ class AddonCategoriesScreen extends StatelessWidget {
                 return Row(
                   children: [
                     _buildStatCard(
+                      context,
                       'Categories',
                       totalCategories.toString(),
                       Icons.folder,
                     ),
                     const SizedBox(width: 12),
                     _buildStatCard(
+                      context,
                       'Total Items',
                       totalItems.toString(),
                       Icons.fastfood,
@@ -161,7 +164,7 @@ class AddonCategoriesScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStatCard(String label, String value, IconData icon) {
+  Widget _buildStatCard(BuildContext context, String label, String value, IconData icon) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(12),
@@ -179,10 +182,10 @@ class AddonCategoriesScreen extends StatelessWidget {
               children: [
                 Text(
                   value,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF1F2937),
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
                 Text(

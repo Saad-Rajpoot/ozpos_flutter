@@ -1,18 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/navigation/app_router.dart';
-import '../../../../core/navigation/navigation_service.dart';
-import '../../../../core/constants/app_responsive.dart';
-import '../../../menu/presentation/bloc/menu_bloc.dart';
-import '../../../menu/presentation/bloc/menu_event.dart';
-import '../widgets/dashboard_tile.dart';
-import '../../../orders/presentation/widgets/active_orders_panel.dart';
-import '../../../../core/widgets/sidebar_nav.dart';
+import 'package:flutter/foundation.dart';
+import '../../../../core/auth/auth_cubit.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_responsive.dart';
 import '../../../../core/constants/app_sizes.dart';
 import '../../../../core/constants/app_spacing.dart';
-import '../../../customer_display/presentation/widgets/customer_display_button.dart';
+import '../../../../core/di/injection_container.dart' as di;
+import '../../../../core/navigation/app_router.dart';
+import '../../../../core/navigation/navigation_service.dart';
+import '../../../../core/widgets/sidebar_nav.dart';
 import '../../../combos/presentation/widgets/debug_combo_builder_button.dart';
+import '../../../customer_display/presentation/widgets/customer_display_button.dart';
+import '../../../menu/presentation/bloc/menu_bloc.dart';
+import '../../../menu/presentation/bloc/menu_event.dart';
+import '../../../orders/presentation/bloc/orders_management_bloc.dart';
+import '../../../orders/presentation/bloc/orders_management_event.dart';
+import '../../../orders/presentation/widgets/active_orders_panel.dart';
+import '../widgets/dashboard_tile.dart';
+import '../../../../core/network/network_info.dart';
 
 /// Dashboard Screen - Pixel-perfect match to reference image
 /// Responsive breakpoints:
@@ -38,24 +44,36 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  bool _forceOffline = false;
 
   @override
   void initState() {
     super.initState();
-    // Load menu data when dashboard initializes
-    context.read<MenuBloc>().add(const GetMenuItemsEvent());
+    // Load menu from single-vendor API when dashboard initializes
+    context.read<MenuBloc>().add(const FetchMenuEvent());
+    // Sync local toggle with current debug override so the app
+    // stays offline/online across navigations until the button is pressed.
+    if (kDebugMode) {
+      final networkInfo = di.sl<NetworkInfo>();
+      if (networkInfo is NetworkInfoImpl) {
+        _forceOffline = networkInfo.overrideIsConnected == false;
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => DashboardViewCubit(),
-      child: BlocBuilder<DashboardViewCubit, bool>(
-        builder: (context, showRightPanel) {
-          return ClampedTextScaling(
-            child: Scaffold(
+    return BlocProvider<OrdersManagementBloc>(
+      create: (_) =>
+          di.sl<OrdersManagementBloc>()..add(const LoadOrdersEvent()),
+      child: BlocProvider(
+        create: (_) => DashboardViewCubit(),
+        child: BlocBuilder<DashboardViewCubit, bool>(
+          builder: (context, showRightPanel) {
+            return ClampedTextScaling(
+              child: Scaffold(
               key: _scaffoldKey,
-              backgroundColor: AppColors.bgPrimary,
+              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
               // Right drawer for compact breakpoint
               endDrawer: context.isCompact
                   ? Drawer(
@@ -79,14 +97,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ),
           );
-        },
+          },
+        ),
       ),
     );
   }
 
   Widget _buildMainContent(BuildContext context, bool showRightPanel) {
     return Container(
-      color: AppColors.bgPrimary,
+      color: Theme.of(context).scaffoldBackgroundColor,
       child: LayoutBuilder(
         builder: (context, constraints) {
           // Content with max width 1440dp on ultra-wide
@@ -96,13 +115,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
           return Center(
             child: Container(
               constraints: BoxConstraints(maxWidth: maxWidth),
-              child: CustomScrollView(
-                slivers: [
-                  // Sticky App Bar
-                  _buildSliverAppBar(context, showRightPanel),
+              child: Stack(
+                children: [
+                  CustomScrollView(
+                    slivers: [
+                      // Sticky App Bar
+                      _buildSliverAppBar(context, showRightPanel),
 
-                  // Grid of tiles
-                  _buildSliverGrid(context),
+                      // Grid of tiles
+                      _buildSliverGrid(context),
+                    ],
+                  ),
+                  if (kDebugMode)
+                    Positioned(
+                      bottom: 16,
+                      right: 16,
+                      child: _buildDebugOfflineButton(context),
+                    ),
                 ],
               ),
             ),
@@ -112,9 +141,32 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  Widget _buildDebugOfflineButton(BuildContext context) {
+    return FloatingActionButton.small(
+      heroTag: 'debug_offline_toggle',
+      backgroundColor:
+          _forceOffline ? Colors.red.withOpacity(0.9) : Colors.white,
+      foregroundColor:
+          _forceOffline ? Colors.white : AppColors.textSecondary,
+      onPressed: () {
+        setState(() {
+          _forceOffline = !_forceOffline;
+        });
+        final networkInfo = di.sl<NetworkInfo>();
+        if (networkInfo is NetworkInfoImpl) {
+          networkInfo.setOverrideIsConnected(
+            _forceOffline ? false : null,
+          );
+        }
+      },
+      tooltip: _forceOffline ? 'Offline (test)' : 'Online (test)',
+      child: Icon(_forceOffline ? Icons.wifi_off : Icons.wifi, size: 18),
+    );
+  }
+
   Widget _buildSliverAppBar(BuildContext context, bool showRightPanel) {
     return SliverAppBar(
-      backgroundColor: AppColors.bgPrimary,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       elevation: 0,
       pinned: true,
       toolbarHeight: AppSizes.appBarHeight,
@@ -140,22 +192,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         color: AppColors.primary,
                       ),
                       const SizedBox(width: 8),
-                      const Text(
+                      Text(
                         'Billy\'s Burgers',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 2),
-                  const Text(
+                  Text(
                     'Main Branch',
                     style: TextStyle(
                       fontSize: 12,
-                      color: AppColors.textSecondary,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ],
@@ -170,17 +222,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     const SizedBox(width: 8),
                     const DebugComboBuilderButton(),
                     const SizedBox(width: 12),
-                    const Icon(
+                    Icon(
                       Icons.access_time,
                       size: 16,
-                      color: AppColors.textSecondary,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                     const SizedBox(width: 4),
                     Text(
                       TimeOfDay.now().format(context),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 13,
-                        color: AppColors.textSecondary,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                     ),
                     const SizedBox(width: 16),
@@ -206,16 +258,37 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         tooltip: 'Active Orders',
                       ),
 
-                    // Profile
+                    // Profile dropdown (Logout)
                     const SizedBox(width: 8),
-                    CircleAvatar(
-                      radius: 18,
-                      backgroundColor: AppColors.primary.withOpacity(0.1),
-                      child: const Icon(
-                        Icons.person,
-                        size: 20,
-                        color: AppColors.primary,
+                    PopupMenuButton<String>(
+                      offset: const Offset(0, 40),
+                      icon: CircleAvatar(
+                        radius: 18,
+                        backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+                        child: const Icon(
+                          Icons.person,
+                          size: 20,
+                          color: AppColors.primary,
+                        ),
                       ),
+                      tooltip: 'Account',
+                      onSelected: (value) {
+                        if (value == 'logout') {
+                          context.read<AuthCubit>().logout();
+                        }
+                      },
+                      itemBuilder: (context) => [
+                        const PopupMenuItem<String>(
+                          value: 'logout',
+                          child: Row(
+                            children: [
+                              Icon(Icons.logout, size: 20),
+                              SizedBox(width: 12),
+                              Text('Logout'),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -256,8 +329,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   List<_TileData> _getDashboardTiles() {
     return [
       _TileData(
-        title: 'Takeaway',
-        subtitle: 'Quick takeaway orders',
+        title: 'Pickup',
+        subtitle: 'Quick pickup orders',
         icon: Icons.shopping_bag,
         gradient: const LinearGradient(
           colors: [AppColors.tileTakeaway, AppColors.tileTakeawayEnd],

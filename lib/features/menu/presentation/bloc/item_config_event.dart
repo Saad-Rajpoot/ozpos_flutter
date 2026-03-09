@@ -73,3 +73,19 @@ class UpdateSpecialInstructions extends ItemConfigEvent {
   @override
   List<Object?> get props => [instructions];
 }
+
+class ClearFeedbackMessage extends ItemConfigEvent {
+  const ClearFeedbackMessage();
+
+  @override
+  List<Object?> get props => [];
+}
+
+class ShowFeedbackMessage extends ItemConfigEvent {
+  final String message;
+
+  const ShowFeedbackMessage(this.message);
+
+  @override
+  List<Object?> get props => [message];
+}

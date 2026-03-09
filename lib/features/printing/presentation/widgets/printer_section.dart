@@ -6,11 +6,14 @@ class PrinterSection extends StatelessWidget {
   final PrinterType type;
   final List<PrinterEntity> printers;
   final void Function(BuildContext, PrinterEntity) onEdit;
-  const PrinterSection(
-      {super.key,
-      required this.type,
-      required this.printers,
-      required this.onEdit});
+  final void Function(PrinterEntity)? onTestPrint;
+  const PrinterSection({
+    super.key,
+    required this.type,
+    required this.printers,
+    required this.onEdit,
+    this.onTestPrint,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -60,6 +63,7 @@ class PrinterSection extends StatelessWidget {
                     printer: printer,
                     color: color,
                     onEdit: (p) => onEdit(context, p),
+                    onTestPrint: onTestPrint,
                   ),
                 )
             ],

@@ -10,6 +10,7 @@ class MenuItemModel {
   final String description;
   final String? image;
   final double basePrice;
+  final int? calories;
   final List<String> tags;
   final List<ModifierGroupModel> modifierGroups;
   final List<ComboOptionModel> comboOptions;
@@ -22,6 +23,7 @@ class MenuItemModel {
     required this.description,
     this.image,
     required this.basePrice,
+    this.calories,
     this.tags = const [],
     this.modifierGroups = const [],
     this.comboOptions = const [],
@@ -37,6 +39,7 @@ class MenuItemModel {
       description: description,
       image: image,
       basePrice: basePrice,
+      calories: calories,
       tags: tags,
       modifierGroups: modifierGroups.map((model) => model.toEntity()).toList(),
       comboOptions: comboOptions.map((model) => model.toEntity()).toList(),
@@ -53,6 +56,7 @@ class MenuItemModel {
       description: entity.description,
       image: entity.image,
       basePrice: entity.basePrice,
+      calories: entity.calories,
       tags: entity.tags,
       modifierGroups: entity.modifierGroups
           .map((group) => ModifierGroupModel.fromEntity(group))
@@ -72,6 +76,7 @@ class MenuItemModel {
     String? description,
     String? image,
     double? basePrice,
+    int? calories,
     List<String>? tags,
     List<ModifierGroupModel>? modifierGroups,
     List<ComboOptionModel>? comboOptions,
@@ -84,6 +89,7 @@ class MenuItemModel {
       description: description ?? this.description,
       image: image ?? this.image,
       basePrice: basePrice ?? this.basePrice,
+      calories: calories ?? this.calories,
       tags: tags ?? this.tags,
       modifierGroups: modifierGroups ?? this.modifierGroups,
       comboOptions: comboOptions ?? this.comboOptions,
@@ -100,6 +106,7 @@ class MenuItemModel {
       description: json['description'] as String,
       image: json['image'] as String?,
       basePrice: (json['base_price'] as num?)?.toDouble() ?? 0.0,
+      calories: json['calories'] as int?,
       tags:
           (json['tags'] as List<dynamic>?)?.map((e) => e as String).toList() ??
               [],
@@ -127,6 +134,7 @@ class MenuItemModel {
       'description': description,
       'image': image,
       'base_price': basePrice,
+      if (calories != null) 'calories': calories,
       'tags': tags,
       'modifier_groups': modifierGroups.map((group) => group.toJson()).toList(),
       'combo_options': comboOptions.map((option) => option.toJson()).toList(),

@@ -53,7 +53,7 @@ class MenuItemCard extends StatelessWidget {
                               imageUrl: item.image!,
                               height: imageHeight,
                               width: double.infinity,
-                              fit: BoxFit.cover,
+                              fit: BoxFit.contain,
                               placeholder: (context, url) =>
                                   _buildPlaceholderImage(imageHeight),
                               errorWidget: (context, url, error) =>
@@ -220,10 +220,12 @@ class MenuItemCard extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(width: 8),
-                            // Add to Cart button
+                            // Add to Cart button - opens same configurator dialog as Customise
                             Expanded(
                               child: ElevatedButton(
-                                onPressed: onTap,
+                                onPressed: () {
+                                  ItemConfiguratorDialog.show(context, item);
+                                },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: AppColors.buttonPrimary,
                                   foregroundColor: AppColors.textWhite,

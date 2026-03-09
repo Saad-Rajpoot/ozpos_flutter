@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/di/injection_container.dart';
 import '../../../../core/navigation/app_router.dart';
 import '../../../../core/widgets/sidebar_nav.dart';
 import '../../../checkout/presentation/widgets/order_items_panel.dart';
@@ -8,6 +9,9 @@ import '../../../checkout/presentation/widgets/payment_keypad_panel.dart';
 import '../../../checkout/presentation/widgets/payment_options_panel.dart';
 import '../../../checkout/presentation/bloc/cart_bloc.dart';
 import '../../../checkout/presentation/bloc/checkout_bloc.dart';
+import '../../../printing/domain/entities/printing_entities.dart';
+import '../../../printing/domain/repositories/printing_repository.dart';
+import '../../../printing/data/services/network_printer_service.dart';
 import '../constant/checkout_constants.dart';
 
 /// Checkout Screen - Compact layout matching React prototype
@@ -64,17 +68,87 @@ class _CheckoutScreenContent extends StatelessWidget {
               );
             }
 
-            checkoutBloc.add(SyncCartItems(items: cartState.items));
+            checkoutBloc.add(SyncCartItems(
+              items: cartState.items,
+              orderType: cartState.orderType,
+              tableNumber: cartState.selectedTable?.number,
+              customerName: cartState.customerName,
+              customerPhone: cartState.customerPhone,
+              deliveryAddress: cartState.orderType == OrderType.delivery
+                  ? cartState.selectedUser?.address
+                  : null,
+            ));
           },
         ),
         BlocListener<CheckoutBloc, CheckoutState>(
           listenWhen: (previous, current) => current is CheckoutSuccess,
           listener: (context, checkoutState) {
-            context.read<CartBloc>().add(ClearCart());
-            Navigator.of(context).pushNamedAndRemoveUntil(
-              AppRouter.dashboard,
-              (route) => false,
-            );
+            final successState = checkoutState as CheckoutSuccess;
+            final receiptText = successState.receiptText;
+            final navigator = Navigator.of(context);
+            final cartBloc = context.read<CartBloc>();
+            final scaffoldMessenger = ScaffoldMessenger.of(context);
+
+            void clearAndNavigate() {
+              if (!context.mounted) return;
+              cartBloc.add(ClearCart());
+              navigator.pushNamedAndRemoveUntil(
+                AppRouter.dashboard,
+                (route) => false,
+              );
+            }
+
+            if (receiptText == null || receiptText.isEmpty) {
+              clearAndNavigate();
+              return;
+            }
+
+            final repo = sl<PrintingRepository>();
+            final printerService = sl<NetworkPrinterService>();
+
+            Future(() async {
+              final either = await repo.getPrinters();
+              either.fold(
+                (_) => clearAndNavigate(),
+                (printers) {
+                  final networkReceipt = printers
+                      .where((p) =>
+                          p.type == PrinterType.receipt &&
+                          p.connection == PrinterConnection.network &&
+                          (p.address?.trim().isNotEmpty ?? false))
+                      .toList();
+                  if (networkReceipt.isEmpty) {
+                    clearAndNavigate();
+                    return;
+                  }
+                  final printer = networkReceipt.firstWhere(
+                    (p) => p.isDefault,
+                    orElse: () => networkReceipt.first,
+                  );
+                  final ip = printer.address!.trim();
+                  final port = printer.port ?? 9100;
+                  printerService
+                      .printOrderReceipt(
+                        ipAddress: ip,
+                        port: port,
+                        receiptText: receiptText,
+                      )
+                      .then((_) => clearAndNavigate())
+                      .catchError((e) {
+                    if (context.mounted) {
+                      scaffoldMessenger.showSnackBar(
+                        SnackBar(
+                          content: Text(
+                              'Receipt print failed: ${e.toString()}'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                    clearAndNavigate();
+                  });
+                },
+              );
+            });
           },
         ),
       ],
@@ -106,9 +180,16 @@ class _CheckoutScreenContent extends StatelessWidget {
                     '✅ Checkout: Initial sync with ${itemsSnapshot.length} cart items',
                   );
                 }
-                context
-                    .read<CheckoutBloc>()
-                    .add(InitializeCheckout(items: itemsSnapshot));
+                context.read<CheckoutBloc>().add(InitializeCheckout(
+                      items: itemsSnapshot,
+                      orderType: cartState.orderType,
+                      tableNumber: cartState.selectedTable?.number,
+                      customerName: cartState.customerName,
+                      customerPhone: cartState.customerPhone,
+                      deliveryAddress: cartState.orderType == OrderType.delivery
+                          ? cartState.selectedUser?.address
+                          : null,
+                    ));
               });
             }
           } else {
@@ -135,16 +216,22 @@ class _CheckoutScreenContent extends StatelessWidget {
                 return Stack(
                   children: [
                     Positioned.fill(
-                      child: Row(
-                        children: [
-                          if (!isCompact)
-                            const SidebarNav(activeRoute: AppRouter.checkout),
-                          Expanded(
-                            child: isCompact
-                                ? _buildCompactLayout(context)
-                                : _buildDesktopLayout(context, screenWidth),
-                          ),
-                        ],
+                      child: GestureDetector(
+                        onTap: () {
+                          FocusScope.of(context).unfocus();
+                        },
+                        behavior: HitTestBehavior.translucent,
+                        child: Row(
+                          children: [
+                            if (!isCompact)
+                              const SidebarNav(activeRoute: AppRouter.checkout),
+                            Expanded(
+                              child: isCompact
+                                  ? _buildCompactLayout(context)
+                                  : _buildDesktopLayout(context, screenWidth),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                     if (checkoutError != null)

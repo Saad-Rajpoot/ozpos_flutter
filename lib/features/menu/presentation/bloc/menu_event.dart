@@ -30,6 +30,20 @@ class LoadMenuData extends MenuEvent {
   List<Object?> get props => [];
 }
 
+/// Fetches menu from single-vendor API (data.branch.menuV2).
+/// [menuType] is an optional hint to select a specific menu variant
+/// (e.g. 'delivery', 'pickup') when multiple menus are configured.
+/// [menuId] can be used to force a particular menu within that type.
+class FetchMenuEvent extends MenuEvent {
+  final String? menuType;
+  final String? menuId;
+
+  const FetchMenuEvent({this.menuType, this.menuId});
+
+  @override
+  List<Object?> get props => [menuType, menuId];
+}
+
 class RefreshMenuData extends MenuEvent {
   const RefreshMenuData();
 

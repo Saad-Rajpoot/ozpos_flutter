@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/navigation/app_router.dart';
 import '../../../../core/widgets/sidebar_nav.dart';
+import '../../../../core/theme/theme_context_ext.dart';
 import '../../domain/entities/reservation_entity.dart';
 import '../bloc/reservation_management_bloc.dart';
 import '../bloc/reservation_management_event.dart';
@@ -28,7 +29,7 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
     return MediaQuery(
       data: MediaQuery.of(context).copyWith(textScaler: scaler),
       child: Scaffold(
-        backgroundColor: const Color(0xFFF5F5F7),
+        backgroundColor: context.bgPrimary,
         body: Row(
           children: [
             if (isDesktop)
@@ -132,9 +133,9 @@ class _Header extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(24),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(bottom: BorderSide(color: Color(0xFFE5E7EB))),
+      decoration: BoxDecoration(
+        color: context.bgSurface,
+        border: Border(bottom: BorderSide(color: context.borderLight)),
       ),
       child: Row(
         children: [
@@ -149,9 +150,9 @@ class _Header extends StatelessWidget {
               ),
               Text(
                 '$bookingsCount bookings',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
-                  color: Color(0xFF6B7280),
+                  color: context.textSecondary,
                 ),
               ),
             ],
@@ -171,17 +172,24 @@ class _Toolbar extends StatelessWidget {
   Widget build(BuildContext context) {
     final viewCubit = context.read<ReservationsViewCubit>();
 
+    final colorScheme = Theme.of(context).colorScheme;
+    const lightBorder = Color(0xFFE5E7EB);
+    const lightFill = Color(0xFFF9FAFB);
+    final isLight = colorScheme.brightness == Brightness.light;
+    final borderColor = isLight ? lightBorder : context.borderLight;
+    final searchFill = isLight ? lightFill : colorScheme.surfaceContainerHighest;
+
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(bottom: BorderSide(color: Color(0xFFE5E7EB))),
+      decoration: BoxDecoration(
+        color: context.bgSurface,
+        border: Border(bottom: BorderSide(color: borderColor)),
       ),
       child: Row(
         children: [
           Container(
             decoration: BoxDecoration(
-              border: Border.all(color: const Color(0xFFE5E7EB)),
+              border: Border.all(color: context.borderLight),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Row(
@@ -230,10 +238,10 @@ class _Toolbar extends StatelessWidget {
                 hintText: 'Search by guest name, phone, or ID...',
                 prefixIcon: const Icon(Icons.search, size: 20),
                 filled: true,
-                fillColor: const Color(0xFFF9FAFB),
+                fillColor: searchFill,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
-                  borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+                  borderSide: BorderSide(color: borderColor),
                 ),
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 16,
@@ -428,7 +436,7 @@ class _ListViewContent extends StatelessWidget {
         padding: const EdgeInsets.all(24),
         child: Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: context.bgSurface,
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
@@ -442,8 +450,10 @@ class _ListViewContent extends StatelessWidget {
             children: [
               Container(
                 padding: const EdgeInsets.all(16),
-                decoration: const BoxDecoration(
-                  border: Border(bottom: BorderSide(color: Color(0xFFE5E7EB))),
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(color: context.borderLight),
+                  ),
                 ),
                 child: const Row(
                   children: [
@@ -594,8 +604,8 @@ class _ReservationRow extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: Color(0xFFF3F4F6))),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: context.borderLight)),
       ),
       child: Row(
         children: [

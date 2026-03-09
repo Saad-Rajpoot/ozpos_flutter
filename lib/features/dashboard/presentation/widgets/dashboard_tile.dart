@@ -93,6 +93,11 @@ class _DashboardTileState extends State<DashboardTile>
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isLight = colorScheme.brightness == Brightness.light;
+    final defaultBorderColor =
+        isLight ? AppColors.borderLight : theme.dividerColor;
     final isDesktop =
         MediaQuery.of(context).size.width >= AppSizes.breakpointLarge;
 
@@ -125,12 +130,11 @@ class _DashboardTileState extends State<DashboardTile>
                           ..translate(0.0, -4.0, 0.0))
                         : Matrix4.identity(),
                     decoration: BoxDecoration(
-                      color: AppColors.bgSecondary,
+                      color: colorScheme.surface,
                       borderRadius: BorderRadius.circular(AppRadius.tile),
                       border: Border.all(
-                        color: isHovered
-                            ? Colors.transparent
-                            : AppColors.borderLight,
+                        color:
+                            isHovered ? Colors.transparent : defaultBorderColor,
                         width: 2,
                       ),
                       boxShadow: isHovered
@@ -191,6 +195,7 @@ class _DashboardTileState extends State<DashboardTile>
                                 ),
                               ),
                             ),
+
                             const SizedBox(height: AppSpacing.sm),
                             Flexible(
                               child: AnimatedDefaultTextStyle(
@@ -203,7 +208,7 @@ class _DashboardTileState extends State<DashboardTile>
                                   fontWeight: AppTypography.bold,
                                   color: isHovered
                                       ? AppColors.textWhite
-                                      : AppColors.textPrimary,
+                                      : colorScheme.onSurface,
                                 ),
                                 child: Text(
                                   widget.title,
@@ -224,7 +229,7 @@ class _DashboardTileState extends State<DashboardTile>
                                   fontWeight: AppTypography.regular,
                                   color: isHovered
                                       ? AppColors.textWhite.withOpacity(0.8)
-                                      : AppColors.textSecondary,
+                                      : colorScheme.onSurfaceVariant,
                                 ),
                                 child: Text(
                                   widget.subtitle,

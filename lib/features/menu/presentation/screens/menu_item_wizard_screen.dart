@@ -146,20 +146,19 @@ class _MenuItemWizardViewState extends State<_MenuItemWizardView> {
                                 ? () {
                                     final newStep = state.currentStep - 1;
                                     context.read<MenuEditBloc>().add(
-                                      NavigateToStep(newStep),
-                                    );
+                                          NavigateToStep(newStep),
+                                        );
                                   }
                                 : null,
                             onNext: () {
                               final newStep = state.currentStep + 1;
                               context.read<MenuEditBloc>().add(
-                                NavigateToStep(newStep),
-                              );
+                                    NavigateToStep(newStep),
+                                  );
                             },
                             onSave: () =>
                                 context.read<MenuEditBloc>().add(SaveItem()),
-                            canProceed:
-                                state.validation.isValid ||
+                            canProceed: state.validation.isValid ||
                                 state.currentStep < 5,
                             isSaving: state.status == MenuEditStatus.saving,
                           ),

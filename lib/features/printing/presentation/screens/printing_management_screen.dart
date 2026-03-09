@@ -1,20 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/di/injection_container.dart';
+import '../../domain/entities/printing_entities.dart';
 import '../bloc/printing_bloc.dart';
 import '../bloc/printing_event.dart';
 import '../bloc/printing_state.dart';
-import '../../domain/entities/printing_entities.dart';
-import '../widgets/printer_section.dart';
+import '../../data/services/network_printer_service.dart';
 import '../widgets/add_printer_dialog.dart';
 import '../widgets/edit_printer_dialog.dart';
+import '../widgets/printer_section.dart';
 
 /// Printing Management Screen
-/// Simple CRUD operations for managing printers
+/// CRUD for printers and test print for network thermal printers.
 class PrintingManagementScreen extends StatelessWidget {
   const PrintingManagementScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final networkPrinterService = sl<NetworkPrinterService>();
     return Scaffold(
       appBar: AppBar(
         title: const Text('Printing Management'),
@@ -88,7 +91,11 @@ class PrintingManagementScreen extends StatelessWidget {
           }
 
           if (state is PrintersLoaded) {
-            return _buildScreenWithHeader(context, state.printers);
+            return _buildScreenWithHeader(
+              context,
+              state.printers,
+              networkPrinterService,
+            );
           }
 
           return Center(
@@ -111,7 +118,10 @@ class PrintingManagementScreen extends StatelessWidget {
   }
 
   Widget _buildScreenWithHeader(
-      BuildContext context, List<PrinterEntity> printers) {
+    BuildContext context,
+    List<PrinterEntity> printers,
+    NetworkPrinterService networkPrinterService,
+  ) {
     final total = printers.length;
     final online = printers.where((p) => p.isConnected).length;
 
@@ -171,13 +181,16 @@ class PrintingManagementScreen extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 16),
-        _buildPrintersList(context, printers),
+        _buildPrintersList(context, printers, networkPrinterService),
       ],
     );
   }
 
   Widget _buildPrintersList(
-      BuildContext context, List<PrinterEntity> printers) {
+    BuildContext context,
+    List<PrinterEntity> printers,
+    NetworkPrinterService networkPrinterService,
+  ) {
     if (printers.isEmpty) {
       return Center(
         child: Column(
@@ -212,9 +225,92 @@ class PrintingManagementScreen extends StatelessWidget {
             type: group.key,
             printers: group.value,
             onEdit: (ctx, p) => showEditPrinterDialog(ctx, p),
+            onTestPrint: (printer) => _handleTestPrint(
+              context,
+              printer,
+              networkPrinterService,
+            ),
           ),
       ],
     );
+  }
+
+  Future<void> _handleTestPrint(
+    BuildContext context,
+    PrinterEntity printer,
+    NetworkPrinterService networkPrinterService,
+  ) async {
+    if (printer.connection != PrinterConnection.network) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Test print is only available for network printers.',
+            ),
+          ),
+        );
+      }
+      return;
+    }
+    final address = printer.address?.trim();
+    if (address == null || address.isEmpty) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Printer has no IP address. Edit the printer.'),
+          ),
+        );
+      }
+      return;
+    }
+
+    if (context.mounted) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) => const AlertDialog(
+          content: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+              SizedBox(width: 24),
+              Expanded(child: Text('Connecting and printing test receipt...')),
+            ],
+          ),
+        ),
+      );
+    }
+
+    try {
+      await networkPrinterService.printTestReceipt(
+        ipAddress: address,
+        port: printer.port ?? 9100,
+        printerName: printer.name,
+      );
+      if (context.mounted) {
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Test receipt sent to ${printer.name}'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Print failed: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   // dialog moved to ../widgets/add_printer_dialog.dart

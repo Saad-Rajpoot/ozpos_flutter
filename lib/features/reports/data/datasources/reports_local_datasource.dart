@@ -1,11 +1,16 @@
+import 'dart:io';
+
+import 'package:sqflite/sqflite.dart';
+
 import '../../domain/entities/reports_entities.dart';
 import '../models/reports_model.dart';
 import 'reports_data_source.dart';
-import 'package:sqflite/sqflite.dart';
+import 'reports_pdf_generator.dart';
 
 /// Local reports data source that loads from SQLite
 class ReportsLocalDataSourceImpl implements ReportsDataSource {
   final Database database;
+  final ReportsPdfGenerator _pdfGenerator = ReportsPdfGenerator();
 
   ReportsLocalDataSourceImpl({required this.database});
 
@@ -18,5 +23,10 @@ class ReportsLocalDataSourceImpl implements ReportsDataSource {
     } catch (e) {
       throw Exception('Failed to fetch reports data from local database');
     }
+  }
+
+  @override
+  Future<File> generateReportPdf(ReportsData report) {
+    return _pdfGenerator.generate(report);
   }
 }

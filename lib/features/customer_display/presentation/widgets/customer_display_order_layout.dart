@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/theme_context_ext.dart';
 import '../../domain/entities/customer_display_cart_item_entity.dart';
 import '../../domain/entities/customer_display_entity.dart';
 import '../../domain/entities/customer_display_loyalty_entity.dart';
@@ -25,7 +26,7 @@ class CustomerDisplayOrderLayout extends StatelessWidget {
     final orderPanel = Expanded(
       flex: 3,
       child: Container(
-        color: const Color(0xFFF3F4F6),
+        color: context.colorScheme.surfaceContainerHighest,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 36, vertical: 28),
           child: Column(
@@ -37,21 +38,21 @@ class CustomerDisplayOrderLayout extends StatelessWidget {
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
+                      children: [
                         Text(
                           'Your Order',
                           style: TextStyle(
                             fontSize: 42,
                             fontWeight: FontWeight.w900,
-                            color: AppColors.textPrimary,
+                            color: context.textPrimary,
                           ),
                         ),
-                        SizedBox(height: 4),
+                        const SizedBox(height: 4),
                         Text(
                           'Please review your items',
                           style: TextStyle(
                             fontSize: 20,
-                            color: AppColors.textSecondary,
+                            color: context.textSecondary,
                           ),
                         ),
                       ],

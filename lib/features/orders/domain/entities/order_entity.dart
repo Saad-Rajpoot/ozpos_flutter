@@ -17,6 +17,7 @@ enum OrderChannel {
   qr,
   dinein,
   takeaway,
+  delivery,
 }
 
 /// Order type (service method)
@@ -30,6 +31,9 @@ class OrderEntity extends Equatable {
   final OrderType orderType;
   final PaymentStatus paymentStatus;
   final OrderStatus status;
+  /// Raw payment method from backend history (e.g. 'cash', 'pay_later').
+  /// Nullable because older/offline records may not have this populated.
+  final String? paymentMethod;
   final String customerName;
   final String? customerPhone;
   final List<OrderItemEntity> items;
@@ -39,6 +43,12 @@ class OrderEntity extends Equatable {
   final DateTime createdAt;
   final DateTime estimatedTime;
   final String? specialInstructions;
+  /// Table number for dine-in orders (e.g. "7"). From history API `table_number`.
+  final String? tableNumber;
+  /// Optional human-readable status coming from the backend
+  /// (e.g. ACCEPTED, PREPARING, READY). When present, UI components
+  /// should prefer this over coarse-grained enum labels.
+  final String? displayStatus;
 
   const OrderEntity({
     required this.id,
@@ -47,6 +57,7 @@ class OrderEntity extends Equatable {
     required this.orderType,
     required this.paymentStatus,
     required this.status,
+    this.paymentMethod,
     required this.customerName,
     this.customerPhone,
     required this.items,
@@ -56,6 +67,8 @@ class OrderEntity extends Equatable {
     required this.createdAt,
     required this.estimatedTime,
     this.specialInstructions,
+    this.tableNumber,
+    this.displayStatus,
   });
 
   @override
@@ -66,6 +79,7 @@ class OrderEntity extends Equatable {
     orderType,
     paymentStatus,
     status,
+    paymentMethod,
     customerName,
     customerPhone,
     items,
@@ -75,6 +89,8 @@ class OrderEntity extends Equatable {
     createdAt,
     estimatedTime,
     specialInstructions,
+    tableNumber,
+      displayStatus,
   ];
 
   OrderEntity copyWith({
@@ -84,6 +100,7 @@ class OrderEntity extends Equatable {
     OrderType? orderType,
     PaymentStatus? paymentStatus,
     OrderStatus? status,
+    String? paymentMethod,
     String? customerName,
     String? customerPhone,
     List<OrderItemEntity>? items,
@@ -93,6 +110,8 @@ class OrderEntity extends Equatable {
     DateTime? createdAt,
     DateTime? estimatedTime,
     String? specialInstructions,
+    String? tableNumber,
+    String? displayStatus,
   }) {
     return OrderEntity(
       id: id ?? this.id,
@@ -101,6 +120,7 @@ class OrderEntity extends Equatable {
       orderType: orderType ?? this.orderType,
       paymentStatus: paymentStatus ?? this.paymentStatus,
       status: status ?? this.status,
+      paymentMethod: paymentMethod ?? this.paymentMethod,
       customerName: customerName ?? this.customerName,
       customerPhone: customerPhone ?? this.customerPhone,
       items: items ?? this.items,
@@ -110,6 +130,8 @@ class OrderEntity extends Equatable {
       createdAt: createdAt ?? this.createdAt,
       estimatedTime: estimatedTime ?? this.estimatedTime,
       specialInstructions: specialInstructions ?? this.specialInstructions,
+      tableNumber: tableNumber ?? this.tableNumber,
+      displayStatus: displayStatus ?? this.displayStatus,
     );
   }
 }
@@ -133,7 +155,9 @@ extension OrderChannelX on OrderChannel {
       case OrderChannel.dinein:
         return 'Dine-In';
       case OrderChannel.takeaway:
-        return 'Takeaway';
+        return 'Pickup';
+      case OrderChannel.delivery:
+        return 'Delivery';
     }
   }
 
@@ -155,6 +179,8 @@ extension OrderChannelX on OrderChannel {
         return '🍽️';
       case OrderChannel.takeaway:
         return '🥡';
+      case OrderChannel.delivery:
+        return '🚚';
     }
   }
 }

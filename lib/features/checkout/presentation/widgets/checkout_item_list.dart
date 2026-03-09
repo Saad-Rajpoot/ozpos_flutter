@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../menu/domain/utils/modifier_tree_utils.dart';
 import '../bloc/cart_bloc.dart';
 
 /// Checkout Item List - Display all cart items in checkout
@@ -6,6 +7,15 @@ class CheckoutItemList extends StatelessWidget {
   final List<CartLineItem> items;
 
   const CheckoutItemList({super.key, required this.items});
+
+  List<({String groupName, String optionName})> _modifierLines(
+    CartLineItem item,
+  ) {
+    return ModifierTreeUtils.getModifierDisplayLines(
+      item.menuItem,
+      item.selectedModifiers,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -121,16 +131,30 @@ class CheckoutItemList extends StatelessWidget {
                     ),
                   ),
 
-                  // Modifiers summary
-                  if (item.modifierSummary.isNotEmpty) ...[
+                  // Modifiers as "Group: Option" lines (indented)
+                  if (_modifierLines(item).isNotEmpty) ...[
                     const SizedBox(height: 4),
-                    Text(
-                      item.modifierSummary,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.black.withOpacity(0.6),
-                      ),
-                    ),
+                    ..._modifierLines(item).map((e) => Padding(
+                          padding: const EdgeInsets.only(left: 12, bottom: 2),
+                          child: RichText(
+                            text: TextSpan(
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.black.withOpacity(0.6),
+                                height: 1.35,
+                              ),
+                              children: [
+                                TextSpan(
+                                  text: '${e.groupName}: ',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                TextSpan(text: e.optionName),
+                              ],
+                            ),
+                          ),
+                        )),
                   ],
 
                   // Unit price

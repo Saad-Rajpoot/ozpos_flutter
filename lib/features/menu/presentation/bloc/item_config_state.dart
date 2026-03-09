@@ -29,8 +29,10 @@ class ItemConfigLoaded extends ItemConfigState {
   final String? selectedComboId;
   final int quantity;
   final double totalPrice;
+  final int? totalCalories;
   final bool canAddToCart;
   final String? specialInstructions;
+  final String? feedbackMessage;
 
   const ItemConfigLoaded({
     required this.item,
@@ -38,8 +40,10 @@ class ItemConfigLoaded extends ItemConfigState {
     this.selectedComboId,
     required this.quantity,
     required this.totalPrice,
+    this.totalCalories,
     required this.canAddToCart,
     this.specialInstructions,
+    this.feedbackMessage,
   });
 
   @override
@@ -49,8 +53,10 @@ class ItemConfigLoaded extends ItemConfigState {
         selectedComboId,
         quantity,
         totalPrice,
+        totalCalories,
         canAddToCart,
         specialInstructions,
+        feedbackMessage,
       ];
 
   ItemConfigLoaded copyWith({
@@ -59,8 +65,11 @@ class ItemConfigLoaded extends ItemConfigState {
     String? selectedComboId,
     int? quantity,
     double? totalPrice,
+    int? totalCalories,
     bool? canAddToCart,
     String? specialInstructions,
+    String? feedbackMessage,
+    bool clearFeedbackMessage = false,
   }) {
     return ItemConfigLoaded(
       item: item ?? this.item,
@@ -68,8 +77,11 @@ class ItemConfigLoaded extends ItemConfigState {
       selectedComboId: selectedComboId ?? this.selectedComboId,
       quantity: quantity ?? this.quantity,
       totalPrice: totalPrice ?? this.totalPrice,
+      totalCalories: totalCalories ?? this.totalCalories,
       canAddToCart: canAddToCart ?? this.canAddToCart,
       specialInstructions: specialInstructions ?? this.specialInstructions,
+      feedbackMessage:
+          clearFeedbackMessage ? null : (feedbackMessage ?? this.feedbackMessage),
     );
   }
 }

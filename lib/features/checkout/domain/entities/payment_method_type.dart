@@ -5,6 +5,8 @@ enum PaymentMethodType {
   card('card'),
   digitalWallet('digital_wallet'),
   bankTransfer('bank_transfer'),
+  payLater('pay_later'),
+  cod('cod'),
   loyaltyPoints('loyalty_points'),
   wallet('wallet'),
   gift('gift'),
@@ -26,6 +28,10 @@ enum PaymentMethodType {
         return Icons.account_balance_wallet;
       case PaymentMethodType.bankTransfer:
         return Icons.account_balance;
+      case PaymentMethodType.payLater:
+        return Icons.schedule;
+      case PaymentMethodType.cod:
+        return Icons.local_shipping;
       case PaymentMethodType.loyaltyPoints:
         return Icons.stars;
       case PaymentMethodType.gift:
@@ -48,6 +54,10 @@ enum PaymentMethodType {
         return 'Digital Wallet';
       case PaymentMethodType.bankTransfer:
         return 'Bank Transfer';
+      case PaymentMethodType.payLater:
+        return 'Pay Later';
+      case PaymentMethodType.cod:
+        return 'Cash on Delivery';
       case PaymentMethodType.loyaltyPoints:
         return 'Loyalty Points';
       case PaymentMethodType.wallet:

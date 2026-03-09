@@ -2,12 +2,12 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import '../../../../core/base/base_bloc.dart';
-import '../../../../core/constants/app_constants.dart';
 import '../../domain/entities/tender_entity.dart';
 import '../../domain/entities/voucher_entity.dart';
 import '../../domain/entities/payment_method_type.dart';
 import '../../domain/entities/tender_status.dart';
-import '../../domain/entities/checkout_metadata_entity.dart';
+import '../../domain/entities/book_order_item_input.dart';
+import '../../domain/usecases/book_order.dart';
 import '../../domain/usecases/initialize_checkout.dart';
 import '../../domain/usecases/process_payment.dart';
 import '../../domain/usecases/apply_voucher.dart';
@@ -124,19 +124,44 @@ class CheckoutSplitState extends Equatable {
 class CheckoutCartState extends Equatable {
   final List<CartLineItem> items;
   final CalculateTotalsResult? totals;
+  final OrderType orderType;
+  final String? tableNumber;
+  final String? customerName;
+  final String? customerPhone;
+  final String? deliveryAddress;
+  /// Order-level notes sent as meta.notes to the book-order API.
+  final String? orderNotes;
 
   const CheckoutCartState({
     required this.items,
     this.totals,
+    this.orderType = OrderType.dineIn,
+    this.tableNumber,
+    this.customerName,
+    this.customerPhone,
+    this.deliveryAddress,
+    this.orderNotes,
   });
 
   CheckoutCartState copyWith({
     List<CartLineItem>? items,
     CalculateTotalsResult? totals,
+    OrderType? orderType,
+    String? tableNumber,
+    String? customerName,
+    String? customerPhone,
+    String? deliveryAddress,
+    String? orderNotes,
   }) {
     return CheckoutCartState(
       items: items ?? this.items,
       totals: totals ?? this.totals,
+      orderType: orderType ?? this.orderType,
+      tableNumber: tableNumber ?? this.tableNumber,
+      customerName: customerName ?? this.customerName,
+      customerPhone: customerPhone ?? this.customerPhone,
+      deliveryAddress: deliveryAddress ?? this.deliveryAddress,
+      orderNotes: orderNotes ?? this.orderNotes,
     );
   }
 
@@ -159,7 +184,7 @@ class CheckoutCartState extends Equatable {
   bool get canPay => totals?.canPay ?? false;
 
   @override
-  List<Object?> get props => [items, totals];
+  List<Object?> get props => [items, totals, orderType, tableNumber, customerName, customerPhone, deliveryAddress, orderNotes];
 }
 
 class CheckoutLoaded extends CheckoutState {
@@ -230,11 +255,17 @@ class CheckoutProcessing extends CheckoutState {}
 class CheckoutSuccess extends CheckoutState {
   final String orderId;
   final double paidAmount;
+  /// Pre-formatted receipt text for printing (order details, items, totals).
+  final String? receiptText;
 
-  const CheckoutSuccess({required this.orderId, required this.paidAmount});
+  const CheckoutSuccess({
+    required this.orderId,
+    required this.paidAmount,
+    this.receiptText,
+  });
 
   @override
-  List<Object?> get props => [orderId, paidAmount];
+  List<Object?> get props => [orderId, paidAmount, receiptText];
 }
 
 class CheckoutError extends CheckoutState {
@@ -290,21 +321,44 @@ abstract class CheckoutEvent extends BaseEvent {
 
 class InitializeCheckout extends CheckoutEvent {
   final List<CartLineItem> items;
+  final OrderType orderType;
+  final String? tableNumber;
+  final String? customerName;
+  final String? customerPhone;
+  final String? deliveryAddress;
 
-  const InitializeCheckout({required this.items});
+  const InitializeCheckout({
+    required this.items,
+    this.orderType = OrderType.dineIn,
+    this.tableNumber,
+    this.customerName,
+    this.customerPhone,
+    this.deliveryAddress,
+  });
 
   @override
-  List<Object?> get props => [items];
+  List<Object?> get props => [items, orderType, tableNumber, customerName, customerPhone, deliveryAddress];
 }
 
 class SyncCartItems extends CheckoutEvent {
   final List<CartLineItem> items;
+  final OrderType? orderType;
+  final String? tableNumber;
+  final String? customerName;
+  final String? customerPhone;
+  final String? deliveryAddress;
 
-  SyncCartItems({required List<CartLineItem> items})
-      : items = List<CartLineItem>.unmodifiable(items);
+  SyncCartItems({
+    required List<CartLineItem> items,
+    this.orderType,
+    this.tableNumber,
+    this.customerName,
+    this.customerPhone,
+    this.deliveryAddress,
+  }) : items = List<CartLineItem>.unmodifiable(items);
 
   @override
-  List<Object?> get props => [items];
+  List<Object?> get props => [items, orderType, tableNumber, customerName, customerPhone, deliveryAddress];
 }
 
 class SelectPaymentMethod extends CheckoutEvent {
@@ -314,6 +368,15 @@ class SelectPaymentMethod extends CheckoutEvent {
 
   @override
   List<Object?> get props => [method];
+}
+
+class SetOrderNotes extends CheckoutEvent {
+  final String notes;
+
+  const SetOrderNotes({required this.notes});
+
+  @override
+  List<Object?> get props => [notes];
 }
 
 class KeypadPress extends CheckoutEvent {
@@ -432,6 +495,7 @@ class DismissError extends CheckoutEvent {}
 
 class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
   final InitializeCheckoutUseCase _initializeCheckoutUseCase;
+  final BookOrderUseCase _bookOrderUseCase;
   final ProcessPaymentUseCase _processPaymentUseCase;
   final ApplyVoucherUseCase _applyVoucherUseCase;
   final CalculateTotalsUseCase _calculateTotalsUseCase;
@@ -449,10 +513,12 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
 
   CheckoutBloc({
     required InitializeCheckoutUseCase initializeCheckoutUseCase,
+    required BookOrderUseCase bookOrderUseCase,
     required ProcessPaymentUseCase processPaymentUseCase,
     required ApplyVoucherUseCase applyVoucherUseCase,
     required CalculateTotalsUseCase calculateTotalsUseCase,
   })  : _initializeCheckoutUseCase = initializeCheckoutUseCase,
+        _bookOrderUseCase = bookOrderUseCase,
         _processPaymentUseCase = processPaymentUseCase,
         _applyVoucherUseCase = applyVoucherUseCase,
         _calculateTotalsUseCase = calculateTotalsUseCase,
@@ -460,6 +526,7 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
     on<InitializeCheckout>(_onInitializeCheckout);
     on<SyncCartItems>(_onSyncCartItems);
     on<SelectPaymentMethod>(_onSelectPaymentMethod);
+    on<SetOrderNotes>(_onSetOrderNotes);
     on<KeypadPress>(_onKeypadPress);
     on<QuickAmountPress>(_onQuickAmountPress);
     on<SelectTipPercent>(_onSelectTipPercent);
@@ -502,7 +569,9 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
               lineTotal: item.lineTotal,
               modifiers:
                   item.selectedModifiers.values.expand((list) => list).toList(),
-              specialInstructions: item.modifierSummary,
+              specialInstructions: item.specialInstructions?.trim().isNotEmpty == true
+                  ? item.specialInstructions!.trim()
+                  : null,
             ))
         .toList();
 
@@ -585,9 +654,9 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
                 unitPrice: unitPrice,
                 selectedComboId: sourceItem?.selectedComboId,
                 selectedModifiers: selectedModifiers,
-                modifierSummary: domainItem.specialInstructions ??
-                    sourceItem?.modifierSummary ??
-                    '',
+                modifierSummary: sourceItem?.modifierSummary ?? '',
+                specialInstructions: sourceItem?.specialInstructions ??
+                    domainItem.specialInstructions,
               );
             }).toList();
 
@@ -613,6 +682,11 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
                 cart: CheckoutCartState(
                   items: cartItems,
                   totals: totals,
+                  orderType: event.orderType,
+                  tableNumber: event.tableNumber,
+                  customerName: event.customerName,
+                  customerPhone: event.customerPhone,
+                  deliveryAddress: event.deliveryAddress,
                 ),
               ),
             );
@@ -629,11 +703,22 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
     final currentState = _currentLoadedState();
     if (currentState == null) return;
 
-    if (_areCartItemsEqual(currentState.items, event.items)) {
-      return;
-    }
+    final cartSame = _areCartItemsEqual(currentState.items, event.items);
+    final contextSame = event.orderType == null &&
+        event.tableNumber == null &&
+        event.customerName == null &&
+        event.customerPhone == null &&
+        event.deliveryAddress == null;
+    if (cartSame && contextSame) return;
 
-    final updatedCart = currentState.cart.copyWith(items: event.items);
+    final updatedCart = currentState.cart.copyWith(
+      items: event.items,
+      orderType: event.orderType ?? currentState.cart.orderType,
+      tableNumber: event.tableNumber ?? currentState.cart.tableNumber,
+      customerName: event.customerName ?? currentState.cart.customerName,
+      customerPhone: event.customerPhone ?? currentState.cart.customerPhone,
+      deliveryAddress: event.deliveryAddress ?? currentState.cart.deliveryAddress,
+    );
 
     await _emitWithRecalculatedTotals(
       emit: emit,
@@ -659,6 +744,14 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
       baseState: currentState,
       payment: updatedPayment,
     );
+  }
+
+  void _onSetOrderNotes(SetOrderNotes event, Emitter<CheckoutState> emit) {
+    final currentState = _currentLoadedState();
+    if (currentState == null) return;
+
+    final updatedCart = currentState.cart.copyWith(orderNotes: event.notes);
+    emit(currentState.copyWith(cart: updatedCart));
   }
 
   Future<void> _onKeypadPress(
@@ -1063,8 +1156,9 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
             modifiers: item.selectedModifiers.values
                 .expand((options) => options)
                 .toList(),
-            specialInstructions:
-                item.modifierSummary.isEmpty ? null : item.modifierSummary,
+            specialInstructions: item.specialInstructions?.trim().isNotEmpty == true
+                ? item.specialInstructions!.trim()
+                : null,
           ),
         )
         .toList();
@@ -1091,24 +1185,48 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
 
     emit(CheckoutProcessing());
 
-    final resultEither = await _processPaymentUseCase(
-      ProcessPaymentParams(
-        paymentMethod: currentState.selectedMethod.value,
-        amount: currentState.grandTotal,
-        metadata: CheckoutMetadataEntity(
-          totalOrders: 0,
-          completedOrders: 0,
-          pendingOrders: 0,
-          totalRevenue: 0.0,
-          averageOrderValue: 0.0,
-          lastUpdated: DateTime.now(),
-        ),
+    final items = _toBookOrderItemInputs(currentState.items);
+    final serviceType = _orderTypeToServiceType(currentState.cart.orderType);
+    final paymentMethod = currentState.selectedMethod.value;
+    final tableNumber = serviceType == 'DINE_IN'
+        ? currentState.cart.tableNumber
+        : null;
+    final eater = _eaterFromCart(currentState.cart, serviceType);
+    const deliveryFeeAmount = 5.0;
+    final deliveryFee = serviceType == 'DELIVERY' ? deliveryFeeAmount : 0.0;
+    final total = serviceType == 'DELIVERY'
+        ? currentState.subtotal + currentState.tax + deliveryFee
+        : currentState.grandTotal;
+    final address = serviceType == 'DELIVERY'
+        ? (currentState.cart.deliveryAddress ?? '456 POS St, Sydney NSW')
+        : null;
+    final notes = (currentState.cart.orderNotes?.trim().isNotEmpty == true)
+        ? currentState.cart.orderNotes!.trim()
+        : 'Test order (POS ${serviceType == 'PICK_UP' ? 'PICKUP' : serviceType}) - Full nested modifiers';
+
+    final resultEither = await _bookOrderUseCase(
+      BookOrderParams(
+        items: items,
+        serviceType: serviceType,
+        placedAt: DateTime.now(),
+        subtotal: currentState.subtotal,
+        tax: currentState.tax,
+        total: total,
+        deliveryFee: deliveryFee,
+        tip: currentState.tipAmount,
+        paymentMethod: paymentMethod,
+        eaterFirstName: eater.$1,
+        eaterLastName: eater.$2,
+        eaterPhone: eater.$3,
+        eaterEmail: eater.$4,
+        tableNumber: tableNumber,
+        address: address,
+        notes: notes,
       ),
     );
 
-    resultEither.fold(
-      (failure) {
-        // Handle payment error - show dismissible error
+    await resultEither.fold<Future<void>>(
+      (failure) async {
         emit(
           CheckoutError(
             message: failure.message,
@@ -1117,24 +1235,22 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
           ),
         );
       },
-      (result) {
-        if (result.isSuccess) {
-          emit(
-            CheckoutSuccess(
-              orderId: result.orderId!,
-              paidAmount: result.paidAmount!,
-            ),
-          );
-        } else {
-          // Handle payment failure - show dismissible error
-          emit(
-            CheckoutError(
-              message: result.errorMessage ?? 'Payment failed',
-              canDismiss: true,
-              previousState: currentState,
-            ),
-          );
-        }
+      (bookResult) async {
+        final orderId = bookResult.displayId.isNotEmpty
+            ? bookResult.displayId
+            : '${bookResult.orderId}';
+        final receiptText = _buildReceiptText(
+          currentState,
+          orderId,
+          currentState.grandTotal,
+        );
+        emit(
+          CheckoutSuccess(
+            orderId: orderId,
+            paidAmount: currentState.grandTotal,
+            receiptText: receiptText,
+          ),
+        );
       },
     );
   }
@@ -1145,17 +1261,135 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
 
     emit(CheckoutProcessing());
 
-    // Simulate saving unpaid order
-    await Future.delayed(AppConstants.shortDelay);
+    final items = _toBookOrderItemInputs(currentState.items);
+    final serviceType = _orderTypeToServiceType(currentState.cart.orderType);
+    final tableNumber = serviceType == 'DINE_IN'
+        ? currentState.cart.tableNumber
+        : null;
+    final eater = _eaterFromCart(currentState.cart, serviceType);
+    const deliveryFeeAmount = 5.0;
+    final deliveryFee = serviceType == 'DELIVERY' ? deliveryFeeAmount : 0.0;
+    final total = serviceType == 'DELIVERY'
+        ? currentState.subtotal + currentState.tax + deliveryFee
+        : currentState.grandTotal;
+    final address = serviceType == 'DELIVERY'
+        ? (currentState.cart.deliveryAddress ?? '456 POS St, Sydney NSW')
+        : null;
+    final notes = (currentState.cart.orderNotes?.trim().isNotEmpty == true)
+        ? currentState.cart.orderNotes!.trim()
+        : 'Test order (POS ${serviceType == 'PICK_UP' ? 'PICKUP' : serviceType}) - Full nested modifiers';
 
-    final orderId = 'ORD-${DateTime.now().millisecondsSinceEpoch}-UNPAID';
-
-    emit(
-      CheckoutSuccess(
-        orderId: orderId,
-        paidAmount: 0.0, // Unpaid
+    final resultEither = await _bookOrderUseCase(
+      BookOrderParams(
+        items: items,
+        serviceType: serviceType,
+        placedAt: DateTime.now(),
+        subtotal: currentState.subtotal,
+        tax: currentState.tax,
+        total: total,
+        deliveryFee: deliveryFee,
+        tip: currentState.tipAmount,
+        paymentMethod: 'pay_later',
+        eaterFirstName: eater.$1,
+        eaterLastName: eater.$2,
+        eaterPhone: eater.$3,
+        eaterEmail: eater.$4,
+        tableNumber: tableNumber,
+        address: address,
+        notes: notes,
       ),
     );
+
+    await resultEither.fold<Future<void>>(
+      (failure) async {
+        emit(
+          CheckoutError(
+            message: failure.message,
+            canDismiss: true,
+            previousState: currentState,
+          ),
+        );
+      },
+      (bookResult) async {
+        final orderId = bookResult.displayId.isNotEmpty
+            ? bookResult.displayId
+            : '${bookResult.orderId}';
+        final receiptText = _buildReceiptText(currentState, orderId, 0.0);
+        emit(
+          CheckoutSuccess(
+            orderId: orderId,
+            paidAmount: 0.0, // Unpaid
+            receiptText: receiptText,
+          ),
+        );
+      },
+    );
+  }
+
+  List<BookOrderItemInput> _toBookOrderItemInputs(List<CartLineItem> items) {
+    return items
+        .map(
+          (item) => BookOrderItemInput(
+            id: item.id,
+            menuItem: item.menuItem,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            selectedModifiers: Map<String, List<String>>.from(item.selectedModifiers),
+            modifierSummary: item.modifierSummary,
+            specialInstructions: item.specialInstructions,
+          ),
+        )
+        .toList();
+  }
+
+  String _orderTypeToServiceType(OrderType type) {
+    switch (type) {
+      case OrderType.dineIn:
+        return 'DINE_IN';
+      case OrderType.delivery:
+        return 'DELIVERY';
+      case OrderType.takeaway:
+        return 'PICK_UP'; // API expects PICK_UP, not TAKEAWAY
+    }
+  }
+
+  /// Eater fields for book-order API. Uses customer name/phone from cart when given; otherwise null.
+  (String?, String?, String?, String?) _eaterFromCart(
+    CheckoutCartState cart,
+    String serviceType,
+  ) {
+    final name = cart.customerName?.trim();
+    final rawPhone = cart.customerPhone?.trim();
+    final phone = rawPhone != null && rawPhone.isNotEmpty ? rawPhone : null;
+
+    String? firstName;
+    String? lastName;
+    if (name != null && name.isNotEmpty) {
+      final parts = name.split(RegExp(r'\s+'));
+      firstName = parts.isNotEmpty ? parts.first : null;
+      lastName = parts.length > 1 ? parts.sublist(1).join(' ') : null;
+    }
+
+    String? email;
+    if (name != null && name.isNotEmpty || phone != null) {
+      email = null; // Customer from takeaway: send null for email
+    } else {
+      switch (serviceType) {
+        case 'DINE_IN':
+          email = 'posdine@example.com';
+          break;
+        case 'DELIVERY':
+          email = 'posdelivery@example.com';
+          break;
+        case 'PICK_UP':
+          email = 'pos@example.com';
+          break;
+        default:
+          email = 'posdine@example.com';
+      }
+    }
+
+    return (firstName, lastName, phone, email);
   }
 
   void _onDismissError(DismissError event, Emitter<CheckoutState> emit) {
@@ -1168,6 +1402,38 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
         emit(CheckoutInitial());
       }
     }
+  }
+
+  String _buildReceiptText(
+    CheckoutLoaded state,
+    String orderId,
+    double paidAmount,
+  ) {
+    final buf = StringBuffer();
+    final now = DateTime.now();
+    final dateStr =
+        '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')} ${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
+
+    buf.writeln('ORDER #$orderId');
+    buf.writeln('Date: $dateStr');
+    buf.writeln('--------------------------------');
+    for (final item in state.items) {
+      final name = item.menuItem.name.length > 20
+          ? '${item.menuItem.name.substring(0, 17)}...'
+          : item.menuItem.name;
+      buf.writeln(name);
+      buf.writeln(
+          '  ${item.quantity} x \$${item.unitPrice.toStringAsFixed(2)} = \$${item.lineTotal.toStringAsFixed(2)}');
+    }
+    buf.writeln('--------------------------------');
+    buf.writeln('Subtotal:    \$${state.subtotal.toStringAsFixed(2)}');
+    buf.writeln('Tax:         \$${state.tax.toStringAsFixed(2)}');
+    buf.writeln('Total:       \$${state.grandTotal.toStringAsFixed(2)}');
+    buf.writeln('Paid:        \$${paidAmount.toStringAsFixed(2)}');
+    buf.writeln('--------------------------------');
+    buf.writeln('Thank you!');
+
+    return buf.toString();
   }
 
   void _emitCheckoutLoaded(

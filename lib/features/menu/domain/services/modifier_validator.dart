@@ -1,24 +1,64 @@
+import '../entities/menu_item_entity.dart';
 import '../entities/modifier_group_entity.dart';
+import '../utils/modifier_tree_utils.dart';
 
 /// Domain service for validating modifier selections
 /// This encapsulates business logic for validating modifier requirements
 class ModifierValidator {
-  /// Check if all required modifier groups have been satisfied
+  /// Check if all modifier groups (including nested when parent is selected) meet
+  /// their minimum selection requirements.
   ///
-  /// [groups] - List of modifier groups from the menu item
+  /// [item] - Menu item entity (used to walk modifier tree)
   /// [selectedModifiers] - Map of modifier group ID to list of selected option IDs
   ///
-  /// Returns true if all required groups meet their minimum selection requirements
+  /// Returns true if all active groups meet their minimum selection requirements
   static bool validateRequiredGroups({
+    required MenuItemEntity item,
+    required Map<String, List<String>> selectedModifiers,
+  }) {
+    final activeGroups = ModifierTreeUtils.getActiveGroups(
+      item,
+      selectedModifiers,
+    );
+    for (final group in activeGroups) {
+      final selections = selectedModifiers[group.id] ?? [];
+      if (selections.length < group.minSelection) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /// Returns names of required modifier groups that are not yet satisfied
+  /// (minSelection > 0 and current selections < minSelection).
+  static List<String> getMissingRequiredGroupNames({
+    required MenuItemEntity item,
+    required Map<String, List<String>> selectedModifiers,
+  }) {
+    final activeGroups = ModifierTreeUtils.getActiveGroups(
+      item,
+      selectedModifiers,
+    );
+    final missing = <String>[];
+    for (final group in activeGroups) {
+      if (group.minSelection <= 0) continue;
+      final selections = selectedModifiers[group.id] ?? [];
+      if (selections.length < group.minSelection && group.name.isNotEmpty) {
+        missing.add(group.name);
+      }
+    }
+    return missing;
+  }
+
+  /// Legacy: validate a flat list of groups (used where nested are not applicable)
+  static bool validateRequiredGroupsFlat({
     required List<ModifierGroupEntity> groups,
     required Map<String, List<String>> selectedModifiers,
   }) {
     for (final group in groups) {
-      if (group.isRequired) {
-        final selections = selectedModifiers[group.id] ?? [];
-        if (selections.length < group.minSelection) {
-          return false;
-        }
+      final selections = selectedModifiers[group.id] ?? [];
+      if (selections.length < group.minSelection) {
+        return false;
       }
     }
     return true;

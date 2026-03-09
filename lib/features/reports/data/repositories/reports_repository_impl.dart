@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:dartz/dartz.dart';
+
 import '../../../../core/errors/failures.dart';
 import '../../../../core/network/network_info.dart';
 import '../../../../core/utils/repository_error_handler.dart';
@@ -23,5 +26,10 @@ class ReportsRepositoryImpl implements ReportsRepository {
       networkInfo: networkInfo,
       operationName: 'loading reports data',
     );
+  }
+
+  @override
+  Future<File> generateReportPdf(ReportsData report) {
+    return reportsDataSource.generateReportPdf(report);
   }
 }

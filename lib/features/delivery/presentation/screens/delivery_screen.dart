@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import '../../../../core/navigation/app_router.dart';
 import '../../../../core/widgets/sidebar_nav.dart';
+import '../../../../core/theme/theme_context_ext.dart';
 import '../../domain/entities/delivery_entities.dart';
 import '../bloc/delivery_bloc.dart';
 import '../bloc/delivery_event.dart';
@@ -198,7 +199,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
               return MediaQuery(
                 data: MediaQuery.of(context).copyWith(textScaler: scaler),
                 child: Scaffold(
-                  backgroundColor: DeliveryConstants.background,
+                  backgroundColor: context.bgPrimary,
                   body: Row(
                     children: [
                       if (isDesktop || isTablet)
@@ -256,31 +257,39 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
   Widget _buildHeader() {
     return Container(
       padding: const EdgeInsets.all(DeliveryConstants.spacingXl),
-      decoration: const BoxDecoration(
-        color: DeliveryConstants.cardBackground,
+      decoration: BoxDecoration(
+        color: context.bgSurface,
         border: Border(
-          bottom: BorderSide(color: DeliveryConstants.borderColor),
+          bottom: BorderSide(color: context.borderLight),
         ),
       ),
       child: Row(
         children: [
-          const Column(
+          Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
-                  Icon(Icons.local_shipping, size: 24),
-                  SizedBox(width: 12),
+                  Icon(
+                    Icons.local_shipping,
+                    size: 24,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                  const SizedBox(width: 12),
                   Text(
                     'Delivery Management',
-                    style: DeliveryConstants.headingLarge,
+                    style: DeliveryConstants.headingLarge.copyWith(
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
                   ),
                 ],
               ),
-              SizedBox(height: 4),
+              const SizedBox(height: 4),
               Text(
                 'Real-time delivery tracking and driver coordination',
-                style: DeliveryConstants.bodySmall,
+                style: DeliveryConstants.bodySmall.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
             ],
           ),
@@ -298,6 +307,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
   }
 
   Widget _buildHeaderButton(String label, IconData icon, bool isPrimary) {
+    final colorScheme = Theme.of(context).colorScheme;
     return ElevatedButton.icon(
       onPressed: () {
         if (label == 'Add Driver') {
@@ -317,12 +327,13 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
       icon: Icon(icon, size: 16),
       label: Text(label),
       style: ElevatedButton.styleFrom(
-        backgroundColor: isPrimary ? const Color(0xFFF97316) : Colors.white,
+        backgroundColor:
+            isPrimary ? const Color(0xFFF97316) : colorScheme.surface,
         foregroundColor:
-            isPrimary ? Colors.white : DeliveryConstants.textPrimary,
+            isPrimary ? Colors.white : colorScheme.onSurface,
         side: isPrimary
             ? null
-            : const BorderSide(color: DeliveryConstants.borderColor),
+            : BorderSide(color: context.borderLight),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         elevation: 0,
       ),
@@ -502,10 +513,10 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
         horizontal: DeliveryConstants.spacingXl,
         vertical: DeliveryConstants.spacingMd,
       ),
-      decoration: const BoxDecoration(
-        color: DeliveryConstants.cardBackground,
+      decoration: BoxDecoration(
+        color: context.bgSurface,
         border: Border(
-          bottom: BorderSide(color: DeliveryConstants.borderColor),
+          bottom: BorderSide(color: context.borderLight),
         ),
       ),
       child: Row(
@@ -589,9 +600,9 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: DeliveryConstants.cardBackground,
+        color: context.bgSurface,
         borderRadius: BorderRadius.circular(DeliveryConstants.radiusMd),
-        border: Border.all(color: DeliveryConstants.borderColor),
+        border: Border.all(color: context.borderLight),
       ),
       child: DropdownButton<String>(
         value: value,
@@ -707,7 +718,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
     return Container(
       margin: const EdgeInsets.all(DeliveryConstants.spacingLg),
       decoration: BoxDecoration(
-        color: DeliveryConstants.cardBackground,
+        color: context.bgSurface,
         borderRadius: BorderRadius.circular(DeliveryConstants.radiusXl),
         boxShadow: DeliveryConstants.cardShadow,
       ),

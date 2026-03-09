@@ -41,10 +41,11 @@ class AppConfig {
 
     switch (_environment) {
       case AppEnvironment.production:
-        return 'https://api.ozpos.com/v1';
+        return 'https://v3.ozfoodz.com.au/api/pos';
       default:
-        // Allow HTTP only in development
-        return 'http://localhost:8000/api/v1';
+        // return 'http://localhost:8000/api/v1';
+        // Development: use real ozfoodz API; override with --dart-define=API_BASE_URL for local
+        return 'https://v3.ozfoodz.com.au/api/pos';
     }
   }
 
@@ -105,8 +106,11 @@ class AppConfig {
   /// Whether to log network requests (automatically based on environment)
   bool get logNetworkRequests => _environment == AppEnvironment.development;
 
-  /// Whether to log database queries (automatically based on environment)
-  bool get logDatabaseQueries => _environment == AppEnvironment.development;
+  /// Whether to log database queries.
+  ///
+  /// Disabled to avoid extremely verbose JSON payload logs from Drift while
+  /// keeping application behaviour unchanged.
+  bool get logDatabaseQueries => false;
 
   /// Print configuration summary
   void printConfig() {

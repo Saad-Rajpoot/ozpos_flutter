@@ -62,7 +62,7 @@ class SummarySidebar extends StatelessWidget {
                 children: [
                   _buildStatusRow('Dine-In', state.item.dineInAvailable),
                   const SizedBox(height: 8),
-                  _buildStatusRow('Takeaway', state.item.takeawayAvailable),
+                  _buildStatusRow('Pickup', state.item.takeawayAvailable),
                   const SizedBox(height: 8),
                   _buildStatusRow('Delivery', state.item.deliveryAvailable),
                 ],

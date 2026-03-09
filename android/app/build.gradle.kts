@@ -1,3 +1,6 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
@@ -38,10 +41,10 @@ android {
         // Create this file in android/ directory with your signing credentials
         // See keystore.properties.example for format
         val keystorePropertiesFile = rootProject.file("keystore.properties")
-        val keystoreProperties = java.util.Properties()
+        val keystoreProperties = Properties()
         
         if (keystorePropertiesFile.exists()) {
-            keystoreProperties.load(java.io.FileInputStream(keystorePropertiesFile))
+           keystoreProperties.load(FileInputStream(keystorePropertiesFile))
             create("release") {
                 keyAlias = keystoreProperties["keyAlias"] as String
                 keyPassword = keystoreProperties["keyPassword"] as String

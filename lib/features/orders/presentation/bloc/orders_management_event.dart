@@ -8,3 +8,9 @@ abstract class OrdersManagementEvent extends BaseEvent {
 class LoadOrdersEvent extends OrdersManagementEvent {
   const LoadOrdersEvent();
 }
+
+/// Refresh orders without showing a loading spinner.
+/// Used for background updates (e.g. Firebase triggers).
+class RefreshOrdersSilentlyEvent extends OrdersManagementEvent {
+  const RefreshOrdersSilentlyEvent();
+}

@@ -4,6 +4,7 @@ import '../../../features/printing/data/datasources/printing_data_source.dart';
 import '../../../features/printing/data/datasources/printing_mock_datasource.dart';
 import '../../../features/printing/data/datasources/printing_remote_datasource.dart';
 import '../../../features/printing/data/repositories/printing_repository_impl.dart';
+import '../../../features/printing/data/services/network_printer_service.dart';
 import '../../../features/printing/domain/repositories/printing_repository.dart';
 import '../../../features/printing/domain/usecases/add_printer.dart';
 import '../../../features/printing/domain/usecases/get_printers.dart';
@@ -14,6 +15,10 @@ import '../../config/app_config.dart';
 class PrintingModule {
   /// Initialize printing feature dependencies
   static Future<void> init(GetIt sl) async {
+    // Network thermal printer (ESC/POS) service
+    sl.registerLazySingleton<NetworkPrinterService>(
+        () => NetworkPrinterService());
+
     // Environment-based data source selection
     sl.registerLazySingleton<PrintingDataSource>(() {
       if (AppConfig.instance.environment == AppEnvironment.development) {

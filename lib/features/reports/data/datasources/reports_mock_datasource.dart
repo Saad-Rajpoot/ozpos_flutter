@@ -1,11 +1,17 @@
 import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/services.dart' show rootBundle;
+
 import '../../domain/entities/reports_entities.dart';
 import '../models/reports_model.dart';
 import 'reports_data_source.dart';
+import 'reports_pdf_generator.dart';
 
 /// Mock reports data source that loads from JSON files
 class ReportsMockDataSourceImpl implements ReportsDataSource {
+  final ReportsPdfGenerator _pdfGenerator = ReportsPdfGenerator();
+
   /// Load reports data from JSON file
   /// Simulates API behavior: tries to load success data, falls back to error data on failure
   @override
@@ -33,5 +39,10 @@ class ReportsMockDataSourceImpl implements ReportsDataSource {
         throw Exception('Failed to load reports data: $e');
       }
     }
+  }
+
+  @override
+  Future<File> generateReportPdf(ReportsData report) {
+    return _pdfGenerator.generate(report);
   }
 }

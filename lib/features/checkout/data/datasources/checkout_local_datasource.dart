@@ -1,4 +1,6 @@
 import 'checkout_datasource.dart';
+import '../models/book_order_request.dart';
+import '../models/book_order_response.dart';
 import '../../domain/entities/checkout_entity.dart';
 import '../../domain/entities/order_status.dart';
 import '../models/checkout_data.dart';
@@ -25,6 +27,13 @@ class CheckoutLocalDataSource implements CheckoutDataSource {
       orders: [orderModel],
       metadata: metadata,
     ).toEntity();
+  }
+
+  @override
+  Future<BookOrderSuccessResponse> bookOrder(BookOrderRequest request) async {
+    throw UnimplementedError(
+      'bookOrder is only supported via CheckoutRemoteDataSource',
+    );
   }
 
   Map<String, dynamic> _mapOrderToDatabase(OrderModel orderModel) {

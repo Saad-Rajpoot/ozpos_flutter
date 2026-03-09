@@ -2,7 +2,7 @@ import 'dart:math' as math;
 import 'package:equatable/equatable.dart';
 import 'package:dartz/dartz.dart';
 import '../../../../core/base/base_usecase.dart';
-import '../../../../core/constants/app_constants.dart';
+import '../../../../core/config/branch_tax_config.dart';
 import '../../../../core/errors/failures.dart';
 import '../entities/voucher_entity.dart';
 import '../entities/tender_entity.dart';
@@ -37,8 +37,8 @@ class CalculateTotalsUseCase
       final voucherTotal = params.appliedVouchers
           .fold(0.0, (sum, voucher) => sum + voucher.amount);
 
-      // Calculate total before tax
-      final totalBeforeTax = math.max(
+      // Amount after adjustments (tip, discount, voucher, loyalty)
+      final amountAfterAdjustments = math.max(
         0.0,
         subtotal +
             tipAmount -
@@ -47,11 +47,23 @@ class CalculateTotalsUseCase
             params.loyaltyRedemption,
       );
 
-      // Calculate tax (GST)
-      final tax = totalBeforeTax * AppConstants.gstRate;
-
-      // Calculate grand total
-      final grandTotal = math.max(0.0, totalBeforeTax + tax);
+      final config = BranchTaxConfigStore.instance.config;
+      double totalBeforeTax;
+      double tax;
+      double grandTotal;
+      if (!config.enabled) {
+        totalBeforeTax = amountAfterAdjustments;
+        tax = 0.0;
+        grandTotal = amountAfterAdjustments;
+      } else if (config.taxInclusive) {
+        grandTotal = amountAfterAdjustments;
+        totalBeforeTax = grandTotal / (1.0 + config.rate);
+        tax = grandTotal - totalBeforeTax;
+      } else {
+        totalBeforeTax = amountAfterAdjustments;
+        tax = totalBeforeTax * config.rate;
+        grandTotal = totalBeforeTax + tax;
+      }
 
       // Calculate cash received number
       final cashReceivedNum =

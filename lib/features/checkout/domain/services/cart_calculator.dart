@@ -1,7 +1,7 @@
-import '../../../../core/constants/app_constants.dart';
+import '../../../../core/config/branch_tax_config.dart';
 
-/// Domain service for cart calculations
-/// This encapsulates business logic for cart total calculations including GST
+/// Domain service for cart calculations.
+/// Uses branch tax config from API (tax_enable, tax_name, tax_value, tax_inclusive).
 class CartCalculator {
   /// Calculate subtotal from list of line totals
   ///
@@ -19,57 +19,63 @@ class CartCalculator {
   ///
   /// Returns the subtotal (sum of all line item totals)
   static double calculateSubtotalFromItems<T>(List<T> items) {
-    // Extract lineTotals from items
-    // Works with any object that has a lineTotal property (getter or field)
     return items.fold(
       0.0,
       (sum, item) {
-        // Use dynamic access to get lineTotal property
-        // This works for objects like CartLineItem that have lineTotal getter
         final lineTotal = (item as dynamic).lineTotal as double? ?? 0.0;
         return sum + lineTotal;
       },
     );
   }
 
-  /// Calculate GST (Goods and Services Tax) amount
-  ///
-  /// [subtotal] - The subtotal amount before tax
-  /// [taxRate] - The tax rate (defaults to AppConstants.gstRate)
-  ///
-  /// Returns the GST amount
-  static double calculateGst(double subtotal, {double? taxRate}) {
-    final rate = taxRate ?? AppConstants.gstRate;
-    return subtotal * rate;
+  /// Tax config used for calculations (reads from BranchTaxConfigStore).
+  static BranchTaxConfig get _taxConfig => BranchTaxConfigStore.instance.config;
+
+  /// Calculate tax amount on an exclusive (pre-tax) amount. Used when state already has exclusive subtotal (e.g. copyWith).
+  static double calculateGst(double subtotalExclusive, {double? taxRate}) {
+    final config = _taxConfig;
+    if (!config.enabled) return 0.0;
+    final rate = taxRate ?? config.rate;
+    return subtotalExclusive * rate;
   }
 
-  /// Calculate total amount including GST
-  ///
-  /// [subtotal] - The subtotal amount before tax
-  /// [taxRate] - Optional tax rate (defaults to AppConstants.gstRate)
-  ///
-  /// Returns the total amount (subtotal + GST)
-  static double calculateTotal(double subtotal, {double? taxRate}) {
-    final gst = calculateGst(subtotal, taxRate: taxRate);
-    return subtotal + gst;
+  /// Calculate total (exclusive + tax) from exclusive subtotal.
+  static double calculateTotal(double subtotalExclusive, {double? taxRate}) {
+    final gst = calculateGst(subtotalExclusive, taxRate: taxRate);
+    return subtotalExclusive + gst;
   }
 
-  /// Calculate all cart totals (subtotal, GST, and total)
-  ///
-  /// [subtotal] - The subtotal amount before tax
-  /// [taxRate] - Optional tax rate (defaults to AppConstants.gstRate)
-  ///
-  /// Returns a map with 'subtotal', 'gst', and 'total' keys
+  /// Calculate all cart totals from the raw sum of line item totals.
+  /// Interprets raw amount as tax-inclusive or tax-exclusive per branch config.
+  /// Returns map with 'subtotal' (exclusive), 'gst', 'total', and 'taxLabel'.
   static Map<String, double> calculateAllTotals(
-    double subtotal, {
+    double rawLineTotalsSum, {
     double? taxRate,
   }) {
-    final adjustedSubtotal = ensureNonNegative(subtotal);
-    final gst = calculateGst(adjustedSubtotal, taxRate: taxRate);
-    final total = adjustedSubtotal + gst;
-
+    final amount = ensureNonNegative(rawLineTotalsSum);
+    final config = _taxConfig;
+    if (!config.enabled) {
+      return {
+        'subtotal': amount,
+        'gst': 0.0,
+        'total': amount,
+      };
+    }
+    final rate = taxRate ?? config.rate;
+    double subtotalExclusive;
+    double gst;
+    double total;
+    if (config.taxInclusive) {
+      total = amount;
+      subtotalExclusive = total / (1.0 + rate);
+      gst = total - subtotalExclusive;
+    } else {
+      subtotalExclusive = amount;
+      gst = subtotalExclusive * rate;
+      total = subtotalExclusive + gst;
+    }
     return {
-      'subtotal': adjustedSubtotal,
+      'subtotal': subtotalExclusive,
       'gst': gst,
       'total': total,
     };

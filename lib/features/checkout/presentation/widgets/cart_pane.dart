@@ -5,8 +5,11 @@ import '../../../users/presentation/bloc/user_management_bloc.dart';
 import '../../../users/presentation/bloc/user_management_event.dart';
 import '../../../users/presentation/bloc/user_management_state.dart';
 import '../../../users/domain/entities/user_entity.dart';
+import '../../../../core/config/branch_tax_config.dart';
 import '../../../../core/navigation/app_router.dart';
 import '../../../../core/navigation/navigation_service.dart';
+import '../../../../core/theme/theme_context_ext.dart';
+import '../../../menu/domain/utils/modifier_tree_utils.dart';
 import '../bloc/cart_bloc.dart';
 import 'searchable_user_dropdown.dart';
 
@@ -20,7 +23,7 @@ class CartPane extends StatelessWidget {
     return Container(
       width: 360,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.bgSurface,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
@@ -67,8 +70,8 @@ class CartPane extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
+        color: context.bgSurface,
+        border: Border(bottom: BorderSide(color: context.borderLight)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -97,7 +100,7 @@ class CartPane extends StatelessWidget {
     return Container(
       height: 48,
       decoration: BoxDecoration(
-        color: const Color(0xFFF3F4F6),
+        color: context.colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
@@ -117,7 +120,7 @@ class CartPane extends StatelessWidget {
           ),
           Expanded(
             child: _OrderTypeButton(
-              label: 'Takeaway',
+              label: 'Pickup',
               icon: Icons.shopping_bag,
               color: const Color(0xFFF59E0B), // Orange
               isSelected: state.orderType == OrderType.takeaway,
@@ -152,8 +155,8 @@ class CartPane extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
-          color: const Color(0xFFF9FAFB),
-          border: Border.all(color: const Color(0xFFD1D5DB)),
+          color: context.colorScheme.surfaceContainerHighest,
+          border: Border.all(color: context.colorScheme.outlineVariant),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Row(
@@ -454,7 +457,11 @@ class CartPane extends StatelessWidget {
         children: [
           _buildTotalRow('Subtotal', state.subtotal, false),
           const SizedBox(height: 8),
-          _buildTotalRow('GST (10%)', state.gst, false),
+          _buildTotalRow(
+            BranchTaxConfigStore.instance.config.displayLabel,
+            state.gst,
+            false,
+          ),
           const Divider(height: 24),
           _buildTotalRow('Total', state.total, true),
         ],
@@ -779,17 +786,27 @@ class _OrderTypeButton extends StatelessWidget {
         ),
       ),
     );
-  }
-}
-
 // ============================================================================
 // LINE ITEM CARD
 // ============================================================================
+  }
+}
+
 
 class _LineItemCard extends StatelessWidget {
   final CartLineItem lineItem;
 
   const _LineItemCard({required this.lineItem});
+
+  List<({String groupName, String optionName, double priceDelta})>
+      _getModifierDisplayLinesWithPrice(
+    CartLineItem item,
+  ) {
+    return ModifierTreeUtils.getModifierDisplayLinesWithPrice(
+      item.menuItem,
+      item.selectedModifiers,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -822,52 +839,58 @@ class _LineItemCard extends StatelessWidget {
               ),
               const SizedBox(width: 8),
 
-              // Quantity stepper
+              // Quantity stepper (minus at qty 1 acts as delete)
               _buildQuantityStepper(context),
-
-              const SizedBox(width: 8),
-
-              // Delete button
-              InkWell(
-                onTap: () {
-                  context.read<CartBloc>().add(
-                        RemoveLineItem(lineItemId: lineItem.id),
-                      );
-                },
-                child: const Icon(
-                  Icons.delete_outline,
-                  size: 20,
-                  color: Color(0xFFEF4444),
-                ),
-              ),
             ],
           ),
 
-          // Modifier chips
-          if (lineItem.modifierSummary.isNotEmpty) ...[
+          // Modifiers as "Group: Option" lines (indented)
+          if (_getModifierDisplayLinesWithPrice(lineItem).isNotEmpty) ...[
             const SizedBox(height: 8),
-            Wrap(
-              spacing: 6,
-              runSpacing: 6,
-              children: lineItem.modifierSummary.split(', ').map((modifier) {
-                return Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF3F4F6),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    modifier,
-                    style: const TextStyle(
-                      fontSize: 11,
-                      color: Color(0xFF6B7280),
+            ..._getModifierDisplayLinesWithPrice(lineItem).map((e) => Padding(
+                  padding: const EdgeInsets.only(left: 12, bottom: 2),
+                  child: RichText(
+                    text: TextSpan(
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF6B7280),
+                        height: 1.35,
+                      ),
+                      children: [
+                        TextSpan(
+                          text: '${e.groupName}: ',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        TextSpan(
+                          text: e.optionName +
+                              (e.priceDelta == 0
+                                  ? ''
+                                  : ' (${e.priceDelta >= 0 ? '+' : '-'}\$${e.priceDelta.abs().toStringAsFixed(2)})'),
+                        ),
+                      ],
                     ),
                   ),
-                );
-              }).toList(),
+                )),
+          ],
+
+          // Special instructions (note for kitchen)
+          if (lineItem.specialInstructions != null &&
+              lineItem.specialInstructions!.trim().isNotEmpty) ...[
+            const SizedBox(height: 6),
+            Padding(
+              padding: const EdgeInsets.only(left: 12),
+              child: Text(
+                'Note: ${lineItem.specialInstructions!.trim()}',
+                style: const TextStyle(
+                  fontSize: 11,
+                  fontStyle: FontStyle.italic,
+                  color: Color(0xFF6B7280),
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
           ],
 
@@ -897,6 +920,7 @@ class _LineItemCard extends StatelessWidget {
   }
 
   Widget _buildQuantityStepper(BuildContext context) {
+    final isOne = lineItem.quantity == 1;
     return Container(
       decoration: BoxDecoration(
         border: Border.all(color: const Color(0xFFD1D5DB)),
@@ -907,19 +931,25 @@ class _LineItemCard extends StatelessWidget {
         children: [
           InkWell(
             onTap: () {
-              context.read<CartBloc>().add(
-                    UpdateLineItemQuantity(
-                      lineItemId: lineItem.id,
-                      newQuantity: lineItem.quantity - 1,
-                    ),
-                  );
+              if (isOne) {
+                context.read<CartBloc>().add(
+                      RemoveLineItem(lineItemId: lineItem.id),
+                    );
+              } else {
+                context.read<CartBloc>().add(
+                      UpdateLineItemQuantity(
+                        lineItemId: lineItem.id,
+                        newQuantity: lineItem.quantity - 1,
+                      ),
+                    );
+              }
             },
             child: Container(
               padding: const EdgeInsets.all(4),
-              child: const Icon(
-                Icons.remove,
+              child: Icon(
+                isOne ? Icons.delete_outline : Icons.remove,
                 size: 16,
-                color: Color(0xFF6B7280),
+                color: isOne ? const Color(0xFFEF4444) : const Color(0xFF6B7280),
               ),
             ),
           ),

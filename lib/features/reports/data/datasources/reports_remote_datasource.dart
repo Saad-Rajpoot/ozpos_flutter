@@ -1,8 +1,11 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
 
 import '../../domain/entities/reports_entities.dart';
 import '../models/reports_model.dart';
 import 'reports_data_source.dart';
+import 'reports_pdf_generator.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/errors/exceptions.dart';
@@ -11,6 +14,7 @@ import '../../../../core/utils/exception_helper.dart';
 /// Remote reports data source that loads from API
 class ReportsRemoteDataSourceImpl implements ReportsDataSource {
   final ApiClient apiClient;
+  final ReportsPdfGenerator _pdfGenerator = ReportsPdfGenerator();
 
   ReportsRemoteDataSourceImpl({required this.apiClient});
 
@@ -44,5 +48,10 @@ class ReportsRemoteDataSourceImpl implements ReportsDataSource {
       }
       throw ServerException(message: 'Failed to load reports data: $e');
     }
+  }
+
+  @override
+  Future<File> generateReportPdf(ReportsData report) {
+    return _pdfGenerator.generate(report);
   }
 }

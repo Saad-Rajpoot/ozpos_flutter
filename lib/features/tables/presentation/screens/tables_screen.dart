@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/navigation/app_router.dart';
 import '../../../../core/navigation/navigation_service.dart';
 import '../../../../core/widgets/sidebar_nav.dart';
+import '../../../../core/theme/theme_context_ext.dart';
 import '../bloc/table_management_bloc.dart';
 import '../bloc/table_management_event.dart';
 import '../bloc/table_management_state.dart';
@@ -68,7 +69,7 @@ class _TablesScreenState extends State<TablesScreen> {
                   isDesktop && viewState.selectedTable != null;
 
               return Scaffold(
-                backgroundColor: const Color(0xFFF5F5F7),
+                backgroundColor: context.bgPrimary,
                 body: Row(
                   children: [
                     // Sidebar navigation
@@ -117,30 +118,30 @@ class _TablesScreenState extends State<TablesScreen> {
   Widget _buildHeader() {
     return Container(
       padding: const EdgeInsets.all(24),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(bottom: BorderSide(color: Color(0xFFE5E7EB))),
+      decoration: BoxDecoration(
+        color: context.bgSurface,
+        border: Border(bottom: BorderSide(color: context.borderLight)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    const Text(
                       'Table Management',
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     Text(
                       'Manage tables, reservations, and seating',
-                      style: TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
+                      style: TextStyle(fontSize: 14, color: context.textSecondary),
                     ),
                   ],
                 ),
@@ -164,9 +165,9 @@ class _TablesScreenState extends State<TablesScreen> {
                 icon: const Icon(Icons.add, size: 16),
                 label: const Text('Quick Reserve'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: Colors.black,
-                  side: const BorderSide(color: Color(0xFFE5E7EB)),
+                  backgroundColor: context.bgSurface,
+                  foregroundColor: context.textPrimary,
+                  side: BorderSide(color: context.borderLight),
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16,
                     vertical: 12,
@@ -183,7 +184,7 @@ class _TablesScreenState extends State<TablesScreen> {
   Widget _buildAreasRail(TablesViewState viewState) {
     return Container(
       width: 180,
-      color: Colors.white,
+      color: context.bgSurface,
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -195,7 +196,7 @@ class _TablesScreenState extends State<TablesScreen> {
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF6B7280),
+                color: Colors.grey,
               ),
             ),
           ),
@@ -294,12 +295,12 @@ class _TablesScreenState extends State<TablesScreen> {
 
   Widget _buildTableGrid(TablesViewState viewState) {
     return Container(
-      color: const Color(0xFFF5F5F7),
+      color: context.bgPrimary,
       child: Column(
         children: [
           // Search and filters
           Container(
-            color: Colors.white,
+            color: context.bgSurface,
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
@@ -309,14 +310,14 @@ class _TablesScreenState extends State<TablesScreen> {
                     hintText: 'Search table...',
                     prefixIcon: const Icon(Icons.search, size: 20),
                     filled: true,
-                    fillColor: const Color(0xFFF9FAFB),
+                    fillColor: context.colorScheme.surfaceContainerHighest,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+                      borderSide: BorderSide(color: context.borderLight),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+                      borderSide: BorderSide(color: context.borderLight),
                     ),
                     contentPadding: const EdgeInsets.symmetric(
                       horizontal: 16,

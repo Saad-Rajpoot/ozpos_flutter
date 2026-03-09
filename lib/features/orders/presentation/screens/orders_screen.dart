@@ -1,9 +1,19 @@
+import 'dart:async';
+
 import 'package:equatable/equatable.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/navigation/app_router.dart';
+import '../../../../core/navigation/navigation_service.dart';
 import '../../../../core/widgets/sidebar_nav.dart';
+import '../../../../core/theme/theme_context_ext.dart';
 import '../../domain/entities/order_entity.dart';
 import '../bloc/orders_management_bloc.dart';
 import '../bloc/orders_management_event.dart';
@@ -23,6 +33,90 @@ class OrdersScreen extends StatefulWidget {
 }
 
 class _OrdersScreenState extends State<OrdersScreen> {
+  StreamSubscription<DatabaseEvent>? _ordersTriggerSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeOrdersTriggerListener();
+  }
+
+  Future<void> _initializeOrdersTriggerListener() async {
+    try {
+      // Ensure Firebase is initialized before accessing the database.
+      if (Firebase.apps.isEmpty) {
+        const options = FirebaseOptions(
+          apiKey: 'AIzaSyCCWtm7U2UTX1xY6BjZqxs161TPdvQUdkw',
+          appId: '1:712536179289:web:72fd888e2003d17e7b6748',
+          messagingSenderId: '712536179289',
+          projectId: 'ozpos-a2b71',
+          databaseURL: 'https://ozpos-a2b71-default-rtdb.firebaseio.com',
+          storageBucket: 'ozpos-a2b71.firebasestorage.app',
+        );
+        await Firebase.initializeApp(options: options);
+      }
+
+      final prefs = await SharedPreferences.getInstance();
+      final vendorUuid = prefs.getString(AppConstants.authVendorUuidKey);
+      final branchUuid = prefs.getString(AppConstants.authBranchUuidKey);
+
+      if (vendorUuid == null ||
+          vendorUuid.isEmpty ||
+          branchUuid == null ||
+          branchUuid.isEmpty) {
+        if (kDebugMode) {
+          debugPrint(
+            'OrdersScreen: vendor/branch UUID missing, skipping Firebase listener.',
+          );
+        }
+        return;
+      }
+
+      final ref = FirebaseDatabase.instance.ref(
+        'orders-trigger/$vendorUuid/$branchUuid/last_update',
+      );
+
+      var isInitial = true;
+      _ordersTriggerSubscription = ref.onValue.listen((event) {
+        // Skip the initial snapshot; we only care about subsequent updates.
+        if (isInitial) {
+          isInitial = false;
+          return;
+        }
+
+        if (!mounted) return;
+        if (event.snapshot.value == null) return;
+
+        if (kDebugMode) {
+          debugPrint(
+            'OrdersScreen: orders-trigger last_update changed -> refreshing orders silently.',
+          );
+        }
+
+        // Trigger a silent refresh: fetch latest orders but avoid showing
+        // the full-screen loading spinner so the dashboard feels realtime.
+        context
+            .read<OrdersManagementBloc>()
+            .add(const RefreshOrdersSilentlyEvent());
+      });
+    } catch (error, stackTrace) {
+      if (kDebugMode) {
+        debugPrint('OrdersScreen: failed to init Firebase listener: $error');
+      }
+      // Non-fatal; orders will still work without realtime refresh.
+      // Optionally report via Sentry here if desired.
+      FlutterError.reportError(
+        FlutterErrorDetails(exception: error, stack: stackTrace),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _ordersTriggerSubscription?.cancel();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final scaler = MediaQuery.textScalerOf(context)
@@ -32,7 +126,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
     return MediaQuery(
       data: MediaQuery.of(context).copyWith(textScaler: scaler),
       child: Scaffold(
-        backgroundColor: const Color(0xFFF5F5F7),
+        backgroundColor: context.bgPrimary,
         body: Row(
           children: [
             if (isDesktop) const SidebarNav(activeRoute: AppRouter.orders),
@@ -68,10 +162,14 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isLight = colorScheme.brightness == Brightness.light;
+    final headerBorderColor =
+        isLight ? OrdersConstants.colorBorder : context.borderLight;
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(bottom: BorderSide(color: OrdersConstants.colorBorder)),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        border: Border(bottom: BorderSide(color: headerBorderColor)),
       ),
       child: Padding(
         padding: const EdgeInsets.all(OrdersConstants.paddingHeader),
@@ -87,14 +185,14 @@ class _Header extends StatelessWidget {
                       Text(
                         'Order Management',
                         style: OrdersConstants.headingLarge.copyWith(
-                          color: OrdersConstants.colorTextPrimary,
+                          color: colorScheme.onSurface,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         'Track and manage all your orders in real-time',
                         style: OrdersConstants.bodySmall.copyWith(
-                          color: OrdersConstants.colorTextMuted,
+                          color: colorScheme.onSurfaceVariant,
                         ),
                       ),
                     ],
@@ -104,6 +202,8 @@ class _Header extends StatelessWidget {
                 const SizedBox(width: 16),
                 const _Tabs(),
                 const SizedBox(width: 16),
+                const _ViewToggle(),
+                const SizedBox(width: 16),
                 IconButton(
                   icon: const Icon(Icons.refresh),
                   onPressed: () {
@@ -112,8 +212,8 @@ class _Header extends StatelessWidget {
                         );
                   },
                   style: IconButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    side: const BorderSide(color: OrdersConstants.colorBorder),
+                    backgroundColor: colorScheme.surface,
+                    side: BorderSide(color: context.borderLight),
                   ),
                 ),
               ],
@@ -134,24 +234,25 @@ class _SearchBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return TextField(
       onChanged: (value) =>
           context.read<OrdersViewCubit>().updateSearchQuery(value.trim()),
       decoration: InputDecoration(
         hintText: 'Search orders...',
         hintStyle: OrdersConstants.bodyMedium.copyWith(
-          color: OrdersConstants.colorTextMuted,
+          color: colorScheme.onSurfaceVariant,
         ),
         prefixIcon: const Icon(Icons.search, size: 16),
         filled: true,
-        fillColor: Colors.white,
+        fillColor: colorScheme.surfaceContainerHighest,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: OrdersConstants.colorBorder),
+          borderSide: BorderSide(color: context.borderLight),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: OrdersConstants.colorBorder),
+          borderSide: BorderSide(color: context.borderLight),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
@@ -191,7 +292,9 @@ class _Tabs extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           decoration: BoxDecoration(
-            color: isActive ? Colors.white : Colors.transparent,
+            color: isActive
+                ? Theme.of(context).colorScheme.surface
+                : Colors.transparent,
             borderRadius: BorderRadius.circular(8),
             boxShadow: isActive ? OrdersConstants.shadowCard : null,
           ),
@@ -201,8 +304,8 @@ class _Tabs extends StatelessWidget {
                 icon,
                 size: 14,
                 color: isActive
-                    ? OrdersConstants.colorTextPrimary
-                    : OrdersConstants.colorTextMuted,
+                    ? Theme.of(context).colorScheme.onSurface
+                    : Theme.of(context).colorScheme.onSurfaceVariant,
               ),
               const SizedBox(width: 6),
               Text(
@@ -210,8 +313,8 @@ class _Tabs extends StatelessWidget {
                 style: OrdersConstants.bodySmall.copyWith(
                   fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
                   color: isActive
-                      ? OrdersConstants.colorTextPrimary
-                      : OrdersConstants.colorTextMuted,
+                      ? Theme.of(context).colorScheme.onSurface
+                      : Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
             ],
@@ -462,6 +565,95 @@ class _ChannelFilterChip extends StatelessWidget {
   }
 }
 
+class _ViewToggle extends StatelessWidget {
+  const _ViewToggle();
+
+  @override
+  Widget build(BuildContext context) {
+    final viewState = context.watch<OrdersViewCubit>().state;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: context.borderLight),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _ViewToggleButton(
+            icon: Icons.grid_view_rounded,
+            label: 'Grid',
+            isSelected: viewState.isGridView,
+            onTap: () => context.read<OrdersViewCubit>().setViewMode(true),
+          ),
+          _ViewToggleButton(
+            icon: Icons.view_agenda_rounded,
+            label: 'List',
+            isSelected: !viewState.isGridView,
+            onTap: () => context.read<OrdersViewCubit>().setViewMode(false),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ViewToggleButton extends StatelessWidget {
+  const _ViewToggleButton({
+    required this.icon,
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Material(
+      color: isSelected
+          ? colorScheme.primary.withOpacity(0.08)
+          : Colors.transparent,
+      borderRadius: BorderRadius.circular(8),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                size: 18,
+                color: isSelected
+                    ? colorScheme.primary
+                    : colorScheme.onSurfaceVariant,
+              ),
+              const SizedBox(width: 4),
+              Text(
+                label,
+                style: OrdersConstants.bodySmall.copyWith(
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                  color: isSelected
+                      ? colorScheme.primary
+                      : colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _OrdersContent extends StatelessWidget {
   const _OrdersContent();
 
@@ -527,7 +719,9 @@ class _OrdersContent extends StatelessWidget {
           if (filtered.isEmpty) {
             return _buildEmptyState();
           }
-          return _buildOrdersGrid(context, filtered);
+          return viewState.isGridView
+              ? _buildOrdersGrid(context, filtered)
+              : _buildOrdersList(context, filtered);
         }
 
         return const SizedBox.shrink();
@@ -613,7 +807,346 @@ Widget _buildOrdersGrid(BuildContext context, List<OrderEntity> orders) {
     ),
     itemCount: orders.length,
     itemBuilder: (context, index) {
-      return OrderCardWidget(order: orders[index]);
+      final order = orders[index];
+      return OrderCardWidget(
+        order: order,
+        onEdit: () => _navigateToEditOrder(order),
+      );
+    },
+  );
+}
+
+Widget _buildOrdersList(BuildContext context, List<OrderEntity> orders) {
+  return ListView.separated(
+    padding: const EdgeInsets.all(16),
+    itemCount: orders.length,
+    separatorBuilder: (_, __) =>
+        const SizedBox(height: OrdersConstants.gapBetweenCards),
+    itemBuilder: (context, index) {
+      return _OrderListTile(order: orders[index]);
+    },
+  );
+}
+
+/// Compact list-tile card for list view: uses full width and one dense row.
+class _OrderListTile extends StatelessWidget {
+  const _OrderListTile({required this.order});
+
+  final OrderEntity order;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final gradients = _getChannelGradient(order.channel);
+    final statusLabel = _statusLabel(order);
+    final statusBg = _statusBg(order);
+    final statusColor = _statusColor(order);
+    final queue = order.queueNumber.startsWith('#')
+        ? order.queueNumber
+        : '#${order.queueNumber}';
+    final itemCount = order.items.length;
+    final elapsed = _elapsed(order.createdAt);
+    final timeStr = DateFormat('h:mm a').format(order.createdAt);
+    final showTable =
+        order.orderType == OrderType.dinein &&
+        (order.tableNumber != null && order.tableNumber!.trim().isNotEmpty);
+
+    return Material(
+      color: colorScheme.surface,
+      borderRadius: BorderRadius.circular(OrdersConstants.cardRadius),
+      elevation: 1,
+      shadowColor: Colors.black.withValues(alpha: 0.06),
+      child: InkWell(
+        onTap: () => _showOrderDetail(context, order),
+        borderRadius: BorderRadius.circular(OrdersConstants.cardRadius),
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Channel strip
+              Container(
+                width: 4,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: gradients,
+                  ),
+                  borderRadius: const BorderRadius.horizontal(
+                    left: Radius.circular(OrdersConstants.cardRadius),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
+                  child: Row(
+                    children: [
+                      // Order id + channel
+                      SizedBox(
+                        width: 140,
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 36,
+                              height: 36,
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: gradients,
+                                ),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              alignment: Alignment.center,
+                              child: Text(
+                                order.channel.emoji,
+                                style: const TextStyle(fontSize: 18),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    queue,
+                                    style: OrdersConstants.bodySmall.copyWith(
+                                      fontWeight: FontWeight.w700,
+                                      color: colorScheme.onSurface,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    order.channel.name,
+                                    style: OrdersConstants.caption.copyWith(
+                                      color: colorScheme.onSurfaceVariant,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  if (showTable) ...[
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      'Table ${order.tableNumber!.trim()}',
+                                      style: OrdersConstants.caption.copyWith(
+                                        color: colorScheme.onSurfaceVariant,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      // Customer + items + time
+                      Expanded(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              order.customerName.isEmpty
+                                  ? '—'
+                                  : order.customerName,
+                              style: OrdersConstants.bodySmall.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: colorScheme.onSurface,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 2),
+                            Row(
+                              children: [
+                                Text(
+                                  '$itemCount item${itemCount != 1 ? 's' : ''}',
+                                  style: OrdersConstants.caption.copyWith(
+                                    color: colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
+                                Text(
+                                  ' · $elapsed',
+                                  style: OrdersConstants.caption.copyWith(
+                                    color: colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  timeStr,
+                                  style: OrdersConstants.caption.copyWith(
+                                    color: colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      // Total + optional Edit
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            '\$${order.total.toStringAsFixed(2)}',
+                            style: OrdersConstants.bodyMedium.copyWith(
+                              fontWeight: FontWeight.w700,
+                              color: colorScheme.onSurface,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: statusBg,
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(
+                                    color: statusColor.withValues(alpha: 0.5),
+                                  ),
+                                ),
+                                child: Text(
+                                  statusLabel,
+                                  style: OrdersConstants.badge.copyWith(
+                                    color: statusColor,
+                                    fontSize: 9,
+                                  ),
+                                ),
+                              ),
+                              if (_canEditOrder(order)) ...[
+                                const SizedBox(width: 8),
+                                TextButton.icon(
+                                  onPressed: () => _navigateToEditOrder(order),
+                                  style: TextButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
+                                    ),
+                                    minimumSize: const Size(0, 0),
+                                    tapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
+                                  ),
+                                  icon: const Icon(
+                                    Icons.edit,
+                                    size: 14,
+                                  ),
+                                  label: const Text(
+                                    'Edit',
+                                    style: TextStyle(fontSize: 11),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _statusLabel(OrderEntity o) {
+    if (o.status == OrderStatus.cancelled) return 'CANCELLED';
+    if (o.status == OrderStatus.completed) return 'COMPLETED';
+    if (o.paymentStatus == PaymentStatus.unpaid) return 'UNPAID';
+    return 'ACTIVE';
+  }
+
+  Color _statusBg(OrderEntity o) {
+    if (o.status == OrderStatus.cancelled) {
+      return OrdersConstants.colorStatusCancelledBg;
+    }
+    if (o.status == OrderStatus.completed) {
+      return OrdersConstants.colorStatusCompletedBg;
+    }
+    if (o.paymentStatus == PaymentStatus.unpaid) {
+      return OrdersConstants.colorStatusUnpaidBg;
+    }
+    return OrdersConstants.colorStatusActiveBg;
+  }
+
+  Color _statusColor(OrderEntity o) {
+    if (o.status == OrderStatus.cancelled) {
+      return OrdersConstants.colorStatusCancelledText;
+    }
+    if (o.status == OrderStatus.completed) {
+      return OrdersConstants.colorStatusCompletedText;
+    }
+    if (o.paymentStatus == PaymentStatus.unpaid) {
+      return OrdersConstants.colorStatusUnpaidText;
+    }
+    return OrdersConstants.colorStatusActiveText;
+  }
+
+  String _elapsed(DateTime from) {
+    final d = DateTime.now().difference(from);
+    if (d.inDays > 0) return '${d.inDays}d ago';
+    if (d.inHours > 0) return '${d.inHours}h ago';
+    if (d.inMinutes > 0) return '${d.inMinutes}m ago';
+    return 'now';
+  }
+
+  void _showOrderDetail(BuildContext context, OrderEntity order) {
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 420, maxHeight: 560),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(OrdersConstants.cardRadius),
+            child: OrderCardWidget(order: order),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+void _navigateToEditOrder(OrderEntity order) {
+  // Navigate to Menu screen in "edit order" mode. The MenuScreen will
+  // reconstruct the cart from this OrderEntity and respect its original
+  // service type (dine-in / pickup / delivery).
+  String orderTypeString;
+  switch (order.orderType) {
+    case OrderType.dinein:
+      orderTypeString = 'dine-in';
+      break;
+    case OrderType.takeaway:
+      orderTypeString = 'takeaway';
+      break;
+    case OrderType.delivery:
+      orderTypeString = 'delivery';
+      break;
+  }
+
+  NavigationService.pushNamed(
+    AppRouter.menu,
+    arguments: <String, dynamic>{
+      'orderType': orderTypeString,
+      'editOrderId': order.id,
+      'editOrderDisplayId': order.queueNumber,
+      'editOrder': order,
     },
   );
 }
@@ -700,24 +1233,45 @@ List<Color> _getChannelGradient(OrderChannel channel) {
         OrdersConstants.colorTakeawayStart,
         OrdersConstants.colorTakeawayEnd,
       ];
+    case OrderChannel.delivery:
+      return [
+        OrdersConstants.colorDeliveryStart,
+        OrdersConstants.colorDeliveryEnd,
+      ];
   }
+}
+
+bool _canEditOrder(OrderEntity order) {
+  if (order.status != OrderStatus.active) return false;
+  final method = order.paymentMethod;
+  final isPayLater = method == 'pay_later';
+  final isLocalOffline =
+      order.id.startsWith('offline-') || order.queueNumber == '#OFFLINE';
+  // When payment method is unknown (null/empty), treat the order as editable
+  // so that cached history and offline-created orders remain editable even
+  // when we only have local Drift snapshots.
+  final isUnknownMethod = method == null || method.isEmpty;
+  return isPayLater || isLocalOffline || isUnknownMethod;
 }
 
 class OrdersViewState extends Equatable {
   OrdersViewState({
     this.searchQuery = '',
     this.activeTab = OrderStatus.active,
+    this.isGridView = true,
     Set<OrderChannel>? selectedChannels,
   }) : selectedChannels = Set<OrderChannel>.unmodifiable(
             selectedChannels ?? const <OrderChannel>{});
 
   final String searchQuery;
   final OrderStatus activeTab;
+  final bool isGridView;
   final Set<OrderChannel> selectedChannels;
 
   OrdersViewState copyWith({
     String? searchQuery,
     OrderStatus? activeTab,
+    bool? isGridView,
     Set<OrderChannel>? selectedChannels,
     bool clearSelectedChannels = false,
   }) {
@@ -728,6 +1282,7 @@ class OrdersViewState extends Equatable {
     return OrdersViewState(
       searchQuery: searchQuery ?? this.searchQuery,
       activeTab: activeTab ?? this.activeTab,
+      isGridView: isGridView ?? this.isGridView,
       selectedChannels: updatedChannels,
     );
   }
@@ -736,13 +1291,17 @@ class OrdersViewState extends Equatable {
   List<Object?> get props => [
         searchQuery,
         activeTab,
+        isGridView,
         List<OrderChannel>.from(selectedChannels)
           ..sort((a, b) => a.index.compareTo(b.index)),
       ];
 }
 
 class OrdersViewCubit extends Cubit<OrdersViewState> {
-  OrdersViewCubit() : super(OrdersViewState());
+  /// Persists the last selected view so it survives navigation (same screen session).
+  static bool _lastIsGridView = true;
+
+  OrdersViewCubit() : super(OrdersViewState(isGridView: _lastIsGridView));
 
   void updateSearchQuery(String query) {
     emit(state.copyWith(searchQuery: query));
@@ -750,6 +1309,12 @@ class OrdersViewCubit extends Cubit<OrdersViewState> {
 
   void setActiveTab(OrderStatus status) {
     emit(state.copyWith(activeTab: status));
+  }
+
+  void setViewMode(bool isGridView) {
+    _lastIsGridView = isGridView;
+    if (state.isGridView == isGridView) return;
+    emit(state.copyWith(isGridView: isGridView));
   }
 
   void toggleChannel(OrderChannel channel) {

@@ -3,6 +3,8 @@ import '../../../../core/errors/failures.dart';
 import '../../domain/entities/voucher_entity.dart';
 import '../../domain/entities/order_entity.dart';
 import '../../domain/entities/checkout_metadata_entity.dart';
+import '../../domain/entities/book_order_item_input.dart';
+import '../../domain/entities/book_order_result.dart';
 
 abstract class CheckoutRepository {
   /// Process payment with given method and amount
@@ -22,4 +24,27 @@ abstract class CheckoutRepository {
 
   /// Save unpaid order for later payment
   Future<Either<Failure, String>> saveUnpaidOrder(OrderEntity orderEntity);
+
+  /// Book order via ozfoodz API.
+  /// vendorUuid and branchUuid are optional; when null, uses session values from storage.
+  Future<Either<Failure, BookOrderResult>> bookOrder({
+    String? vendorUuid,
+    String? branchUuid,
+    String? eaterFirstName,
+    String? eaterLastName,
+    String? eaterPhone,
+    String? eaterEmail,
+    required List<BookOrderItemInput> items,
+    required String serviceType,
+    required DateTime placedAt,
+    required double subtotal,
+    required double tax,
+    required double total,
+    required double deliveryFee,
+    required double tip,
+    required String paymentMethod,
+    String? tableNumber,
+    String? address,
+    String? notes,
+  });
 }

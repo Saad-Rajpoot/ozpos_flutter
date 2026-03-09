@@ -1,10 +1,13 @@
+import 'package:share_plus/share_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../bloc/reports_bloc.dart';
+import '../bloc/reports_event.dart';
 import '../bloc/reports_state.dart';
 import '../../../../core/navigation/app_router.dart';
 import '../../../../core/widgets/sidebar_nav.dart';
+import '../../../../core/theme/theme_context_ext.dart';
 
 class ReportsScreen extends StatefulWidget {
   const ReportsScreen({super.key});
@@ -27,7 +30,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
     return MediaQuery(
       data: MediaQuery.of(context).copyWith(textScaler: scaler),
       child: Scaffold(
-        backgroundColor: const Color(0xFFF5F5F7),
+        backgroundColor: context.bgPrimary,
         body: Row(
           children: [
             // Sidebar navigation
@@ -42,21 +45,83 @@ class _ReportsScreenState extends State<ReportsScreen> {
                       context,
                     ).showSnackBar(SnackBar(content: Text(state.message)));
                   }
+                  if (state is ReportPdfGenerated) {
+                    final file = state.file;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: const Text('PDF ready'),
+                        backgroundColor: Colors.green,
+                        duration: const Duration(seconds: 6),
+                        action: SnackBarAction(
+                          label: 'Save',
+                          textColor: Colors.white,
+                          onPressed: () async {
+                            try {
+                              await Share.shareXFiles(
+                                [XFile(file.path)],
+                                text: 'Restaurant Report',
+                                subject: 'Report PDF',
+                              );
+                            } catch (e) {
+                              if (!context.mounted) return;
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Could not save: $e'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
+                          },
+                        ),
+                      ),
+                    );
+                  }
+                  if (state is ReportPdfError) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(state.message),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
                 },
                 builder: (context, state) {
-                  return CustomScrollView(
-                    slivers: [
-                      // Header
-                      _buildHeader(),
+                  return Stack(
+                    children: [
+                      CustomScrollView(
+                        slivers: [
+                          // Header
+                          _buildHeader(context, state),
 
-                      // KPI Cards
-                      _buildKPICards(),
+                          // KPI Cards
+                          _buildKPICards(),
 
-                      // Content Grid
-                      _buildContentGrid(),
+                          // Content Grid
+                          _buildContentGrid(),
 
-                      // Footer Snapshot
-                      _buildSnapshotBanner(),
+                          // Footer Snapshot
+                          _buildSnapshotBanner(),
+                        ],
+                      ),
+                      if (state.isPdfGenerating)
+                        Container(
+                          color: Colors.black26,
+                          child: const Center(
+                            child: Card(
+                              child: Padding(
+                                padding: EdgeInsets.all(24),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    CircularProgressIndicator(),
+                                    SizedBox(height: 16),
+                                    Text('Generating PDF...'),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
                     ],
                   );
                 },
@@ -68,13 +133,14 @@ class _ReportsScreenState extends State<ReportsScreen> {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context, ReportsState state) {
+    final colorScheme = Theme.of(context).colorScheme;
     return SliverToBoxAdapter(
       child: Container(
         padding: const EdgeInsets.all(24),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          border: Border(bottom: BorderSide(color: Color(0xFFE5E7EB))),
+        decoration: BoxDecoration(
+          color: colorScheme.surface,
+          border: Border(bottom: BorderSide(color: context.borderLight)),
         ),
         child: Row(
           children: [
@@ -104,10 +170,10 @@ class _ReportsScreenState extends State<ReportsScreen> {
                         ),
                       ),
                       const SizedBox(width: 12),
-                      const Column(
+                      Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
+                          const Text(
                             'Restaurant Reports',
                             style: TextStyle(
                               fontSize: 20,
@@ -118,7 +184,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                             'Main Branch',
                             style: TextStyle(
                               fontSize: 12,
-                              color: Color(0xFF6B7280),
+                              color: colorScheme.onSurfaceVariant,
                             ),
                           ),
                         ],
@@ -159,11 +225,11 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 const SizedBox(width: 8),
 
                 // Export buttons
-                _buildIconButton(Icons.picture_as_pdf, 'PDF'),
+                _buildPdfButton(context, state),
                 const SizedBox(width: 4),
-                _buildIconButton(Icons.table_chart, 'Excel'),
+                _buildIconButton(context, Icons.table_chart, 'Excel'),
                 const SizedBox(width: 4),
-                _buildIconButton(Icons.print, 'Print'),
+                _buildIconButton(context, Icons.print, 'Print'),
                 const SizedBox(width: 8),
 
                 // Advanced Reports
@@ -192,14 +258,38 @@ class _ReportsScreenState extends State<ReportsScreen> {
     );
   }
 
-  Widget _buildIconButton(IconData icon, String tooltip) {
+  Widget _buildPdfButton(BuildContext context, ReportsState state) {
+    final reportsData = state.reportsDataOrNull;
+    final isGenerating = state.isPdfGenerating;
+    return IconButton(
+      icon: Icon(
+        Icons.picture_as_pdf,
+        size: 18,
+      ),
+      onPressed: reportsData != null && !isGenerating
+          ? () {
+              context.read<ReportsBloc>().add(
+                    GenerateReportPdfEvent(reportsData),
+                  );
+            }
+          : null,
+      tooltip: 'PDF',
+      style: IconButton.styleFrom(
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        side: BorderSide(color: context.borderLight),
+        padding: const EdgeInsets.all(8),
+      ),
+    );
+  }
+
+  Widget _buildIconButton(BuildContext context, IconData icon, String tooltip) {
     return IconButton(
       icon: Icon(icon, size: 18),
       onPressed: () {},
       tooltip: tooltip,
       style: IconButton.styleFrom(
-        backgroundColor: Colors.white,
-        side: const BorderSide(color: Color(0xFFE5E7EB)),
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        side: BorderSide(color: context.borderLight),
         padding: const EdgeInsets.all(8),
       ),
     );
@@ -226,21 +316,29 @@ class _ReportsScreenState extends State<ReportsScreen> {
   Widget _buildKPICard(BuildContext context, int index) {
     return BlocBuilder<ReportsBloc, ReportsState>(
       builder: (context, state) {
-        if (state is ReportsLoaded &&
-            index < state.reportsData.kpiCards.length) {
-          final kpi = state.reportsData.kpiCards[index];
+        final reportsData = state.reportsDataOrNull;
+        if (reportsData != null && index < reportsData.kpiCards.length) {
+          final kpi = reportsData.kpiCards[index];
           final color = _parseColor(kpi.color);
+          final colorScheme = Theme.of(context).colorScheme;
+          // Use original light border in light mode, themed divider in dark mode
+          const lightBorder = Color(0xFFE5E7EB);
+          final borderColor =
+              colorScheme.brightness == Brightness.light ? lightBorder : context.borderLight;
 
           return Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [color.withOpacity(0.1), Colors.white],
+                colors: [
+                  color.withOpacity(0.12),
+                  Theme.of(context).colorScheme.surface,
+                ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFFE5E7EB)),
+              border: Border.all(color: borderColor),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -337,9 +435,10 @@ class _ReportsScreenState extends State<ReportsScreen> {
       Icons.filter_list,
       BlocBuilder<ReportsBloc, ReportsState>(
         builder: (context, state) {
-          if (state is ReportsLoaded) {
+          final reportsData = state.reportsDataOrNull;
+          if (reportsData != null) {
             return Column(
-              children: state.reportsData.orderFunnel.map((stage) {
+              children: reportsData.orderFunnel.map((stage) {
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 8),
                   child: _buildFunnelBar(
@@ -417,8 +516,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
       Icons.access_time,
       BlocBuilder<ReportsBloc, ReportsState>(
         builder: (context, state) {
-          if (state is ReportsLoaded) {
-            final serviceSpeed = state.reportsData.serviceSpeed;
+          final reportsData = state.reportsDataOrNull;
+          if (reportsData != null) {
+            final serviceSpeed = reportsData.serviceSpeed;
 
             return Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -613,13 +713,14 @@ class _ReportsScreenState extends State<ReportsScreen> {
       Icons.payment,
       BlocBuilder<ReportsBloc, ReportsState>(
         builder: (context, state) {
-          if (state is ReportsLoaded) {
+          final reportsData = state.reportsDataOrNull;
+          if (reportsData != null) {
             return Row(
               children: [
                 Expanded(
                   child: PieChart(
                     PieChartData(
-                      sections: state.reportsData.paymentMethods.map((method) {
+                      sections: reportsData.paymentMethods.map((method) {
                         return PieChartSectionData(
                           value: method.percentage.toDouble(),
                           color: _parseColor(method.color),
@@ -640,7 +741,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: state.reportsData.paymentMethods.map((method) {
+                  children: reportsData.paymentMethods.map((method) {
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 8),
                       child: _buildLegendItem(
@@ -859,9 +960,10 @@ class _ReportsScreenState extends State<ReportsScreen> {
       Icons.category,
       BlocBuilder<ReportsBloc, ReportsState>(
         builder: (context, state) {
-          if (state is ReportsLoaded) {
+          final reportsData = state.reportsDataOrNull;
+          if (reportsData != null) {
             return Column(
-              children: state.reportsData.categorySales.map((category) {
+              children: reportsData.categorySales.map((category) {
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 8),
                   child: _buildCategoryItem(
@@ -936,10 +1038,11 @@ class _ReportsScreenState extends State<ReportsScreen> {
       Icons.star,
       BlocBuilder<ReportsBloc, ReportsState>(
         builder: (context, state) {
-          if (state is ReportsLoaded) {
+          final reportsData = state.reportsDataOrNull;
+          if (reportsData != null) {
             return Column(
-              children: state.reportsData.topSellingItems.map((item) {
-                final index = state.reportsData.topSellingItems.indexOf(item);
+              children: reportsData.topSellingItems.map((item) {
+                final index = reportsData.topSellingItems.indexOf(item);
                 return Column(
                   children: [
                     _buildTopItem(
@@ -949,7 +1052,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                       item.rank,
                       item.orders,
                     ),
-                    if (index < state.reportsData.topSellingItems.length - 1)
+                    if (index < reportsData.topSellingItems.length - 1)
                       const Divider(height: 16),
                   ],
                 );
@@ -1048,24 +1151,51 @@ class _ReportsScreenState extends State<ReportsScreen> {
       Icons.warning_amber,
       BlocBuilder<ReportsBloc, ReportsState>(
         builder: (context, state) {
-          if (state is ReportsLoaded) {
-            return Column(
-              children: [
-                ...state.reportsData.needsAttention.map((item) {
-                  final index = state.reportsData.needsAttention.indexOf(item);
-                  return Column(
-                    children: [
-                      _buildAttentionItem(
-                        item.emoji,
-                        item.name,
-                        item.revenue,
-                        item.orders,
+          final reportsData = state.reportsDataOrNull;
+          if (reportsData != null) {
+            return SingleChildScrollView(
+              child: Column(
+                children: [
+                  ...reportsData.needsAttention.map((item) {
+                    final index = reportsData.needsAttention.indexOf(item);
+                    return Column(
+                      children: [
+                        _buildAttentionItem(
+                          item.emoji,
+                          item.name,
+                          item.revenue,
+                          item.orders,
+                        ),
+                        if (index < reportsData.needsAttention.length - 1)
+                          const Divider(height: 16),
+                      ],
+                    );
+                  }),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton(
+                      onPressed: () {},
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFFF97316),
+                        side: const BorderSide(color: Color(0xFFF97316)),
                       ),
-                      if (index < state.reportsData.needsAttention.length - 1)
-                        const Divider(height: 16),
-                    ],
-                  );
-                }),
+                      child: const Text('View Marketing Suggestions'),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          return SingleChildScrollView(
+            child: Column(
+              children: [
+                _buildAttentionItem('🌮', 'Loading...', '--', '--'),
+                const Divider(height: 16),
+                _buildAttentionItem('🥗', 'Loading...', '--', '--'),
+                const Divider(height: 16),
+                _buildAttentionItem('🌯', 'Loading...', '--', '--'),
                 const SizedBox(height: 12),
                 SizedBox(
                   width: double.infinity,
@@ -1079,29 +1209,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                   ),
                 ),
               ],
-            );
-          }
-
-          return Column(
-            children: [
-              _buildAttentionItem('🌮', 'Loading...', '--', '--'),
-              const Divider(height: 16),
-              _buildAttentionItem('🥗', 'Loading...', '--', '--'),
-              const Divider(height: 16),
-              _buildAttentionItem('🌯', 'Loading...', '--', '--'),
-              const SizedBox(height: 12),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton(
-                  onPressed: () {},
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: const Color(0xFFF97316),
-                    side: const BorderSide(color: Color(0xFFF97316)),
-                  ),
-                  child: const Text('View Marketing Suggestions'),
-                ),
-              ),
-            ],
+            ),
           );
         },
       ),
@@ -1184,60 +1292,65 @@ class _ReportsScreenState extends State<ReportsScreen> {
       Icons.people,
       BlocBuilder<ReportsBloc, ReportsState>(
         builder: (context, state) {
-          if (state is ReportsLoaded) {
-            return Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: state.reportsData.staffPerformance.map((staff) {
-                return _buildStaffCard(
-                  staff.initial,
-                  staff.name,
-                  staff.orders,
-                  staff.upsells,
-                  staff.efficiency,
-                  _parseColor(staff.color),
-                );
-              }).toList(),
+          final reportsData = state.reportsDataOrNull;
+          if (reportsData != null) {
+            return SingleChildScrollView(
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: reportsData.staffPerformance.map((staff) {
+                  return _buildStaffCard(
+                    staff.initial,
+                    staff.name,
+                    staff.orders,
+                    staff.upsells,
+                    staff.efficiency,
+                    _parseColor(staff.color),
+                  );
+                }).toList(),
+              ),
             );
           }
 
-          return Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              _buildStaffCard(
-                'S',
-                'Loading...',
-                '--',
-                '--',
-                '--',
-                Colors.grey.shade300,
-              ),
-              _buildStaffCard(
-                'M',
-                'Loading...',
-                '--',
-                '--',
-                '--',
-                Colors.grey.shade300,
-              ),
-              _buildStaffCard(
-                'L',
-                'Loading...',
-                '--',
-                '--',
-                '--',
-                Colors.grey.shade300,
-              ),
-              _buildStaffCard(
-                'T',
-                'Loading...',
-                '--',
-                '--',
-                '--',
-                Colors.grey.shade300,
-              ),
-            ],
+          return SingleChildScrollView(
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _buildStaffCard(
+                  'S',
+                  'Loading...',
+                  '--',
+                  '--',
+                  '--',
+                  Colors.grey.shade300,
+                ),
+                _buildStaffCard(
+                  'M',
+                  'Loading...',
+                  '--',
+                  '--',
+                  '--',
+                  Colors.grey.shade300,
+                ),
+                _buildStaffCard(
+                  'L',
+                  'Loading...',
+                  '--',
+                  '--',
+                  '--',
+                  Colors.grey.shade300,
+                ),
+                _buildStaffCard(
+                  'T',
+                  'Loading...',
+                  '--',
+                  '--',
+                  '--',
+                  Colors.grey.shade300,
+                ),
+              ],
+            ),
           );
         },
       ),
@@ -1307,7 +1420,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
         ),
         child: BlocBuilder<ReportsBloc, ReportsState>(
           builder: (context, state) {
-            if (state is ReportsLoaded) {
+            final reportsData = state.reportsDataOrNull;
+            if (reportsData != null) {
               return Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -1315,7 +1429,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        state.reportsData.snapshotBanner.title,
+                        reportsData.snapshotBanner.title,
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 16,
@@ -1324,7 +1438,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        state.reportsData.snapshotBanner.summary,
+                        reportsData.snapshotBanner.summary,
                         style: TextStyle(color: Colors.grey[400], fontSize: 13),
                       ),
                     ],
@@ -1381,26 +1495,35 @@ class _ReportsScreenState extends State<ReportsScreen> {
   }
 
   Widget _buildCard(String title, IconData icon, Widget child) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    const lightBorder = Color(0xFFE5E7EB);
+    final borderColor =
+        colorScheme.brightness == Brightness.light ? lightBorder : context.borderLight;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
+        border: Border.all(color: borderColor),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(icon, size: 18, color: const Color(0xFF6B7280)),
+              Icon(
+                icon,
+                size: 18,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
               const SizedBox(width: 8),
               Text(
                 title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF111827),
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
             ],

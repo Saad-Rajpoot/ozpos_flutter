@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/config/branch_tax_config.dart';
 import '../../../checkout/presentation/bloc/checkout_bloc.dart';
 import '../../domain/entities/payment_method_type.dart';
 import '../constant/checkout_constants.dart';
@@ -11,7 +12,7 @@ import 'compact_keypad.dart';
 /// - Cash amount display (if Cash selected)
 /// - Compact keypad (fixed height)
 /// - Totals breakdown
-/// - NO scrolling (everything fits)
+/// - Scrollable when content overflows (e.g. small viewports)
 class PaymentKeypadPanel extends StatelessWidget {
   const PaymentKeypadPanel({super.key});
 
@@ -26,24 +27,26 @@ class PaymentKeypadPanel extends StatelessWidget {
 
         final isCash = viewState.selectedMethod == PaymentMethodType.cash;
 
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Cash display (only for cash payments)
-            if (isCash) ...[
-              _buildCashDisplay(viewState),
-              const SizedBox(height: CheckoutConstants.gapNormal),
-            ],
+        return SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Cash display (only for cash payments)
+              if (isCash) ...[
+                _buildCashDisplay(viewState),
+                const SizedBox(height: CheckoutConstants.gapNormal),
+              ],
 
-            // Keypad (only for cash)
-            if (isCash) ...[
-              const CompactKeypad(),
-              const SizedBox(height: CheckoutConstants.gapNormal),
-            ],
+              // Keypad (only for cash)
+              if (isCash) ...[
+                const CompactKeypad(),
+                const SizedBox(height: CheckoutConstants.gapNormal),
+              ],
 
-            // Totals card (always shown)
-            _buildTotalsCard(viewState),
-          ],
+              // Totals card (always shown)
+              _buildTotalsCard(viewState),
+            ],
+          ),
         );
       },
     );
@@ -197,7 +200,11 @@ class PaymentKeypadPanel extends StatelessWidget {
             ),
           ],
           const SizedBox(height: 6),
-          _buildTotalRow('Tax (10%)', state.tax),
+          _buildTotalRow(
+            BranchTaxConfigStore.instance.config.displayLabel,
+            state.tax,
+            isTaxRow: true,
+          ),
           const SizedBox(height: 8),
           Container(height: 1, color: CheckoutConstants.border),
           const SizedBox(height: 8),
@@ -212,6 +219,7 @@ class PaymentKeypadPanel extends StatelessWidget {
     double amount, {
     Color? color,
     bool isGrandTotal = false,
+    bool isTaxRow = false,
   }) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -234,10 +242,16 @@ class PaymentKeypadPanel extends StatelessWidget {
                   fontWeight: CheckoutConstants.weightBold,
                   color: CheckoutConstants.success,
                 )
-              : CheckoutConstants.textBody.copyWith(
-                  fontWeight: CheckoutConstants.weightSemiBold,
-                  color: color,
-                ),
+              : isTaxRow
+                  ? CheckoutConstants.textBody.copyWith(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
+                      color: color,
+                    )
+                  : CheckoutConstants.textBody.copyWith(
+                      fontWeight: CheckoutConstants.weightSemiBold,
+                      color: color,
+                    ),
         ),
       ],
     );

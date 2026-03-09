@@ -1,4 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../../theme/domain/entities/theme_mode_entity.dart';
+import '../../../theme/presentation/bloc/theme_bloc.dart';
+import '../../../theme/presentation/bloc/theme_event.dart';
+import '../../../theme/presentation/bloc/theme_state.dart';
 import 'section_header.dart';
 
 class AppearanceThemeSection extends StatelessWidget {
@@ -25,60 +31,90 @@ class _AppearanceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Theme Mode', style: TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 12),
-            Row(
-              children: const [
-                Expanded(
-                  child: _SelectableTile(
-                    icon: Icons.wb_sunny_outlined,
-                    title: 'Light',
-                    subtitle: 'Clean and bright',
-                    selected: true,
-                    onTap: _noop,
-                  ),
+    return BlocBuilder<ThemeBloc, ThemeState>(
+      buildWhen: (previous, current) {
+        if (previous is ThemeLoaded && current is ThemeLoaded) {
+          return previous.mode != current.mode;
+        }
+        return true;
+      },
+      builder: (context, state) {
+        final isDark =
+            state is ThemeLoaded && state.mode == AppThemeMode.dark;
+        return Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Theme Mode',
+                  style: TextStyle(fontWeight: FontWeight.bold),
                 ),
-                SizedBox(width: 12),
-                Expanded(
-                  child: _SelectableTile(
-                    icon: Icons.dark_mode_outlined,
-                    title: 'Dark',
-                    subtitle: 'Easy on the eyes',
-                    selected: false,
-                    onTap: _noop,
-                  ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _SelectableTile(
+                        icon: Icons.wb_sunny_outlined,
+                        title: 'Light',
+                        subtitle: 'Clean and bright',
+                        selected: !isDark,
+                        onTap: () => context.read<ThemeBloc>().add(
+                              const ChangeThemeEvent(AppThemeMode.light),
+                            ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _SelectableTile(
+                        icon: Icons.dark_mode_outlined,
+                        title: 'Dark',
+                        subtitle: 'Easy on the eyes',
+                        selected: isDark,
+                        onTap: () => context.read<ThemeBloc>().add(
+                              const ChangeThemeEvent(AppThemeMode.dark),
+                            ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Accent Color',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
+                  children: const [
+                    _ColorChip(
+                      label: 'Ocean Blue',
+                      color: Color(0xFF3B82F6),
+                      selected: true,
+                    ),
+                    _ColorChip(label: 'Fresh Green', color: Color(0xFF22C55E)),
+                    _ColorChip(
+                      label: 'Royal Purple',
+                      color: Color(0xFFA855F7),
+                    ),
+                    _ColorChip(
+                      label: 'Warm Orange',
+                      color: Color(0xFFF59E0B),
+                    ),
+                    _ColorChip(label: 'Bold Red', color: Color(0xFFEF4444)),
+                    _ColorChip(label: 'Cool Teal', color: Color(0xFF14B8A6)),
+                  ],
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            const Text('Accent Color', style: TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 12,
-              runSpacing: 12,
-              children: const [
-                _ColorChip(label: 'Ocean Blue', color: Color(0xFF3B82F6), selected: true),
-                _ColorChip(label: 'Fresh Green', color: Color(0xFF22C55E)),
-                _ColorChip(label: 'Royal Purple', color: Color(0xFFA855F7)),
-                _ColorChip(label: 'Warm Orange', color: Color(0xFFF59E0B)),
-                _ColorChip(label: 'Bold Red', color: Color(0xFFEF4444)),
-                _ColorChip(label: 'Cool Teal', color: Color(0xFF14B8A6)),
-              ],
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }
-
-void _noop() {}
 
 class _SelectableTile extends StatelessWidget {
   final IconData icon;

@@ -42,7 +42,7 @@ class SizeCardWidget extends StatelessWidget {
               ),
               Expanded(
                 child: _PriceInfoWidget(
-                  channel: 'Takeaway',
+                  channel: 'Pickup',
                   price: size.takeawayPrice,
                 ),
               ),

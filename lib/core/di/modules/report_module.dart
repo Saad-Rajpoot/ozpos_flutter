@@ -5,6 +5,7 @@ import '../../../features/reports/data/datasources/reports_mock_datasource.dart'
 import '../../../features/reports/data/datasources/reports_remote_datasource.dart';
 import '../../../features/reports/data/repositories/reports_repository_impl.dart';
 import '../../../features/reports/domain/repositories/reports_repository.dart';
+import '../../../features/reports/domain/usecases/generate_report_pdf_usecase.dart';
 import '../../../features/reports/domain/usecases/get_reports_data.dart';
 import '../../../features/reports/presentation/bloc/reports_bloc.dart';
 import '../../config/app_config.dart';
@@ -31,9 +32,15 @@ class ReportModule {
 
     // Use cases
     sl.registerLazySingleton(() => GetReportsData(sl()));
+    sl.registerLazySingleton(() => GenerateReportPdfUseCase(sl()));
 
     // BLoC (Factory - new instance each time)
-    sl.registerFactory(() => ReportsBloc(getReportsData: sl()));
+    sl.registerFactory(
+      () => ReportsBloc(
+        getReportsData: sl(),
+        generateReportPdfUseCase: sl(),
+      ),
+    );
   }
 }
 

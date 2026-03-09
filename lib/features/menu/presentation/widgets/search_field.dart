@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/constants/app_radius.dart';
 import '../../../../core/constants/app_typography.dart';
@@ -13,23 +12,24 @@ class SearchField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       height: AppSizes.searchFieldHeight,
       decoration: BoxDecoration(
-        color: AppColors.bgSecondary,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(AppRadius.input),
-        border: Border.all(color: AppColors.borderLight),
+        border: Border.all(color: Theme.of(context).dividerColor),
       ),
       child: TextField(
         onChanged: onSearch,
         decoration: InputDecoration(
           hintText: hintText ?? 'Search menu items...',
           hintStyle: AppTypography.body2.copyWith(
-            color: AppColors.textTertiary,
+            color: colorScheme.onSurfaceVariant,
           ),
           prefixIcon: Icon(
             Icons.search,
-            color: AppColors.textTertiary,
+            color: colorScheme.onSurfaceVariant,
             size: AppSizes.iconBase,
           ),
           border: InputBorder.none,
@@ -38,7 +38,7 @@ class SearchField extends StatelessWidget {
             vertical: AppSpacing.sm,
           ),
         ),
-        style: AppTypography.body2.copyWith(color: AppColors.textPrimary),
+        style: AppTypography.body2.copyWith(color: colorScheme.onSurface),
       ),
     );
   }

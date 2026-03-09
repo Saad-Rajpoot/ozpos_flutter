@@ -125,7 +125,7 @@ class Step5Review extends StatelessWidget {
                         : 'Not available',
                   ),
                   ReviewRowWidget(
-                    label: 'Takeaway',
+                    label: 'Pickup',
                     value: state.item.takeawayAvailable
                         ? 'Available'
                         : 'Not available',

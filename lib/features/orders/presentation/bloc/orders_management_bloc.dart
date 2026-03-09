@@ -13,6 +13,7 @@ class OrdersManagementBloc
     : _getOrders = getOrders,
       super(const OrdersManagementInitial()) {
     on<LoadOrdersEvent>(_onLoadOrders);
+    on<RefreshOrdersSilentlyEvent>(_onRefreshOrdersSilently);
   }
 
   Future<void> _onLoadOrders(
@@ -27,6 +28,31 @@ class OrdersManagementBloc
       (failure) => emit(
         OrdersManagementError('Failed to load orders: ${failure.message}'),
       ),
+      (orders) => emit(OrdersManagementLoaded(orders: orders)),
+    );
+  }
+
+  Future<void> _onRefreshOrdersSilently(
+    RefreshOrdersSilentlyEvent event,
+    Emitter<OrdersManagementState> emit,
+  ) async {
+    final previousState = state;
+
+    final result = await _getOrders(const NoParams());
+
+    result.fold(
+      (failure) {
+        // Keep previous state on failure to avoid jarring UI changes.
+        if (previousState is OrdersManagementLoaded) {
+          emit(previousState);
+        } else {
+          emit(
+            OrdersManagementError(
+              'Failed to refresh orders: ${failure.message}',
+            ),
+          );
+        }
+      },
       (orders) => emit(OrdersManagementLoaded(orders: orders)),
     );
   }

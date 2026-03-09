@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/config/branch_tax_config.dart';
 import '../../../checkout/presentation/bloc/checkout_bloc.dart';
 import '../constant/checkout_constants.dart';
 
@@ -38,8 +39,11 @@ class CompactSummaryCard extends StatelessWidget {
           ),
           const SizedBox(height: 6),
 
-          // Tax/GST
-          _buildRow('GST (10%)', state.tax),
+          // Tax (from branch config, e.g. GST (10%))
+          _buildRow(
+            BranchTaxConfigStore.instance.config.displayLabel,
+            state.tax,
+          ),
           const SizedBox(height: 8),
 
           // Divider

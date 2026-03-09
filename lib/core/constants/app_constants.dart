@@ -20,11 +20,17 @@ class AppConstants {
   static const String getMenuCategoriesEndpoint = '/menu/categories';
   static const String getModifierGroupsEndpoint = '/menu/modifier-groups';
 
+  // Single vendor endpoint (vendor_uuid, branch_uuid from session)
+  static const String singleVendorEndpoint = 'single-vendor';
+
   // Order endpoints
   static const String createOrderEndpoint = '/orders';
+  static const String bookOrderEndpoint = 'orders/book-order';
   static const String getOrdersEndpoint = '/orders';
+  static const String ordersHistoryEndpoint = 'orders/history';
   static const String updateOrderEndpoint = '/orders/{id}';
   static const String payOrderEndpoint = '/orders/{id}/pay';
+  static const String healthEndpoint = '/health';
 
   // Table endpoints
   static const String getTablesEndpoint = '/tables';
@@ -94,6 +100,18 @@ class AppConstants {
   static const String userKey = 'user';
   static const String settingsKey = 'settings';
 
+  // Login response data keys (SharedPreferences) - stored individually
+  static const String authUserIdKey = 'auth_user_id';
+  static const String authUserNameKey = 'auth_user_name';
+  static const String authUserEmailKey = 'auth_user_email';
+  static const String authUserRoleKey = 'auth_user_role';
+  static const String authVendorUuidKey = 'auth_vendor_uuid';
+  static const String authVendorNameKey = 'auth_vendor_name';
+  static const String authBranchUuidKey = 'auth_branch_uuid';
+  static const String authBranchNameKey = 'auth_branch_name';
+  static const String branchTimezoneKey = 'branch_timezone';
+  static const String authTokenPrefKey = 'auth_token';
+
   // Pagination
   static const int defaultPageSize = 20;
   static const int maxPageSize = 100;
@@ -101,6 +119,9 @@ class AppConstants {
   // Timeouts
   static const Duration connectionTimeout = Duration(seconds: 30);
   static const Duration receiveTimeout = Duration(seconds: 30);
+
+  // Connectivity / offline polling
+  static const Duration offlineRecheckInterval = Duration(seconds: 30);
   static const Duration sendTimeout = Duration(seconds: 30);
 
   // Retry

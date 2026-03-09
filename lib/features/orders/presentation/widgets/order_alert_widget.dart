@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../domain/entities/order_entity.dart';
+import '../../../../core/theme/theme_context_ext.dart';
 
 /// Order alert widget that shows incoming orders
 /// Time is only displayed for delivery orders
@@ -19,6 +20,7 @@ class OrderAlertWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDelivery = order.orderType == OrderType.delivery;
+    final colorScheme = Theme.of(context).colorScheme;
     
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -27,7 +29,7 @@ class OrderAlertWidget extends StatelessWidget {
         width: 400,
         constraints: const BoxConstraints(maxWidth: 400),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: colorScheme.surface,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: const Color(0xFF3B82F6),
@@ -47,17 +49,17 @@ class OrderAlertWidget extends StatelessWidget {
           children: [
             // Header
             _buildHeader(context),
-            const Divider(height: 1, color: Color(0xFFE5E7EB)),
+            Divider(height: 1, color: context.borderLight),
             
             // Order Number
             Padding(
               padding: const EdgeInsets.all(16),
               child: Text(
                 'Order #${order.queueNumber}',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
-                  color: Color(0xFF111827),
+                  color: colorScheme.onSurface,
                 ),
               ),
             ),
@@ -70,10 +72,10 @@ class OrderAlertWidget extends StatelessWidget {
                   Expanded(
                     child: Text(
                       order.customerName,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF111827),
+                        color: colorScheme.onSurface,
                       ),
                     ),
                   ),
@@ -81,10 +83,10 @@ class OrderAlertWidget extends StatelessWidget {
                   if (isDelivery)
                     Text(
                       DateFormat('h:mm a').format(order.createdAt),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
-                        color: Color(0xFF6B7280),
+                        color: colorScheme.onSurfaceVariant,
                       ),
                     ),
                 ],
@@ -100,7 +102,7 @@ class OrderAlertWidget extends StatelessWidget {
                 children: [
                   _buildOrderTypeIcon(
                     Icons.shopping_bag,
-                    'Takeaway',
+                    'Pickup',
                     isSelected: order.orderType == OrderType.takeaway,
                   ),
                   const SizedBox(width: 8),
@@ -114,7 +116,7 @@ class OrderAlertWidget extends StatelessWidget {
             ),
             
             const SizedBox(height: 16),
-            const Divider(height: 1, color: Color(0xFFE5E7EB)),
+            Divider(height: 1, color: context.borderLight),
             
             // Items List
             Padding(
@@ -136,9 +138,9 @@ class OrderAlertWidget extends StatelessWidget {
                         padding: const EdgeInsets.only(bottom: 4),
                         child: Text(
                           '${item.quantity}x ${item.name}',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 14,
-                            color: Color(0xFF111827),
+                            color: colorScheme.onSurface,
                           ),
                         ),
                       )),
@@ -157,10 +159,10 @@ class OrderAlertWidget extends StatelessWidget {
                       ),
                       Text(
                         '\$${order.total.toStringAsFixed(2)}',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
-                          color: Color(0xFF111827),
+                          color: colorScheme.onSurface,
                         ),
                       ),
                     ],

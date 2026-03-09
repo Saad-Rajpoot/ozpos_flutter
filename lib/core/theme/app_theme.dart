@@ -61,21 +61,22 @@ class AppTheme {
   }
 
   static ThemeData get darkTheme {
+    final colorScheme = ColorScheme.fromSeed(
+      seedColor: AppColors.primary,
+      brightness: Brightness.dark,
+    );
     return ThemeData(
       useMaterial3: true,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: AppColors.primary,
-        brightness: Brightness.dark,
-      ),
-      scaffoldBackgroundColor: AppColors.bgPrimary,
+      colorScheme: colorScheme,
+      scaffoldBackgroundColor: colorScheme.surface,
       appBarTheme: AppBarTheme(
-        backgroundColor: AppColors.bgSecondary,
-        foregroundColor: AppColors.textPrimary,
+        backgroundColor: colorScheme.surface,
+        foregroundColor: colorScheme.onSurface,
         elevation: 0,
         centerTitle: true,
       ),
       cardTheme: CardThemeData(
-        color: AppColors.bgSecondary,
+        color: colorScheme.surfaceContainerHighest,
         elevation: 2.0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadius.md),
@@ -97,43 +98,49 @@ class AppTheme {
       ),
       textTheme: TextTheme(
         displayLarge: AppTypography.heading1.copyWith(
-          color: AppColors.textPrimary,
+          color: colorScheme.onSurface,
         ),
         displayMedium: AppTypography.heading2.copyWith(
-          color: AppColors.textPrimary,
+          color: colorScheme.onSurface,
         ),
         displaySmall: AppTypography.heading3.copyWith(
-          color: AppColors.textPrimary,
+          color: colorScheme.onSurface,
         ),
         headlineLarge: AppTypography.heading1.copyWith(
-          color: AppColors.textPrimary,
+          color: colorScheme.onSurface,
         ),
         headlineMedium: AppTypography.heading2.copyWith(
-          color: AppColors.textPrimary,
+          color: colorScheme.onSurface,
         ),
         headlineSmall: AppTypography.heading3.copyWith(
-          color: AppColors.textPrimary,
+          color: colorScheme.onSurface,
         ),
         titleLarge: AppTypography.heading2.copyWith(
-          color: AppColors.textPrimary,
+          color: colorScheme.onSurface,
         ),
         titleMedium: AppTypography.heading3.copyWith(
-          color: AppColors.textPrimary,
+          color: colorScheme.onSurface,
         ),
-        titleSmall: AppTypography.body1.copyWith(color: AppColors.textPrimary),
-        bodyLarge: AppTypography.body1.copyWith(color: AppColors.textPrimary),
-        bodyMedium: AppTypography.body2.copyWith(color: AppColors.textPrimary),
+        titleSmall: AppTypography.body1.copyWith(
+          color: colorScheme.onSurface,
+        ),
+        bodyLarge: AppTypography.body1.copyWith(
+          color: colorScheme.onSurface,
+        ),
+        bodyMedium: AppTypography.body2.copyWith(
+          color: colorScheme.onSurface,
+        ),
         bodySmall: AppTypography.caption.copyWith(
-          color: AppColors.textSecondary,
+          color: colorScheme.onSurfaceVariant,
         ),
         labelLarge: AppTypography.button.copyWith(
           color: AppColors.textOnPrimary,
         ),
         labelMedium: AppTypography.overline.copyWith(
-          color: AppColors.textSecondary,
+          color: colorScheme.onSurfaceVariant,
         ),
         labelSmall: AppTypography.caption.copyWith(
-          color: AppColors.textSecondary,
+          color: colorScheme.onSurfaceVariant,
         ),
       ),
     );

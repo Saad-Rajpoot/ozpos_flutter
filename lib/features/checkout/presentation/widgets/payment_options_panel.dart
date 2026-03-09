@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../checkout/presentation/bloc/cart_bloc.dart';
 import '../../../checkout/presentation/bloc/checkout_bloc.dart';
 import '../../domain/entities/payment_method_type.dart';
 import '../constant/checkout_constants.dart';
@@ -20,13 +21,20 @@ class PaymentOptionsPanel extends StatelessWidget {
 
         return Column(
           children: [
-            // Payment method tiles
-            _buildPaymentMethods(context, viewState),
-            const SizedBox(height: CheckoutConstants.gapNormal),
-
-            // Spacer to push actions to bottom
-            const Spacer(),
-
+            // Scrollable: order notes + payment methods
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _buildOrderNotes(context, viewState),
+                    const SizedBox(height: CheckoutConstants.gapNormal),
+                    _buildPaymentMethods(context, viewState),
+                    const SizedBox(height: CheckoutConstants.gapNormal),
+                  ],
+                ),
+              ),
+            ),
             // Action buttons (sticky at bottom)
             _buildActionButtons(context, viewState),
           ],
@@ -35,7 +43,37 @@ class PaymentOptionsPanel extends StatelessWidget {
     );
   }
 
+  Widget _buildOrderNotes(BuildContext context, CheckoutLoaded state) {
+    return _OrderNotesField(
+      initialNotes: state.cart.orderNotes,
+      onChanged: (value) {
+        context.read<CheckoutBloc>().add(SetOrderNotes(notes: value));
+      },
+    );
+  }
+
+  List<PaymentMethodType> _checkoutPaymentMethods(OrderType orderType) {
+    final methods = <PaymentMethodType>[
+      PaymentMethodType.cash,
+      PaymentMethodType.card,
+      PaymentMethodType.digitalWallet,
+      PaymentMethodType.bankTransfer,
+    ];
+
+    // Pay Later is only available for Dine-In orders.
+    if (orderType == OrderType.dineIn) {
+      methods.add(PaymentMethodType.payLater);
+    }
+
+    if (orderType == OrderType.delivery) {
+      methods.add(PaymentMethodType.cod);
+    }
+
+    return methods;
+  }
+
   Widget _buildPaymentMethods(BuildContext context, CheckoutLoaded state) {
+    final methods = _checkoutPaymentMethods(state.cart.orderType);
     return Container(
       padding: const EdgeInsets.all(CheckoutConstants.cardPadding),
       decoration: BoxDecoration(
@@ -50,11 +88,11 @@ class PaymentOptionsPanel extends StatelessWidget {
           Text('Payment Method', style: CheckoutConstants.textTitle),
           const SizedBox(height: CheckoutConstants.gapNormal),
 
-          // Payment method grid (2 rows × 2 cols)
+          // Payment method grid
           Wrap(
             spacing: CheckoutConstants.gapSmall,
             runSpacing: CheckoutConstants.gapSmall,
-            children: PaymentMethodType.values.take(4).map((method) {
+            children: methods.map((method) {
               final isSelected = state.selectedMethod == method;
               return _buildMethodTile(context, method, isSelected);
             }).toList(),
@@ -98,7 +136,7 @@ class PaymentOptionsPanel extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              Icons.payments,
+              method.icon,
               size: 28,
               color: isSelected
                   ? CheckoutConstants.primary
@@ -106,7 +144,7 @@ class PaymentOptionsPanel extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             Text(
-              method.value,
+              method.label,
               style: CheckoutConstants.textBody.copyWith(
                 fontWeight: isSelected
                     ? CheckoutConstants.weightSemiBold
@@ -154,33 +192,113 @@ class PaymentOptionsPanel extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(height: CheckoutConstants.gapSmall),
-
-        // Pay Later button
-        SizedBox(
-          width: double.infinity,
-          height: CheckoutConstants.tabHeight,
-          child: OutlinedButton(
-            onPressed: () => context.read<CheckoutBloc>().add(PayLater()),
-            style: OutlinedButton.styleFrom(
-              side: BorderSide(color: CheckoutConstants.primary),
-              foregroundColor: CheckoutConstants.primary,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(
-                  CheckoutConstants.radiusButton,
+        if (state.cart.orderType == OrderType.dineIn) ...[
+          const SizedBox(height: CheckoutConstants.gapSmall),
+          // Pay Later button (Dine-In only)
+          SizedBox(
+            width: double.infinity,
+            height: CheckoutConstants.tabHeight,
+            child: OutlinedButton(
+              onPressed: () => context.read<CheckoutBloc>().add(PayLater()),
+              style: OutlinedButton.styleFrom(
+                side: BorderSide(color: CheckoutConstants.primary),
+                foregroundColor: CheckoutConstants.primary,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(
+                    CheckoutConstants.radiusButton,
+                  ),
+                ),
+              ),
+              child: const Text(
+                'Pay Later',
+                style: TextStyle(
+                  fontSize: CheckoutConstants.fontSizeBody,
+                  fontWeight: CheckoutConstants.weightSemiBold,
                 ),
               ),
             ),
-            child: const Text(
-              'Pay Later',
-              style: TextStyle(
-                fontSize: CheckoutConstants.fontSizeBody,
-                fontWeight: CheckoutConstants.weightSemiBold,
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _OrderNotesField extends StatefulWidget {
+  final String? initialNotes;
+  final ValueChanged<String> onChanged;
+
+  const _OrderNotesField({
+    required this.initialNotes,
+    required this.onChanged,
+  });
+
+  @override
+  State<_OrderNotesField> createState() => _OrderNotesFieldState();
+}
+
+class _OrderNotesFieldState extends State<_OrderNotesField> {
+  late TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.initialNotes ?? '');
+  }
+
+  @override
+  void didUpdateWidget(_OrderNotesField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initialNotes != oldWidget.initialNotes &&
+        widget.initialNotes != _controller.text) {
+      _controller.text = widget.initialNotes ?? '';
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(CheckoutConstants.cardPadding),
+      decoration: BoxDecoration(
+        color: CheckoutConstants.surface,
+        borderRadius: BorderRadius.circular(CheckoutConstants.radiusCard),
+        border: Border.all(color: CheckoutConstants.border),
+        boxShadow: CheckoutConstants.shadowCard,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Order notes', style: CheckoutConstants.textTitle),
+          const SizedBox(height: CheckoutConstants.gapSmall),
+          TextField(
+            controller: _controller,
+            onChanged: widget.onChanged,
+            maxLines: 3,
+            minLines: 1,
+            decoration: InputDecoration(
+              hintText: 'Add notes for this order...',
+              hintStyle: CheckoutConstants.textMutedSmall,
+              filled: true,
+              fillColor: Colors.white,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(CheckoutConstants.radiusButton),
+                borderSide: BorderSide(color: CheckoutConstants.border),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 10,
               ),
             ),
+            style: CheckoutConstants.textBody,
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

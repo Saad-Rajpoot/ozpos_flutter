@@ -5,6 +5,7 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../../core/errors/failures.dart';
 import '../../domain/usecases/get_menu_items.dart';
 import '../../domain/usecases/get_menu_categories.dart';
+import '../../domain/usecases/get_single_vendor_usecase.dart';
 import '../../domain/entities/menu_category_entity.dart';
 import '../../domain/entities/menu_item_entity.dart';
 import 'menu_event.dart';
@@ -14,16 +15,52 @@ import 'menu_state.dart';
 class MenuBloc extends BaseBloc<MenuEvent, MenuState> {
   final GetMenuItems getMenuItems;
   final GetMenuCategories getMenuCategories;
+  final GetSingleVendorUsecase getSingleVendorUsecase;
 
-  MenuBloc({required this.getMenuItems, required this.getMenuCategories})
-      : super(const MenuInitial()) {
+  MenuBloc({
+    required this.getMenuItems,
+    required this.getMenuCategories,
+    required this.getSingleVendorUsecase,
+  }) : super(const MenuInitial()) {
     on<GetMenuItemsEvent>(_onGetMenuItems);
     on<GetMenuCategoriesEvent>(_onGetMenuCategories);
     on<LoadMenuData>(_onLoadMenuData);
+    on<FetchMenuEvent>(_onFetchMenu);
     on<RefreshMenuData>(_onRefreshMenuData);
     on<SearchMenuItems>(_onSearchMenuItems);
     on<FilterByCategory>(_onFilterByCategory);
     on<ClearFilters>(_onClearFilters);
+  }
+
+  Future<void> _onFetchMenu(
+    FetchMenuEvent event,
+    Emitter<MenuState> emit,
+  ) async {
+    emit(const MenuLoading());
+    final result = await getSingleVendorUsecase(
+      GetSingleVendorParams(
+        menuType: event.menuType,
+        menuId: event.menuId,
+      ),
+    );
+    result.fold(
+      (failure) => emit(MenuError(message: _mapFailureToMessage(failure))),
+      (entity) => emit(MenuLoaded(
+        menuName: entity.menuName,
+        categories: entity.categories,
+        items: entity.items,
+        activeMenuId: entity.activeMenuId,
+        scheduleTimeRange: entity.scheduleTimeRange,
+        timezone: entity.timezone,
+        menuSubtitle: entity.menuSubtitle,
+        menuVersion: entity.menuVersion,
+        menuType: entity.menuType,
+        openingHours: entity.openingHours,
+        variants: entity.variants,
+        secondsUntilNextScheduleChange:
+            entity.secondsUntilNextScheduleChange,
+      )),
+    );
   }
 
   Future<void> _onGetMenuItems(
@@ -273,6 +310,8 @@ class MenuBloc extends BaseBloc<MenuEvent, MenuState> {
         return (failure as CacheFailure).message;
       case NetworkFailure _:
         return (failure as NetworkFailure).message;
+      case AuthFailure _:
+        return (failure as AuthFailure).message;
       default:
         return 'Unexpected error occurred';
     }

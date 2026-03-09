@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -17,12 +18,16 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _usernameController = TextEditingController();
+  final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
+    if (kDebugMode) {
+      _emailController.text = 'Billy.pos1@gmail.com';
+      _passwordController.text = 'Ozpos@pos33!!';
+    }
     if (widget.initialMessage != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _showInfo(widget.initialMessage!);
@@ -32,7 +37,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   void dispose() {
-    _usernameController.dispose();
+    _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -49,11 +54,10 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _submit(AuthCubit cubit) async {
     if (!_formKey.currentState!.validate()) return;
 
-    final username =
-        InputSanitizer.sanitizeUsername(_usernameController.text.trim());
+    final email = InputSanitizer.sanitizeEmail(_emailController.text.trim());
     final password = _passwordController.text;
 
-    await cubit.login(username: username, password: password);
+    await cubit.login(email: email, password: password);
   }
 
   @override
@@ -101,21 +105,22 @@ class _LoginScreenState extends State<LoginScreen> {
                           textAlign: TextAlign.center,
                           style: theme.textTheme.bodyMedium?.copyWith(
                             color: theme.textTheme.bodyMedium?.color
-                                ?.withOpacity(0.7),
+                                ?.withValues(alpha: 0.7),
                           ),
                         ),
                         const SizedBox(height: 24),
                         TextFormField(
-                          controller: _usernameController,
+                          controller: _emailController,
+                          keyboardType: TextInputType.emailAddress,
                           decoration: const InputDecoration(
-                            labelText: 'Username',
-                            prefixIcon: Icon(Icons.person_outline),
+                            labelText: 'Email',
+                            prefixIcon: Icon(Icons.email_outlined),
                           ),
                           validator: (value) => InputValidators.combine(
                             [
                               (v) => InputValidators.required(v,
-                                  fieldName: 'Username'),
-                              InputValidators.username,
+                                  fieldName: 'Email'),
+                              InputValidators.email,
                             ],
                             value,
                           ),

@@ -8,11 +8,14 @@ class PrinterCard extends StatefulWidget {
   final PrinterEntity printer;
   final Color color;
   final void Function(PrinterEntity) onEdit;
-  const PrinterCard(
-      {super.key,
-      required this.printer,
-      required this.color,
-      required this.onEdit});
+  final void Function(PrinterEntity)? onTestPrint;
+  const PrinterCard({
+    super.key,
+    required this.printer,
+    required this.color,
+    required this.onEdit,
+    this.onTestPrint,
+  });
 
   @override
   State<PrinterCard> createState() => _PrinterCardState();
@@ -165,7 +168,9 @@ class _PrinterCardState extends State<PrinterCard> {
             Row(
               children: [
                 ElevatedButton(
-                  onPressed: () {},
+                  onPressed: _canTestPrint(widget.printer)
+                      ? () => widget.onTestPrint?.call(widget.printer)
+                      : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: widget.color,
                     shape: RoundedRectangleBorder(
@@ -193,6 +198,11 @@ class _PrinterCardState extends State<PrinterCard> {
         ),
       ),
     );
+  }
+
+  static bool _canTestPrint(PrinterEntity printer) {
+    return printer.connection == PrinterConnection.network &&
+        (printer.address?.trim().isNotEmpty ?? false);
   }
 
   static List<String> _assignableTags(PrinterEntity printer) {

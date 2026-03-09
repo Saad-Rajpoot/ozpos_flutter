@@ -117,8 +117,8 @@ class Step4Availability extends StatelessWidget {
           _buildChannelToggle(
             context,
             icon: Icons.language,
-            title: 'Takeaway',
-            description: 'Available for takeaway orders through website/app',
+            title: 'Pickup',
+            description: 'Available for pickup orders through website/app',
             value: state.item.takeawayAvailable,
             onChanged: (value) {
               context.read<MenuEditBloc>().add(

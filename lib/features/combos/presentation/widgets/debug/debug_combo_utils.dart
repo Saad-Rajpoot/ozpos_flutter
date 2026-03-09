@@ -14,7 +14,7 @@ class DebugComboUtils {
       case OrderType.dineIn:
         return 'Dine In';
       case OrderType.takeaway:
-        return 'Takeaway';
+        return 'Pickup';
       case OrderType.delivery:
         return 'Delivery';
       case OrderType.online:

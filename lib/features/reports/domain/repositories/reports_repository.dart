@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dartz/dartz.dart';
 import '../../../../core/errors/failures.dart';
 import '../entities/reports_entities.dart';
@@ -6,4 +8,7 @@ import '../entities/reports_entities.dart';
 abstract class ReportsRepository {
   /// Get all reports data
   Future<Either<Failure, ReportsData>> getReportsData();
+
+  /// Generate and save report as PDF locally
+  Future<File> generateReportPdf(ReportsData report);
 }

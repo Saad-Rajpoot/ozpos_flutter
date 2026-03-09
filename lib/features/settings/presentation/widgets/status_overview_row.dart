@@ -44,9 +44,22 @@ class StatusOverviewRow extends StatelessWidget {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final isWide = constraints.maxWidth > 1000;
-        final isMedium = constraints.maxWidth > 700;
+        final maxWidth = constraints.maxWidth;
+        final isWide = maxWidth > 1000;
+        final isMedium = maxWidth > 700;
         final crossAxisCount = isWide ? 4 : (isMedium ? 2 : 1);
+
+        // Give a bit more vertical room on narrow layouts so the CTA button
+        // fits without overflow, while keeping wide layouts compact.
+        final double aspectRatio;
+        if (isWide) {
+          aspectRatio = 1.8;
+        } else if (isMedium) {
+          aspectRatio = 1.6;
+        } else {
+          aspectRatio = 1.4;
+        }
+
         return GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
@@ -55,7 +68,7 @@ class StatusOverviewRow extends StatelessWidget {
             crossAxisCount: crossAxisCount,
             mainAxisSpacing: 16,
             crossAxisSpacing: 16,
-            childAspectRatio: 2.2,
+            childAspectRatio: aspectRatio,
           ),
           itemBuilder: (_, i) => cards[i],
         );
@@ -96,7 +109,7 @@ class _StatusCard extends StatelessWidget {
     return Card(
       elevation: 0,
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -136,11 +149,17 @@ class _StatusCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8),
                     onTap: onAction,
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 8,
+                      ),
                       child: Center(
                         child: Text(
                           actionLabel!,
-                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../menu/domain/utils/modifier_tree_utils.dart';
 import '../../../checkout/presentation/bloc/cart_bloc.dart';
 import '../constant/checkout_constants.dart';
 
@@ -71,37 +72,41 @@ class CompactOrderLine extends StatelessWidget {
             ],
           ),
 
-          // Row 2: Modifier chips (if any)
-          if (item.modifierSummary.isNotEmpty) ...[
+          // Row 2: Modifiers as "Group: Option" lines (indented)
+          if (_modifierLines(item).isNotEmpty) ...[
             const SizedBox(height: 4),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(children: _buildModifierChips(item.modifierSummary)),
-            ),
+            ..._modifierLines(item).map((e) => Padding(
+                  padding: const EdgeInsets.only(left: 12, bottom: 2),
+                  child: RichText(
+                    text: TextSpan(
+                      style: CheckoutConstants.textMutedSmall.copyWith(
+                        height: 1.35,
+                        color: CheckoutConstants.textMuted,
+                      ),
+                      children: [
+                        TextSpan(
+                          text: '${e.groupName}: ',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        TextSpan(text: e.optionName),
+                      ],
+                    ),
+                  ),
+                )),
           ],
         ],
       ),
     );
   }
 
-  List<Widget> _buildModifierChips(String summary) {
-    final modifiers = summary.split(', ');
-    return modifiers.map((mod) {
-      return Container(
-        margin: const EdgeInsets.only(right: 6),
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-        decoration: BoxDecoration(
-          color: CheckoutConstants.primaryLight,
-          borderRadius: BorderRadius.circular(CheckoutConstants.radiusChip),
-        ),
-        child: Text(
-          mod,
-          style: CheckoutConstants.textMutedSmall.copyWith(
-            color: CheckoutConstants.primary,
-            fontWeight: CheckoutConstants.weightMedium,
-          ),
-        ),
-      );
-    }).toList();
+  List<({String groupName, String optionName})> _modifierLines(
+    CartLineItem item,
+  ) {
+    return ModifierTreeUtils.getModifierDisplayLines(
+      item.menuItem,
+      item.selectedModifiers,
+    );
   }
 }

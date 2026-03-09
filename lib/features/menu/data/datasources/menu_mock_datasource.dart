@@ -354,6 +354,7 @@ class MenuMockDataSourceImpl implements MenuDataSource {
           description: item['description'],
           image: item['image'],
           basePrice: item['basePrice'].toDouble(),
+          calories: item['calories'] as int?,
           tags: item['tags'] != null ? List<String>.from(item['tags']) : [],
           modifierGroups: item['modifierGroups'] != null
               ? (item['modifierGroups'] as List<dynamic>).map((group) {
@@ -368,6 +369,7 @@ class MenuMockDataSourceImpl implements MenuDataSource {
                         id: option['id'],
                         name: option['name'],
                         priceDelta: option['priceDelta'].toDouble(),
+                        calories: option['calories'] as int?,
                         isDefault: option['isDefault'] ?? false,
                       );
                     }).toList(),

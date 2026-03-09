@@ -3,6 +3,7 @@ import 'package:equatable/equatable.dart';
 import '../constants/delivery_constants.dart';
 import '../../../../core/validation/input_validators.dart';
 import '../../../../core/validation/input_sanitizer.dart';
+import '../../../../core/theme/theme_context_ext.dart';
 
 enum VehicleType { bike, car, scooter, van }
 
@@ -112,16 +113,19 @@ class _AddDriverModalState extends State<AddDriverModal> {
               children: [
                 Container(
                   padding: const EdgeInsets.all(DeliveryConstants.spacingXl),
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
+                    color: context.bgSurface,
                     border: Border(
-                      bottom: BorderSide(color: DeliveryConstants.borderColor),
+                      bottom: BorderSide(color: context.borderLight),
                     ),
                   ),
                   child: Row(
                     children: [
-                      const Text(
+                      Text(
                         'Add Driver',
-                        style: DeliveryConstants.headingMedium,
+                        style: DeliveryConstants.headingMedium.copyWith(
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
                       ),
                       const Spacer(),
                       IconButton(

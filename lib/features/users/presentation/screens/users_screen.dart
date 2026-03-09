@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/widgets/sidebar_nav.dart';
 import '../../../../core/navigation/app_router.dart';
+import '../../../../core/theme/theme_context_ext.dart';
 import '../bloc/user_management_bloc.dart';
 import '../bloc/user_management_event.dart';
 import '../bloc/user_management_state.dart';
@@ -39,7 +40,7 @@ class _UsersScreenState extends State<UsersScreen> {
     return MediaQuery(
       data: MediaQuery.of(context).copyWith(textScaler: scaler),
       child: Scaffold(
-        backgroundColor: const Color(0xFFF5F5F7),
+        backgroundColor: context.bgPrimary,
         body: Row(
           children: [
             // Sidebar navigation
@@ -110,29 +111,33 @@ class _UsersScreenState extends State<UsersScreen> {
   }
 
   Widget _buildHeader() {
+    final colorScheme = Theme.of(context).colorScheme;
+    const lightBorder = Color(0xFFE5E7EB);
+    final borderColor =
+        colorScheme.brightness == Brightness.light ? lightBorder : context.borderLight;
     return Container(
       padding: const EdgeInsets.all(24),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(bottom: BorderSide(color: Color(0xFFE5E7EB))),
+      decoration: BoxDecoration(
+        color: context.bgSurface,
+        border: Border(bottom: BorderSide(color: borderColor)),
       ),
       child: Row(
         children: [
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                const Text(
                   'User Management',
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                SizedBox(height: 4),
+                const SizedBox(height: 4),
                 Text(
                   'Manage users',
-                  style: TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
+                  style: TextStyle(fontSize: 14, color: context.textSecondary),
                 ),
               ],
             ),
@@ -194,13 +199,17 @@ class _UsersScreenState extends State<UsersScreen> {
   }
 
   Widget _buildUserCard(UserEntity user) {
+    final colorScheme = Theme.of(context).colorScheme;
+    const lightBorder = Color(0xFFE5E7EB);
+    final borderColor =
+        colorScheme.brightness == Brightness.light ? lightBorder : context.borderLight;
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.bgSurface,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
+        border: Border.all(color: borderColor),
       ),
       child: Row(
         children: [
@@ -233,18 +242,18 @@ class _UsersScreenState extends State<UsersScreen> {
                 const SizedBox(height: 4),
                 Text(
                   user.email,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
-                    color: Color(0xFF6B7280),
+                    color: context.textSecondary,
                   ),
                 ),
                 if (user.phone != null) ...[
                   const SizedBox(height: 2),
                   Text(
                     user.phone!,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
-                      color: Color(0xFF9CA3AF),
+                      color: context.textSecondary.withOpacity(0.8),
                     ),
                   ),
                 ],

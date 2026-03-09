@@ -97,6 +97,12 @@ class OrdersConstants {
   static const Color colorTakeawayBg = Color(0xFFFEF3C7);
   static const Color colorTakeawayBorder = Color(0xFFFDE047);
 
+  static const Color colorDeliveryStart = Color(0xFF8B5CF6);
+  static const Color colorDeliveryEnd = Color(0xFF7C3AED);
+  static const Color colorDeliveryText = Color(0xFF5B21B6);
+  static const Color colorDeliveryBg = Color(0xFFEDE9FE);
+  static const Color colorDeliveryBorder = Color(0xFFC4B5FD);
+
   // Status Badge Colors (matching React)
   static const Color colorStatusActiveStart = Color(0xFF3B82F6);
   static const Color colorStatusActiveEnd = Color(0xFF06B6D4);

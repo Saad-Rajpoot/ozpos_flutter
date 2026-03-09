@@ -14,24 +14,21 @@ class AuthCubit extends Cubit<AuthState> {
   final AuthRepository _authRepository;
 
   Future<void> _initialize() async {
-    // For now, auto-authenticate in development to skip login
     final hasSession = await _authRepository.hasActiveSession();
     if (hasSession) {
       emit(AuthState.authenticated());
     } else {
-      // Auto-authenticate in development mode (bypass login)
-      // In production, this should emit unauthenticated
-      emit(AuthState.authenticated());
+      emit(AuthState.unauthenticated());
     }
   }
 
   Future<void> login({
-    required String username,
+    required String email,
     required String password,
   }) async {
     emit(state.copyWith(isLoading: true, errorMessage: null));
     try {
-      await _authRepository.login(username: username, password: password);
+      await _authRepository.login(email: email, password: password);
       emit(AuthState.authenticated());
     } on AuthException catch (error) {
       emit(

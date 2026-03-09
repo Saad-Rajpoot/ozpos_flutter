@@ -19,6 +19,8 @@ class CartLineItem extends Equatable {
   final String? selectedComboId;
   final Map<String, List<String>> selectedModifiers; // groupId -> [optionIds]
   final String modifierSummary; // Display string: "Large, Extra Cheese, BBQ"
+  /// Note for the kitchen (sent as special_instructions to backend).
+  final String? specialInstructions;
 
   const CartLineItem({
     required this.id,
@@ -28,6 +30,7 @@ class CartLineItem extends Equatable {
     this.selectedComboId,
     required this.selectedModifiers,
     required this.modifierSummary,
+    this.specialInstructions,
   });
 
   double get lineTotal => unitPrice * quantity;
@@ -44,6 +47,7 @@ class CartLineItem extends Equatable {
       selectedComboId: selectedComboId,
       selectedModifiers: selectedModifiers ?? this.selectedModifiers,
       modifierSummary: modifierSummary,
+      specialInstructions: specialInstructions,
     );
   }
 
@@ -56,6 +60,7 @@ class CartLineItem extends Equatable {
         selectedComboId,
         selectedModifiers,
         modifierSummary,
+        specialInstructions,
       ];
 }
 
@@ -85,6 +90,8 @@ class CartLoaded extends CartState {
   final double subtotal;
   final double gst;
   final double total;
+  /// Menu id when items were added; cart is invalid when active menu changes.
+  final String? activeMenuId;
 
   const CartLoaded({
     required this.items,
@@ -96,6 +103,7 @@ class CartLoaded extends CartState {
     required this.subtotal,
     required this.gst,
     required this.total,
+    this.activeMenuId,
   });
 
   int get itemCount => items.fold(0, (sum, item) => sum + item.quantity);
@@ -112,6 +120,8 @@ class CartLoaded extends CartState {
     double? subtotal,
     double? gst,
     double? total,
+    String? activeMenuId,
+    bool clearMenuId = false,
   }) {
     final newItems = items ?? this.items;
     final shouldRecalculateTotals =
@@ -150,6 +160,7 @@ class CartLoaded extends CartState {
       subtotal: newSubtotal,
       gst: newGst,
       total: newTotal,
+      activeMenuId: clearMenuId ? null : (activeMenuId ?? this.activeMenuId),
     );
   }
 
@@ -164,6 +175,7 @@ class CartLoaded extends CartState {
         subtotal,
         gst,
         total,
+        activeMenuId,
       ];
 }
 
@@ -191,6 +203,10 @@ class AddItemToCart extends CartEvent {
   final String? selectedComboId;
   final Map<String, List<String>> selectedModifiers;
   final String modifierSummary;
+  /// Note for the kitchen (sent as special_instructions to backend).
+  final String? specialInstructions;
+  /// Current active menu id (for cart invalidation when menu changes).
+  final String? activeMenuId;
 
   const AddItemToCart({
     required this.menuItem,
@@ -199,6 +215,8 @@ class AddItemToCart extends CartEvent {
     this.selectedComboId,
     required this.selectedModifiers,
     required this.modifierSummary,
+    this.specialInstructions,
+    this.activeMenuId,
   });
 
   @override
@@ -209,6 +227,8 @@ class AddItemToCart extends CartEvent {
         selectedComboId,
         selectedModifiers,
         modifierSummary,
+        specialInstructions,
+        activeMenuId,
       ];
 }
 
@@ -398,14 +418,11 @@ class CartBloc extends BaseBloc<CartEvent, CartState> {
       );
       updatedItems[existingItemIndex] = updatedItem;
 
-      final subtotalDelta = updatedItem.lineTotal - existingItem.lineTotal;
-      final newSubtotal = currentState.subtotal + subtotalDelta;
-
       _emitStateWithTotals(
         emit: emit,
         baseState: currentState,
         items: updatedItems,
-        subtotal: newSubtotal,
+        activeMenuId: event.activeMenuId ?? currentState.activeMenuId,
       );
     } else {
       // Add new item to cart
@@ -426,18 +443,17 @@ class CartBloc extends BaseBloc<CartEvent, CartState> {
         selectedComboId: event.selectedComboId,
         selectedModifiers: finalModifiers,
         modifierSummary: event.modifierSummary,
+        specialInstructions: event.specialInstructions,
       );
 
       final updatedItems = List<CartLineItem>.from(currentState.items)
         ..add(newLineItem);
 
-      final newSubtotal = currentState.subtotal + newLineItem.lineTotal;
-
       _emitStateWithTotals(
         emit: emit,
         baseState: currentState,
         items: updatedItems,
-        subtotal: newSubtotal,
+        activeMenuId: event.activeMenuId ?? currentState.activeMenuId,
       );
     }
   }
@@ -465,14 +481,10 @@ class CartBloc extends BaseBloc<CartEvent, CartState> {
     final updatedItem = existingItem.copyWith(quantity: event.newQuantity);
     updatedItems[index] = updatedItem;
 
-    final subtotalDelta = updatedItem.lineTotal - existingItem.lineTotal;
-    final newSubtotal = currentState.subtotal + subtotalDelta;
-
     _emitStateWithTotals(
       emit: emit,
       baseState: currentState,
       items: updatedItems,
-      subtotal: newSubtotal,
     );
   }
 
@@ -485,17 +497,13 @@ class CartBloc extends BaseBloc<CartEvent, CartState> {
         currentState.items.indexWhere((item) => item.id == event.lineItemId);
     if (index == -1) return;
 
-    final removedItem = currentState.items[index];
     final updatedItems = List<CartLineItem>.from(currentState.items)
       ..removeAt(index);
-
-    final newSubtotal = currentState.subtotal - removedItem.lineTotal;
 
     _emitStateWithTotals(
       emit: emit,
       baseState: currentState,
       items: updatedItems,
-      subtotal: newSubtotal,
     );
   }
 
@@ -503,10 +511,12 @@ class CartBloc extends BaseBloc<CartEvent, CartState> {
     required Emitter<CartState> emit,
     required CartLoaded baseState,
     required List<CartLineItem> items,
-    required double subtotal,
+    String? activeMenuId,
   }) {
-    // Use domain service for cart calculations
-    final totals = CartCalculator.calculateAllTotals(subtotal);
+    // Always derive raw line totals sum from the current items to avoid
+    // mixing tax-inclusive and tax-exclusive amounts when quantities change.
+    final rawLineTotals = CartCalculator.calculateSubtotalFromItems(items);
+    final totals = CartCalculator.calculateAllTotals(rawLineTotals);
 
     emit(
       baseState.copyWith(
@@ -514,6 +524,7 @@ class CartBloc extends BaseBloc<CartEvent, CartState> {
         subtotal: totals['subtotal']!,
         gst: totals['gst']!,
         total: totals['total']!,
+        activeMenuId: activeMenuId ?? baseState.activeMenuId,
       ),
     );
   }
@@ -595,13 +606,17 @@ class CartBloc extends BaseBloc<CartEvent, CartState> {
   }
 
   void _onClearCart(ClearCart event, Emitter<CartState> emit) {
+    final current = state is CartLoaded ? state as CartLoaded : null;
     emit(
-      const CartLoaded(
-        items: [],
-        orderType: OrderType.dineIn,
+      CartLoaded(
+        items: const [],
+        orderType: current?.orderType ?? OrderType.dineIn,
         subtotal: 0.0,
         gst: 0.0,
         total: 0.0,
+        selectedTable: current?.selectedTable,
+        customerName: current?.customerName,
+        customerPhone: current?.customerPhone,
       ),
     );
   }

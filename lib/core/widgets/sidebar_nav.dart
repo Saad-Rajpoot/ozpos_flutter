@@ -5,6 +5,7 @@ import '../constants/app_sizes.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_spacing.dart';
 import '../constants/app_radius.dart';
+import 'branch_timezone_footer.dart';
 
 /// Sidebar Navigation - Icon-only dark slate design from reference
 /// Fixed width 80dp
@@ -125,6 +126,9 @@ class SidebarNav extends StatelessWidget {
               ],
             ),
           ),
+
+          // Footer: current date/time in branch timezone (from API)
+          const BranchTimezoneFooter(),
         ],
       ),
     );
@@ -190,7 +194,20 @@ class _NavItemState extends State<_NavItem> {
                         : Colors.transparent),
                 borderRadius: BorderRadius.circular(AppRadius.md),
                 child: InkWell(
-                  onTap: () => NavigationService.pushNamed(widget.route),
+                  onTap: () {
+                    // Special case: the Delivery sidebar item should open the
+                    // Menu screen pre-configured for delivery menus, so staff
+                    // immediately see delivery items instead of the delivery
+                    // management dashboard.
+                    if (widget.route == AppRouter.delivery) {
+                      NavigationService.pushNamed(
+                        AppRouter.menu,
+                        arguments: const {'orderType': 'delivery'},
+                      );
+                    } else {
+                      NavigationService.pushNamed(widget.route);
+                    }
+                  },
                   borderRadius: BorderRadius.circular(AppRadius.md),
                   child: Container(
                     height: 48,

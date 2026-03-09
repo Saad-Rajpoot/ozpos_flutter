@@ -222,7 +222,7 @@ class _SizeRowWidgetState extends State<SizeRowWidget> {
               const SizedBox(width: 12),
               Expanded(
                 child: _buildPriceField(
-                  label: 'Takeaway Price',
+                  label: 'Pickup Price',
                   controller: _takeawayController,
                   onChanged: (value) {
                     final price = double.tryParse(value) ?? 0.0;

@@ -5,12 +5,14 @@ class ModifierOptionModel {
   final String id;
   final String name;
   final double priceDelta;
+  final int? calories;
   final bool isDefault;
 
   const ModifierOptionModel({
     required this.id,
     required this.name,
     required this.priceDelta,
+    this.calories,
     this.isDefault = false,
   });
 
@@ -20,6 +22,7 @@ class ModifierOptionModel {
       id: id,
       name: name,
       priceDelta: priceDelta,
+      calories: calories,
       isDefault: isDefault,
     );
   }
@@ -30,6 +33,7 @@ class ModifierOptionModel {
       id: entity.id,
       name: entity.name,
       priceDelta: entity.priceDelta,
+      calories: entity.calories,
       isDefault: entity.isDefault,
     );
   }
@@ -40,6 +44,7 @@ class ModifierOptionModel {
       id: json['id'] as String,
       name: json['name'] as String,
       priceDelta: (json['price_delta'] as num?)?.toDouble() ?? 0.0,
+      calories: json['calories'] as int?,
       isDefault: json['is_default'] as bool? ?? false,
     );
   }
@@ -50,6 +55,7 @@ class ModifierOptionModel {
       'id': id,
       'name': name,
       'price_delta': priceDelta,
+      if (calories != null) 'calories': calories,
       'is_default': isDefault,
     };
   }

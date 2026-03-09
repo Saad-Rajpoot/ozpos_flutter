@@ -37,7 +37,7 @@ class ApiClient {
     String? baseUrl,
   })  : _sharedPreferences = sharedPreferences,
         _secureStorage = secureStorage,
-        _baseUrl = baseUrl ?? AppConfig.instance.baseUrl {
+        _baseUrl = _ensureTrailingSlash(baseUrl ?? AppConfig.instance.baseUrl) {
     // Validate base URL
     _validateBaseUrl(_baseUrl);
 
@@ -58,6 +58,12 @@ class ApiClient {
     _configureCertificatePinning();
 
     _setupInterceptors();
+  }
+
+  /// Ensures baseUrl ends with / so Dio path resolution works correctly.
+  /// Without this, "single-vendor/x/y" resolves to /api/single-vendor/... (loses "pos").
+  static String _ensureTrailingSlash(String url) {
+    return url.endsWith('/') ? url : '$url/';
   }
 
   /// Validate base URL for security requirements
@@ -268,13 +274,31 @@ class ApiClient {
       ),
     );
 
-    // Logging interceptor (only in debug mode) - should be last
+    // Lightweight logging interceptor (debug mode only) - should be last.
+    // Logs only method, URL, and status code (no full JSON bodies).
     if (kDebugMode) {
       _dio.interceptors.add(
-        LogInterceptor(
-          requestBody: true,
-          responseBody: true,
-          logPrint: (object) => debugPrint(object.toString()),
+        InterceptorsWrapper(
+          onRequest: (options, handler) {
+            debugPrint('HTTP ${options.method} ${options.uri}');
+            handler.next(options);
+          },
+          onResponse: (response, handler) {
+            debugPrint(
+              'HTTP ${response.requestOptions.method} '
+              '${response.requestOptions.uri} '
+              '→ ${response.statusCode}',
+            );
+            handler.next(response);
+          },
+          onError: (error, handler) {
+            debugPrint(
+              'HTTP ERROR ${error.requestOptions.method} '
+              '${error.requestOptions.uri} '
+              '→ ${error.response?.statusCode}',
+            );
+            handler.next(error);
+          },
         ),
       );
     }

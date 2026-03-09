@@ -15,7 +15,7 @@ class ValidateModifierSelectionUseCase
     ValidateModifierSelectionParams params,
   ) async {
     try {
-      final isValid = ModifierValidator.validateRequiredGroups(
+      final isValid = ModifierValidator.validateRequiredGroupsFlat(
         groups: params.groups,
         selectedModifiers: params.selectedModifiers,
       );

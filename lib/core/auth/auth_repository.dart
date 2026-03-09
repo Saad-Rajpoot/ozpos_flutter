@@ -4,85 +4,125 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../config/app_config.dart';
 import '../constants/app_constants.dart';
-import '../network/certificate_pinner.dart';
+import 'data/datasources/auth_remote_datasource.dart';
 import '../storage/secure_storage_service.dart';
 
 /// Repository responsible for authenticating users and managing session tokens.
+/// Login is performed via [AuthRemoteDataSource] (multipart/form-data); tokens
+/// and user data are persisted to SecureStorage and SharedPreferences.
 class AuthRepository {
   AuthRepository({
+    required AuthRemoteDataSource remoteDataSource,
     required SecureStorageService secureStorage,
     required SharedPreferences sharedPreferences,
-  })  : _secureStorage = secureStorage,
-        _sharedPreferences = sharedPreferences {
-    _dio = Dio(
-      BaseOptions(
-        baseUrl: AppConfig.instance.baseUrl,
-        connectTimeout: AppConstants.connectionTimeout,
-        receiveTimeout: AppConstants.receiveTimeout,
-        sendTimeout: AppConstants.sendTimeout,
-        headers: const {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-      ),
-    );
+  })  : _remoteDataSource = remoteDataSource,
+        _secureStorage = secureStorage,
+        _sharedPreferences = sharedPreferences;
 
-    if (AppConfig.instance.isCertificatePinningEnabled) {
-      final pinner = CertificatePinner(AppConfig.instance.certificatePins);
-      _dio.httpClientAdapter = pinner.createPinnedAdapter();
-    }
-  }
-
-  late final Dio _dio;
+  final AuthRemoteDataSource _remoteDataSource;
   final SecureStorageService _secureStorage;
   final SharedPreferences _sharedPreferences;
 
-  /// Attempts to authenticate the user with provided credentials.
-  ///
-  /// On success, access and refresh tokens are stored securely.
+  /// Attempts to authenticate with email and password (multipart/form-data).
+  /// On success, prints full response and saves all data fields to SharedPreferences.
   Future<void> login({
-    required String username,
+    required String email,
     required String password,
   }) async {
     try {
-      final response = await _dio.post(
-        AppConstants.loginEndpoint,
-        data: {
-          'username': username,
-          'password': password,
-        },
+      final response = await _remoteDataSource.login(
+        email: email,
+        password: password,
       );
 
-      if (response.statusCode != 200 || response.data == null) {
-        throw const AuthException('Invalid username or password');
+      if (kDebugMode) {
+        final encoded = const JsonEncoder.withIndent('  ').convert({
+          'success': response.success,
+          'message': response.message,
+          'data': response.data != null
+              ? {
+                  'id': response.data!.id,
+                  'name': response.data!.name,
+                  'email': response.data!.email,
+                  'role': response.data!.role,
+                  'vendor_uuid': response.data!.vendorUuid,
+                  'vendor_name': response.data!.vendorName,
+                  'branch_uuid': response.data!.branchUuid,
+                  'branch_name': response.data!.branchName,
+                  'token': response.data!.token,
+                }
+              : null,
+        });
+        debugPrint('Login API response:\n$encoded');
       }
 
-      final data = response.data;
-      final accessToken = _extractToken(data);
-      final refreshToken = _extractRefreshToken(data);
+      if (!response.success || response.data == null) {
+        throw AuthException(
+          response.message ?? 'Login failed. Please try again.',
+        );
+      }
 
-      if (accessToken == null || accessToken.isEmpty) {
+      final data = response.data!;
+      if (data.token.isEmpty) {
         throw const AuthException('Authentication response missing token');
       }
 
-      await _secureStorage.saveAccessToken(accessToken);
-      if (refreshToken != null && refreshToken.isNotEmpty) {
-        await _secureStorage.saveRefreshToken(refreshToken);
-      }
+      await _secureStorage.saveAccessToken(data.token);
 
-      final userPayload = data['user'] ?? data['data']?['user'];
-      if (userPayload != null) {
-        await _sharedPreferences.setString(
-          AppConstants.userKey,
-          jsonEncode(userPayload),
-        );
-      }
+      await _sharedPreferences.setInt(AppConstants.authUserIdKey, data.id);
+      await _sharedPreferences.setString(
+        AppConstants.authUserNameKey,
+        data.name,
+      );
+      await _sharedPreferences.setString(
+        AppConstants.authUserEmailKey,
+        data.email,
+      );
+      await _sharedPreferences.setString(
+        AppConstants.authUserRoleKey,
+        data.role,
+      );
+      await _sharedPreferences.setString(
+        AppConstants.authVendorUuidKey,
+        data.vendorUuid,
+      );
+      await _sharedPreferences.setString(
+        AppConstants.authVendorNameKey,
+        data.vendorName,
+      );
+      await _sharedPreferences.setString(
+        AppConstants.authBranchUuidKey,
+        data.branchUuid,
+      );
+      await _sharedPreferences.setString(
+        AppConstants.authBranchNameKey,
+        data.branchName,
+      );
+      await _sharedPreferences.setString(
+        AppConstants.authTokenPrefKey,
+        data.token,
+      );
+
+      final userPayload = {
+        'id': data.id,
+        'name': data.name,
+        'email': data.email,
+        'role': data.role,
+        'vendor_uuid': data.vendorUuid,
+        'vendor_name': data.vendorName,
+        'branch_uuid': data.branchUuid,
+        'branch_name': data.branchName,
+      };
+      await _sharedPreferences.setString(
+        AppConstants.userKey,
+        jsonEncode(userPayload),
+      );
     } on DioException catch (error) {
       if (kDebugMode) {
         debugPrint(
-            'AuthRepository.login DioException: ${error.message} ${error.response?.data}');
+          'AuthRepository.login DioException: ${error.message} ${error.response?.data}',
+        );
       }
       throw AuthException(_mapDioError(error));
     } catch (error) {
@@ -90,14 +130,42 @@ class AuthRepository {
         debugPrint('AuthRepository.login error: $error');
       }
       if (error is AuthException) rethrow;
-      throw const AuthException('Unable to sign in. Please try again.');
+      throw AuthException(
+        error is Exception ? error.toString() : 'Unable to sign in. Please try again.',
+      );
     }
   }
 
-  /// Logs out the current user and clears all session data.
+  /// Logs out the current user: calls logout API (Bearer token) then clears all session data.
+  /// Local session is always cleared even if the API call fails.
   Future<void> logout() async {
+    if (kDebugMode) {
+      debugPrint('🔓 Logout: calling logout API...');
+    }
+    try {
+      await _remoteDataSource.logout();
+      if (kDebugMode) {
+        debugPrint('🔓 Logout: API call succeeded.');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('🔓 Logout: API call failed (clearing local anyway): $e');
+      }
+    }
     await _secureStorage.deleteAllTokens();
     await _sharedPreferences.remove(AppConstants.userKey);
+    await _sharedPreferences.remove(AppConstants.authUserIdKey);
+    await _sharedPreferences.remove(AppConstants.authUserNameKey);
+    await _sharedPreferences.remove(AppConstants.authUserEmailKey);
+    await _sharedPreferences.remove(AppConstants.authUserRoleKey);
+    await _sharedPreferences.remove(AppConstants.authVendorUuidKey);
+    await _sharedPreferences.remove(AppConstants.authVendorNameKey);
+    await _sharedPreferences.remove(AppConstants.authBranchUuidKey);
+    await _sharedPreferences.remove(AppConstants.authBranchNameKey);
+    await _sharedPreferences.remove(AppConstants.authTokenPrefKey);
+    if (kDebugMode) {
+      debugPrint('🔓 Logout: local session cleared.');
+    }
   }
 
   /// Returns true if a valid access token exists.
@@ -106,34 +174,18 @@ class AuthRepository {
     return token != null && token.isNotEmpty;
   }
 
-  /// Extracts access token from API response.
-  String? _extractToken(dynamic responseData) {
-    if (responseData is Map<String, dynamic>) {
-      return responseData['token'] ??
-          responseData['access_token'] ??
-          responseData['data']?['token'] ??
-          responseData['data']?['access_token'];
-    }
-    return null;
-  }
-
-  /// Extracts refresh token from API response.
-  String? _extractRefreshToken(dynamic responseData) {
-    if (responseData is Map<String, dynamic>) {
-      return responseData['refresh_token'] ??
-          responseData['data']?['refresh_token'];
-    }
-    return null;
-  }
-
   String _mapDioError(DioException error) {
     if (error.response?.statusCode == 401) {
-      return 'Invalid username or password';
+      return 'Invalid email or password';
     }
     if (error.type == DioExceptionType.connectionTimeout ||
         error.type == DioExceptionType.receiveTimeout ||
         error.type == DioExceptionType.sendTimeout) {
       return 'Unable to reach the server. Check your connection.';
+    }
+    final data = error.response?.data;
+    if (data is Map<String, dynamic> && data['message'] != null) {
+      return data['message'] as String;
     }
     return 'Authentication failed. Please try again.';
   }
@@ -148,4 +200,3 @@ class AuthException implements Exception {
   @override
   String toString() => 'AuthException: $message';
 }
-

@@ -167,7 +167,7 @@ class _AvailabilityTabState extends State<AvailabilityTab> {
                 (value) => _updateOrderType(viewState, 'dineIn', value),
               ),
               _buildOrderTypeCard(
-                'Takeaway',
+                'Pickup',
                 'Customers picking up orders',
                 Icons.shopping_bag,
                 viewState.orderTypes['takeaway'] ?? false,
