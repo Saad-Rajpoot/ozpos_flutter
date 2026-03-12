@@ -133,6 +133,7 @@ class OrdersDao {
     return OrderEntity(
       id: row.id,
       queueNumber: row.queueNumber,
+      orderNumber: null,
       channel: _parseChannel(row.channel),
       orderType: _parseOrderType(row.orderType),
       paymentStatus: _parsePaymentStatus(row.paymentStatus),
@@ -147,6 +148,7 @@ class OrdersDao {
       estimatedTime: row.estimatedTime,
       specialInstructions: row.specialInstructions,
       displayStatus: null,
+      preparationStatus: null,
     );
   }
 

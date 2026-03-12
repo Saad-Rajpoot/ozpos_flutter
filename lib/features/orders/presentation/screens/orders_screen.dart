@@ -654,12 +654,22 @@ class _ViewToggleButton extends StatelessWidget {
   }
 }
 
-class _OrdersContent extends StatelessWidget {
+class _OrdersContent extends StatefulWidget {
   const _OrdersContent();
+
+  @override
+  State<_OrdersContent> createState() => _OrdersContentState();
+}
+
+class _OrdersContentState extends State<_OrdersContent> {
+  bool _highlightShown = false;
 
   @override
   Widget build(BuildContext context) {
     final viewState = context.watch<OrdersViewCubit>().state;
+    final routeArgs =
+        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    final highlightOrderId = routeArgs?['highlightOrderId'] as String?;
 
     return BlocBuilder<OrdersManagementBloc, OrdersManagementState>(
       buildWhen: (previous, current) {
@@ -718,6 +728,34 @@ class _OrdersContent extends StatelessWidget {
           final filtered = _filterOrders(blocState.orders, viewState);
           if (filtered.isEmpty) {
             return _buildEmptyState();
+          }
+          // If we were asked to highlight a specific order, open its detail
+          // dialog once after data loads. Only do this once per screen instance.
+          if (highlightOrderId != null && !_highlightShown) {
+            _highlightShown = true;
+            final target = filtered.firstWhere(
+              (o) => o.id == highlightOrderId,
+              orElse: () => filtered.first,
+            );
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              showDialog<void>(
+                context: context,
+                builder: (ctx) => Dialog(
+                  backgroundColor: Colors.transparent,
+                  insetPadding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
+                  child: ConstrainedBox(
+                    constraints:
+                        const BoxConstraints(maxWidth: 420, maxHeight: 560),
+                    child: ClipRRect(
+                      borderRadius:
+                          BorderRadius.circular(OrdersConstants.cardRadius),
+                      child: OrderCardWidget(order: target),
+                    ),
+                  ),
+                ),
+              );
+            });
           }
           return viewState.isGridView
               ? _buildOrdersGrid(context, filtered)

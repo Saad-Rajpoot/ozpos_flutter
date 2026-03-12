@@ -15,13 +15,16 @@ import 'core/navigation/navigation_service.dart';
 import 'core/utils/sentry_bloc_observer.dart';
 import 'core/services/sentry_service.dart';
 import 'core/theme/app_themes.dart';
+import 'core/widgets/customer_display_bootstrapper.dart';
 import 'features/checkout/presentation/bloc/cart_bloc.dart';
+import 'features/customer_display/presentation/presentation_app.dart';
 import 'features/theme/domain/entities/theme_mode_entity.dart';
 import 'features/theme/domain/usecases/get_theme_mode_usecase.dart';
 import 'features/theme/domain/usecases/set_theme_mode_usecase.dart';
 import 'features/theme/presentation/bloc/theme_bloc.dart';
 import 'features/theme/presentation/bloc/theme_state.dart';
 import 'features/users/presentation/bloc/user_management_bloc.dart';
+import 'features/orders/presentation/widgets/realtime_order_alert_overlay.dart';
 import 'core/auth/auth_cubit.dart';
 import 'core/auth/auth_state.dart';
 import 'core/auth/session_timeout_manager.dart';
@@ -30,6 +33,20 @@ import 'core/widgets/user_interaction_listener.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // If this engine was launched for the secondary customer display, render the
+  // lightweight presentation app and skip the heavy POS bootstrap.
+  final defaultRouteName =
+      WidgetsBinding.instance.platformDispatcher.defaultRouteName;
+  if (defaultRouteName == 'customerDisplayMain') {
+    if (kDebugMode) {
+      debugPrint(
+          'main(): detected customerDisplayMain route – starting presentation app');
+    }
+    runApp(const CustomerDisplayPresentationApp());
+    return;
+  }
+
+  // Primary POS engine bootstrap.
   // Initialize BLoC observer for error tracking
   Bloc.observer = SentryBlocObserver();
 
@@ -306,7 +323,11 @@ class OzposApp extends StatelessWidget {
               initialRoute: AppRouter.login,
               navigatorObservers: [SentryNavigatorObserver()],
               builder: (context, child) => UserInteractionListener(
-                child: child ?? const SizedBox.shrink(),
+                child: CustomerDisplayBootstrapper(
+                  child: RealtimeOrderAlertOverlay(
+                    child: child ?? const SizedBox.shrink(),
+                  ),
+                ),
               ),
             );
           },

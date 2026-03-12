@@ -1,165 +1,203 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../bloc/customer_display_bloc.dart';
-import '../bloc/customer_display_event.dart';
-import '../bloc/customer_display_state.dart';
+import '../../../checkout/presentation/bloc/cart_bloc.dart';
+import '../bloc/customer_display_presentation_cubit.dart';
+import '../../domain/entities/customer_display_cart_item_entity.dart';
+import '../../domain/entities/customer_display_entity.dart';
+import '../../domain/entities/customer_display_loyalty_entity.dart';
+import '../../domain/entities/customer_display_mode.dart';
+import '../../domain/entities/customer_display_totals_entity.dart';
 import '../widgets/customer_display_approved_view.dart';
 import '../widgets/customer_display_change_due_view.dart';
-import '../widgets/customer_display_close_button.dart';
-import '../widgets/customer_display_error_view.dart';
-import '../widgets/customer_display_idle_view.dart';
 import '../widgets/customer_display_order_layout.dart';
 import '../widgets/customer_display_payment_declined_view.dart';
-import '../widgets/customer_display_progress_indicator.dart';
-import '../../domain/entities/customer_display_entity.dart';
-import '../../domain/entities/customer_display_mode.dart';
 
-class CustomerDisplayScreen extends StatefulWidget {
+class CustomerDisplayScreen extends StatelessWidget {
   const CustomerDisplayScreen({super.key});
 
   @override
-  State<CustomerDisplayScreen> createState() => _CustomerDisplayScreenState();
-}
-
-class _CustomerDisplayScreenState extends State<CustomerDisplayScreen> {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      context.read<CustomerDisplayBloc>().add(const CustomerDisplayOpened());
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return const _CustomerDisplayView();
-  }
-}
+    final cartBloc = _maybeReadCartBloc(context);
+    if (cartBloc != null) {
+      return BlocBuilder<CartBloc, CartState>(
+        bloc: cartBloc,
+        builder: (context, state) {
+          final loaded = state is CartLoaded ? state : null;
+          final entity = _mapCartToEntity('OZPOS', loaded);
+          return _buildFromStatus(
+            const CustomerDisplayPresentationState.empty(),
+            entity,
+          );
+        },
+      );
+    }
 
-class _CustomerDisplayView extends StatelessWidget {
-  const _CustomerDisplayView();
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocConsumer<CustomerDisplayBloc, CustomerDisplayState>(
-      listenWhen: (previous, current) =>
-          previous.status != current.status ||
-          previous.isOverlayVisible != current.isOverlayVisible,
-      listener: (context, state) {
-        if (state.status == CustomerDisplayStatus.closed ||
-            !state.isOverlayVisible) {
-          Navigator.of(context).pop();
-        }
-      },
+    return BlocBuilder<CustomerDisplayPresentationCubit,
+        CustomerDisplayPresentationState>(
       builder: (context, state) {
-        return PopScope(
-          canPop: false,
-          onPopInvokedWithResult: (didPop, result) {
-            if (didPop) {
-              return;
-            }
-            context.read<CustomerDisplayBloc>().add(
-                  const CustomerDisplayClosed(),
-                );
-          },
-          child: Scaffold(
-            backgroundColor: Colors.black,
-            body: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 400),
-              child: _buildBody(context, state),
-            ),
-          ),
-        );
+        final entity = _mapStateToEntity(state);
+        return _buildFromStatus(state, entity);
       },
     );
   }
+}
 
-  Widget _buildBody(BuildContext context, CustomerDisplayState state) {
-    if (state.isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(color: Colors.white),
-      );
-    }
+CartBloc? _maybeReadCartBloc(BuildContext context) {
+  try {
+    return context.read<CartBloc>();
+  } catch (_) {
+    return null;
+  }
+}
 
-    if (state.hasError) {
-      return CustomerDisplayErrorView(
-        message: state.errorMessage,
-        onRetry: () => context
-            .read<CustomerDisplayBloc>()
-            .add(const CustomerDisplayRetryRequested()),
-      );
-    }
-
-    final content = state.content;
-    if (!state.isReady || content == null) {
-      return const SizedBox.shrink();
-    }
-
-    return Stack(
-      children: [
-        Positioned.fill(
-          child: _buildModeContent(context, state, content),
+Widget _buildFromStatus(
+  CustomerDisplayPresentationState state,
+  CustomerDisplayEntity entity,
+) {
+  switch (state.status) {
+    case 'payment_card':
+      return CustomerDisplayOrderLayout(
+        content: entity,
+        rightPanel: CustomerDisplayPaymentPanel(
+          content: entity,
+          mode: CustomerDisplayMode.paymentCard,
         ),
-        CustomerDisplayCloseButton(
-          onClose: () => context
-              .read<CustomerDisplayBloc>()
-              .add(const CustomerDisplayClosed()),
+      );
+    case 'payment_cash':
+      return CustomerDisplayOrderLayout(
+        content: entity,
+        rightPanel: CustomerDisplayPaymentPanel(
+          content: entity,
+          mode: CustomerDisplayMode.paymentCash,
         ),
-        if (content.totalSteps > 0)
-          CustomerDisplayProgressIndicator(
-            modeLabel: state.currentMode.displayLabel,
-            currentStep: state.currentModeIndex + 1,
-            totalSteps: content.totalSteps,
-          ),
-      ],
-    );
+      );
+    case 'approved':
+      return CustomerDisplayApprovedView(content: entity);
+    case 'change_due':
+      return CustomerDisplayChangeDueView(content: entity);
+    case 'error':
+      return const CustomerDisplayPaymentDeclinedView();
+    case 'order':
+    default:
+      return CustomerDisplayOrderLayout(
+        content: entity,
+        rightPanel: CustomerDisplayOrderSummary(content: entity),
+      );
+  }
+}
+
+CustomerDisplayEntity _mapCartToEntity(
+  String storeName,
+  CartLoaded? cart,
+) {
+  if (cart == null) {
+    return _emptyEntity(storeName);
   }
 
-  Widget _buildModeContent(
-    BuildContext context,
-    CustomerDisplayState state,
-    CustomerDisplayEntity content,
-  ) {
-    final mode = state.currentMode;
-    switch (mode) {
-      case CustomerDisplayMode.idle:
-        return CustomerDisplayIdleView(
-          slide: content.promoSlides.isEmpty
-              ? null
-              : content.promoSlides[
-                  state.currentSlideIndex % content.promoSlides.length],
-          totalSlides: content.promoSlides.length,
-          activeIndex: state.currentSlideIndex,
-        );
-      case CustomerDisplayMode.order:
-        return CustomerDisplayOrderLayout(
-          content: content,
-          rightPanel: CustomerDisplayOrderSummary(content: content),
-        );
-      case CustomerDisplayMode.paymentCard:
-        return CustomerDisplayOrderLayout(
-          content: content,
-          rightPanel: CustomerDisplayPaymentPanel(
-            content: content,
-            mode: CustomerDisplayMode.paymentCard,
+  return CustomerDisplayEntity(
+    orderNumber: '',
+    cartItems: cart.items
+        .map(
+          (i) => CustomerDisplayCartItemEntity(
+            id: i.id,
+            name: i.menuItem.name,
+            price: i.unitPrice,
+            quantity: i.quantity,
+            modifiers: (i.modifierSummary == null ||
+                    i.modifierSummary!.trim().isEmpty)
+                ? const []
+                : [i.modifierSummary!],
           ),
-        );
-      case CustomerDisplayMode.paymentCash:
-        return CustomerDisplayOrderLayout(
-          content: content,
-          rightPanel: CustomerDisplayPaymentPanel(
-            content: content,
-            mode: CustomerDisplayMode.paymentCash,
+        )
+        .toList(growable: false),
+    totals: CustomerDisplayTotalsEntity(
+      subtotal: cart.subtotal,
+      discount: 0,
+      tax: cart.gst,
+      total: cart.total,
+      cashReceived: 0,
+      changeDue: 0,
+    ),
+    loyalty: const CustomerDisplayLoyaltyEntity(
+      pointsEarned: 0,
+      currentBalance: 0,
+      showLoyalty: false,
+    ),
+    promoSlides: const [],
+    demoSequence: const [
+      CustomerDisplayMode.order,
+    ],
+    modeIntervalSeconds: 0,
+    slideIntervalSeconds: 0,
+  );
+}
+
+CustomerDisplayEntity _mapStateToEntity(
+  CustomerDisplayPresentationState s,
+) {
+  return CustomerDisplayEntity(
+    orderNumber: '',
+    cartItems: s.items
+        .map(
+          (i) => CustomerDisplayCartItemEntity(
+            id: i.id,
+            name: i.name,
+            price: i.unitPrice,
+            quantity: i.quantity,
+            modifiers: (i.modifierSummary == null ||
+                    i.modifierSummary!.trim().isEmpty)
+                ? const []
+                : [i.modifierSummary!],
           ),
-        );
-      case CustomerDisplayMode.approved:
-        return CustomerDisplayApprovedView(content: content);
-      case CustomerDisplayMode.changeDue:
-        return CustomerDisplayChangeDueView(content: content);
-      case CustomerDisplayMode.error:
-        return const CustomerDisplayPaymentDeclinedView();
-    }
-  }
+        )
+        .toList(growable: false),
+    totals: CustomerDisplayTotalsEntity(
+      subtotal: s.subtotal,
+      discount: 0,
+      tax: s.tax,
+      total: s.total,
+      cashReceived: s.changeDue != null ? s.total + s.changeDue! : 0,
+      changeDue: s.changeDue ?? 0,
+    ),
+    loyalty: const CustomerDisplayLoyaltyEntity(
+      pointsEarned: 0,
+      currentBalance: 0,
+      showLoyalty: false,
+    ),
+    promoSlides: const [],
+    demoSequence: const [
+      CustomerDisplayMode.order,
+      CustomerDisplayMode.paymentCard,
+      CustomerDisplayMode.paymentCash,
+      CustomerDisplayMode.approved,
+      CustomerDisplayMode.changeDue,
+    ],
+    modeIntervalSeconds: 0,
+    slideIntervalSeconds: 0,
+  );
+}
+
+CustomerDisplayEntity _emptyEntity(String storeName) {
+  return const CustomerDisplayEntity(
+    orderNumber: '',
+    cartItems: [],
+    totals: CustomerDisplayTotalsEntity(
+      subtotal: 0,
+      discount: 0,
+      tax: 0,
+      total: 0,
+      cashReceived: 0,
+      changeDue: 0,
+    ),
+    loyalty: CustomerDisplayLoyaltyEntity(
+      pointsEarned: 0,
+      currentBalance: 0,
+      showLoyalty: false,
+    ),
+    promoSlides: [],
+    demoSequence: [CustomerDisplayMode.order],
+    modeIntervalSeconds: 0,
+    slideIntervalSeconds: 0,
+  );
 }

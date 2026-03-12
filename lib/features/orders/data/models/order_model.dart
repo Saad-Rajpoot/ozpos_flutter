@@ -6,8 +6,16 @@ import 'order_item_model.dart';
 class OrderModel extends Equatable {
   final String id;
   final String queueNumber;
+  /// Raw order number from history API (e.g. "20260310-0014").
+  final String? orderNumber;
+  /// Reference number from history API (e.g. "REF-XYZ").
+  final String? referenceNo;
+  /// Raw source from history API (e.g. POS, ONLINE, UBEREATS).
+  final String? source;
   final OrderChannel channel;
   final OrderType orderType;
+  /// Raw service_type from history API (e.g. ONLINE_DELIVERY, PICKUP).
+  final String? serviceType;
   final PaymentStatus paymentStatus;
   final OrderStatus status;
   /// Raw payment method from backend history (e.g. 'cash', 'pay_later').
@@ -23,16 +31,24 @@ class OrderModel extends Equatable {
   final String? specialInstructions;
   /// Table number for dine-in orders, from history API `table_number`.
   final String? tableNumber;
+  /// Raw delivery_status from history API.
+  final String? deliveryStatus;
   /// Optional human-readable status coming from the backend
   /// (e.g. ACCEPTED, PREPARING, READY). When present, UI components
   /// should prefer this over coarse-grained enum labels.
   final String? displayStatus;
+  /// Raw preparation_status from history API.
+  final String? preparationStatus;
 
   const OrderModel({
     required this.id,
     required this.queueNumber,
+    this.orderNumber,
+    this.referenceNo,
+    this.source,
     required this.channel,
     required this.orderType,
+    this.serviceType,
     required this.paymentStatus,
     required this.status,
     this.paymentMethod,
@@ -46,16 +62,19 @@ class OrderModel extends Equatable {
     required this.estimatedTime,
     this.specialInstructions,
     this.tableNumber,
+    this.deliveryStatus,
     this.displayStatus,
+    this.preparationStatus,
   });
 
   /// Parse order from history API format (GET /api/pos/orders/history)
   factory OrderModel.fromHistoryApi(Map<String, dynamic> json) {
-    final source = (json['source'] as String?)?.toUpperCase() ?? 'POS';
+    final sourceRaw = json['source'] as String? ?? 'POS';
+    final sourceUpper = sourceRaw.toUpperCase();
     final serviceType =
         (json['service_type'] as String?)?.toUpperCase() ?? 'PICKUP';
     OrderChannel channel;
-    if (source == 'POS') {
+    if (sourceUpper == 'POS') {
       // For POS orders, channel reflects fulfillment (so filter/card match service_type)
       switch (serviceType) {
         case 'DELIVERY':
@@ -71,7 +90,8 @@ class OrderModel extends Equatable {
           break;
       }
     } else {
-      switch (source) {
+      // For ONLINE/3rd‑party orders, channel represents the platform/source.
+      switch (sourceUpper) {
         case 'UBEREATS':
           channel = OrderChannel.ubereats;
           break;
@@ -90,12 +110,17 @@ class OrderModel extends Equatable {
         case 'QR':
           channel = OrderChannel.qr;
           break;
+        case 'ONLINE':
+          // Treat generic ONLINE orders as Delivery channel so the chip
+          // matches the actual fulfillment type instead of showing Dine‑In.
+          channel = OrderChannel.delivery;
+          break;
         default:
           channel = OrderChannel.dinein;
       }
     }
     final orderType = switch (serviceType) {
-      'DELIVERY' => OrderType.delivery,
+      'DELIVERY' || 'ONLINE_DELIVERY' => OrderType.delivery,
       'DINE_IN' || 'DINEIN' => OrderType.dinein,
       _ => OrderType.takeaway,
     };
@@ -106,10 +131,17 @@ class OrderModel extends Equatable {
     final statusRaw = (json['status'] as String?)?.toUpperCase() ?? 'CREATED';
     final preparationStatusRaw =
         (json['preparation_status'] as String?)?.toUpperCase();
+    final deliveryStatusRaw =
+        (json['delivery_status'] as String?)?.toUpperCase();
+    // Map high-level status used for tabs/filters.
+    // If preparation_status is DELIVERED we want the order to appear under
+    // the Completed section, even if the coarse status is still CREATED.
     final status = switch (statusRaw) {
       'COMPLETED' => OrderStatus.completed,
       'CANCELLED' || 'CANCELED' => OrderStatus.cancelled,
-      _ => OrderStatus.active,
+      _ => preparationStatusRaw == 'DELIVERED'
+          ? OrderStatus.completed
+          : OrderStatus.active,
     };
     final paymentMethod = json['payment_method'] as String?;
     final customerSnapshot =
@@ -138,8 +170,10 @@ class OrderModel extends Equatable {
     final displayId =
         displayIdRaw?.replaceFirst(RegExp(r'^#'), '').trim() ?? displayIdRaw;
     final orderNumber = json['order_number'] as String?;
-    final id = displayId ?? orderNumber ?? (json['id']?.toString() ?? '');
-    final queueNumber = displayId ?? orderNumber ?? id;
+    final referenceNo = json['reference_no'] as String?;
+    final rawId = json['id']?.toString() ?? '';
+    final id = rawId;
+    final queueNumber = displayId ?? orderNumber ?? rawId;
     final tableNumberRaw = json['table_number'];
     final tableNumber = tableNumberRaw == null
         ? null
@@ -147,29 +181,21 @@ class OrderModel extends Equatable {
             ? null
             : tableNumberRaw.toString().trim();
 
-    // Choose a human-readable status label for UI:
-    // - cancelled/completed/unpaid are kept as-is
-    // - otherwise prefer preparation_status when available
-    // - finally fall back to backend status string.
-    String? displayStatus;
-    if (status == OrderStatus.cancelled) {
-      displayStatus = 'CANCELLED';
-    } else if (status == OrderStatus.completed) {
-      displayStatus = 'COMPLETED';
-    } else if (paymentStatus == PaymentStatus.unpaid) {
-      displayStatus = 'UNPAID';
-    } else if (preparationStatusRaw != null &&
-        preparationStatusRaw.isNotEmpty) {
-      displayStatus = preparationStatusRaw;
-    } else if (statusRaw.isNotEmpty) {
-      displayStatus = statusRaw;
-    }
+    // Choose a human-readable status label for UI.
+    // We want this to mirror the backend `status` field (e.g. CREATED,
+    // COMPLETED, CANCELLED, DELIVERED) so that it matches the web card.
+    // The separate `preparationStatus` field is shown independently.
+    final displayStatus = statusRaw.isNotEmpty ? statusRaw : null;
 
     return OrderModel(
       id: id,
       queueNumber: queueNumber,
+      orderNumber: orderNumber,
+      referenceNo: referenceNo,
+      source: sourceRaw,
       channel: channel,
       orderType: orderType,
+      serviceType: serviceType,
       paymentStatus: paymentStatus,
       status: status,
       paymentMethod: paymentMethod,
@@ -183,7 +209,9 @@ class OrderModel extends Equatable {
       estimatedTime: estimatedTime,
       specialInstructions: json['notes'] as String?,
       tableNumber: tableNumber,
+      deliveryStatus: deliveryStatusRaw,
       displayStatus: displayStatus,
+      preparationStatus: preparationStatusRaw,
     );
   }
 
@@ -192,12 +220,16 @@ class OrderModel extends Equatable {
     return OrderModel(
       id: json['id'] as String,
       queueNumber: json['queueNumber'] as String,
+      orderNumber: json['orderNumber'] as String?,
+      referenceNo: json['referenceNo'] as String?,
+      source: json['source'] as String?,
       channel: OrderChannel.values.firstWhere(
         (e) => e.toString().split('.').last == json['channel'],
       ),
       orderType: OrderType.values.firstWhere(
         (e) => e.toString().split('.').last == json['orderType'],
       ),
+      serviceType: json['serviceType'] as String?,
       paymentStatus: PaymentStatus.values.firstWhere(
         (e) => e.toString().split('.').last == json['paymentStatus'],
       ),
@@ -225,6 +257,7 @@ class OrderModel extends Equatable {
       ),
       specialInstructions: json['specialInstructions'] as String?,
       tableNumber: json['tableNumber'] as String?,
+      deliveryStatus: json['deliveryStatus'] as String?,
       displayStatus: json['displayStatus'] as String?,
     );
   }
@@ -234,8 +267,12 @@ class OrderModel extends Equatable {
     return {
       'id': id,
       'queueNumber': queueNumber,
+      'orderNumber': orderNumber,
+      'referenceNo': referenceNo,
+      'source': source,
       'channel': channel.toString().split('.').last,
       'orderType': orderType.toString().split('.').last,
+      'serviceType': serviceType,
       'paymentStatus': paymentStatus.toString().split('.').last,
       'status': status.toString().split('.').last,
       'paymentMethod': paymentMethod,
@@ -251,6 +288,7 @@ class OrderModel extends Equatable {
           .inMinutes,
       'specialInstructions': specialInstructions,
       'tableNumber': tableNumber,
+      'deliveryStatus': deliveryStatus,
       'displayStatus': displayStatus,
     };
   }
@@ -260,8 +298,12 @@ class OrderModel extends Equatable {
     return OrderEntity(
       id: id,
       queueNumber: queueNumber,
+      orderNumber: orderNumber,
+      referenceNo: referenceNo,
+      source: source,
       channel: channel,
       orderType: orderType,
+      serviceType: serviceType,
       paymentStatus: paymentStatus,
       status: status,
       paymentMethod: paymentMethod,
@@ -275,7 +317,9 @@ class OrderModel extends Equatable {
       estimatedTime: estimatedTime,
       specialInstructions: specialInstructions,
       tableNumber: tableNumber,
+      deliveryStatus: deliveryStatus,
       displayStatus: displayStatus,
+      preparationStatus: preparationStatus,
     );
   }
 
@@ -284,8 +328,12 @@ class OrderModel extends Equatable {
     return OrderModel(
       id: entity.id,
       queueNumber: entity.queueNumber,
+      orderNumber: entity.orderNumber,
+      referenceNo: entity.referenceNo,
+      source: entity.source,
       channel: entity.channel,
       orderType: entity.orderType,
+      serviceType: entity.serviceType,
       paymentStatus: entity.paymentStatus,
       status: entity.status,
       paymentMethod: entity.paymentMethod,
@@ -301,29 +349,37 @@ class OrderModel extends Equatable {
       estimatedTime: entity.estimatedTime,
       specialInstructions: entity.specialInstructions,
       tableNumber: entity.tableNumber,
+      deliveryStatus: entity.deliveryStatus,
       displayStatus: entity.displayStatus,
+      preparationStatus: entity.preparationStatus,
     );
   }
 
   @override
   List<Object?> get props => [
-    id,
-    queueNumber,
-    channel,
-    orderType,
-    paymentStatus,
-    status,
-    paymentMethod,
-    customerName,
-    customerPhone,
-    items,
-    subtotal,
-    tax,
-    total,
-    createdAt,
-    estimatedTime,
-    specialInstructions,
-    tableNumber,
-    displayStatus,
-  ];
+        id,
+        queueNumber,
+        orderNumber,
+        referenceNo,
+        source,
+        channel,
+        orderType,
+        serviceType,
+        paymentStatus,
+        status,
+        paymentMethod,
+        customerName,
+        customerPhone,
+        items,
+        subtotal,
+        tax,
+        total,
+        createdAt,
+        estimatedTime,
+        specialInstructions,
+        tableNumber,
+        deliveryStatus,
+        displayStatus,
+        preparationStatus,
+      ];
 }

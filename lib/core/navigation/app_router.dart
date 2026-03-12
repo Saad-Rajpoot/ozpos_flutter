@@ -40,8 +40,6 @@ import '../../features/printing/presentation/bloc/printing_bloc.dart';
 import '../../features/printing/presentation/bloc/printing_event.dart';
 import '../../features/printing/presentation/screens/printing_management_screen.dart';
 import '../../features/customer_display/presentation/screens/customer_display_screen.dart';
-import '../../features/customer_display/presentation/bloc/customer_display_bloc.dart';
-import '../../features/customer_display/presentation/bloc/customer_display_event.dart';
 import '../../features/combos/presentation/bloc/crud/combo_crud_bloc.dart';
 import '../../features/combos/presentation/bloc/filter/combo_filter_bloc.dart';
 import '../../features/combos/presentation/bloc/editor/combo_editor_bloc.dart';
@@ -287,11 +285,7 @@ class AppRouter {
 
       case customerDisplay:
         return MaterialPageRoute(
-          builder: (_) => BlocProvider<CustomerDisplayBloc>(
-            create: (_) => di.sl<CustomerDisplayBloc>()
-              ..add(const CustomerDisplayOpened()),
-            child: const CustomerDisplayScreen(),
-          ),
+          builder: (_) => const CustomerDisplayScreen(),
           settings: settings,
           fullscreenDialog: true,
         );

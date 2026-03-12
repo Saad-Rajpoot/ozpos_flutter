@@ -27,8 +27,16 @@ enum OrderType { delivery, takeaway, dinein }
 class OrderEntity extends Equatable {
   final String id;
   final String queueNumber;
+  /// Raw order number from history API (e.g. "20260310-0014").
+  final String? orderNumber;
+  /// Reference number from history API (e.g. "REF-XYZ").
+  final String? referenceNo;
+  /// Raw source from history API (e.g. POS, ONLINE, UBEREATS).
+  final String? source;
   final OrderChannel channel;
   final OrderType orderType;
+  /// Raw service_type from history API (e.g. ONLINE_DELIVERY, PICKUP).
+  final String? serviceType;
   final PaymentStatus paymentStatus;
   final OrderStatus status;
   /// Raw payment method from backend history (e.g. 'cash', 'pay_later').
@@ -45,16 +53,24 @@ class OrderEntity extends Equatable {
   final String? specialInstructions;
   /// Table number for dine-in orders (e.g. "7"). From history API `table_number`.
   final String? tableNumber;
+  /// Raw delivery_status from history API (e.g. NOT_APPLICABLE, OUT_FOR_DELIVERY).
+  final String? deliveryStatus;
   /// Optional human-readable status coming from the backend
   /// (e.g. ACCEPTED, PREPARING, READY). When present, UI components
   /// should prefer this over coarse-grained enum labels.
   final String? displayStatus;
+  /// Raw preparation_status from history API (e.g. PENDING, PREPARING).
+  final String? preparationStatus;
 
   const OrderEntity({
     required this.id,
     required this.queueNumber,
+    this.orderNumber,
+    this.referenceNo,
+    this.source,
     required this.channel,
     required this.orderType,
+    this.serviceType,
     required this.paymentStatus,
     required this.status,
     this.paymentMethod,
@@ -68,36 +84,48 @@ class OrderEntity extends Equatable {
     required this.estimatedTime,
     this.specialInstructions,
     this.tableNumber,
+    this.deliveryStatus,
     this.displayStatus,
+    this.preparationStatus,
   });
 
   @override
   List<Object?> get props => [
-    id,
-    queueNumber,
-    channel,
-    orderType,
-    paymentStatus,
-    status,
-    paymentMethod,
-    customerName,
-    customerPhone,
-    items,
-    subtotal,
-    tax,
-    total,
-    createdAt,
-    estimatedTime,
-    specialInstructions,
-    tableNumber,
-      displayStatus,
-  ];
+        id,
+        queueNumber,
+        orderNumber,
+        referenceNo,
+        source,
+        channel,
+        orderType,
+        serviceType,
+        paymentStatus,
+        status,
+        paymentMethod,
+        customerName,
+        customerPhone,
+        items,
+        subtotal,
+        tax,
+        total,
+        createdAt,
+        estimatedTime,
+        specialInstructions,
+        tableNumber,
+        deliveryStatus,
+        displayStatus,
+        preparationStatus,
+      ];
 
   OrderEntity copyWith({
     String? id,
     String? queueNumber,
+    String? orderNumber,
+    String? referenceNo,
+    String? source,
     OrderChannel? channel,
     OrderType? orderType,
+    String? serviceType,
     PaymentStatus? paymentStatus,
     OrderStatus? status,
     String? paymentMethod,
@@ -111,13 +139,19 @@ class OrderEntity extends Equatable {
     DateTime? estimatedTime,
     String? specialInstructions,
     String? tableNumber,
+    String? deliveryStatus,
     String? displayStatus,
+    String? preparationStatus,
   }) {
     return OrderEntity(
       id: id ?? this.id,
       queueNumber: queueNumber ?? this.queueNumber,
+      orderNumber: orderNumber ?? this.orderNumber,
+      referenceNo: referenceNo ?? this.referenceNo,
+      source: source ?? this.source,
       channel: channel ?? this.channel,
       orderType: orderType ?? this.orderType,
+      serviceType: serviceType ?? this.serviceType,
       paymentStatus: paymentStatus ?? this.paymentStatus,
       status: status ?? this.status,
       paymentMethod: paymentMethod ?? this.paymentMethod,
@@ -131,7 +165,9 @@ class OrderEntity extends Equatable {
       estimatedTime: estimatedTime ?? this.estimatedTime,
       specialInstructions: specialInstructions ?? this.specialInstructions,
       tableNumber: tableNumber ?? this.tableNumber,
+      deliveryStatus: deliveryStatus ?? this.deliveryStatus,
       displayStatus: displayStatus ?? this.displayStatus,
+      preparationStatus: preparationStatus ?? this.preparationStatus,
     );
   }
 }

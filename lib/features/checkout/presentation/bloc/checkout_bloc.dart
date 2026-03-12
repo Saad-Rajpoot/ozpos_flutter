@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import '../../../../core/base/base_bloc.dart';
+import '../../../../core/services/customer_display_service.dart';
 import '../../domain/entities/tender_entity.dart';
 import '../../domain/entities/voucher_entity.dart';
 import '../../domain/entities/payment_method_type.dart';
@@ -499,6 +500,7 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
   final ProcessPaymentUseCase _processPaymentUseCase;
   final ApplyVoucherUseCase _applyVoucherUseCase;
   final CalculateTotalsUseCase _calculateTotalsUseCase;
+  final CustomerDisplayService? _customerDisplayService;
   CheckoutLoaded? _lastKnownLoadedState;
 
   CheckoutLoaded? _currentLoadedState() {
@@ -517,11 +519,13 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
     required ProcessPaymentUseCase processPaymentUseCase,
     required ApplyVoucherUseCase applyVoucherUseCase,
     required CalculateTotalsUseCase calculateTotalsUseCase,
+    CustomerDisplayService? customerDisplayService,
   })  : _initializeCheckoutUseCase = initializeCheckoutUseCase,
         _bookOrderUseCase = bookOrderUseCase,
         _processPaymentUseCase = processPaymentUseCase,
         _applyVoucherUseCase = applyVoucherUseCase,
         _calculateTotalsUseCase = calculateTotalsUseCase,
+        _customerDisplayService = customerDisplayService,
         super(CheckoutInitial()) {
     on<InitializeCheckout>(_onInitializeCheckout);
     on<SyncCartItems>(_onSyncCartItems);
@@ -690,6 +694,7 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
                 ),
               ),
             );
+            await _customerDisplayService?.showOrderView();
           },
         );
       },
@@ -744,6 +749,12 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
       baseState: currentState,
       payment: updatedPayment,
     );
+
+    if (event.method == PaymentMethodType.cash) {
+      await _customerDisplayService?.showCashPaymentView();
+    } else {
+      await _customerDisplayService?.showCardPaymentView();
+    }
   }
 
   void _onSetOrderNotes(SetOrderNotes event, Emitter<CheckoutState> emit) {
@@ -1202,7 +1213,7 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
         : null;
     final notes = (currentState.cart.orderNotes?.trim().isNotEmpty == true)
         ? currentState.cart.orderNotes!.trim()
-        : 'Test order (POS ${serviceType == 'PICK_UP' ? 'PICKUP' : serviceType}) - Full nested modifiers';
+        : null;
 
     final resultEither = await _bookOrderUseCase(
       BookOrderParams(
@@ -1234,6 +1245,7 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
             previousState: currentState,
           ),
         );
+        await _customerDisplayService?.showPaymentErrorView();
       },
       (bookResult) async {
         final orderId = bookResult.displayId.isNotEmpty
@@ -1251,6 +1263,17 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
             receiptText: receiptText,
           ),
         );
+
+        if (currentState.selectedMethod == PaymentMethodType.cash &&
+            currentState.cashChange > 0) {
+          await _customerDisplayService?.showChangeDueView(
+            changeDue: currentState.cashChange,
+          );
+        } else {
+          await _customerDisplayService?.showPaymentApprovedView(
+            paymentType: currentState.selectedMethod.value,
+          );
+        }
       },
     );
   }
@@ -1277,7 +1300,7 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
         : null;
     final notes = (currentState.cart.orderNotes?.trim().isNotEmpty == true)
         ? currentState.cart.orderNotes!.trim()
-        : 'Test order (POS ${serviceType == 'PICK_UP' ? 'PICKUP' : serviceType}) - Full nested modifiers';
+        : null;
 
     final resultEither = await _bookOrderUseCase(
       BookOrderParams(

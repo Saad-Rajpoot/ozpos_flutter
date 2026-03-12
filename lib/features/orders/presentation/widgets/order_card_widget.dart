@@ -120,7 +120,7 @@ class OrderCardWidget extends StatelessWidget {
             borderRadius: BorderRadius.circular(6),
           ),
           child: Text(
-            '#${order.queueNumber}',
+            '#${order.id}',
             style: OrdersConstants.bodySmall.copyWith(
               fontWeight: FontWeight.w700,
               color: colorScheme.onSurface,
@@ -129,6 +129,31 @@ class OrderCardWidget extends StatelessWidget {
         ),
 
         const Spacer(),
+
+        // Payment status chip (PAID / UNPAID)
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          margin: const EdgeInsets.only(right: 8),
+          decoration: BoxDecoration(
+            color: order.paymentStatus == PaymentStatus.paid
+                ? const Color(0xFFDCFCE7)
+                : const Color(0xFFFFF7ED),
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(
+              color: order.paymentStatus == PaymentStatus.paid
+                  ? const Color(0xFF16A34A)
+                  : const Color(0xFFEA580C),
+            ),
+          ),
+          child: Text(
+            order.paymentStatus == PaymentStatus.paid ? 'PAID' : 'UNPAID',
+            style: OrdersConstants.badge.copyWith(
+              color: order.paymentStatus == PaymentStatus.paid
+                  ? const Color(0xFF166534)
+                  : const Color(0xFF9A3412),
+            ),
+          ),
+        ),
 
         // Status badge
         Container(
@@ -163,7 +188,7 @@ class OrderCardWidget extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            order.id,
+            order.queueNumber,
             style: OrdersConstants.headingSmall.copyWith(
               color: colorScheme.onSurface,
             ),
@@ -196,6 +221,73 @@ class OrderCardWidget extends StatelessWidget {
                       style: OrdersConstants.bodySmall.copyWith(
                         fontWeight: FontWeight.w600,
                         color: _getChannelTextColor(),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              // Payment method chip
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(color: context.borderLight),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.payment,
+                      size: 14,
+                      color: OrdersConstants.colorTextMuted,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      (order.paymentMethod == null ||
+                              order.paymentMethod!.isEmpty)
+                          ? 'Payment'
+                          : order.paymentMethod!,
+                      style: OrdersConstants.bodySmall.copyWith(
+                        fontWeight: FontWeight.w500,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              // Source chip (POS / ONLINE / UBEREATS, etc.)
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(color: context.borderLight),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.public,
+                      size: 14,
+                      color: OrdersConstants.colorTextMuted,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      (order.source == null || order.source!.isEmpty)
+                          ? 'Source'
+                          : order.source!,
+                      style: OrdersConstants.bodySmall.copyWith(
+                        fontWeight: FontWeight.w500,
+                        color: colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ],
@@ -267,6 +359,182 @@ class OrderCardWidget extends StatelessWidget {
                 ),
               ],
             ],
+          ),
+          const SizedBox(height: 12),
+          _buildOrderMeta(context),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOrderMeta(BuildContext context) {
+    String fmt(String? value) =>
+        (value == null || value.isEmpty) ? '—' : value;
+
+    String fmtDate(DateTime dt) => DateFormat('yyyy-MM-dd').format(dt);
+    String fmtTime(DateTime dt) => DateFormat('HH:mm').format(dt);
+
+    final colorScheme = Theme.of(context).colorScheme;
+
+    final items = <Widget>[
+      _metaItem(
+        context,
+        icon: Icons.confirmation_number,
+        label: 'Order Number',
+        value: fmt(order.orderNumber),
+      ),
+      _metaItem(
+        context,
+        icon: Icons.receipt_long,
+        label: 'Ref No',
+        value: fmt(order.referenceNo),
+      ),
+      _metaItem(
+        context,
+        icon: Icons.route,
+        label: 'Service Type',
+        value: fmt(order.serviceType),
+      ),
+      _metaItem(
+        context,
+        icon: _getOrderTypeIcon(),
+        label: 'Fulfillment',
+        value: _getOrderTypeLabel(),
+      ),
+      _metaItem(
+        context,
+        icon: Icons.calendar_today,
+        label: 'Order Date',
+        value: fmtDate(order.createdAt),
+      ),
+      _metaItem(
+        context,
+        icon: Icons.schedule,
+        label: 'Order Time',
+        value: fmtTime(order.createdAt),
+      ),
+      _metaItem(
+        context,
+        icon: Icons.flag,
+        label: 'Status',
+        value: _getStatusLabel(),
+      ),
+      _metaItem(
+        context,
+        icon: Icons.local_fire_department,
+        label: 'Prep Status',
+        value: fmt(order.preparationStatus),
+      ),
+      _metaItem(
+        context,
+        icon: Icons.local_shipping,
+        label: 'Delivery Status',
+        value: fmt(order.deliveryStatus),
+      ),
+      if (order.tableNumber != null && order.tableNumber!.trim().isNotEmpty)
+        _metaItem(
+          context,
+          icon: Icons.table_restaurant,
+          label: 'Table',
+          value: order.tableNumber!.trim(),
+        ),
+    ];
+
+    return Theme(
+      data: Theme.of(context).copyWith(
+        dividerColor: Colors.transparent,
+      ),
+      child: ExpansionTile(
+        tilePadding: EdgeInsets.zero,
+        childrenPadding: EdgeInsets.zero,
+        initiallyExpanded: false,
+        backgroundColor: Colors.transparent,
+        collapsedBackgroundColor: Colors.transparent,
+        title: Row(
+          children: [
+            Icon(
+              Icons.info_outline,
+              size: 18,
+              color: colorScheme.onSurfaceVariant,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              'Order information',
+              style: OrdersConstants.bodySmall.copyWith(
+                fontWeight: FontWeight.w700,
+                color: colorScheme.onSurface,
+              ),
+            ),
+          ],
+        ),
+        children: [
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: colorScheme.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: context.borderLight),
+            ),
+            child: GridView.count(
+              crossAxisCount: 2,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              mainAxisSpacing: 10,
+              crossAxisSpacing: 10,
+              childAspectRatio: 2.8,
+              children: items,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _metaItem(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required String value,
+  }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: colorScheme.surface.withValues(alpha: 0.85),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: context.borderLight),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                icon,
+                size: 14,
+                color: colorScheme.onSurfaceVariant,
+              ),
+              const SizedBox(width: 4),
+              Expanded(
+                child: Text(
+                  label,
+                  style: OrdersConstants.caption.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: OrdersConstants.bodySmall.copyWith(
+              fontWeight: FontWeight.w600,
+              color: colorScheme.onSurface,
+            ),
           ),
         ],
       ),

@@ -6,6 +6,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../domain/entities/menu_item_entity.dart';
 import '../../domain/entities/menu_category_entity.dart';
 import '../../../../core/navigation/app_router.dart';
+import '../../../../core/navigation/navigation_service.dart';
 import '../../../../core/constants/app_responsive.dart';
 import '../widgets/menu_item_card.dart';
 import '../widgets/menu_item_list_tile.dart';
@@ -1634,25 +1635,14 @@ class _MenuScreenState extends State<MenuScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => OrderAlertWidget(
+      builder: (dialogContext) => OrderAlertWidget(
         order: demoOrder,
         onAccept: () {
-          Navigator.pop(context);
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Order #8642 accepted!'),
-              backgroundColor: AppColors.success,
-            ),
-          );
+          Navigator.of(dialogContext).pop();
+          NavigationService.pushNamed(AppRouter.orders);
         },
         onReject: () {
-          Navigator.pop(context);
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Order #8642 rejected'),
-              backgroundColor: AppColors.error,
-            ),
-          );
+          Navigator.of(dialogContext).pop();
         },
       ),
     );

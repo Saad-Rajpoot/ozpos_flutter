@@ -15,6 +15,7 @@ import '../../../features/checkout/domain/usecases/calculate_totals.dart';
 import '../../../features/checkout/domain/usecases/initialize_checkout.dart';
 import '../../../features/checkout/domain/usecases/process_payment.dart';
 import '../../../features/checkout/presentation/bloc/checkout_bloc.dart';
+import '../../services/customer_display_service.dart';
 import '../../db/sync_outbox_dao.dart';
 
 /// Checkout feature module for dependency injection
@@ -66,13 +67,17 @@ class CheckoutModule {
     sl.registerLazySingleton(() => CalculateTotalsUseCase());
 
     // BLoC (Factory - new instance each time)
-    sl.registerFactory(() => CheckoutBloc(
-          initializeCheckoutUseCase: sl(),
-          bookOrderUseCase: sl(),
-          processPaymentUseCase: sl(),
-          applyVoucherUseCase: sl(),
-          calculateTotalsUseCase: sl(),
-        ));
+    sl.registerFactory(
+      () => CheckoutBloc(
+        initializeCheckoutUseCase: sl(),
+        bookOrderUseCase: sl(),
+        processPaymentUseCase: sl(),
+        applyVoucherUseCase: sl(),
+        calculateTotalsUseCase: sl(),
+        customerDisplayService:
+            sl.isRegistered<CustomerDisplayService>() ? sl() : null,
+      ),
+    );
   }
 }
 

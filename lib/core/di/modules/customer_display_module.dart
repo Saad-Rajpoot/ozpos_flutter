@@ -10,6 +10,8 @@ import '../../../features/customer_display/domain/repositories/customer_display_
 import '../../../features/customer_display/domain/usecases/get_customer_display.dart';
 import '../../../features/customer_display/presentation/bloc/customer_display_bloc.dart';
 import '../../config/app_config.dart';
+import '../../services/customer_display_service.dart';
+import '../../../features/checkout/presentation/bloc/cart_bloc.dart';
 
 /// Customer Display feature module for dependency injection
 class CustomerDisplayModule {
@@ -32,5 +34,11 @@ class CustomerDisplayModule {
     sl.registerLazySingleton(() => GetCustomerDisplay(repository: sl()));
 
     sl.registerFactory(() => CustomerDisplayBloc(getCustomerDisplay: sl()));
+
+    // Presentation (secondary display) bridge service.
+    // Safe on non-Android platforms; it no-ops internally.
+    sl.registerLazySingleton(
+      () => CustomerDisplayService(cartBloc: sl<CartBloc>()),
+    );
   }
 }

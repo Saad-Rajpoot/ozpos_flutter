@@ -9,12 +9,14 @@ class OrderAlertWidget extends StatelessWidget {
   final OrderEntity order;
   final VoidCallback onAccept;
   final VoidCallback onReject;
+  final VoidCallback? onShowOrder;
 
   const OrderAlertWidget({
     super.key,
     required this.order,
     required this.onAccept,
     required this.onReject,
+    this.onShowOrder,
   });
 
   @override
@@ -191,6 +193,24 @@ class OrderAlertWidget extends StatelessWidget {
                       ),
                     ),
                   ),
+                  if (onShowOrder != null) ...[
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: onShowOrder,
+                        icon: const Icon(Icons.visibility, size: 20),
+                        label: const Text('Show Order'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: const Color(0xFF2563EB),
+                          side: const BorderSide(color: Color(0xFF2563EB)),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                   const SizedBox(width: 8),
                   IconButton(
                     onPressed: onReject,
