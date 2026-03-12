@@ -8,6 +8,8 @@ import '../../domain/entities/menu_category_entity.dart';
 import '../../../../core/navigation/app_router.dart';
 import '../../../../core/navigation/navigation_service.dart';
 import '../../../../core/constants/app_responsive.dart';
+import '../../../../core/di/injection_container.dart' as di;
+import '../../../../core/services/customer_display_service.dart';
 import '../widgets/menu_item_card.dart';
 import '../widgets/menu_item_list_tile.dart';
 import '../widgets/menu_item_text_tile.dart';
@@ -77,6 +79,12 @@ class _MenuScreenState extends State<MenuScreen> {
     // below.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
+
+      // Activate the real customer display (secondary screen) as soon as the menu opens.
+      // Until this point, the customer display stays in idle promo slideshow mode.
+      if (di.sl.isRegistered<CustomerDisplayService>()) {
+        di.sl<CustomerDisplayService>().showOrderView();
+      }
 
       final cartState = context.read<cart_bloc.CartBloc>().state;
       if (cartState is! cart_bloc.CartLoaded) return;

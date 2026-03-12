@@ -31,20 +31,36 @@ class CustomerDisplayChangeDueView extends StatelessWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text(
-                        '💵',
-                        style: TextStyle(fontSize: 120),
+                      Container(
+                        width: 220,
+                        height: 220,
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black26,
+                              offset: Offset(0, 12),
+                              blurRadius: 28,
+                            ),
+                          ],
+                        ),
+                        child: const Icon(
+                          Icons.payments_rounded,
+                          color: Color(0xFF1D4ED8),
+                          size: 130,
+                        ),
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 32),
                       const Text(
                         'Your Change',
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: 72,
+                          fontSize: 80,
                           fontWeight: FontWeight.w900,
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 16),
                       Text(
                         currency.format(content.totals.changeDue),
                         style: const TextStyle(
@@ -60,7 +76,7 @@ class CustomerDisplayChangeDueView extends StatelessWidget {
                           ],
                         ),
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 28),
                       _ChangeBreakdown(content: content),
                       const SizedBox(height: 28),
                       const Text(

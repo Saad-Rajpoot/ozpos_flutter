@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
@@ -33,11 +34,18 @@ import 'core/widgets/user_interaction_listener.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Hard-disable Flutter debug paint overlays (baselines/size) that can show up
+  // as yellow underlines/markers on text in debug builds.
+  debugPaintBaselinesEnabled = false;
+  debugPaintSizeEnabled = false;
+  debugPaintPointersEnabled = false;
+  debugRepaintRainbowEnabled = false;
+
   // If this engine was launched for the secondary customer display, render the
   // lightweight presentation app and skip the heavy POS bootstrap.
   final defaultRouteName =
       WidgetsBinding.instance.platformDispatcher.defaultRouteName;
-  if (defaultRouteName == 'customerDisplayMain') {
+  if (defaultRouteName == 'customerDisplayMain' && Platform.isAndroid) {
     if (kDebugMode) {
       debugPrint(
           'main(): detected customerDisplayMain route – starting presentation app');
@@ -77,6 +85,13 @@ void main() async {
     }
     await _runApp();
   }
+}
+
+void _forceDisableFlutterDebugPaint() {
+  debugPaintBaselinesEnabled = false;
+  debugPaintSizeEnabled = false;
+  debugPaintPointersEnabled = false;
+  debugRepaintRainbowEnabled = false;
 }
 
 Future<void> _runApp() async {
@@ -259,6 +274,10 @@ class OzposApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    assert(() {
+      _forceDisableFlutterDebugPaint();
+      return true;
+    }());
     // Only provide globally shared BLoCs here
     // Feature-specific BLoCs are provided at route level for lazy initialization
     return MultiBlocProvider(

@@ -27,6 +27,7 @@ class CustomerDisplayService {
   int? _activeDisplayId;
   bool _isStarted = false;
   int _lastSentItemsCount = -1;
+  bool _isActivated = false;
 
   Future<void> start() async {
     if (_isStarted) return;
@@ -45,17 +46,12 @@ class CustomerDisplayService {
 
     _cartSub = _cartBloc.stream.listen((state) async {
       if (state is! CartLoaded) return;
+      if (!_isActivated) return;
       await _pushCartUpdate(state);
     });
 
     // Initial attempt.
     await _ensurePresentationOpen();
-
-    // Push the current cart state immediately (if available).
-    final state = _cartBloc.state;
-    if (state is CartLoaded) {
-      await _pushCartUpdate(state);
-    }
   }
 
   Future<void> stop() async {
@@ -68,14 +64,29 @@ class CustomerDisplayService {
 
   Future<void> _ensurePresentationOpen() async {
     try {
-      final displays = await _displayManager.getDisplays();
+      // Prefer the PRESENTATION category so we only target true external
+      // presentation displays. Fall back to all displays only when the
+      // category returns nothing.
+      final presentationDisplays = await _displayManager.getDisplays(
+        category: DISPLAY_CATEGORY_PRESENTATION,
+      );
+
+      final bool usedPresentationCategory =
+          presentationDisplays != null && presentationDisplays.isNotEmpty;
+
+      final displays = usedPresentationCategory
+          ? presentationDisplays
+          : await _displayManager.getDisplays();
       if (kDebugMode) {
         debugPrint(
           'CustomerDisplayService: getDisplays() -> '
           '${displays?.map((d) => '[id=${d.displayId}, name=${d.name}]').join(', ') ?? 'null'}',
         );
       }
-      final secondary = _pickSecondaryDisplay(displays);
+      final secondary = _pickSecondaryDisplay(
+        displays,
+        usedPresentationCategory: usedPresentationCategory,
+      );
       if (secondary == null) {
         // No secondary display: keep POS running normally.
         if (kDebugMode) {
@@ -86,12 +97,6 @@ class CustomerDisplayService {
       }
 
       final displayId = secondary.displayId;
-      if (displayId == null) {
-        if (kDebugMode) {
-          debugPrint('CustomerDisplayService: secondary displayId is null');
-        }
-        return;
-      }
 
       if (_activeDisplayId == displayId) {
         if (kDebugMode) {
@@ -132,28 +137,30 @@ class CustomerDisplayService {
     }
   }
 
-  Display? _pickSecondaryDisplay(List<Display>? displays) {
+  Display? _pickSecondaryDisplay(
+    List<Display>? displays, {
+    required bool usedPresentationCategory,
+  }) {
     if (displays == null || displays.isEmpty) return null;
 
-    // If we queried using PRESENTATION category, we might only get the external
-    // display list. In that case, just use the first.
-    if (displays.length == 1) {
+    // If we queried using PRESENTATION category, the list already contains
+    // only suitable external displays, sorted by preference. Just use the
+    // first one.
+    if (usedPresentationCategory) {
       return displays.first;
     }
 
-    // For Android "Simulate secondary displays", IDs are not guaranteed to use 0
-    // for primary. The most reliable heuristic is: if multiple displays exist,
-    // treat the 2nd display as the presentation target.
-    if (displays.length >= 2) {
-      return displays[1];
-    }
+    // Fallback (no PRESENTATION displays reported):
+    // Treat only non-primary displays as potential secondary targets.
+    // DEFAULT_DISPLAY (0) is the built‑in screen; we must not attach the
+    // presentation there or the POS appears "replaced" on single‑screen
+    // devices.
+    final nonPrimary = displays
+        .where((d) => d.displayId != DEFAULT_DISPLAY)
+        .toList(growable: false);
+    if (nonPrimary.isNotEmpty) return nonPrimary.first;
 
-    // Fallback: try to pick a non-zero id (some devices expose primary as 0).
-    final nonZero =
-        displays.where((d) => (d.displayId ?? 0) != 0).toList(growable: false);
-    if (nonZero.isNotEmpty) return nonZero.first;
-
-    // If plugin only returns one display, treat as no secondary.
+    // Only the primary display is available -> no secondary display.
     return null;
   }
 
@@ -163,6 +170,10 @@ class CustomerDisplayService {
     String? paymentType,
     double? changeDue,
   }) async {
+    // Don't switch away from promo slides until the POS "activates" the display
+    // by opening the menu/checkout flow.
+    if (!_isActivated && status == 'order') return;
+
     // If a display becomes available after startup, open it on demand.
     if (_activeDisplayId == null) {
       await _ensurePresentationOpen();
@@ -220,6 +231,7 @@ class CustomerDisplayService {
 extension CustomerDisplayServiceFlows on CustomerDisplayService {
   /// Show the normal order review screen.
   Future<void> showOrderView() async {
+    _isActivated = true;
     final state = _cartBloc.state;
     if (state is! CartLoaded) return;
     await _pushCartUpdate(state, status: 'order');
@@ -227,6 +239,7 @@ extension CustomerDisplayServiceFlows on CustomerDisplayService {
 
   /// Show the blue card payment screen.
   Future<void> showCardPaymentView() async {
+    _isActivated = true;
     final state = _cartBloc.state;
     if (state is! CartLoaded) return;
     await _pushCartUpdate(
@@ -238,6 +251,7 @@ extension CustomerDisplayServiceFlows on CustomerDisplayService {
 
   /// Show the green cash payment screen.
   Future<void> showCashPaymentView() async {
+    _isActivated = true;
     final state = _cartBloc.state;
     if (state is! CartLoaded) return;
     await _pushCartUpdate(
@@ -251,6 +265,7 @@ extension CustomerDisplayServiceFlows on CustomerDisplayService {
   Future<void> showPaymentApprovedView({
     required String paymentType,
   }) async {
+    _isActivated = true;
     final state = _cartBloc.state;
     if (state is! CartLoaded) return;
     await _pushCartUpdate(
@@ -264,6 +279,7 @@ extension CustomerDisplayServiceFlows on CustomerDisplayService {
   Future<void> showChangeDueView({
     required double changeDue,
   }) async {
+    _isActivated = true;
     final state = _cartBloc.state;
     if (state is! CartLoaded) return;
     await _pushCartUpdate(
@@ -276,6 +292,7 @@ extension CustomerDisplayServiceFlows on CustomerDisplayService {
 
   /// Show the red “payment declined / error” screen.
   Future<void> showPaymentErrorView() async {
+    _isActivated = true;
     final state = _cartBloc.state;
     if (state is! CartLoaded) return;
     await _pushCartUpdate(

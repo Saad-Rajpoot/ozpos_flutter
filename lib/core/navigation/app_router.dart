@@ -39,7 +39,7 @@ import '../../features/docket/presentation/screens/docket_designer_screen.dart';
 import '../../features/printing/presentation/bloc/printing_bloc.dart';
 import '../../features/printing/presentation/bloc/printing_event.dart';
 import '../../features/printing/presentation/screens/printing_management_screen.dart';
-import '../../features/customer_display/presentation/screens/customer_display_screen.dart';
+import '../../features/customer_display/presentation/screens/customer_display_demo_screen.dart';
 import '../../features/combos/presentation/bloc/crud/combo_crud_bloc.dart';
 import '../../features/combos/presentation/bloc/filter/combo_filter_bloc.dart';
 import '../../features/combos/presentation/bloc/editor/combo_editor_bloc.dart';
@@ -285,7 +285,7 @@ class AppRouter {
 
       case customerDisplay:
         return MaterialPageRoute(
-          builder: (_) => const CustomerDisplayScreen(),
+          builder: (_) => const CustomerDisplayDemoScreen(),
           settings: settings,
           fullscreenDialog: true,
         );

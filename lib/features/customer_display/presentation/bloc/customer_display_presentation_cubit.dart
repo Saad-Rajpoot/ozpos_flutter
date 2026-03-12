@@ -8,7 +8,7 @@ class CustomerDisplayPresentationState extends Equatable {
   final double subtotal;
   final double tax;
   final double total;
-  final String status; // 'order', 'payment_card', 'payment_cash', 'approved', 'change_due', 'error'
+  final String status; // 'idle', 'order', 'payment_card', 'payment_cash', 'approved', 'change_due', 'error'
   final String? paymentType; // 'card' or 'cash'
   final double? changeDue;
 
@@ -18,7 +18,7 @@ class CustomerDisplayPresentationState extends Equatable {
     required this.subtotal,
     required this.tax,
     required this.total,
-    this.status = 'order',
+    this.status = 'idle',
     this.paymentType,
     this.changeDue,
   });
@@ -29,7 +29,7 @@ class CustomerDisplayPresentationState extends Equatable {
         subtotal = 0,
         tax = 0,
         total = 0,
-        status = 'order',
+        status = 'idle',
         paymentType = null,
         changeDue = null;
 
@@ -63,6 +63,10 @@ class CustomerDisplayPresentationCubit
     extends Cubit<CustomerDisplayPresentationState> {
   CustomerDisplayPresentationCubit()
       : super(const CustomerDisplayPresentationState.empty());
+
+  void showIdle() {
+    emit(const CustomerDisplayPresentationState.empty());
+  }
 
   void applyPayload(dynamic payload) {
     if (payload is! Map) return;
