@@ -12,6 +12,7 @@ import '../../../checkout/presentation/bloc/checkout_bloc.dart';
 import '../../../printing/domain/entities/printing_entities.dart';
 import '../../../printing/domain/repositories/printing_repository.dart';
 import '../../../printing/data/services/network_printer_service.dart';
+import '../../../printing/data/services/imin_printer_service.dart';
 import '../constant/checkout_constants.dart';
 
 /// Checkout Screen - Compact layout matching React prototype
@@ -105,6 +106,7 @@ class _CheckoutScreenContent extends StatelessWidget {
 
             final repo = sl<PrintingRepository>();
             final printerService = sl<NetworkPrinterService>();
+            final iminPrinterService = sl<IminPrinterService>();
 
             Future(() async {
               final either = await repo.getPrinters();
@@ -112,40 +114,60 @@ class _CheckoutScreenContent extends StatelessWidget {
                 (_) => clearAndNavigate(),
                 (printers) {
                   final networkReceipt = printers
-                      .where((p) =>
-                          p.type == PrinterType.receipt &&
-                          p.connection == PrinterConnection.network &&
-                          (p.address?.trim().isNotEmpty ?? false))
-                      .toList();
-                  if (networkReceipt.isEmpty) {
-                    clearAndNavigate();
-                    return;
-                  }
-                  final printer = networkReceipt.firstWhere(
-                    (p) => p.isDefault,
-                    orElse: () => networkReceipt.first,
-                  );
-                  final ip = printer.address!.trim();
-                  final port = printer.port ?? 9100;
-                  printerService
-                      .printOrderReceipt(
-                        ipAddress: ip,
-                        port: port,
-                        receiptText: receiptText,
+                      .where(
+                        (p) =>
+                            p.type == PrinterType.receipt &&
+                            p.connection == PrinterConnection.network &&
+                            (p.address?.trim().isNotEmpty ?? false),
                       )
-                      .then((_) => clearAndNavigate())
-                      .catchError((e) {
-                    if (context.mounted) {
-                      scaffoldMessenger.showSnackBar(
-                        SnackBar(
-                          content: Text(
-                              'Receipt print failed: ${e.toString()}'),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
-                    }
-                    clearAndNavigate();
-                  });
+                      .toList();
+
+                  if (networkReceipt.isNotEmpty) {
+                    final printer = networkReceipt.firstWhere(
+                      (p) => p.isDefault,
+                      orElse: () => networkReceipt.first,
+                    );
+                    final ip = printer.address!.trim();
+                    final port = printer.port ?? 9100;
+                    printerService
+                        .printOrderReceipt(
+                          ipAddress: ip,
+                          port: port,
+                          receiptText: receiptText,
+                        )
+                        .then((_) => clearAndNavigate())
+                        .catchError((e) {
+                      if (context.mounted) {
+                        scaffoldMessenger.showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Receipt print failed: ${e.toString()}',
+                            ),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
+                      clearAndNavigate();
+                    });
+                  } else {
+                    // No network printer – try iMin built‑in printer as fallback.
+                    iminPrinterService
+                        .printOrderReceipt(receiptText)
+                        .then((printed) {
+                      if (!printed && context.mounted) {
+                        scaffoldMessenger.showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'No network printer and iMin printer not available.',
+                            ),
+                          ),
+                        );
+                      }
+                      clearAndNavigate();
+                    }).catchError((_) {
+                      clearAndNavigate();
+                    });
+                  }
                 },
               );
             });

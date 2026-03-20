@@ -72,12 +72,12 @@ class BookOrderMapper {
       channel: 'POS',
       paymentMethod: paymentMethod,
       serviceType: metaServiceType,
-      tableNumber: (serviceType == 'DINE_IN' && tableNumber != null && tableNumber.isNotEmpty)
-          ? tableNumber
-          : null,
-      address: (serviceType == 'DELIVERY' && address != null && address!.isNotEmpty)
-          ? address
-          : null,
+      tableNumber:
+          (serviceType == 'DINE_IN' && tableNumber != null && tableNumber.isNotEmpty)
+              ? tableNumber
+              : null,
+      address:
+          (serviceType == 'DELIVERY' && address != null && address.isNotEmpty) ? address : null,
       customerId: null,
       customerUuid: null,
       notes: notes,

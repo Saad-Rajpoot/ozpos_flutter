@@ -9,6 +9,13 @@
 # packages, and plugins designed to encourage good coding practices.
 include: package:flutter_lints/flutter.yaml
 
+analyzer:
+  exclude:
+    # Exclude local package overrides from analysis - we treat them as vendored deps.
+    # The imin_printer example has broken deps (integration_test, etc.); the plugin lib
+    # has upstream style lints we don't need to fix.
+    - local_packages/**
+
 linter:
   # The lint rules applied to this project can be customized in the
   # section below to disable rules from the `package:flutter_lints/flutter.yaml`

@@ -11,6 +11,7 @@ import '../../../features/customer_display/domain/usecases/get_customer_display.
 import '../../../features/customer_display/presentation/bloc/customer_display_bloc.dart';
 import '../../config/app_config.dart';
 import '../../services/customer_display_service.dart';
+import '../../services/imin_hardware_service.dart';
 import '../../../features/checkout/presentation/bloc/cart_bloc.dart';
 
 /// Customer Display feature module for dependency injection
@@ -39,6 +40,11 @@ class CustomerDisplayModule {
     // Safe on non-Android platforms; it no-ops internally.
     sl.registerLazySingleton(
       () => CustomerDisplayService(cartBloc: sl<CartBloc>()),
+    );
+
+    // iMin hardware service (secondary display + cash drawer on iMin devices).
+    sl.registerLazySingleton<IminHardwareService>(
+      () => IminHardwareService(),
     );
   }
 }

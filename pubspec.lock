@@ -776,6 +776,21 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.2.1+1"
+  imin_hardware_plugin:
+    dependency: "direct main"
+    description:
+      name: imin_hardware_plugin
+      sha256: "9f6175263fe725c52df1da5e205a92e983e0f71288a1d0a22c451c6105e77b98"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.4"
+  imin_printer:
+    dependency: "direct main"
+    description:
+      path: "local_packages/imin_printer"
+      relative: true
+    source: path
+    version: "0.6.14"
   intl:
     dependency: "direct main"
     description:
@@ -840,6 +855,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.0.0"
+  logger:
+    dependency: transitive
+    description:
+      name: logger
+      sha256: "7ad7215c15420a102ec687bb320a7312afd449bac63bfb1c60d9787c27b9767f"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.4.0"
   logging:
     dependency: transitive
     description:

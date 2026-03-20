@@ -92,7 +92,7 @@ class PrintJobEntity extends Equatable {
 
   PrintJobEntity copyWith({
     String? id,
-    String? printerId,
+    String? printerId,  
     String? printerName,
     PrintJobStatus? status,
     PrintJobType? jobType,

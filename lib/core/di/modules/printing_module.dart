@@ -5,6 +5,7 @@ import '../../../features/printing/data/datasources/printing_mock_datasource.dar
 import '../../../features/printing/data/datasources/printing_remote_datasource.dart';
 import '../../../features/printing/data/repositories/printing_repository_impl.dart';
 import '../../../features/printing/data/services/network_printer_service.dart';
+import '../../../features/printing/data/services/imin_printer_service.dart';
 import '../../../features/printing/domain/repositories/printing_repository.dart';
 import '../../../features/printing/domain/usecases/add_printer.dart';
 import '../../../features/printing/domain/usecases/get_printers.dart';
@@ -18,6 +19,11 @@ class PrintingModule {
     // Network thermal printer (ESC/POS) service
     sl.registerLazySingleton<NetworkPrinterService>(
         () => NetworkPrinterService());
+
+    // iMin built‑in printer service (Android only; safe no‑op elsewhere)
+    sl.registerLazySingleton<IminPrinterService>(
+      () => IminPrinterService(),
+    );
 
     // Environment-based data source selection
     sl.registerLazySingleton<PrintingDataSource>(() {

@@ -6,6 +6,7 @@ import '../bloc/printing_bloc.dart';
 import '../bloc/printing_event.dart';
 import '../bloc/printing_state.dart';
 import '../../data/services/network_printer_service.dart';
+import '../../data/services/imin_printer_service.dart';
 import '../widgets/add_printer_dialog.dart';
 import '../widgets/edit_printer_dialog.dart';
 import '../widgets/printer_section.dart';
@@ -18,6 +19,7 @@ class PrintingManagementScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final networkPrinterService = sl<NetworkPrinterService>();
+    final iminPrinterService = sl<IminPrinterService>();
     return Scaffold(
       appBar: AppBar(
         title: const Text('Printing Management'),
@@ -95,6 +97,7 @@ class PrintingManagementScreen extends StatelessWidget {
               context,
               state.printers,
               networkPrinterService,
+              iminPrinterService,
             );
           }
 
@@ -121,6 +124,7 @@ class PrintingManagementScreen extends StatelessWidget {
     BuildContext context,
     List<PrinterEntity> printers,
     NetworkPrinterService networkPrinterService,
+    IminPrinterService iminPrinterService,
   ) {
     final total = printers.length;
     final online = printers.where((p) => p.isConnected).length;
@@ -181,9 +185,97 @@ class PrintingManagementScreen extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 16),
+        _buildIminPrinterCard(context, iminPrinterService),
+        const SizedBox(height: 16),
         _buildPrintersList(context, printers, networkPrinterService),
       ],
     );
+  }
+
+  Widget _buildIminPrinterCard(
+    BuildContext context,
+    IminPrinterService iminPrinterService,
+  ) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            Icon(Icons.print, color: Theme.of(context).colorScheme.primary),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'iMin Built-in Printer',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  Text(
+                    'Test the internal printer on iMin POS devices',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ],
+              ),
+            ),
+            FilledButton.icon(
+              icon: const Icon(Icons.print, size: 18),
+              label: const Text('Test Print'),
+              onPressed: () => _handleTestIminPrint(context, iminPrinterService),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _handleTestIminPrint(
+    BuildContext context,
+    IminPrinterService iminPrinterService,
+  ) async {
+    if (context.mounted) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) => const AlertDialog(
+          content: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+              SizedBox(width: 24),
+              Expanded(child: Text('Printing test receipt on iMin printer...')),
+            ],
+          ),
+        ),
+      );
+    }
+    try {
+      final ok = await iminPrinterService.printTestReceipt();
+      if (context.mounted) {
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(ok ? 'Test receipt sent to iMin printer' : 'iMin printer not available (not an iMin device?)'),
+            backgroundColor: ok ? Colors.green : Colors.orange,
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Print failed: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   Widget _buildPrintersList(

@@ -134,6 +134,7 @@ class SingleVendorVendorModel {
   final String? contact;
   final String? vendorLogo;
   final String? image;
+  final String? mapApiKey;
   final String? address;
   final String? streetAddress;
   final String? city;
@@ -159,6 +160,7 @@ class SingleVendorVendorModel {
     this.contact,
     this.vendorLogo,
     this.image,
+    this.mapApiKey,
     this.address,
     this.streetAddress,
     this.city,
@@ -186,6 +188,7 @@ class SingleVendorVendorModel {
       contact: json['contact'] as String?,
       vendorLogo: json['vendor_logo'] as String?,
       image: json['image'] as String?,
+      mapApiKey: json['map_api_key'] as String?,
       address: json['address'] as String?,
       streetAddress: json['street_address'] as String?,
       city: json['city'] as String?,
@@ -302,21 +305,35 @@ class SingleVendorBranchModel {
   final String? pickupStatus;
   final String? ubereatsStatus;
   final String? stockManagementMode;
+  final bool? hasStockManagement;
+  final bool? loyaltyEnabled;
   final bool? vouchersEnabled;
+  final bool? onlineOrderingEnabled;
   final String? onlineTheme;
   final String? onlineMenuViewSetting;
   final String? onlineCartSticky;
   final String? onlineThemeMode;
+  final String? licenseNumber;
+  final String? maxOrderAmount;
+  final String? currencySymbol;
+  final String? currencySymbolPosition;
+  final String? smsgateway;
+  final String? ownDriver;
   final String? deliveryMinimumOrderAmount;
   final String? pickupMinimumOrderAmount;
   final String? avgDeliveryTime;
   final String? avgPickupTime;
+  final bool? enableStripeConnect;
+  final String? stripeAccountStatus;
+  final List<SingleVendorPlatformFee>? platformFee;
   final SingleVendorBranchTaxModel? tax;
   final List<SingleVendorWorkingHours>? workingHours;
   final List<SingleVendorDeliveryHours>? deliveryHours;
   final List<SingleVendorPickupHours>? pickupHours;
   final List<Map<String, dynamic>>? holidays;
   final List<SingleVendorSlider>? sliders;
+  final SingleVendorOrderSetting? orderSetting;
+  final SingleVendorBranchOption? branchOption;
   final String? createdAt;
   final String? updatedAt;
   final List<SingleVendorMenuV2Model> menuV2;
@@ -348,21 +365,35 @@ class SingleVendorBranchModel {
     this.pickupStatus,
     this.ubereatsStatus,
     this.stockManagementMode,
+    this.hasStockManagement,
+    this.loyaltyEnabled,
     this.vouchersEnabled,
+    this.onlineOrderingEnabled,
     this.onlineTheme,
     this.onlineMenuViewSetting,
     this.onlineCartSticky,
     this.onlineThemeMode,
+    this.licenseNumber,
+    this.maxOrderAmount,
+    this.currencySymbol,
+    this.currencySymbolPosition,
+    this.smsgateway,
+    this.ownDriver,
     this.deliveryMinimumOrderAmount,
     this.pickupMinimumOrderAmount,
     this.avgDeliveryTime,
     this.avgPickupTime,
+    this.enableStripeConnect,
+    this.stripeAccountStatus,
+    this.platformFee,
     this.tax,
     this.workingHours,
     this.deliveryHours,
     this.pickupHours,
     this.holidays,
     this.sliders,
+    this.orderSetting,
+    this.branchOption,
     this.createdAt,
     this.updatedAt,
     this.menuV2 = const [],
@@ -396,16 +427,34 @@ class SingleVendorBranchModel {
       pickupStatus: json['pickup_status'] as String?,
       ubereatsStatus: json['ubereats_status'] as String?,
       stockManagementMode: json['stock_management_mode'] as String?,
+      hasStockManagement: json['has_stock_management'] as bool?,
+      loyaltyEnabled: json['loyalty_enabled'] as bool?,
       vouchersEnabled: json['vouchers_enabled'] as bool?,
+      onlineOrderingEnabled: json['online_ordering_enabled'] as bool?,
       onlineTheme: json['online_theme'] as String?,
       onlineMenuViewSetting: json['online_menu_view_setting'] as String?,
       onlineCartSticky: json['online_cart_sticky'] as String?,
       onlineThemeMode: json['online_theme_mode'] as String?,
+      licenseNumber: json['license_number'] as String?,
+      maxOrderAmount: json['max_order_amount'] as String?,
+      currencySymbol: json['currency_symbol'] as String?,
+      currencySymbolPosition: json['currency_symbol_position'] as String?,
+      smsgateway: json['smsgateway'] as String?,
+      ownDriver: json['own_driver'] as String?,
       deliveryMinimumOrderAmount:
           json['delivery_minimum_order_amount'] as String?,
       pickupMinimumOrderAmount: json['pickup_minimum_order_amount'] as String?,
       avgDeliveryTime: json['avg_delivery_time'] as String?,
       avgPickupTime: json['avg_pickup_time'] as String?,
+      enableStripeConnect: json['enable_stripe_connect'] as bool?,
+      stripeAccountStatus: json['stripe_account_status'] as String?,
+      platformFee: (json['platform_fee'] as List?)
+          ?.map(
+            (v) => SingleVendorPlatformFee.fromJson(
+              v as Map<String, dynamic>,
+            ),
+          )
+          .toList(),
       tax: json['tax'] != null
           ? SingleVendorBranchTaxModel.fromJson(
               json['tax'] as Map<String, dynamic>,
@@ -432,6 +481,16 @@ class SingleVendorBranchModel {
       sliders: (json['sliders'] as List?)
           ?.map((v) => SingleVendorSlider.fromJson(v as Map<String, dynamic>))
           .toList(),
+      orderSetting: json['order_setting'] != null
+          ? SingleVendorOrderSetting.fromJson(
+              json['order_setting'] as Map<String, dynamic>,
+            )
+          : null,
+      branchOption: json['branch_option'] != null
+          ? SingleVendorBranchOption.fromJson(
+              json['branch_option'] as Map<String, dynamic>,
+            )
+          : null,
       createdAt: json['created_at'] as String?,
       updatedAt: json['updated_at'] as String?,
       menuV2: _parseMenuV2List(json['menu_v2'] ?? json['menuV2']),
@@ -477,15 +536,28 @@ class SingleVendorBranchModel {
         'pickup_status': pickupStatus,
         'ubereats_status': ubereatsStatus,
         'stock_management_mode': stockManagementMode,
+        'has_stock_management': hasStockManagement,
+        'loyalty_enabled': loyaltyEnabled,
         'vouchers_enabled': vouchersEnabled,
+        'online_ordering_enabled': onlineOrderingEnabled,
         'online_theme': onlineTheme,
         'online_menu_view_setting': onlineMenuViewSetting,
         'online_cart_sticky': onlineCartSticky,
         'online_theme_mode': onlineThemeMode,
+        'license_number': licenseNumber,
+        'max_order_amount': maxOrderAmount,
+        'currency_symbol': currencySymbol,
+        'currency_symbol_position': currencySymbolPosition,
+        'smsgateway': smsgateway,
+        'own_driver': ownDriver,
         'delivery_minimum_order_amount': deliveryMinimumOrderAmount,
         'pickup_minimum_order_amount': pickupMinimumOrderAmount,
         'avg_delivery_time': avgDeliveryTime,
         'avg_pickup_time': avgPickupTime,
+        'enable_stripe_connect': enableStripeConnect,
+        'stripe_account_status': stripeAccountStatus,
+        if (platformFee != null)
+          'platform_fee': platformFee!.map((v) => v.toJson()).toList(),
         if (tax != null) 'tax': tax!.toJson(),
         if (workingHours != null)
           'working_hours': workingHours!.map((v) => v.toJson()).toList(),
@@ -495,6 +567,8 @@ class SingleVendorBranchModel {
           'pickup_hours': pickupHours!.map((v) => v.toJson()).toList(),
         if (holidays != null) 'holidays': holidays,
         if (sliders != null) 'sliders': sliders!.map((v) => v.toJson()).toList(),
+        if (orderSetting != null) 'order_setting': orderSetting!.toJson(),
+        if (branchOption != null) 'branch_option': branchOption!.toJson(),
         'created_at': createdAt,
         'updated_at': updatedAt,
         'menu_v2': menuV2.map((v) => v.toJson()).toList(),
@@ -627,6 +701,36 @@ class SingleVendorSlider {
       };
 }
 
+class SingleVendorPlatformFee {
+  final String? platformFeeFor;
+  final String? platformFeeType;
+  final double? platformFeeValue;
+  final String? platformFeeCollection;
+
+  SingleVendorPlatformFee({
+    this.platformFeeFor,
+    this.platformFeeType,
+    this.platformFeeValue,
+    this.platformFeeCollection,
+  });
+
+  factory SingleVendorPlatformFee.fromJson(Map<String, dynamic> json) {
+    return SingleVendorPlatformFee(
+      platformFeeFor: json['platform_fee_for'] as String?,
+      platformFeeType: json['platform_fee_type'] as String?,
+      platformFeeValue: (json['platform_fee_value'] as num?)?.toDouble(),
+      platformFeeCollection: json['platform_fee_collection'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'platform_fee_for': platformFeeFor,
+        'platform_fee_type': platformFeeType,
+        'platform_fee_value': platformFeeValue,
+        'platform_fee_collection': platformFeeCollection,
+      };
+}
+
 class SingleVendorMenuV2Model {
   final int? id;
   final String? name;
@@ -705,6 +809,127 @@ class SingleVendorMenuV2Model {
           'schedules': schedules!.map((v) => v.toJson()).toList(),
         'created_at': createdAt,
         'updated_at': updatedAt,
+      };
+}
+
+class SingleVendorOrderSettingCharge {
+  final int? startRange;
+  final int? endRange;
+  final double? charge;
+
+  SingleVendorOrderSettingCharge({
+    this.startRange,
+    this.endRange,
+    this.charge,
+  });
+
+  factory SingleVendorOrderSettingCharge.fromJson(Map<String, dynamic> json) {
+    return SingleVendorOrderSettingCharge(
+      startRange: json['start_range'] as int?,
+      endRange: json['end_range'] as int?,
+      charge: (json['charge'] as num?)?.toDouble(),
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'start_range': startRange,
+        'end_range': endRange,
+        'charge': charge,
+      };
+}
+
+class SingleVendorOrderSetting {
+  final bool? freeDelivery;
+  final String? freeDeliveryDistance;
+  final String? freeDeliveryAmount;
+  final String? minOrderValue;
+  final String? maxDeliveryRangeKm;
+  final List<SingleVendorOrderSettingCharge>? charges;
+  final dynamic orderAssignManually;
+  final dynamic orderRefresh;
+  final dynamic orderCommission;
+  final dynamic orderDashboardDefaultTime;
+  final dynamic vendorOrderMaxTime;
+  final dynamic deliveryChargeType;
+  final String? onlineFlatMenuDiscountPercent;
+  final String? onlineFlatDiscountAfterAmount;
+  final String? minOrderAmountDelivery;
+  final String? minOrderAmountTakeaway;
+  final int? avgDeliveryTimeMin;
+  final int? avgPickupTimeMin;
+
+  SingleVendorOrderSetting({
+    this.freeDelivery,
+    this.freeDeliveryDistance,
+    this.freeDeliveryAmount,
+    this.minOrderValue,
+    this.maxDeliveryRangeKm,
+    this.charges,
+    this.orderAssignManually,
+    this.orderRefresh,
+    this.orderCommission,
+    this.orderDashboardDefaultTime,
+    this.vendorOrderMaxTime,
+    this.deliveryChargeType,
+    this.onlineFlatMenuDiscountPercent,
+    this.onlineFlatDiscountAfterAmount,
+    this.minOrderAmountDelivery,
+    this.minOrderAmountTakeaway,
+    this.avgDeliveryTimeMin,
+    this.avgPickupTimeMin,
+  });
+
+  factory SingleVendorOrderSetting.fromJson(Map<String, dynamic> json) {
+    return SingleVendorOrderSetting(
+      freeDelivery: json['free_delivery'] as bool?,
+      freeDeliveryDistance: json['free_delivery_distance']?.toString(),
+      freeDeliveryAmount: json['free_delivery_amount']?.toString(),
+      minOrderValue: json['min_order_value']?.toString(),
+      maxDeliveryRangeKm: json['max_delivery_range_km']?.toString(),
+      charges: (json['charges'] as List?)
+          ?.map(
+            (v) => SingleVendorOrderSettingCharge.fromJson(
+              v as Map<String, dynamic>,
+            ),
+          )
+          .toList(),
+      orderAssignManually: json['order_assign_manually'],
+      orderRefresh: json['orderRefresh'],
+      orderCommission: json['order_commission'],
+      orderDashboardDefaultTime: json['order_dashboard_default_time'],
+      vendorOrderMaxTime: json['vendor_order_max_time'],
+      deliveryChargeType: json['delivery_charge_type'],
+      onlineFlatMenuDiscountPercent:
+          json['online_flat_menu_discount_percent']?.toString(),
+      onlineFlatDiscountAfterAmount:
+          json['online_flat_discount_after_amount']?.toString(),
+      minOrderAmountDelivery: json['min_order_amount_delivery']?.toString(),
+      minOrderAmountTakeaway: json['min_order_amount_takeaway']?.toString(),
+      avgDeliveryTimeMin: json['avg_delivery_time_min'] as int?,
+      avgPickupTimeMin: json['avg_pickup_time_min'] as int?,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'free_delivery': freeDelivery,
+        'free_delivery_distance': freeDeliveryDistance,
+        'free_delivery_amount': freeDeliveryAmount,
+        'min_order_value': minOrderValue,
+        'max_delivery_range_km': maxDeliveryRangeKm,
+        if (charges != null)
+          'charges': charges!.map((v) => v.toJson()).toList(),
+        'order_assign_manually': orderAssignManually,
+        'orderRefresh': orderRefresh,
+        'order_commission': orderCommission,
+        'order_dashboard_default_time': orderDashboardDefaultTime,
+        'vendor_order_max_time': vendorOrderMaxTime,
+        'delivery_charge_type': deliveryChargeType,
+        'online_flat_menu_discount_percent': onlineFlatMenuDiscountPercent,
+        'online_flat_discount_after_amount': onlineFlatDiscountAfterAmount,
+        'min_order_amount_delivery': minOrderAmountDelivery,
+        'min_order_amount_takeaway': minOrderAmountTakeaway,
+        'avg_delivery_time_min': avgDeliveryTimeMin,
+        'avg_pickup_time_min': avgPickupTimeMin,
       };
 }
 
@@ -1092,6 +1317,80 @@ class SingleVendorNutrition {
         'sat_fat_g': satFatG,
         'fiber_g': fiberG,
         'sodium_mg': sodiumMg,
+      };
+}
+
+class SingleVendorBranchOption {
+  final String? ownDriver;
+  final String? promoCode;
+  final String? reviews;
+  final String? liveTracking;
+  final String? advanceTableBooking;
+  final String? qrcodeStatus;
+  final String? qrcodeLink;
+  final bool? otp;
+  final String? transactionFeeRate;
+  final String? privacyPage;
+  final String? termsPage;
+  final String? aboutUsPage;
+  final String? refundPage;
+  final String? companyPage;
+  final String? feedbackPage;
+
+  SingleVendorBranchOption({
+    this.ownDriver,
+    this.promoCode,
+    this.reviews,
+    this.liveTracking,
+    this.advanceTableBooking,
+    this.qrcodeStatus,
+    this.qrcodeLink,
+    this.otp,
+    this.transactionFeeRate,
+    this.privacyPage,
+    this.termsPage,
+    this.aboutUsPage,
+    this.refundPage,
+    this.companyPage,
+    this.feedbackPage,
+  });
+
+  factory SingleVendorBranchOption.fromJson(Map<String, dynamic> json) {
+    return SingleVendorBranchOption(
+      ownDriver: json['own_driver'] as String?,
+      promoCode: json['promo_code'] as String?,
+      reviews: json['reviews'] as String?,
+      liveTracking: json['live_tracking'] as String?,
+      advanceTableBooking: json['advance_table_booking'] as String?,
+      qrcodeStatus: json['qrcode_status'] as String?,
+      qrcodeLink: json['qrcode_link'] as String?,
+      otp: json['otp'] as bool?,
+      transactionFeeRate: json['transaction_fee_rate']?.toString(),
+      privacyPage: json['privacy_page'] as String?,
+      termsPage: json['terms_page'] as String?,
+      aboutUsPage: json['about_us_page'] as String?,
+      refundPage: json['refund_page'] as String?,
+      companyPage: json['company_page'] as String?,
+      feedbackPage: json['feedback_page'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'own_driver': ownDriver,
+        'promo_code': promoCode,
+        'reviews': reviews,
+        'live_tracking': liveTracking,
+        'advance_table_booking': advanceTableBooking,
+        'qrcode_status': qrcodeStatus,
+        'qrcode_link': qrcodeLink,
+        'otp': otp,
+        'transaction_fee_rate': transactionFeeRate,
+        'privacy_page': privacyPage,
+        'terms_page': termsPage,
+        'about_us_page': aboutUsPage,
+        'refund_page': refundPage,
+        'company_page': companyPage,
+        'feedback_page': feedbackPage,
       };
 }
 
