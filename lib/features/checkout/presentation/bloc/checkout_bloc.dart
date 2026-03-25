@@ -491,7 +491,7 @@ class PayLater extends CheckoutEvent {}
 class DismissError extends CheckoutEvent {}
 
 // ============================================================================
-// CHECKOUT BLOC
+//                            CHECKOUT BLOC
 // ============================================================================
 
 class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {

@@ -1,29 +1,24 @@
 import 'dart:io';
 
-import 'package:imin_printer/imin_printer.dart';
 import 'package:imin_printer/enums.dart';
+import 'package:imin_printer/imin_printer.dart';
 import 'package:imin_printer/imin_style.dart';
 
-/// Service wrapper around the iMin built‑in printer.
+/// Service wrapper around the iMin built-in printer plugin (`imin_printer`).
 ///
-/// This uses the `imin_printer` plugin to talk to the internal printer
-/// on supported Android‑based iMin devices. All methods are safe to call
-/// on non‑Android platforms – they will simply no‑op and return `false`.
+/// - Works only on Android/iMin devices.
+/// - Safe to call on other platforms: methods return `false` instead of
+///   throwing.
 class IminPrinterService {
   IminPrinterService();
 
   final IminPrinter _iminPrinter = IminPrinter();
   bool _initialized = false;
 
-  /// Ensure printer is initialized on supported devices.
   Future<bool> _ensureInitialized() async {
-    if (!Platform.isAndroid) {
-      return false;
-    }
+    if (!Platform.isAndroid) return false;
 
-    if (_initialized) {
-      return true;
-    }
+    if (_initialized) return true;
 
     try {
       await _iminPrinter.initPrinter();
@@ -34,7 +29,7 @@ class IminPrinterService {
     }
   }
 
-  /// Print a simple test receipt to verify the internal printer works.
+  /// Print a small test receipt to verify the internal printer works.
   Future<bool> printTestReceipt({String printerName = 'iMin Printer'}) async {
     final ok = await _ensureInitialized();
     if (!ok) return false;
@@ -72,7 +67,7 @@ class IminPrinterService {
     }
   }
 
-  /// Print a raw receipt text block (newline‑separated lines).
+  /// Print the order receipt using newline-separated text lines.
   Future<bool> printOrderReceipt(String receiptText) async {
     if (receiptText.trim().isEmpty) return false;
 
@@ -104,7 +99,7 @@ class IminPrinterService {
     }
   }
 
-  /// Open the connected cash drawer if supported.
+  /// Open the attached cash drawer (only supported on iMin devices).
   Future<bool> openCashDrawer() async {
     final ok = await _ensureInitialized();
     if (!ok) return false;
@@ -116,3 +111,4 @@ class IminPrinterService {
     }
   }
 }
+

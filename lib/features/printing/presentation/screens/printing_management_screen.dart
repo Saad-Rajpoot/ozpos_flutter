@@ -254,13 +254,16 @@ class PrintingManagementScreen extends StatelessWidget {
         ),
       );
     }
+
     try {
       final ok = await iminPrinterService.printTestReceipt();
       if (context.mounted) {
         Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(ok ? 'Test receipt sent to iMin printer' : 'iMin printer not available (not an iMin device?)'),
+            content: Text(
+              ok ? 'Test receipt sent to iMin printer' : 'iMin printer not available (not an iMin device?)',
+            ),
             backgroundColor: ok ? Colors.green : Colors.orange,
           ),
         );

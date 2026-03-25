@@ -20,7 +20,7 @@ class PrintingModule {
     sl.registerLazySingleton<NetworkPrinterService>(
         () => NetworkPrinterService());
 
-    // iMin built‑in printer service (Android only; safe no‑op elsewhere)
+    // iMin built-in printer service (Android/iMin only; safe no-op elsewhere)
     sl.registerLazySingleton<IminPrinterService>(
       () => IminPrinterService(),
     );

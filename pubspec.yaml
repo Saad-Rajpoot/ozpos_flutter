@@ -93,10 +93,7 @@ dependencies:
   # ESC/POS Printing - Network and Bluetooth
   esc_pos_printer: ^4.1.0
   esc_pos_utils: ^1.1.0
-  # Local override: imin_printer with IminStraElectronicSDK removed to avoid conflict
-  # with imin_hardware_plugin's scale module. See imin_docs/imin_conflict_resolution.md
-  imin_printer:
-    path: local_packages/imin_printer
+  imin_printer: ^0.6.17
   imin_hardware_plugin: ^1.0.4
   
   # HTTP

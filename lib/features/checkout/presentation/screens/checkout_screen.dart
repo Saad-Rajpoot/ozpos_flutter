@@ -137,29 +137,43 @@ class _CheckoutScreenContent extends StatelessWidget {
                         )
                         .then((_) => clearAndNavigate())
                         .catchError((e) {
-                      if (context.mounted) {
-                        scaffoldMessenger.showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              'Receipt print failed: ${e.toString()}',
+                      // If network printing failed on an iMin device, try the built-in printer.
+                      iminPrinterService
+                          .printOrderReceipt(receiptText)
+                          .then((printed) {
+                        if (!printed && context.mounted) {
+                          scaffoldMessenger.showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'Network receipt print failed and iMin printer not available.',
+                              ),
                             ),
-                            backgroundColor: Colors.red,
-                          ),
-                        );
-                      }
-                      clearAndNavigate();
+                          );
+                        }
+                        clearAndNavigate();
+                      }).catchError((_) {
+                        clearAndNavigate();
+                      });
                     });
                   } else {
-                    // No network printer – try iMin built‑in printer as fallback.
+                    // No network receipt printer configured - try iMin built-in printer.
+                    if (context.mounted) {
+                      scaffoldMessenger.showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'No network receipt printer configured. Trying iMin printer...',
+                          ),
+                        ),
+                      );
+                    }
+
                     iminPrinterService
                         .printOrderReceipt(receiptText)
                         .then((printed) {
                       if (!printed && context.mounted) {
                         scaffoldMessenger.showSnackBar(
                           const SnackBar(
-                            content: Text(
-                              'No network printer and iMin printer not available.',
-                            ),
+                            content: Text('iMin printer not available.'),
                           ),
                         );
                       }
