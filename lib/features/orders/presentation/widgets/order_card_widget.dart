@@ -438,6 +438,25 @@ class OrderCardWidget extends StatelessWidget {
           label: 'Table',
           value: order.tableNumber!.trim(),
         ),
+      if (order.customerPhone != null && order.customerPhone!.trim().isNotEmpty)
+        _metaItem(
+          context,
+          icon: Icons.phone,
+          label: 'Phone',
+          value: order.customerPhone!.trim(),
+        ),
+      _metaItem(
+        context,
+        icon: Icons.receipt,
+        label: 'Subtotal',
+        value: '\$${order.subtotal.toStringAsFixed(2)}',
+      ),
+      _metaItem(
+        context,
+        icon: Icons.request_quote,
+        label: 'Tax',
+        value: '\$${order.tax.toStringAsFixed(2)}',
+      ),
     ];
 
     return Theme(

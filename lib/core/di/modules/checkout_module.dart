@@ -17,6 +17,7 @@ import '../../../features/checkout/domain/usecases/process_payment.dart';
 import '../../../features/checkout/presentation/bloc/checkout_bloc.dart';
 import '../../services/customer_display_service.dart';
 import '../../db/sync_outbox_dao.dart';
+import '../../services/imin_hardware_service.dart';
 
 /// Checkout feature module for dependency injection
 class CheckoutModule {
@@ -76,6 +77,8 @@ class CheckoutModule {
         calculateTotalsUseCase: sl(),
         customerDisplayService:
             sl.isRegistered<CustomerDisplayService>() ? sl() : null,
+        iminHardwareService:
+            sl.isRegistered<IminHardwareService>() ? sl() : null,
       ),
     );
   }

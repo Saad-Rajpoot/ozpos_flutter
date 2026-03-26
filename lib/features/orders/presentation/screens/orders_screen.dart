@@ -856,10 +856,10 @@ Widget _buildOrdersGrid(BuildContext context, List<OrderEntity> orders) {
 
 Widget _buildOrdersList(BuildContext context, List<OrderEntity> orders) {
   return ListView.separated(
-    padding: const EdgeInsets.all(16),
+    padding: const EdgeInsets.all(8),
     itemCount: orders.length,
     separatorBuilder: (_, __) =>
-        const SizedBox(height: OrdersConstants.gapBetweenCards),
+        const SizedBox(height: 8), // compacted space between items
     itemBuilder: (context, index) {
       return _OrderListTile(order: orders[index]);
     },
@@ -918,8 +918,8 @@ class _OrderListTile extends StatelessWidget {
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 12,
+                    horizontal: 12,
+                    vertical: 6,
                   ),
                   child: Row(
                     children: [

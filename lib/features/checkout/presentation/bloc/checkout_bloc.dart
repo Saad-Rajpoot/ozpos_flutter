@@ -15,6 +15,7 @@ import '../../domain/usecases/apply_voucher.dart';
 import '../../domain/usecases/calculate_totals.dart';
 import '../../domain/entities/cart_line_item_entity.dart';
 import './cart_bloc.dart';
+import '../../../../core/services/imin_hardware_service.dart';
 
 // ============================================================================
 // CHECKOUT STATE
@@ -501,6 +502,7 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
   final ApplyVoucherUseCase _applyVoucherUseCase;
   final CalculateTotalsUseCase _calculateTotalsUseCase;
   final CustomerDisplayService? _customerDisplayService;
+  final IminHardwareService? _iminHardwareService;
   CheckoutLoaded? _lastKnownLoadedState;
 
   CheckoutLoaded? _currentLoadedState() {
@@ -520,12 +522,14 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
     required ApplyVoucherUseCase applyVoucherUseCase,
     required CalculateTotalsUseCase calculateTotalsUseCase,
     CustomerDisplayService? customerDisplayService,
+    IminHardwareService? iminHardwareService,
   })  : _initializeCheckoutUseCase = initializeCheckoutUseCase,
         _bookOrderUseCase = bookOrderUseCase,
         _processPaymentUseCase = processPaymentUseCase,
         _applyVoucherUseCase = applyVoucherUseCase,
         _calculateTotalsUseCase = calculateTotalsUseCase,
         _customerDisplayService = customerDisplayService,
+        _iminHardwareService = iminHardwareService,
         super(CheckoutInitial()) {
     on<InitializeCheckout>(_onInitializeCheckout);
     on<SyncCartItems>(_onSyncCartItems);
@@ -1263,6 +1267,19 @@ class CheckoutBloc extends BaseBloc<CheckoutEvent, CheckoutState> {
             receiptText: receiptText,
           ),
         );
+
+        // Cash payment -> open cash drawer on iMin devices.
+        final shouldOpenCashDrawer = currentState.selectedMethod ==
+                PaymentMethodType.cash ||
+            currentState.tenders.any((t) => t.method == PaymentMethodType.cash);
+
+        if (shouldOpenCashDrawer) {
+          try {
+            await _iminHardwareService?.openCashDrawer();
+          } catch (_) {
+            // Never block checkout flow if the hardware drawer fails.
+          }
+        }
 
         if (currentState.selectedMethod == PaymentMethodType.cash &&
             currentState.cashChange > 0) {
